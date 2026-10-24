@@ -31,7 +31,8 @@ It is the product-grade successor of a personal job-watcher tool, rebuilt from s
 - **Morning brief** — a daily 08:00 (ICT) digest of strong matches and due follow-ups, rendered as a gradient-edged panel with animated counters.
 - **Command palette** — `Cmd/Ctrl + K` to search jobs, jump between views, trigger a scan or switch profiles. Keyboard-first: `1/2/3` switch tabs, `/` focuses search.
 - **Realtime-ready** — a Durable Object hub broadcasts strong-match events to connected clients.
-- **Modern UI** — Linear-style product shell with Resend-style accents: hairline surfaces, Inter + Instrument Serif, score rings, skeleton loading, staggered reveals.
+- **Modern UI** — Linear-style product shell with Resend-style accents: hairline surfaces, Inter + Space Grotesk, score rings, skeleton loading, staggered reveals.
+- **Light / dark themes** — a single toggle (landing nav, auth screen, app sidebar); the whole token system flips, the choice persists and the first visit follows the OS preference.
 - **Real accounts** — email + password registration and login (PBKDF2-SHA256, salted, via WebCrypto; brute-force throttling). Accounts created before passwords existed claim one on first sign-in.
 - **Landing page** — logged-out visitors get a product landing that explains the scoring formula and the 4-step quickstart *before* the app; new accounts start completely empty with a 3-step onboarding checklist (no seeded demo data).
 
@@ -100,7 +101,7 @@ guard:  jobs listing < 3 skills are capped at 69 (evidence cap)
 ## Tech stack
 
 - **Runtime:** Cloudflare Workers (V8 isolates), vanilla JavaScript — zero npm dependencies in the API.
-- **Frontend:** single-file SPA (`apps/web/public/index.html`), vanilla JS + PDF.js via CDN, Google Fonts (Inter, Instrument Serif).
+- **Frontend:** single-file SPA (`apps/web/public/index.html`), vanilla JS + PDF.js via CDN, Google Fonts (Inter, Space Grotesk).
 - **Data:** D1 / SQLite migrations, KV, R2.
 - **Design language:** see [`docs/UI-V2-SPEC.md`](docs/UI-V2-SPEC.md) — the Linear × Resend design study behind UI v2.
 
