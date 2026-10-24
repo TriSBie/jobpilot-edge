@@ -37,9 +37,9 @@ It is the product-grade successor of a personal job-watcher tool, rebuilt from s
 
 ## Screenshots
 
-| Login | Morning brief & job scores |
+| Landing | Morning brief & job scores |
 |---|---|
-| <img src="docs/screenshots/01-login.png" width="430"> | <img src="docs/screenshots/02-jobs.png" width="430"> |
+| <img src="docs/screenshots/01-landing.png" width="430"> | <img src="docs/screenshots/02-jobs.png" width="430"> |
 
 | Kanban pipeline | Command palette (⌘K) |
 |---|---|
