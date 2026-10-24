@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobPilot Edge — Săn việc, có hệ thống</title>
+<meta name="description" content="AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#08090a;
+    --panel:rgba(255,255,255,.03);
+    --panel-2:rgba(255,255,255,.05);
+    --line:rgba(255,255,255,.08);
+    --line-strong:rgba(255,255,255,.14);
+    --text:#f7f8f8;
+    --muted:rgba(247,248,248,.62);
+    --faint:rgba(247,248,248,.42);
+    --accent:#f6821f;
+    --accent-2:#ffb347;
+    --grad:linear-gradient(120deg,#f6821f,#ffb347);
+    --green:#6ee7b7;
+    --green-bg:rgba(52,211,153,.09);
+    --amber:#e7c07a;
+    --red:#f87171;
+    --r-lg:20px; --r-md:16px; --r-sm:10px;
+    --font:"Inter",ui-sans-system,system-ui,"Segoe UI",Roboto,sans-serif;
+    --serif:"Instrument Serif",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font); font-size:15px; line-height:1.55;
+    background:
+      radial-gradient(56rem 26rem at 85% -12%, rgba(246,130,31,.055), transparent 60%),
+      radial-gradient(40rem 22rem at -10% 108%, rgba(94,106,210,.05), transparent 60%),
+      var(--bg);
+    color:var(--text); min-height:100vh;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  a{color:#9ecbff;text-decoration:none}
+  a:hover{text-decoration:underline}
+  button{font:inherit;cursor:pointer;color:inherit}
+  ::selection{background:rgba(246,130,31,.35)}
+  .hidden{display:none!important}
+  .muted{color:var(--muted)} .small{font-size:.85rem}
+  .spacer{flex:1}
+
+  /* ---------- surfaces ---------- */
+  .panel{
+    background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
+    border:1px solid var(--line); border-radius:var(--r-md);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .empty{padding:2.4rem 1rem;text-align:center;color:var(--muted)}
+
+  /* ---------- controls ---------- */
+  input,select,textarea{
+    font:inherit;color:var(--text);background:rgba(255,255,255,.04);
+    border:1px solid var(--line);border-radius:var(--r-sm);
+    padding:.55rem .75rem;outline:none;width:100%;
+    transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  input:focus,select:focus,textarea:focus{
+    border-color:rgba(246,130,31,.55); box-shadow:0 0 0 3px rgba(246,130,31,.18); background:rgba(255,255,255,.05);
+  }
+  select{width:auto;appearance:none;padding-right:1.9rem;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239aa4b2' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right .7rem center}
+  label{font-size:.8rem;color:var(--muted);display:block;margin-bottom:.35rem;font-weight:500}
+  .btn{
+    display:inline-flex;align-items:center;gap:.45rem;justify-content:center;
+    background:rgba(255,255,255,.06);color:var(--text);
+    border:1px solid var(--line);border-radius:999px;
+    padding:.5rem 1.05rem;font-weight:600;font-size:.9rem;white-space:nowrap;
+    transition:background .15s ease,border-color .15s ease,transform .08s ease;
+  }
+  .btn:hover{background:rgba(255,255,255,.1);border-color:var(--line-strong)}
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:var(--grad);border-color:transparent;color:#1c1106}
+  .btn.primary:hover{filter:brightness(1.07)}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+  .btn.ghost:hover{color:var(--text);background:rgba(255,255,255,.05)}
+  .btn.small{padding:.34rem .75rem;font-size:.83rem}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .spinner{display:inline-block;width:.85em;height:.85em;border:2px solid rgba(255,255,255,.25);
+    border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-.1em}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- login ---------- */
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:1.5rem}
+  .login-in{width:100%;max-width:430px;text-align:center;animation:rise .6s cubic-bezier(.22,.8,.3,1) both}
+  .medallion{
+    width:74px;height:74px;margin:0 auto 1.4rem;border-radius:22px;
+    background:linear-gradient(160deg,rgba(246,130,31,.22),rgba(255,179,71,.06));
+    border:1px solid rgba(246,130,31,.35);
+    box-shadow:0 0 60px rgba(246,130,31,.28), inset 0 1px 0 rgba(255,255,255,.18);
+    display:grid;place-items:center;font-family:var(--serif);font-size:2rem;color:#ffd9ae;
+  }
+  .login-in h1{font-family:var(--serif);font-weight:400;font-size:2.9rem;line-height:1.08;margin:.2rem 0 .6rem;letter-spacing:-.01em}
+  .login-in h1 em{color:var(--faint)}
+  .login-in .sub{color:var(--muted);margin:0 auto 1.8rem;max-width:36ch}
+  .login-card{text-align:left;padding:1.5rem;border-radius:var(--r-lg)}
+  .login-card .field{margin-top:1rem}
+  .login-card .field:first-child{margin-top:0}
+  .login-card .btn{width:100%;margin-top:1.4rem;padding:.72rem}
+  #loginError{color:var(--red);font-size:.88rem;min-height:1.2em;margin-top:.7rem}
+  .login-foot{margin-top:1.4rem;color:var(--faint);font-size:.82rem}
+  kbd{
+    font-family:var(--font);font-size:.72rem;color:var(--muted);
+    border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:.05rem .38rem;background:rgba(255,255,255,.04);
+  }
+
+  /* ---------- app shell ---------- */
+  .shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+  .side{
+    position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;
+    padding:20px 14px 16px;border-right:1px solid var(--line);
+    background:rgba(255,255,255,.012);
+  }
+  .brand{display:flex;align-items:center;gap:.6rem;padding:.2rem .5rem 1.1rem;font-weight:700;font-size:1.06rem;letter-spacing:-.01em}
+  .brand .mark{
+    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;
+    background:linear-gradient(150deg,rgba(246,130,31,.3),rgba(255,179,71,.08));
+    border:1px solid rgba(246,130,31,.4);color:#ffd9ae;font-family:var(--serif);font-size:1.02rem;
+    box-shadow:0 0 22px rgba(246,130,31,.22);
+  }
+  .brand span{color:var(--accent-2)}
+  .nav-label{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:.7rem .6rem .3rem}
+  .tab{
+    display:flex;align-items:center;gap:.6rem;width:100%;text-align:left;
+    background:transparent;border:1px solid transparent;border-radius:10px;
+    padding:.52rem .65rem;font-weight:500;font-size:.94rem;color:var(--muted);
+    transition:background .15s ease,color .15s ease;
+  }
+  .tab .ic{width:1.15rem;text-align:center;flex:none}
+  .tab:hover{color:var(--text);background:rgba(255,255,255,.04)}
+  .tab.active{color:var(--text);background:rgba(255,255,255,.06);border-color:var(--line)}
+  .tab.active .ic{color:var(--accent-2)}
+  .side .prof-block{padding:.4rem .35rem 0}
+  #profileSelect{width:100%}
+  .cmdk-hint{
+    display:flex;align-items:center;gap:.5rem;width:100%;text-align:left;
+    background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;
+    padding:.5rem .65rem;color:var(--faint);font-size:.86rem;
+  }
+  .cmdk-hint:hover{color:var(--muted);border-color:var(--line-strong)}
+  .sys{font-size:.78rem;color:var(--faint);padding:.55rem .6rem .2rem;display:flex;align-items:center;gap:.45rem;line-height:1.45}
+  .sys .dot{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.8);flex:none}
+  main{padding:30px 38px 70px;max-width:1240px;width:100%;margin:0 auto}
+  .page-title{font-size:1.72rem;font-weight:600;letter-spacing:-.025em;margin:0 0 .3rem}
+  .page-title .gray{color:var(--faint);font-weight:500}
+  .page-sub{color:var(--muted);margin:0 0 1.5rem;max-width:70ch}
+
+  /* ---------- morning brief ---------- */
+  .brief{
+    position:relative;border-radius:var(--r-lg);padding:1px;margin-bottom:1.4rem;
+    background:linear-gradient(120deg,rgba(246,130,31,.55),rgba(255,255,255,.09) 45%,rgba(255,179,71,.35));
+    animation:rise .55s cubic-bezier(.22,.8,.3,1) both;
+  }
+  .brief-in{
+    border-radius:19px;background:#0b0c0e;padding:1.25rem 1.4rem;
+    display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .brief .lbl{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .brief .bignum{font-family:var(--serif);font-size:3.4rem;line-height:1;color:var(--text);margin:.35rem 0 .5rem}
+  .brief .bignum em{color:var(--accent-2)}
+  .fu-item{padding:.32rem 0;border-top:1px solid rgba(255,255,255,.05);font-size:.9rem}
+  .fu-item:first-of-type{border-top:none}
+  .fu-item .when{color:var(--amber)}
+  .digest{display:contents}
+
+  /* ---------- toolbar / filters ---------- */
+  .toolbar{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+  .toolbar .grow{flex:1;min-width:180px}
+  .submit-row{display:flex;gap:.55rem;flex-wrap:wrap;margin-bottom:1.1rem}
+  .submit-row .grow{flex:1;min-width:220px}
+
+  /* ---------- job rows ---------- */
+  .jobs-list{display:flex;flex-direction:column;gap:10px}
+  .job{
+    padding:1rem 1.15rem;border-radius:var(--r-md);
+    animation:rise .5s cubic-bezier(.22,.8,.3,1) both;animation-delay:calc(min(var(--i,0),12) * 45ms);
+    transition:border-color .15s ease, transform .15s ease, background .15s ease;
+  }
+  .job:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+  .job-head{display:flex;gap:1rem;align-items:flex-start}
+  .job-title{font-weight:600;font-size:1.02rem;letter-spacing:-.01em}
+  .job-title a{color:var(--text)}
+  .job-title a:hover{color:var(--accent-2);text-decoration:none}
+  .job-meta{display:flex;gap:.9rem;flex-wrap:wrap;color:var(--muted);font-size:.86rem;margin-top:.2rem}
+  .badge{
+    display:inline-flex;align-items:center;gap:.35rem;font-size:.74rem;font-weight:600;
+    border:1px solid var(--line);border-radius:999px;padding:.08rem .55rem;color:var(--muted);
+  }
+  .badge.strong{color:#ffd9ae;border-color:rgba(246,130,31,.45);background:rgba(246,130,31,.09)}
+  .badge.partial{color:var(--amber)}
+  .chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.7rem}
+  .chip{
+    display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:500;
+    border:1px solid var(--line);border-radius:999px;padding:.14rem .6rem;color:var(--faint);
+  }
+  .chip::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+  .chip.ok{color:var(--green);background:var(--green-bg);border-color:rgba(52,211,153,.22)}
+  .chip.miss{color:var(--faint)}
+  .chip.neutral{color:var(--muted)}
+  .job-foot{display:flex;align-items:center;gap:.6rem;margin-top:.8rem;padding-top:.75rem;border-top:1px solid rgba(255,255,255,.05)}
+  .ring-wrap{flex:none;line-height:0}
+  .loading-row{padding:2rem;text-align:center;color:var(--muted)}
+  .skl{height:92px;border-radius:var(--r-md);border:1px solid var(--line);
+    background:linear-gradient(100deg,rgba(255,255,255,.02) 40%,rgba(255,255,255,.05) 50%,rgba(255,255,255,.02) 60%);
+    background-size:200% 100%;animation:shimmer 1.3s infinite}
+  @keyframes shimmer{to{background-position:-200% 0}}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- kanban ---------- */
+  .kanban{display:grid;grid-template-columns:repeat(7,minmax(215px,1fr));gap:0;overflow-x:auto;padding-bottom:.6rem}
+  .kcol{padding:0 .8rem;border-left:1px solid var(--line)}
+  .kcol:first-child{border-left:none;padding-left:0}
+  .kcol-head{
+    display:flex;align-items:center;gap:.5rem;font-weight:600;font-size:.9rem;
+    padding:.35rem .2rem .8rem;position:sticky;top:0;
+  }
+  .kcol-head .count{
+    font-size:.74rem;color:var(--muted);border:1px solid var(--line);
+    border-radius:999px;padding:.02rem .5rem;background:rgba(255,255,255,.03);
+  }
+  .kcol-body{display:flex;flex-direction:column;gap:9px;min-height:60px}
+  .kcard{
+    padding:.8rem .9rem;border-radius:14px;
+    animation:rise .45s cubic-bezier(.22,.8,.3,1) both;animation-delay:calc(min(var(--i,0),10) * 40ms);
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .kcard:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+  .kcard .t{font-weight:600;font-size:.92rem;line-height:1.4}
+  .kcard .t a{color:var(--text)} .kcard .t a:hover{color:var(--accent-2);text-decoration:none}
+  .kcard .c{color:var(--muted);font-size:.82rem;margin-top:.3rem}
+  .kcard .row{display:flex;align-items:center;gap:.4rem;margin-top:.65rem}
+  .mv{
+    width:26px;height:26px;border-radius:8px;border:1px solid var(--line);
+    background:rgba(255,255,255,.03);color:var(--muted);font-size:.72rem;line-height:1;
+  }
+  .mv:hover:not(:disabled){color:var(--text);border-color:var(--line-strong)}
+  .mv:disabled{opacity:.35;cursor:default}
+  .score-pill{font-size:.76rem;font-weight:700;border-radius:999px;padding:.14rem .55rem;border:1px solid var(--line);color:var(--muted)}
+  .score-pill.strong{color:#ffd9ae;border-color:rgba(246,130,31,.45);background:rgba(246,130,31,.09)}
+  .score-pill.partial{color:var(--amber)}
+
+  /* ---------- profile ---------- */
+  .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;align-items:start}
+  .card-p{padding:1.3rem;border-radius:var(--r-lg)}
+  .card-p h3{margin:.1rem 0 1rem;font-size:1.05rem;font-weight:600;letter-spacing:-.01em}
+  .card-p h3 .gray{color:var(--faint);font-weight:500}
+  .field{margin-top:.95rem} .field:first-of-type{margin-top:0}
+  .skill-row{
+    display:flex;align-items:center;gap:.6rem;padding:.5rem .2rem;
+    border-top:1px solid rgba(255,255,255,.05);font-size:.92rem;
+  }
+  .skill-row:first-child{border-top:none}
+  .skill-row .nm{font-weight:500;flex:1}
+  .skill-row input[type=checkbox]{width:auto;accent-color:var(--accent);width:16px;height:16px}
+  .skill-row select{padding:.25rem 1.6rem .25rem .5rem;font-size:.85rem}
+  .inline-row{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
+  .inline-row .grow{flex:1;min-width:150px}
+  #cvStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
+
+  /* ---------- toasts ---------- */
+  #toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;flex-direction:column;gap:.5rem;max-width:min(92vw,380px)}
+  .toast{
+    background:rgba(18,19,22,.92);backdrop-filter:blur(10px);color:var(--text);
+    border:1px solid var(--line-strong);border-radius:12px;padding:.7rem .95rem;font-size:.9rem;
+    box-shadow:0 12px 32px rgba(0,0,0,.45);animation:rise .3s ease both;
+  }
+  .toast.ok{border-color:rgba(52,211,153,.4)} .toast.err{border-color:rgba(248,113,113,.45)}
+
+  /* ---------- command palette ---------- */
+  #palette{
+    position:fixed;inset:0;z-index:300;display:grid;justify-items:center;align-items:start;
+    padding:12vh 1rem 1rem;background:rgba(4,5,6,.6);backdrop-filter:blur(6px);
+  }
+  .pal-box{
+    width:100%;max-width:560px;border-radius:18px;overflow:hidden;
+    background:rgba(16,17,20,.96);border:1px solid var(--line-strong);
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+    animation:rise .22s cubic-bezier(.22,.8,.3,1) both;
+  }
+  .pal-box input{border:none;background:transparent;font-size:1.02rem;padding:1rem 1.15rem;box-shadow:none}
+  .pal-box input:focus{box-shadow:none;border:none}
+  #paletteList{max-height:46vh;overflow:auto;border-top:1px solid var(--line);padding:.45rem}
+  .pal-item{
+    display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;
+    background:transparent;border:none;border-radius:10px;padding:.6rem .7rem;color:var(--muted);font-size:.93rem;
+  }
+  .pal-item .hint{margin-left:auto;font-size:.76rem;color:var(--faint)}
+  .pal-item.sel{background:rgba(246,130,31,.13);color:var(--text)}
+  .pal-empty{padding:1rem;text-align:center;color:var(--faint);font-size:.9rem}
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 980px){
+    .cols-2{grid-template-columns:1fr}
+    .brief-in{grid-template-columns:1fr}
+  }
+  @media (max-width: 860px){
+    .shell{grid-template-columns:1fr}
+    .side{position:sticky;top:0;z-index:50;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;
+      border-right:none;border-bottom:1px solid var(--line);background:rgba(8,9,10,.88);backdrop-filter:blur(12px);padding:10px 12px}
+    .brand{padding:0 .4rem 0 0}
+    .nav-label{display:none}
+    .tab{width:auto}
+    .side .prof-block{padding:0;flex:1;min-width:150px}
+    .cmdk-hint{display:none}
+    .sys{display:none}
+    #logoutBtn{margin:0!important}
+    main{padding:20px 16px 60px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  }
+</style>
+</head>
+<body>
+<div id="toasts"></div>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginView" class="login-wrap hidden">
+  <div class="login-in">
+    <div class="medallion">J</div>
+    <h1>Săn việc, <em>có hệ thống.</em></h1>
+    <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV của bạn và xếp vào một pipeline duy nhất.</p>
+    <form id="loginForm" class="panel login-card">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="loginName">Tên hiển thị</label>
+        <input id="loginName" type="text" placeholder="Tên của bạn" autocomplete="name">
+      </div>
+      <button id="loginBtn" class="btn primary" type="submit">Đăng nhập</button>
+      <div id="loginError"></div>
+    </form>
+    <p class="login-foot">Chạy trên Cloudflare Edge · Dữ liệu của bạn, ở máy chủ của bạn</p>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="appView" class="hidden">
+  <div class="shell">
+    <aside class="side">
+      <div class="brand"><span class="mark">J</span>JobPilot <span>Edge</span></div>
+      <div class="nav-label">Điều hướng</div>
+      <button class="tab active" data-tab="jobs"><span class="ic">▤</span>Việc làm</button>
+      <button class="tab" data-tab="kanban"><span class="ic">▦</span>Kanban</button>
+      <button class="tab" data-tab="profile"><span class="ic">◉</span>Hồ sơ &amp; CV</button>
+      <div class="nav-label">Hồ sơ đang dùng</div>
+      <div class="prof-block"><select id="profileSelect" title="Chọn hồ sơ"></select></div>
+      <div style="height:.7rem"></div>
+      <button class="cmdk-hint" id="paletteBtn"><span>Tìm nhanh / ra lệnh…</span><span class="spacer"></span><kbd>⌘K</kbd></button>
+      <div class="spacer"></div>
+      <div class="sys"><span class="dot"></span><span id="sourceStatus">Nguồn job: đang kiểm tra…</span></div>
+      <button id="logoutBtn" class="btn ghost small" style="align-self:flex-start;margin-top:.4rem">Đăng xuất</button>
+    </aside>
+
+    <main>
+      <!-- ===== TAB: JOBS ===== -->
+      <section id="tab-jobs">
+        <h2 class="page-title">Việc làm <span class="gray" id="jobsCount"></span></h2>
+        <p class="page-sub">Mọi tin tuyển dụng đã gom về một chỗ và chấm điểm theo hồ sơ của bạn. Điểm càng cao, độ khớp CV càng lớn.</p>
+
+        <div id="digestStrip" class="digest"></div>
+
+        <div class="toolbar">
+          <select id="filterTier" title="Lọc theo độ khớp">
+            <option value="">Mọi mức khớp</option>
+            <option value="strong">Khớp mạnh (strong)</option>
+            <option value="partial">Khớp một phần (partial)</option>
+            <option value="weak">Khớp yếu (weak)</option>
+          </select>
+          <select id="filterSource" title="Lọc theo nguồn">
+            <option value="">Mọi nguồn</option>
+            <option value="topdev">TopDev</option>
+            <option value="itviec">ITviec</option>
+          </select>
+          <div class="grow"><input id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
+          <button id="refreshJobsBtn" class="btn small" type="button">Làm mới</button>
+          <button id="scanBtn" class="btn primary small" type="button">Quét job mới</button>
+        </div>
+
+        <form id="submitForm" class="submit-row">
+          <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…"></div>
+          <button id="submitBtn" class="btn small" type="submit">Thêm job</button>
+        </form>
+
+        <div id="jobsContainer"></div>
+      </section>
+
+      <!-- ===== TAB: KANBAN ===== -->
+      <section id="tab-kanban" class="hidden">
+        <h2 class="page-title">Pipeline ứng tuyển <span class="gray">— kéo từng cơ hội về phía offer</span></h2>
+        <p class="page-sub">Mỗi job có điểm khớp đều tự vào cột Mới. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
+        <div id="kanbanContainer"></div>
+      </section>
+
+      <!-- ===== TAB: PROFILE ===== -->
+      <section id="tab-profile" class="hidden">
+        <h2 class="page-title">Hồ sơ &amp; CV <span class="gray">— nền của mọi điểm số</span></h2>
+        <p class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
+        <div class="cols-2">
+          <div class="panel card-p">
+            <h3>Thông tin hồ sơ</h3>
+            <form id="profileForm">
+              <div class="field">
+                <label for="pfName">Tên hồ sơ</label>
+                <input id="pfName" type="text" placeholder="VD: Kriss Bui — Backend">
+              </div>
+              <div class="field">
+                <label for="pfRoles">Vị trí mục tiêu (cách nhau bởi dấu phẩy)</label>
+                <input id="pfRoles" type="text" placeholder="Backend Developer, Backend Engineer">
+              </div>
+              <div class="field">
+                <label for="pfLevel">Cấp bậc</label>
+                <select id="pfLevel">
+                  <option value="">— Chưa đặt —</option>
+                  <option value="fresher">Fresher</option>
+                  <option value="junior">Junior</option>
+                  <option value="middle">Middle</option>
+                  <option value="senior">Senior</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="pfLocations">Khu vực (cách nhau bởi dấu phẩy)</label>
+                <input id="pfLocations" type="text" placeholder="Ho Chi Minh, Remote">
+              </div>
+              <div class="field">
+                <label for="pfSalary">Mức lương tối thiểu kỳ vọng (VNĐ/tháng)</label>
+                <input id="pfSalary" type="number" min="0" step="100000" placeholder="VD: 25000000">
+              </div>
+              <button id="pfSaveBtn" class="btn primary" type="submit" style="margin-top:1.1rem">Lưu hồ sơ</button>
+            </form>
+            <div style="border-top:1px solid var(--line);margin-top:1.4rem;padding-top:1.1rem">
+              <label for="newProfileName">Tạo hồ sơ mới</label>
+              <div class="inline-row">
+                <div class="grow"><input id="newProfileName" type="text" placeholder="Tên hồ sơ mới…"></div>
+                <button id="createProfileBtn" class="btn" type="button">Tạo hồ sơ</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="panel card-p">
+              <h3>Tải CV lên <span class="gray">— AI trích xuất kỹ năng</span></h3>
+              <div class="field">
+                <label for="cvFile">File CV (PDF, TXT hoặc MD)</label>
+                <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
+              </div>
+              <button id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
+              <div id="cvStatus"></div>
+              <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
+                <label>Kỹ năng gợi ý — tích chọn &amp; đặt trọng số (1–5)</label>
+                <div id="suggestedList"></div>
+                <button id="confirmSkillsBtn" class="btn primary" type="button" style="margin-top:.9rem">Lưu kỹ năng đã chọn</button>
+              </div>
+            </div>
+            <div class="panel card-p" style="margin-top:1.1rem">
+              <h3>Kỹ năng hiện có</h3>
+              <div id="currentSkills"></div>
+              <div style="border-top:1px solid var(--line);margin-top:1rem;padding-top:1rem">
+                <label>Thêm kỹ năng thủ công</label>
+                <div class="inline-row">
+                  <div class="grow"><input id="manualSkill" type="text" placeholder="VD: Kafka"></div>
+                  <select id="manualWeight" title="Trọng số">
+                    <option value="1">1</option><option value="2">2</option>
+                    <option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                  </select>
+                  <button id="addSkillBtn" class="btn" type="button">Thêm</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ================= COMMAND PALETTE ================= -->
+<div id="palette" class="hidden">
+  <div class="pal-box">
+    <input id="paletteInput" type="text" placeholder="Gõ để tìm job, chuyển tab, ra lệnh…" autocomplete="off">
+    <div id="paletteList"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   JobPilot Edge — frontend SPA v2 (vanilla JS, không build step)
+   ============================================================ */
+const API_BASE = "https://jobpilot-api.tribui-it-work.workers.dev";
+const STAGES = [
+  { key: "new",       label: "Mới" },
+  { key: "saved",     label: "Đã lưu" },
+  { key: "applied",   label: "Đã apply" },
+  { key: "interview", label: "Phỏng vấn" },
+  { key: "offer",     label: "Offer" },
+  { key: "rejected",  label: "Từ chối" },
+  { key: "archived",  label: "Lưu trữ" },
+];
+const STAGE_KEYS = STAGES.map(s => s.key);
+
+const state = {
+  token: localStorage.getItem("jp_token") || "",
+  user: null,
+  profiles: [],
+  profileId: localStorage.getItem("jp_profile") || "",
+  jobs: [],
+  applications: [],
+  suggested: [],
+  filters: { tier: "", source: "", q: "" },
+};
+
+const $ = (sel, el) => (el || document).querySelector(sel);
+const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
+
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function fmtDate(ts){
+  if (!ts) return "";
+  const n = Number(ts);
+  const d = new Date(n < 1e12 ? n * 1000 : n);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+function fmtDateTime(ts){
+  if (!ts) return "";
+  const n = Number(ts);
+  const d = new Date(n < 1e12 ? n * 1000 : n);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+function debounce(fn, ms){
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+function srcLabel(src){
+  if (!src) return "web";
+  if (src.includes("topdev")) return "TopDev";
+  if (src.includes("itviec")) return "ITviec";
+  if (src.includes("manual")) return "Thủ công";
+  return src;
+}
+
+function toast(msg, kind){
+  const box = $("#toasts");
+  const el = document.createElement("div");
+  el.className = "toast" + (kind ? " " + kind : "");
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(() => el.remove(), 320); }, 4200);
+}
+
+async function api(path, opts){
+  opts = opts || {};
+  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  if (state.token) headers["Authorization"] = "Bearer " + state.token;
+  let res;
+  try {
+    res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+  } catch (e) {
+    throw new Error("Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.");
+  }
+  if (res.status === 401) {
+    logout(false);
+    throw new Error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
+  }
+  let data = null;
+  const txt = await res.text();
+  if (txt) { try { data = JSON.parse(txt); } catch (e) { data = null; } }
+  if (!res.ok) {
+    const m = (data && (data.error || data.message)) || ("Lỗi " + res.status);
+    throw new Error(typeof m === "string" ? m : JSON.stringify(m));
+  }
+  return data;
+}
+
+function currentProfile(){
+  return state.profiles.find(p => p.id === state.profileId) || state.profiles[0] || null;
+}
+
+/* ---------------- Auth ---------------- */
+function showLogin(){
+  $("#loginView").classList.remove("hidden");
+  $("#appView").classList.add("hidden");
+}
+function showApp(){
+  $("#loginView").classList.add("hidden");
+  $("#appView").classList.remove("hidden");
+}
+function logout(manual){
+  state.token = ""; state.user = null; state.profiles = []; state.profileId = "";
+  localStorage.removeItem("jp_token");
+  localStorage.removeItem("jp_profile");
+  showLogin();
+  if (manual) toast("Đã đăng xuất.");
+}
+
+$("#loginForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const email = $("#loginEmail").value.trim();
+  const name = $("#loginName").value.trim();
+  const btn = $("#loginBtn"), err = $("#loginError");
+  err.textContent = "";
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang đăng nhập...';
+  try {
+    const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, name }) });
+    state.token = data.token;
+    state.user = data.user;
+    localStorage.setItem("jp_token", state.token);
+    await boot();
+    toast("Xin chào " + (data.user && data.user.name ? data.user.name : "") + "!", "ok");
+  } catch (e) {
+    err.textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = "Đăng nhập";
+  }
+});
+$("#logoutBtn").addEventListener("click", () => logout(true));
+
+/* ---------------- Boot / profiles ---------------- */
+async function boot(){
+  const me = await api("/api/me");
+  state.user = me.user;
+  state.profiles = me.profiles || [];
+  if (!state.profiles.length) {
+    try { state.profiles = await api("/api/profiles"); } catch (e) { /* bỏ qua */ }
+  }
+  if (!state.profiles.find(p => p.id === state.profileId)) {
+    state.profileId = state.profiles.length ? state.profiles[0].id : "";
+    if (state.profileId) localStorage.setItem("jp_profile", state.profileId);
+  }
+  showApp();
+  renderProfileSelect();
+  fillProfileForm();
+  renderCurrentSkills();
+  await Promise.all([loadDigest(), loadJobs(), loadApplications(), loadSourceStatus()]);
+}
+
+function renderProfileSelect(){
+  const sel = $("#profileSelect");
+  if (!state.profiles.length) {
+    sel.innerHTML = '<option value="">(Chưa có hồ sơ)</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = state.profiles.map(p =>
+    `<option value="${esc(p.id)}" ${p.id === state.profileId ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+}
+$("#profileSelect").addEventListener("change", async (ev) => {
+  state.profileId = ev.target.value;
+  localStorage.setItem("jp_profile", state.profileId);
+  fillProfileForm();
+  renderCurrentSkills();
+  state.suggested = [];
+  $("#suggestedWrap").classList.add("hidden");
+  await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+});
+
+async function loadSourceStatus(){
+  try {
+    const rows = await api("/api/admin/ingest/status");
+    if (Array.isArray(rows) && rows.length) {
+      const ok = rows.every(r => (r.last_status || "ok") === "ok");
+      $("#sourceStatus").textContent =
+        (ok ? "Nguồn job ổn định" : "Nguồn job có lỗi") + " · " +
+        rows.map(r => `${srcLabel(r.type)} ${fmtDateTime(r.last_run_at)}`).join(" · ");
+    }
+  } catch (e) { /* trạng thái nguồn là phụ */ }
+}
+
+/* ---------------- Tabs ---------------- */
+function switchTab(t){
+  $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  $("#tab-jobs").classList.toggle("hidden", t !== "jobs");
+  $("#tab-kanban").classList.toggle("hidden", t !== "kanban");
+  $("#tab-profile").classList.toggle("hidden", t !== "profile");
+  if (t === "kanban") loadApplications();
+}
+$$(".tab").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
+
+/* ---------------- Digest (Morning brief) ---------------- */
+function animateCountUps(root){
+  $$("[data-count]", root).forEach(el => {
+    const target = Number(el.dataset.count) || 0;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = target; return; }
+    const t0 = performance.now(), dur = 700;
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+async function loadDigest(){
+  const strip = $("#digestStrip");
+  const p = currentProfile();
+  if (!p) { strip.innerHTML = ""; return; }
+  try {
+    const d = await api("/api/digest/today?profile_id=" + encodeURIComponent(p.id));
+    const strong = d.strong || [];
+    const fus = d.follow_ups || [];
+    const sc = Number(d.strong_count || strong.length || 0);
+    strip.innerHTML = `
+    <div class="brief"><div class="brief-in">
+      <div>
+        <span class="lbl">Morning brief · job khớp mạnh</span>
+        <div class="bignum"><em data-count="${sc}">0</em></div>
+        ${strong.slice(0, 3).map(j =>
+          `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
+           <span class="muted">· ${esc(j.company)} · ${Math.round(j.final_score || 0)}đ</span></div>`).join("") || '<div class="fu-item muted">Chưa có job khớp mạnh mới trong 24h.</div>'}
+      </div>
+      <div>
+        <span class="lbl">Cần follow-up</span>
+        <div class="bignum" data-count="${fus.length}">0</div>
+        ${fus.length ? fus.slice(0, 3).map(f =>
+          `<div class="fu-item">${esc(f.title)} <span class="muted">· ${esc(f.company)}</span>
+           <span class="when">· hạn ${fmtDate(f.next_follow_up_at)}</span></div>`).join("")
+          : '<div class="fu-item muted">Không có việc nào tới hạn. Tuyệt.</div>'}
+      </div>
+    </div></div>`;
+    animateCountUps(strip);
+  } catch (e) {
+    strip.innerHTML = "";
+  }
+}
+
+/* ---------------- Jobs ---------------- */
+function scoreRing(score, tier){
+  const s = Math.max(0, Math.min(100, Number(score) || 0));
+  const r = 23, c = 2 * Math.PI * r;
+  const col = tier === "strong" ? "#f6821f" : tier === "partial" ? "#e7c07a" : "#3f434c";
+  const glow = tier === "strong" ? ' style="filter:drop-shadow(0 0 7px rgba(246,130,31,.45))"' : "";
+  return `<div class="ring-wrap" title="Điểm khớp: ${Math.round(s)}/100">
+    <svg width="54" height="54" viewBox="0 0 54 54"${glow}>
+      <circle cx="27" cy="27" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+      <circle cx="27" cy="27" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round"
+        stroke-dasharray="${(s / 100 * c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 27 27)"/>
+      <text x="27" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#f7f8f8">${Math.round(s)}</text>
+    </svg></div>`;
+}
+
+async function loadJobs(){
+  const box = $("#jobsContainer");
+  const p = currentProfile();
+  if (!p) {
+    box.innerHTML = '<div class="panel empty">Chưa có hồ sơ nào. Vào mục <b>Hồ sơ &amp; CV</b> để tạo hồ sơ đầu tiên của bạn.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="jobs-list"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>';
+  const qs = new URLSearchParams({ profile_id: p.id });
+  if (state.filters.tier) qs.set("tier", state.filters.tier);
+  if (state.filters.source) qs.set("source", state.filters.source);
+  if (state.filters.q) qs.set("q", state.filters.q);
+  try {
+    state.jobs = await api("/api/jobs?" + qs.toString());
+    renderJobs();
+  } catch (e) {
+    box.innerHTML = `<div class="panel empty">${esc(e.message)}</div>`;
+  }
+}
+
+function renderJobs(){
+  const box = $("#jobsContainer");
+  const cnt = $("#jobsCount");
+  if (cnt) cnt.textContent = state.jobs.length ? `— ${state.jobs.length} job đang theo dõi` : "";
+  if (!state.jobs.length) {
+    box.innerHTML = '<div class="panel empty">Chưa có job nào khớp bộ lọc. Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="jobs-list">' + state.jobs.map((job, i) => {
+    const m = job.match || null;
+    const app = job.application || null;
+    const stage = app ? app.stage : "new";
+    const chips = [];
+    if (m) {
+      (m.matched_skills || []).forEach(s => chips.push(`<span class="chip ok">${esc(s)}</span>`));
+      (m.missing_skills || []).forEach(s => chips.push(`<span class="chip miss">${esc(s)}</span>`));
+    }
+    const date = job.posted_at || job.first_seen_at;
+    return `<article class="job panel" style="--i:${i}">
+      <div class="job-head">
+        ${m ? scoreRing(m.final_score, m.tier) : scoreRing(0, "")}
+        <div style="min-width:0;flex:1">
+          <div class="job-title"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></div>
+          <div class="job-meta">
+            <span>${esc(job.company || "")}</span>
+            ${job.location ? `<span>· ${esc(job.location)}</span>` : ""}
+            ${date ? `<span>· ${fmtDate(date)}</span>` : ""}
+          </div>
+          <div class="job-meta" style="margin-top:.45rem">
+            <span class="badge">${esc(srcLabel(job.source))}</span>
+            ${m ? `<span class="badge ${esc(m.tier)}">${esc(m.tier)}</span>` : '<span class="badge">chưa chấm</span>'}
+            ${job.salary_text ? `<span class="badge">${esc(job.salary_text)}</span>` : ""}
+          </div>
+        </div>
+      </div>
+      ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
+      <div class="job-foot">
+        <label class="muted small" style="margin:0">Giai đoạn</label>
+        <select data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
+          ${STAGES.map(s => `<option value="${s.key}" ${s.key === stage ? "selected" : ""}>${s.label}</option>`).join("")}
+        </select>
+      </div>
+    </article>`;
+  }).join("") + "</div>";
+
+  $$("select[data-stage-for]", box).forEach(sel => {
+    sel.addEventListener("change", () => changeJobStage(sel.dataset.stageFor, sel.value, sel));
+  });
+}
+
+async function changeJobStage(jobId, stage, selEl){
+  const job = state.jobs.find(j => j.id === jobId);
+  const p = currentProfile();
+  if (!job || !p) return;
+  const prev = job.application ? job.application.stage : "new";
+  selEl.disabled = true;
+  try {
+    if (job.application && job.application.id) {
+      const updated = await api("/api/applications/" + encodeURIComponent(job.application.id), {
+        method: "PATCH", body: JSON.stringify({ stage }),
+      });
+      job.application = Object.assign({}, job.application, updated && updated.id ? updated : { stage });
+    } else {
+      const created = await api("/api/applications", {
+        method: "POST",
+        body: JSON.stringify({ profile_id: p.id, job_id: jobId, stage }),
+      });
+      job.application = created && created.id ? created : { id: null, stage };
+    }
+    toast("Đã chuyển sang giai đoạn: " + (STAGES.find(s => s.key === stage) || {}).label, "ok");
+    loadApplications();
+  } catch (e) {
+    selEl.value = prev;
+    toast(e.message, "err");
+  } finally {
+    selEl.disabled = false;
+  }
+}
+
+$("#filterTier").addEventListener("change", (e) => { state.filters.tier = e.target.value; loadJobs(); });
+$("#filterSource").addEventListener("change", (e) => { state.filters.source = e.target.value; loadJobs(); });
+$("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
+$("#refreshJobsBtn").addEventListener("click", () => { loadJobs(); loadDigest(); loadSourceStatus(); });
+
+$("#submitForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const url = $("#submitUrl").value.trim();
+  if (!url) { toast("Hãy dán link job trước đã.", "err"); return; }
+  const btn = $("#submitBtn");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang thêm...';
+  try {
+    await api("/api/jobs/submit", { method: "POST", body: JSON.stringify({ url }) });
+    $("#submitUrl").value = "";
+    toast("Đã thêm job, hệ thống sẽ chấm điểm ngay.", "ok");
+    setTimeout(loadJobs, 1500);
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "Thêm job";
+  }
+});
+
+$("#scanBtn").addEventListener("click", async () => {
+  const btn = $("#scanBtn");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang xếp hàng...';
+  try {
+    const r = await api("/api/admin/ingest/run", {
+      method: "POST", body: JSON.stringify({ sources: ["topdev", "itviec"] }),
+    });
+    toast("Đã xếp hàng quét " + (r && r.queued ? r.queued : "") + " lượt. Job mới sẽ hiện sau ~25 giây.", "ok");
+    setTimeout(async () => { await loadJobs(); await loadDigest(); await loadSourceStatus(); }, 25000);
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "Quét job mới";
+  }
+});
+
+/* ---------------- Kanban ---------------- */
+async function loadApplications(){
+  const box = $("#kanbanContainer");
+  const p = currentProfile();
+  if (!p) { box.innerHTML = '<div class="panel empty">Chưa có hồ sơ nào.</div>'; return; }
+  try {
+    state.applications = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
+    renderKanban();
+  } catch (e) {
+    box.innerHTML = `<div class="panel empty">${esc(e.message)}</div>`;
+  }
+}
+
+function renderKanban(){
+  const box = $("#kanbanContainer");
+  const byStage = {};
+  STAGE_KEYS.forEach(k => byStage[k] = []);
+  state.applications.forEach(a => { if (byStage[a.stage]) byStage[a.stage].push(a); });
+  box.innerHTML = '<div class="kanban">' + STAGES.map((s, idx) => {
+    const cards = byStage[s.key].map((a, ci) => {
+      const m = a.match || null;
+      return `<div class="kcard panel" style="--i:${ci}">
+        <div class="t"><a href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
+        <div class="c">${esc(a.job ? a.job.company : "")}${a.job && a.job.location ? " · " + esc(a.job.location) : ""}</div>
+        ${a.next_follow_up_at ? `<div class="c" style="color:var(--amber)">Follow-up: ${fmtDate(a.next_follow_up_at)}</div>` : ""}
+        ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
+        <div class="row">
+          <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước">◀</button>
+          <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau">▶</button>
+          <span class="spacer"></span>
+          ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ · ${esc(m.tier)}</span>` : ""}
+        </div>
+      </div>`;
+    }).join("");
+    return `<div class="kcol">
+      <div class="kcol-head"><span>${s.label}</span><span class="count">${byStage[s.key].length}</span></div>
+      <div class="kcol-body">${cards || '<div class="muted small" style="text-align:center;padding:.4rem">Trống</div>'}</div>
+    </div>`;
+  }).join("") + "</div>";
+
+  $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
+}
+
+async function moveApplication(appId, dir, btn){
+  const app = state.applications.find(a => a.id === appId);
+  if (!app) return;
+  const i = STAGE_KEYS.indexOf(app.stage);
+  const next = STAGE_KEYS[Math.max(0, Math.min(STAGE_KEYS.length - 1, i + dir))];
+  if (next === app.stage) return;
+  btn.disabled = true;
+  try {
+    await api("/api/applications/" + encodeURIComponent(appId), {
+      method: "PATCH", body: JSON.stringify({ stage: next }),
+    });
+    app.stage = next;
+    renderKanban();
+    toast("Đã chuyển sang: " + (STAGES.find(s => s.key === next) || {}).label, "ok");
+  } catch (e) {
+    toast(e.message, "err");
+    btn.disabled = false;
+  }
+}
+
+/* ---------------- Profile ---------------- */
+function splitList(v){
+  return String(v || "").split(",").map(x => x.trim()).filter(Boolean);
+}
+function fillProfileForm(){
+  const p = currentProfile();
+  $("#pfName").value = p ? (p.name || "") : "";
+  $("#pfRoles").value = p ? (p.target_roles || []).join(", ") : "";
+  $("#pfLevel").value = p ? (p.level || "") : "";
+  $("#pfLocations").value = p ? (p.locations || []).join(", ") : "";
+  $("#pfSalary").value = p && p.salary_min ? p.salary_min : "";
+}
+
+$("#profileForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const p = currentProfile();
+  const payload = {
+    name: $("#pfName").value.trim(),
+    target_roles: splitList($("#pfRoles").value),
+    level: $("#pfLevel").value || null,
+    locations: splitList($("#pfLocations").value),
+    salary_min: $("#pfSalary").value ? Number($("#pfSalary").value) : null,
+  };
+  const btn = $("#pfSaveBtn");
+  btn.disabled = true;
+  try {
+    if (p) {
+      const updated = await api("/api/profiles/" + encodeURIComponent(p.id), {
+        method: "PATCH", body: JSON.stringify(payload),
+      });
+      const i = state.profiles.findIndex(x => x.id === p.id);
+      if (i >= 0) state.profiles[i] = updated;
+      renderProfileSelect();
+      toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok");
+      await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+    } else {
+      const created = await api("/api/profiles", { method: "POST", body: JSON.stringify(payload) });
+      state.profiles.push(created);
+      state.profileId = created.id;
+      localStorage.setItem("jp_profile", created.id);
+      renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
+      toast("Đã tạo hồ sơ mới.", "ok");
+      await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+    }
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$("#createProfileBtn").addEventListener("click", async () => {
+  const name = $("#newProfileName").value.trim();
+  if (!name) { toast("Nhập tên hồ sơ mới trước đã.", "err"); return; }
+  const btn = $("#createProfileBtn");
+  btn.disabled = true;
+  try {
+    const created = await api("/api/profiles", {
+      method: "POST",
+      body: JSON.stringify({ name, target_roles: [], level: null, locations: [], salary_min: null }),
+    });
+    state.profiles.push(created);
+    state.profileId = created.id;
+    localStorage.setItem("jp_profile", created.id);
+    $("#newProfileName").value = "";
+    renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
+    toast("Đã tạo và chuyển sang hồ sơ: " + name, "ok");
+    await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------------- Skills ---------------- */
+function renderCurrentSkills(){
+  const box = $("#currentSkills");
+  const p = currentProfile();
+  if (!p) { box.innerHTML = '<p class="muted small">Chưa có hồ sơ.</p>'; return; }
+  const skills = p.skills || [];
+  if (!skills.length) {
+    box.innerHTML = '<p class="muted small">Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.</p>';
+    return;
+  }
+  box.innerHTML = skills.map(s =>
+    `<div class="skill-row"><span class="nm">${esc(s.skill)}</span>
+     <span class="badge">${esc(s.source || "manual")}</span>
+     <span class="chip neutral">trọng số ${esc(s.weight)}</span></div>`).join("");
+}
+
+async function refreshProfiles(){
+  try {
+    state.profiles = await api("/api/profiles");
+    renderProfileSelect();
+    fillProfileForm();
+    renderCurrentSkills();
+  } catch (e) { /* bỏ qua */ }
+}
+
+$("#addSkillBtn").addEventListener("click", async () => {
+  const p = currentProfile();
+  if (!p) { toast("Chưa có hồ sơ.", "err"); return; }
+  const skill = $("#manualSkill").value.trim();
+  if (!skill) { toast("Nhập tên kỹ năng trước đã.", "err"); return; }
+  const weight = Number($("#manualWeight").value) || 3;
+  const existing = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
+  const merged = existing.filter(s => s.skill.toLowerCase() !== skill.toLowerCase());
+  merged.push({ skill, weight });
+  const btn = $("#addSkillBtn");
+  btn.disabled = true;
+  try {
+    await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
+      method: "POST", body: JSON.stringify({ skills: merged }),
+    });
+    $("#manualSkill").value = "";
+    toast("Đã thêm kỹ năng: " + skill, "ok");
+    await refreshProfiles();
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------------- CV upload ---------------- */
+function weightOptions(selected){
+  let out = "";
+  for (let i = 1; i <= 5; i++) out += `<option value="${i}" ${i === Number(selected) ? "selected" : ""}>${i}</option>`;
+  return out;
+}
+
+function renderSuggested(){
+  const wrap = $("#suggestedWrap"), list = $("#suggestedList");
+  if (!state.suggested.length) { wrap.classList.add("hidden"); return; }
+  wrap.classList.remove("hidden");
+  list.innerHTML = state.suggested.map((s, i) =>
+    `<div class="skill-row">
+       <input type="checkbox" id="sug-${i}" checked>
+       <label class="nm" for="sug-${i}" style="margin:0;color:var(--text)">${esc(s.skill)}</label>
+       <select id="sugw-${i}">${weightOptions(s.weight || 3)}</select>
+     </div>`).join("");
+}
+
+async function extractPdfText(file){
+  if (!window.pdfjsLib) throw new Error("Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại.");
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const buf = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+  let text = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(" ") + "\n";
+    $("#cvStatus").textContent = "Đang đọc trang " + i + "/" + pdf.numPages + "...";
+  }
+  return text;
+}
+
+$("#cvUploadBtn").addEventListener("click", async () => {
+  const p = currentProfile();
+  if (!p) { toast("Chưa có hồ sơ để gắn CV.", "err"); return; }
+  const input = $("#cvFile");
+  const file = input.files && input.files[0];
+  if (!file) { toast("Hãy chọn file CV trước đã.", "err"); return; }
+  const btn = $("#cvUploadBtn");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang phân tích...';
+  $("#cvStatus").textContent = "Đang trích xuất văn bản...";
+  try {
+    let text;
+    const name = file.name.toLowerCase();
+    if (name.endsWith(".pdf") || file.type === "application/pdf") {
+      text = await extractPdfText(file);
+    } else {
+      text = await file.text();
+    }
+    text = (text || "").trim();
+    if (!text) throw new Error("Không trích xuất được nội dung từ file này.");
+    $("#cvStatus").textContent = "Đã đọc " + text.length.toLocaleString("vi-VN") + " ký tự. Đang gửi lên máy chủ...";
+    const r = await api("/api/profiles/" + encodeURIComponent(p.id) + "/cv-text", {
+      method: "POST", body: JSON.stringify({ text, filename: file.name }),
+    });
+    state.suggested = r.suggested_skills || [];
+    renderSuggested();
+    $("#cvStatus").textContent = "Xong! Gợi ý " + state.suggested.length + " kỹ năng.";
+    if (!state.suggested.length) toast("Máy chủ không gợi ý được kỹ năng nào từ CV này.", "err");
+    else toast("Đã trích xuất kỹ năng từ CV.", "ok");
+  } catch (e) {
+    $("#cvStatus").textContent = "";
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "Phân tích CV";
+  }
+});
+
+$("#confirmSkillsBtn").addEventListener("click", async () => {
+  const p = currentProfile();
+  if (!p) return;
+  const chosen = [];
+  state.suggested.forEach((s, i) => {
+    const cb = $("#sug-" + i), w = $("#sugw-" + i);
+    if (cb && cb.checked) chosen.push({ skill: s.skill, weight: w ? Number(w.value) : (s.weight || 3) });
+  });
+  if (!chosen.length) { toast("Chưa chọn kỹ năng nào.", "err"); return; }
+  const btn = $("#confirmSkillsBtn");
+  btn.disabled = true;
+  try {
+    await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
+      method: "POST", body: JSON.stringify({ skills: chosen }),
+    });
+    toast("Đã lưu " + chosen.length + " kỹ năng vào hồ sơ.", "ok");
+    state.suggested = [];
+    $("#suggestedWrap").classList.add("hidden");
+    await refreshProfiles();
+    await loadJobs();
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------------- Command palette (Cmd+K) ---------------- */
+const palette = { items: [], sel: 0, open: false };
+
+function paletteCommands(q){
+  const query = (q || "").trim().toLowerCase();
+  const cmds = [];
+  const push = (label, hint, run) => cmds.push({ label, hint, run });
+  push("Đi tới: Việc làm", "tab", () => switchTab("jobs"));
+  push("Đi tới: Kanban", "tab", () => switchTab("kanban"));
+  push("Đi tới: Hồ sơ & CV", "tab", () => switchTab("profile"));
+  push("Quét job mới từ ITviec + TopDev", "hành động", () => $("#scanBtn").click());
+  push("Làm mới dữ liệu", "hành động", () => { loadJobs(); loadDigest(); loadApplications(); });
+  state.profiles.forEach(p => {
+    if (p.id !== state.profileId) push("Chuyển hồ sơ: " + p.name, "hồ sơ", async () => {
+      state.profileId = p.id;
+      localStorage.setItem("jp_profile", p.id);
+      renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
+      await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+    });
+  });
+  state.jobs.slice(0, 60).forEach(j => {
+    push(j.title + " — " + (j.company || ""), (j.match ? Math.round(j.match.final_score || 0) + "đ · " : "") + "mở link gốc",
+      () => window.open(j.source_url, "_blank", "noopener"));
+  });
+  if (!query) return cmds.slice(0, 14);
+  return cmds.filter(c => c.label.toLowerCase().includes(query)).slice(0, 14);
+}
+
+function renderPalette(){
+  const list = $("#paletteList");
+  palette.items = paletteCommands($("#paletteInput").value);
+  palette.sel = Math.min(palette.sel, Math.max(0, palette.items.length - 1));
+  if (!palette.items.length) {
+    list.innerHTML = '<div class="pal-empty">Không tìm thấy lệnh hay job nào khớp.</div>';
+    return;
+  }
+  list.innerHTML = palette.items.map((c, i) =>
+    `<button class="pal-item ${i === palette.sel ? "sel" : ""}" data-pal="${i}">
+       <span>${esc(c.label)}</span><span class="hint">${esc(c.hint || "")}</span>
+     </button>`).join("");
+  $$("[data-pal]", list).forEach(b => b.addEventListener("click", () => runPalette(Number(b.dataset.pal))));
+}
+function openPalette(){
+  if (!state.token) return;
+  palette.open = true; palette.sel = 0;
+  $("#palette").classList.remove("hidden");
+  $("#paletteInput").value = "";
+  renderPalette();
+  setTimeout(() => $("#paletteInput").focus(), 10);
+}
+function closePalette(){
+  palette.open = false;
+  $("#palette").classList.add("hidden");
+}
+async function runPalette(i){
+  const c = palette.items[i];
+  if (!c) return;
+  closePalette();
+  try { await c.run(); } catch (e) { toast(e.message, "err"); }
+}
+$("#paletteBtn").addEventListener("click", openPalette);
+$("#paletteInput").addEventListener("input", () => { palette.sel = 0; renderPalette(); });
+$("#paletteInput").addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown") { e.preventDefault(); palette.sel = Math.min(palette.items.length - 1, palette.sel + 1); renderPalette(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); palette.sel = Math.max(0, palette.sel - 1); renderPalette(); }
+  else if (e.key === "Enter") { e.preventDefault(); runPalette(palette.sel); }
+});
+$("#palette").addEventListener("click", (e) => { if (e.target.id === "palette") closePalette(); });
+
+document.addEventListener("keydown", (e) => {
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName || "");
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    palette.open ? closePalette() : openPalette();
+    return;
+  }
+  if (e.key === "Escape" && palette.open) { closePalette(); return; }
+  if (typing || palette.open || !state.token) return;
+  if (e.key === "/") { e.preventDefault(); switchTab("jobs"); $("#filterQ").focus(); }
+  else if (e.key === "1") switchTab("jobs");
+  else if (e.key === "2") switchTab("kanban");
+  else if (e.key === "3") switchTab("profile");
+});
+
+/* ---------------- Init ---------------- */
+(async function init(){
+  if (!state.token) { showLogin(); return; }
+  try {
+    await boot();
+  } catch (e) {
+    if (state.token) showLogin();
+    toast(e.message, "err");
+  }
+})();
+</script>
+</body>
+</html>

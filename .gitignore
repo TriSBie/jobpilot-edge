@@ -1,0 +1,7 @@
+# Local / environment-specific deployment tooling (absolute paths, live resource IDs)
+scripts/
+apps/api/wrangler.toml
+
+# Sync + OS noise
+*.muse-github-snapshot-sync.json
+.DS_Store

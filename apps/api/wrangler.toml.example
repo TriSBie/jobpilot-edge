@@ -1,0 +1,102 @@
+# JobPilot Edge — API Worker (Hono) — wrangler config mẫu
+# Copy thành wrangler.toml sau khi tạo tài nguyên ở Phase 0 và điền các ID thật.
+# TUYỆT ĐỐI không commit wrangler.toml đã điền ID/secret lên repo public.
+
+name = "jobpilot-api"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# Cron: quét nguồn job mỗi 30 phút + việc dọn dẹp lúc 01:00 UTC
+[triggers]
+crons = ["*/30 * * * *", "0 1 * * *"]
+
+[vars]
+APP_ENV = "production"
+DIGEST_HOUR_LOCAL = "7"
+
+# --- D1 (database chính) ---
+[[d1_databases]]
+binding = "DB"
+database_name = "jobpilot"
+database_id = "<D1_DATABASE_ID>"
+
+# --- KV (cache / session / quota counters) ---
+[[kv_namespaces]]
+binding = "KV"
+id = "<KV_NAMESPACE_ID>"
+
+# --- R2 (CV, cover letter, snapshot JD) ---
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "jobpilot-files"
+
+# --- Queues: ingest / score / notify ---
+[[queues.producers]]
+binding = "Q_INGEST"
+queue = "jobpilot-ingest"
+
+[[queues.producers]]
+binding = "Q_SCORE"
+queue = "jobpilot-score"
+
+[[queues.producers]]
+binding = "Q_NOTIFY"
+queue = "jobpilot-notify"
+
+[[queues.consumers]]
+queue = "jobpilot-ingest"
+max_batch_size = 10
+max_retries = 3
+
+[[queues.consumers]]
+queue = "jobpilot-score"
+max_batch_size = 10
+max_retries = 3
+
+[[queues.consumers]]
+queue = "jobpilot-notify"
+max_batch_size = 10
+max_retries = 5
+
+# --- Workflows: pipeline digest + ingest dài ---
+[[workflows]]
+binding = "WF_PIPELINE"
+name = "jobpilot-pipeline"
+class_name = "JobPipelineWorkflow"
+
+# --- Durable Objects: hub realtime theo user ---
+[durable_objects]
+bindings = [{ name = "USER_HUB", class_name = "UserHub" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["UserHub"]
+
+# --- Workers AI + AI Gateway (mọi call AI đi qua gateway "jobpilot") ---
+[ai]
+binding = "AI"
+
+# --- Vectorize: embedding CV/JD (768 chiều — khớp model bge-base) ---
+[[vectorize]]
+binding = "EMB"
+index_name = "jobpilot-emb"
+
+# --- Analytics Engine: event sản phẩm ---
+[[analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "jobpilot_events"
+
+# --- Hyperdrive (Phase 1): đọc Neon Postgres của Job Watcher cũ để migrate ---
+# [[hyperdrive]]
+# binding = "LEGACY_DB"
+# id = "<HYPERDRIVE_CONFIG_ID>"
+
+# --- Browser Run (Phase 2): fallback đọc JD cần JS ---
+# [browser]
+# binding = "BROWSER"
+
+# Secrets (đặt bằng `wrangler secret put`, không ghi ở đây):
+# - SESSION_SECRET
+# - TURNSTILE_SECRET_KEY
+# - SOURCE_API_KEYS (JSON, nếu nguồn job cần)
