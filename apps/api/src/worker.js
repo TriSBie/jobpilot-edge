@@ -442,6 +442,61 @@ async function buildDigest(env, user) {
   return { date: dateStr, strong_count: strong.length, strong, follow_ups: followUps, summary };
 }
 
+// ---------------- auth: mật khẩu (PBKDF2-SHA256, WebCrypto) ----------------
+const PBKDF2_ITER = 100000;
+function b64encode(buf) {
+  const bytes = new Uint8Array(buf);
+  let s = "";
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+function b64decode(str) {
+  const s = atob(str);
+  const bytes = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+  return bytes;
+}
+async function pbkdf2(password, saltBytes) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: saltBytes, iterations: PBKDF2_ITER, hash: "SHA-256" }, key, 256);
+  return new Uint8Array(bits);
+}
+async function makePasswordRecord(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const hash = await pbkdf2(password, salt);
+  return { salt: b64encode(salt), hash: b64encode(hash) };
+}
+async function verifyPassword(password, saltB64, hashB64) {
+  const computed = await pbkdf2(password, b64decode(saltB64));
+  const expected = b64decode(hashB64);
+  if (computed.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < computed.length; i++) diff |= computed[i] ^ expected[i];
+  return diff === 0;
+}
+async function issueSession(env, user) {
+  const token = randomToken();
+  await env.KV.put(`session:${token}`, user.id, { expirationTtl: 2592000 });
+  return { token, user: { id: user.id, email: user.email, name: user.name } };
+}
+async function loginThrottle(env, email) {
+  const v = await env.KV.get(`loginfail:${email}`);
+  return v ? parseInt(v, 10) || 0 : 0;
+}
+async function loginFailed(env, email) {
+  const n = (await loginThrottle(env, email)) + 1;
+  await env.KV.put(`loginfail:${email}`, String(n), { expirationTtl: 600 });
+  return n;
+}
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+function passwordError(pw) {
+  if (!pw || typeof pw !== "string") return "missing_password";
+  if (pw.length < 8) return "password_too_short";
+  if (pw.length > 128) return "password_too_long";
+  return null;
+}
+
 // ---------------- router ----------------
 export default {
   async fetch(request, env, ctx) {
@@ -458,21 +513,54 @@ export default {
       return env.USER_HUB.get(env.USER_HUB.idFromName(user)).fetch(request);
     }
 
-    // --- auth (MVP: magic-link-lite — token trả trực tiếp, gửi mail khi có domain) ---
+    // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
+    if (path === "/api/auth/register" && request.method === "POST") {
+      const body = await readBody(request);
+      const email = (body.email || "").trim().toLowerCase();
+      const name = (body.name || "").trim();
+      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
+      if (name.length < 2 || name.length > 80) return json({ error: "invalid_name" }, 400);
+      const pwErr = passwordError(body.password);
+      if (pwErr) return json({ error: pwErr }, 400);
+      const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+      if (existing) return json({ error: "email_taken" }, 409);
+      const rec = await makePasswordRecord(body.password);
+      const id = uid();
+      await env.DB.prepare(
+        "INSERT INTO users (id, email, name, timezone, digest_email, created_at, password_hash, password_salt, password_set_at) VALUES (?, ?, ?, 'Asia/Saigon', ?, ?, ?, ?, ?)"
+      ).bind(id, email, name, email, now(), rec.hash, rec.salt, now()).run();
+      const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
+      return json(await issueSession(env, user), 201);
+    }
     if (path === "/api/auth/login" && request.method === "POST") {
       const body = await readBody(request);
       const email = (body.email || "").trim().toLowerCase();
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "invalid_email" }, 400);
-      let user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
-      if (!user) {
-        const id = uid();
-        await env.DB.prepare("INSERT INTO users (id, email, name, timezone, digest_email, created_at) VALUES (?, ?, ?, 'Asia/Saigon', ?, ?)")
-          .bind(id, email, body.name || email.split("@")[0], email, now()).run();
-        user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
-      }
-      const token = randomToken();
-      await env.KV.put(`session:${token}`, user.id, { expirationTtl: 2592000 });
-      return json({ token, user: { id: user.id, email: user.email, name: user.name } });
+      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
+      if (!body.password) return json({ error: "missing_password" }, 400);
+      if ((await loginThrottle(env, email)) >= 5) return json({ error: "too_many_attempts" }, 429);
+      const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+      if (!user) { await loginFailed(env, email); return json({ error: "invalid_credentials" }, 401); }
+      if (!user.password_hash) return json({ error: "password_setup_required" }, 403);
+      const ok = await verifyPassword(body.password, user.password_salt, user.password_hash);
+      if (!ok) { await loginFailed(env, email); return json({ error: "invalid_credentials" }, 401); }
+      await env.KV.delete(`loginfail:${email}`);
+      return json(await issueSession(env, user));
+    }
+    if (path === "/api/auth/set-password" && request.method === "POST") {
+      // Claim tài khoản cũ (chưa từng có mật khẩu): đặt mật khẩu lần đầu rồi đăng nhập luôn.
+      const body = await readBody(request);
+      const email = (body.email || "").trim().toLowerCase();
+      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
+      const pwErr = passwordError(body.password);
+      if (pwErr) return json({ error: pwErr }, 400);
+      const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
+      if (!user) return json({ error: "account_not_found" }, 404);
+      if (user.password_hash) return json({ error: "password_already_set" }, 409);
+      const rec = await makePasswordRecord(body.password);
+      await env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ? WHERE id = ?")
+        .bind(rec.hash, rec.salt, now(), user.id).run();
+      const fresh = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(user.id).first();
+      return json(await issueSession(env, fresh));
     }
 
     const user = await getUser(request, env);

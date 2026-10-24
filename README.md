@@ -32,6 +32,8 @@ It is the product-grade successor of a personal job-watcher tool, rebuilt from s
 - **Command palette** — `Cmd/Ctrl + K` to search jobs, jump between views, trigger a scan or switch profiles. Keyboard-first: `1/2/3` switch tabs, `/` focuses search.
 - **Realtime-ready** — a Durable Object hub broadcasts strong-match events to connected clients.
 - **Modern UI** — Linear-style product shell with Resend-style accents: hairline surfaces, Inter + Instrument Serif, score rings, skeleton loading, staggered reveals.
+- **Real accounts** — email + password registration and login (PBKDF2-SHA256, salted, via WebCrypto; brute-force throttling). Accounts created before passwords existed claim one on first sign-in.
+- **Landing page** — logged-out visitors get a product landing that explains the scoring formula and the 4-step quickstart *before* the app; new accounts start completely empty with a 3-step onboarding checklist (no seeded demo data).
 
 ## Screenshots
 
@@ -112,7 +114,7 @@ jobpilot-edge/
 │   │   ├── src/worker.js         # Worker API + queue consumers + cron + DO
 │   │   └── wrangler.toml.example # Bindings template (copy → wrangler.toml)
 │   └── web/public/index.html     # The entire SPA
-├── db/migrations/0001_init.sql   # D1 schema (14 tables)
+├── db/migrations/                # 0001 schema (14 tables) · 0002 password auth
 └── docs/
     ├── UI-V2-SPEC.md             # UI v2 design spec
     └── screenshots/              # README screenshots
@@ -128,13 +130,14 @@ jobpilot-edge/
 4. Deploy `apps/api/src/worker.js` as a Worker with bindings `DB, KV, FILES, EMB, AI`, queues `INGEST_Q / SCORE_Q / NOTIFY_Q`, the `UserHub` Durable Object, and cron triggers `*/30 * * * *` (ingest) + `0 1 * * *` (digest, 08:00 ICT).
 5. Deploy `apps/web/public/` to a Pages project. The SPA expects the API at the `API_BASE` constant near the top of its script — point it at your Worker.
 
-Authentication is intentionally lightweight for this stage (email → session token in KV, 30-day TTL); email delivery of login links and Cloudflare Access for admin routes arrive with the custom-domain phase.
+Authentication is password-based: passwords are hashed with PBKDF2-SHA256 (100k iterations, per-user salt, WebCrypto) and sessions are Bearer tokens stored in KV with a 30-day TTL. Email verification, magic links and Cloudflare Access for admin routes arrive with the custom-domain phase.
 
 ## Roadmap
 
 - [x] **Phase 0** — Edge infrastructure provisioned (10/10 bindings healthy)
 - [x] **Phase 1** — MVP: auth, profiles, CV skills, ingestion, scoring, kanban, digest
 - [x] **UI v2** — Linear × Resend redesign, command palette
+- [x] **Phase 1.5** — Password auth (register / login / first-time claim), landing page, empty-start onboarding
 - [ ] **Phase 2** — Semantic matching (Vectorize), AI cover-letter drafts
 - [ ] **Phase 3** — Custom domain, email digest (Resend), Cloudflare Access for `/admin`
 - [ ] **Phase 4** — Public beta for Vietnamese devs

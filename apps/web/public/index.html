@@ -321,29 +321,234 @@
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
   }
+
+/* ================= LANDING (v3) ================= */
+.lp-nav{ position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:1rem;
+  padding:.8rem clamp(1rem,4vw,2.5rem); background:rgba(8,9,10,.72); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line); }
+.lp-nav .brand{ font-size:1.05rem; }
+.lp-links{ display:flex; gap:1.4rem; margin-left:2rem; }
+.lp-links a{ color:var(--muted); text-decoration:none; font-size:.92rem; }
+.lp-links a:hover{ color:var(--text); }
+.lp-nav .sp{ flex:1; }
+.lp-sec{ max-width:1180px; margin:0 auto; padding:clamp(3.5rem,9vh,6.5rem) clamp(1rem,4vw,2.5rem) clamp(2rem,5vh,3.5rem);
+  display:flex; flex-direction:column; align-items:center; text-align:center; }
+.lp-pill{ display:inline-flex; align-items:center; gap:.5rem; padding:.42rem 1.05rem; border-radius:999px;
+  border:1px solid var(--line); background:rgba(255,255,255,.04); backdrop-filter:blur(8px);
+  color:var(--muted); font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.6rem; }
+.lp-pill::before{ content:""; width:7px; height:7px; border-radius:50%; background:linear-gradient(135deg,#f6821f,#ffb347); }
+.lp-sec h2{ font-family:"Instrument Serif",serif; font-weight:400; font-size:clamp(1.9rem,4.4vw,3rem); line-height:1.15; margin:0 0 .9rem; }
+.lp-sec h2 em, .lp-hero h1 em{ font-style:italic; color:#9ba1a8; }
+.lp-sec .lede{ color:var(--muted); max-width:62ch; font-size:1.02rem; line-height:1.65; margin:0 auto; }
+.lp-hero{ padding-top:clamp(3rem,8vh,5.5rem); }
+.lp-hero h1{ font-family:"Instrument Serif",serif; font-weight:400; font-size:clamp(2.7rem,6.5vw,4.6rem); line-height:1.06; margin:1.2rem 0 1rem; }
+.lp-hero .sub{ color:var(--muted); max-width:56ch; font-size:1.08rem; line-height:1.65; margin:0 auto; }
+.lp-cta{ display:flex; gap:.8rem; margin-top:2rem; flex-wrap:wrap; justify-content:center; }
+.btn.ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
+.btn.big{ padding:.85rem 1.7rem; font-size:1rem; border-radius:999px; }
+.lp-stats{ display:flex; gap:clamp(1.6rem,5vw,3.6rem); margin-top:2.8rem; flex-wrap:wrap; justify-content:center; }
+.lp-stat b{ display:block; font-family:"Instrument Serif",serif; font-weight:400; font-size:2.1rem; color:var(--text); }
+.lp-stat span{ color:var(--muted); font-size:.85rem; }
+.lp-shot{ margin-top:3rem; width:min(880px,100%); border-radius:20px; padding:10px;
+  background:linear-gradient(160deg, rgba(246,130,31,.35), rgba(255,255,255,.05) 40%, rgba(255,255,255,.02));
+  box-shadow:0 30px 80px rgba(0,0,0,.55); }
+.lp-shot img{ display:block; width:100%; border-radius:12px; border:1px solid var(--line); }
+.lp-grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:2.6rem; width:100%; text-align:left; }
+.lp-card{ border:1px solid var(--line); border-radius:20px; padding:1.5rem; background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); }
+.lp-card .n{ font-family:"Instrument Serif",serif; font-style:italic; font-size:1.5rem; color:#ffb347; }
+.lp-card h3{ margin:.6rem 0 .45rem; font-size:1.05rem; }
+.lp-card p{ color:var(--muted); line-height:1.6; margin:0; font-size:.94rem; }
+.lp-bento{ display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-top:2.6rem; width:100%; text-align:left; }
+.lp-bento .wide{ grid-column:span 2; }
+.lp-bento img{ width:100%; border-radius:12px; border:1px solid var(--line); display:block; margin-top:.9rem; }
+.lp-formula{ margin-top:2.4rem; width:min(760px,100%); border:1px solid var(--line); border-radius:20px; padding:1.6rem;
+  background:linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); text-align:left;
+  font-family:ui-monospace,Menlo,monospace; font-size:.92rem; line-height:1.9; color:#d7dae0; overflow-x:auto; }
+.lp-formula .k{ color:#ffb347; }
+.lp-tiers{ display:flex; gap:.6rem; margin-top:1.2rem; flex-wrap:wrap; justify-content:center; }
+.lp-steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-top:2.6rem; width:100%; text-align:left; }
+.lp-step .n{ display:inline-flex; width:34px; height:34px; border-radius:50%; align-items:center; justify-content:center;
+  border:1px solid rgba(246,130,31,.5); color:#ffb347; font-weight:700; font-size:.9rem; margin-bottom:.7rem; }
+.lp-foot{ border-top:1px solid var(--line); padding:2rem clamp(1rem,4vw,2.5rem); display:flex; gap:1rem; flex-wrap:wrap;
+  color:var(--muted); font-size:.88rem; max-width:1180px; margin:0 auto; }
+.rv{ opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+.rv.in{ opacity:1; transform:none; }
+@media (max-width: 900px){ .lp-grid3,.lp-steps{ grid-template-columns:1fr 1fr; } .lp-bento{ grid-template-columns:1fr 1fr; } .lp-links{ display:none; } }
+@media (max-width: 560px){ .lp-grid3,.lp-steps,.lp-bento{ grid-template-columns:1fr; } .lp-bento .wide{ grid-column:span 1; } }
+@media (prefers-reduced-motion: reduce){ .rv{ opacity:1; transform:none; transition:none; } }
+
+/* ================= AUTH (v3) ================= */
+.auth-tabs{ display:flex; gap:.4rem; padding:.35rem; border:1px solid var(--line); border-radius:999px; margin-bottom:1.2rem; background:rgba(255,255,255,.03); }
+.auth-tabs button{ flex:1; border:0; background:transparent; color:var(--muted); padding:.55rem 1rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.95rem; }
+.auth-tabs button.active{ background:linear-gradient(135deg,#f6821f,#ffb347); color:#16130e; font-weight:700; }
+.pw-meter{ height:6px; border-radius:99px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:.5rem; }
+.pw-meter i{ display:block; height:100%; width:0; border-radius:99px; background:#e5534b; transition:width .25s ease, background .25s ease; }
+.pw-hint{ font-size:.8rem; color:var(--muted); margin-top:.35rem; min-height:1em; }
+.auth-note{ border:1px solid rgba(246,130,31,.45); background:rgba(246,130,31,.08); border-radius:12px; padding:.8rem 1rem; font-size:.9rem; line-height:1.55; margin-bottom:1.1rem; color:#f3e3cd; }
+.auth-back{ display:inline-block; margin-top:1.1rem; color:var(--muted); text-decoration:none; font-size:.9rem; }
+.auth-back:hover{ color:var(--text); }
+.ob-list{ text-align:left; display:flex; flex-direction:column; gap:.7rem; margin:1rem 0; }
+.ob-item{ display:flex; gap:.8rem; align-items:flex-start; }
+.ob-item .n{ flex:none; width:28px; height:28px; border-radius:50%; border:1px solid rgba(246,130,31,.55); color:#ffb347;
+  display:inline-flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:700; margin-top:.1rem; }
+.ob-item b{ display:block; }
+.ob-item span{ color:var(--muted); font-size:.9rem; line-height:1.5; }
 </style>
 </head>
 <body>
 <div id="toasts"></div>
 
-<!-- ================= LOGIN ================= -->
-<div id="loginView" class="login-wrap hidden">
-  <div class="login-in">
+<!-- ================= LANDING ================= -->
+<div id="landingView" class="hidden">
+  <header class="lp-nav">
+    <div class="brand"><span class="mark">J</span>JobPilot <span>Edge</span></div>
+    <nav class="lp-links">
+      <a href="#lp-how">Cách hoạt động</a>
+      <a href="#lp-features">Tính năng</a>
+      <a href="#lp-scoring">Điểm khớp</a>
+      <a href="#lp-guide">Bắt đầu</a>
+    </nav>
+    <div class="sp"></div>
+    <button class="btn ghost" data-auth="login">Đăng nhập</button>
+    <button class="btn primary" data-auth="register">Đăng ký miễn phí</button>
+  </header>
+
+  <section class="lp-sec lp-hero">
     <div class="medallion">J</div>
     <h1>Săn việc, <em>có hệ thống.</em></h1>
-    <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV của bạn và xếp vào một pipeline duy nhất.</p>
-    <form id="loginForm" class="panel login-card">
-      <div class="field">
-        <label for="loginEmail">Email</label>
-        <input id="loginEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
+    <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV của bạn bằng công thức minh bạch, và xếp mọi cơ hội vào một pipeline duy nhất — để job tốt tìm đến bạn mỗi sáng, thay vì ngược lại.</p>
+    <div class="lp-cta">
+      <button class="btn primary big" data-auth="register">Bắt đầu miễn phí</button>
+      <a class="btn ghost big" href="#lp-how" style="text-decoration:none">Xem cách hoạt động</a>
+    </div>
+    <div class="lp-stats">
+      <div class="lp-stat"><b><em data-count="30">0</em>′</b><span>một lần quét mới</span></div>
+      <div class="lp-stat"><b data-count="2">0</b><span>nguồn job lớn nhất VN</span></div>
+      <div class="lp-stat"><b data-count="7">0</b><span>giai đoạn ứng tuyển</span></div>
+      <div class="lp-stat"><b>$0</b><span>chi phí hạ tầng</span></div>
+    </div>
+    <div class="lp-shot rv"><img src="assets/hero-jobs.png" alt="JobPilot Edge — danh sách job kèm điểm khớp và Morning brief"></div>
+  </section>
+
+  <section class="lp-sec" id="lp-how">
+    <span class="lp-pill">Cách hoạt động</span>
+    <h2>Ba bước, <em>không cần săn tay nữa</em></h2>
+    <p class="lede">Bạn chỉ làm một việc: cho JobPilot biết bạn là ai. Phần còn lại — quét, lọc, chấm điểm, nhắc việc — chạy tự động trên Cloudflare Edge.</p>
+    <div class="lp-grid3">
+      <div class="lp-card rv"><div class="n">01</div><h3>Tải CV lên</h3><p>AI trích xuất kỹ năng từ CV của bạn (Java, Spring Boot, Kafka…) kèm trọng số. Bạn duyệt lại trước khi lưu — không hộp đen.</p></div>
+      <div class="lp-card rv"><div class="n">02</div><h3>Quét mỗi 30 phút</h3><p>ITviec &amp; TopDev được quét liên tục, khử trùng theo nội dung và lọc bỏ tin không thuộc ngành tech trước khi tới bạn.</p></div>
+      <div class="lp-card rv"><div class="n">03</div><h3>Chấm điểm &amp; theo dõi</h3><p>Mỗi job có điểm khớp kèm lý do (kỹ năng khớp / còn thiếu). Kéo từng cơ hội qua 7 giai đoạn tới offer trên kanban.</p></div>
+    </div>
+  </section>
+
+  <section class="lp-sec" id="lp-features">
+    <span class="lp-pill">Tính năng</span>
+    <h2>Nhỏ gọn, <em>nhưng có võ</em></h2>
+    <div class="lp-bento">
+      <div class="lp-card wide rv"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
+      <div class="lp-card rv"><h3>Morning brief</h3><p>8:00 mỗi sáng: số job khớp mạnh mới + những việc cần follow-up, gói trong một panel duy nhất.</p></div>
+      <div class="lp-card rv"><h3>Đa hồ sơ</h3><p>Theo dõi nhiều hướng cùng lúc — “Backend Java” và “Backend Node” chấm điểm độc lập theo từng bộ kỹ năng.</p></div>
+      <div class="lp-card wide rv"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
+      <div class="lp-card rv"><h3>Thêm job thủ công</h3><p>Thấy job hay ở bất cứ đâu? Dán link — JobPilot tự lấy nội dung và chấm điểm như job được quét.</p></div>
+      <div class="lp-card rv"><h3>Chạy trên Edge</h3><p>Workers · D1 · Queues · Vectorize · Workers AI — không server, không container, gần như toàn bộ trong free tier.</p></div>
+    </div>
+  </section>
+
+  <section class="lp-sec" id="lp-scoring">
+    <span class="lp-pill">Điểm khớp minh bạch</span>
+    <h2>Điểm số <em>có công thức</em>, không phải cảm tính AI</h2>
+    <p class="lede">Mỗi điểm đều truy ngược được: kỹ năng nào khớp, kỹ năng nào thiếu, và vì sao trần điểm bị chặn. Job ghi ít hơn 3 kỹ năng sẽ bị chặn ở 69 điểm — chống “khớp ảo”.</p>
+    <div class="lp-formula rv"><span class="k">rule</span> = kỹ_năng_khớp / kỹ_năng_job_yêu_cầu × 50<br><span class="k">fit</span> = khu_vực (≤8) + độ_mới (≤7) + cấp_bậc (≤5)<br><span class="k">final</span> = (rule + fit) / 70 × 100</div>
+    <div class="lp-tiers">
+      <span class="badge strong">strong ≥ 75</span>
+      <span class="badge partial">partial ≥ 50</span>
+      <span class="badge">weak &lt; 50</span>
+      <span class="badge">bằng chứng &lt; 3 kỹ năng → tối đa 69</span>
+    </div>
+  </section>
+
+  <section class="lp-sec" id="lp-guide">
+    <span class="lp-pill">Bắt đầu trong 2 phút</span>
+    <h2>Từ đăng ký <em>tới Morning brief đầu tiên</em></h2>
+    <div class="lp-steps">
+      <div class="lp-card lp-step rv"><span class="n">1</span><h3>Đăng ký</h3><p>Email + mật khẩu. Không thẻ, không phí.</p></div>
+      <div class="lp-card lp-step rv"><span class="n">2</span><h3>Tạo hồ sơ</h3><p>Vị trí mục tiêu, cấp bậc, khu vực bạn muốn làm.</p></div>
+      <div class="lp-card lp-step rv"><span class="n">3</span><h3>Tải CV</h3><p>AI gợi ý kỹ năng + trọng số, bạn xác nhận trong 1 phút.</p></div>
+      <div class="lp-card lp-step rv"><span class="n">4</span><h3>Nhận job khớp</h3><p>Lần quét gần nhất áp dụng ngay; Morning brief tới lúc 8:00 sáng.</p></div>
+    </div>
+    <div class="lp-cta"><button class="btn primary big" data-auth="register">Tạo tài khoản miễn phí</button></div>
+  </section>
+
+  <footer class="lp-foot">
+    <span><b style="color:var(--text)">JobPilot Edge</b> — săn việc có hệ thống cho dev Việt.</span>
+    <span class="spacer"></span>
+    <span>Chạy trên Cloudflare Edge · © 2026 Kriss Bui</span>
+  </footer>
+</div>
+
+<!-- ================= AUTH ================= -->
+<div id="authView" class="login-wrap hidden">
+  <div class="login-in">
+    <div class="medallion">J</div>
+    <h1 id="authTitle">Chào mừng <em>trở lại.</em></h1>
+    <p class="sub" id="authSub">Đăng nhập để tiếp tục pipeline săn việc của bạn.</p>
+    <div class="panel login-card">
+      <div class="auth-tabs" id="authTabs">
+        <button type="button" data-mode="login" class="active">Đăng nhập</button>
+        <button type="button" data-mode="register">Đăng ký</button>
       </div>
-      <div class="field">
-        <label for="loginName">Tên hiển thị</label>
-        <input id="loginName" type="text" placeholder="Tên của bạn" autocomplete="name">
-      </div>
-      <button id="loginBtn" class="btn primary" type="submit">Đăng nhập</button>
-      <div id="loginError"></div>
-    </form>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="loginPassword">Mật khẩu</label>
+          <input id="loginPassword" type="password" required placeholder="Mật khẩu của bạn" autocomplete="current-password">
+        </div>
+        <button id="loginBtn" class="btn primary" type="submit" style="width:100%">Đăng nhập</button>
+        <div id="loginError"></div>
+      </form>
+
+      <form id="registerForm" class="hidden">
+        <div class="field">
+          <label for="regName">Họ tên</label>
+          <input id="regName" type="text" required placeholder="Tên của bạn" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <input id="regEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="regPassword">Mật khẩu</label>
+          <input id="regPassword" type="password" required placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+          <div class="pw-meter"><i id="pwBar"></i></div>
+          <div class="pw-hint" id="pwHint"></div>
+        </div>
+        <div class="field">
+          <label for="regPassword2">Nhập lại mật khẩu</label>
+          <input id="regPassword2" type="password" required placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+        </div>
+        <button id="registerBtn" class="btn primary" type="submit" style="width:100%">Tạo tài khoản</button>
+        <div id="registerError"></div>
+      </form>
+
+      <form id="claimForm" class="hidden">
+        <div class="auth-note">Tài khoản <b id="claimEmailLabel"></b> được tạo trước khi JobPilot có mật khẩu. Hãy đặt mật khẩu để khóa tài khoản và đăng nhập tiếp — chỉ cần làm một lần.</div>
+        <div class="field">
+          <label for="claimPassword">Mật khẩu mới</label>
+          <input id="claimPassword" type="password" required placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label for="claimPassword2">Nhập lại mật khẩu mới</label>
+          <input id="claimPassword2" type="password" required placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+        </div>
+        <button id="claimBtn" class="btn primary" type="submit" style="width:100%">Đặt mật khẩu &amp; đăng nhập</button>
+        <div id="claimError"></div>
+      </form>
+    </div>
+    <a class="auth-back" href="#" id="authBack">← Về trang giới thiệu</a>
     <p class="login-foot">Chạy trên Cloudflare Edge · Dữ liệu của bạn, ở máy chủ của bạn</p>
   </div>
 </div>
@@ -575,7 +780,7 @@ async function api(path, opts){
   } catch (e) {
     throw new Error("Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.");
   }
-  if (res.status === 401) {
+  if (res.status === 401 && state.token) {
     logout(false);
     throw new Error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
   }
@@ -593,44 +798,169 @@ function currentProfile(){
   return state.profiles.find(p => p.id === state.profileId) || state.profiles[0] || null;
 }
 
-/* ---------------- Auth ---------------- */
-function showLogin(){
-  $("#loginView").classList.remove("hidden");
+/* ---------------- Auth + Landing ---------------- */
+const AUTH_ERR = {
+  invalid_credentials: "Email hoặc mật khẩu chưa đúng.",
+  email_taken: "Email này đã có tài khoản — hãy chuyển sang tab Đăng nhập.",
+  invalid_email: "Email chưa đúng định dạng.",
+  invalid_name: "Hãy nhập họ tên (tối thiểu 2 ký tự).",
+  password_too_short: "Mật khẩu tối thiểu 8 ký tự.",
+  password_too_long: "Mật khẩu tối đa 128 ký tự.",
+  missing_password: "Hãy nhập mật khẩu.",
+  too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
+  account_not_found: "Không tìm thấy tài khoản với email này.",
+  password_already_set: "Tài khoản đã có mật khẩu — hãy đăng nhập.",
+};
+function authErr(e){ return AUTH_ERR[e.message] || e.message; }
+
+let landingAnimated = false;
+function showLanding(){
+  $("#authView").classList.add("hidden");
   $("#appView").classList.add("hidden");
+  $("#landingView").classList.remove("hidden");
+  window.scrollTo(0, 0);
+  initLandingFx();
+}
+function showAuth(mode){
+  $("#landingView").classList.add("hidden");
+  $("#appView").classList.add("hidden");
+  $("#authView").classList.remove("hidden");
+  window.scrollTo(0, 0);
+  setAuthMode(mode || "login");
 }
 function showApp(){
-  $("#loginView").classList.add("hidden");
+  $("#landingView").classList.add("hidden");
+  $("#authView").classList.add("hidden");
   $("#appView").classList.remove("hidden");
+}
+function setAuthMode(mode){
+  $$("#authTabs button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  $("#loginForm").classList.toggle("hidden", mode !== "login");
+  $("#registerForm").classList.toggle("hidden", mode !== "register");
+  $("#claimForm").classList.add("hidden");
+  $("#authTabs").classList.remove("hidden");
+  if (mode === "register") {
+    $("#authTitle").innerHTML = "Tạo tài khoản <em>miễn phí.</em>";
+    $("#authSub").textContent = "2 phút để có pipeline săn việc của riêng bạn — không cần thẻ.";
+  } else {
+    $("#authTitle").innerHTML = "Chào mừng <em>trở lại.</em>";
+    $("#authSub").textContent = "Đăng nhập để tiếp tục pipeline săn việc của bạn.";
+  }
+}
+function showClaim(email){
+  $$("#authTabs button").forEach(b => b.classList.remove("active"));
+  $("#authTabs").classList.add("hidden");
+  $("#loginForm").classList.add("hidden");
+  $("#registerForm").classList.add("hidden");
+  $("#claimForm").classList.remove("hidden");
+  $("#claimEmailLabel").textContent = email;
+  $("#authTitle").innerHTML = "Đặt mật khẩu <em>lần đầu.</em>";
+  $("#authSub").textContent = "Tài khoản của bạn có từ trước khi JobPilot dùng mật khẩu.";
+  $("#claimForm").dataset.email = email;
 }
 function logout(manual){
   state.token = ""; state.user = null; state.profiles = []; state.profileId = "";
   localStorage.removeItem("jp_token");
   localStorage.removeItem("jp_profile");
-  showLogin();
+  showLanding();
   if (manual) toast("Đã đăng xuất.");
 }
+async function afterAuth(data, isNew){
+  state.token = data.token;
+  state.user = data.user;
+  localStorage.setItem("jp_token", state.token);
+  await boot();
+  toast(isNew ? "Tạo tài khoản thành công — chào " + (data.user.name || "") + "!" : "Xin chào " + (data.user && data.user.name ? data.user.name : "") + "!", "ok");
+}
+
+$$("#authTabs button").forEach(b => b.addEventListener("click", () => setAuthMode(b.dataset.mode)));
+$$("[data-auth]").forEach(b => b.addEventListener("click", () => showAuth(b.dataset.auth)));
+$("#authBack").addEventListener("click", (e) => { e.preventDefault(); showLanding(); });
 
 $("#loginForm").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const email = $("#loginEmail").value.trim();
-  const name = $("#loginName").value.trim();
+  const password = $("#loginPassword").value;
   const btn = $("#loginBtn"), err = $("#loginError");
   err.textContent = "";
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang đăng nhập...';
   try {
-    const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, name }) });
-    state.token = data.token;
-    state.user = data.user;
-    localStorage.setItem("jp_token", state.token);
-    await boot();
-    toast("Xin chào " + (data.user && data.user.name ? data.user.name : "") + "!", "ok");
+    const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+    await afterAuth(data, false);
   } catch (e) {
-    err.textContent = e.message;
+    if (e.message === "password_setup_required") { showClaim(email); toast("Tài khoản này cần đặt mật khẩu lần đầu.", "ok"); }
+    else err.textContent = authErr(e);
   } finally {
     btn.disabled = false; btn.textContent = "Đăng nhập";
   }
 });
-$("#logoutBtn").addEventListener("click", () => logout(true));
+
+$("#registerForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const name = $("#regName").value.trim();
+  const email = $("#regEmail").value.trim();
+  const pw = $("#regPassword").value, pw2 = $("#regPassword2").value;
+  const btn = $("#registerBtn"), err = $("#registerError");
+  err.textContent = "";
+  if (pw !== pw2) { err.textContent = "Hai mật khẩu chưa khớp nhau."; return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang tạo tài khoản...';
+  try {
+    const data = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ name, email, password: pw }) });
+    await afterAuth(data, true);
+  } catch (e) {
+    err.textContent = authErr(e);
+  } finally {
+    btn.disabled = false; btn.textContent = "Tạo tài khoản";
+  }
+});
+
+$("#claimForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const email = $("#claimForm").dataset.email || "";
+  const pw = $("#claimPassword").value, pw2 = $("#claimPassword2").value;
+  const btn = $("#claimBtn"), err = $("#claimError");
+  err.textContent = "";
+  if (pw !== pw2) { err.textContent = "Hai mật khẩu chưa khớp nhau."; return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang đặt mật khẩu...';
+  try {
+    const data = await api("/api/auth/set-password", { method: "POST", body: JSON.stringify({ email, password: pw }) });
+    await afterAuth(data, false);
+  } catch (e) {
+    err.textContent = authErr(e);
+  } finally {
+    btn.disabled = false; btn.textContent = "Đặt mật khẩu & đăng nhập";
+  }
+});
+
+$("#regPassword").addEventListener("input", (e) => {
+  const v = e.target.value;
+  let s = 0;
+  if (v.length >= 8) s++;
+  if (v.length >= 12) s++;
+  if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++;
+  if (/\d/.test(v)) s++;
+  if (/[^A-Za-z0-9]/.test(v)) s++;
+  const bar = $("#pwBar"), hint = $("#pwHint");
+  const pct = [8, 30, 50, 70, 88, 100][s];
+  const col = ["#e5534b", "#e5534b", "#e7c07a", "#e7c07a", "#3fb950", "#3fb950"][s];
+  const label = ["Quá yếu", "Yếu", "Trung bình", "Khá", "Mạnh", "Rất mạnh"][s];
+  bar.style.width = v ? pct + "%" : "0";
+  bar.style.background = col;
+  hint.textContent = v ? "Độ mạnh: " + label + (v.length < 8 ? " — cần tối thiểu 8 ký tự" : "") : "";
+});
+
+function initLandingFx(){
+  const root = $("#landingView");
+  if (!root || root.classList.contains("hidden")) return;
+  if (!landingAnimated) {
+    landingAnimated = true;
+    animateCountUps(root);
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+    }, { threshold: 0.12 });
+    $$(".rv", root).forEach(el => io.observe(el));
+  }
+}
 
 /* ---------------- Boot / profiles ---------------- */
 async function boot(){
@@ -761,7 +1091,18 @@ async function loadJobs(){
   const box = $("#jobsContainer");
   const p = currentProfile();
   if (!p) {
-    box.innerHTML = '<div class="panel empty">Chưa có hồ sơ nào. Vào mục <b>Hồ sơ &amp; CV</b> để tạo hồ sơ đầu tiên của bạn.</div>';
+    box.innerHTML = `<div class="panel" style="padding:1.6rem">
+      <h3 style="margin:.1rem 0 .3rem;font-size:1.15rem">Bắt đầu trong 3 bước</h3>
+      <p class="muted" style="margin:0">Tài khoản của bạn đang trống — chưa có dữ liệu mẫu nào được nạp sẵn. Thiết lập một lần, JobPilot lo phần còn lại.</p>
+      <div class="ob-list">
+        <div class="ob-item"><span class="n">1</span><div><b>Tạo hồ sơ đầu tiên</b><span>Khai vị trí mục tiêu, cấp bậc và khu vực bạn muốn làm việc.</span></div></div>
+        <div class="ob-item"><span class="n">2</span><div><b>Tải CV lên</b><span>AI trích xuất kỹ năng kèm trọng số — bạn duyệt lại trước khi lưu.</span></div></div>
+        <div class="ob-item"><span class="n">3</span><div><b>Nhận job đã chấm điểm</b><span>JobPilot quét ITviec &amp; TopDev mỗi 30 phút và chấm khớp theo hồ sơ của bạn.</span></div></div>
+      </div>
+      <button class="btn primary" id="obStartBtn">Tạo hồ sơ đầu tiên</button>
+    </div>`;
+    const ob = $("#obStartBtn");
+    if (ob) ob.addEventListener("click", () => switchTab("profile"));
     return;
   }
   box.innerHTML = '<div class="jobs-list"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>';
@@ -1265,13 +1606,15 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "3") switchTab("profile");
 });
 
+$("#logoutBtn").addEventListener("click", () => logout(true));
+
 /* ---------------- Init ---------------- */
 (async function init(){
-  if (!state.token) { showLogin(); return; }
+  if (!state.token) { showLanding(); return; }
   try {
     await boot();
   } catch (e) {
-    if (state.token) showLogin();
+    if (state.token) showLanding();
     toast(e.message, "err");
   }
 })();
