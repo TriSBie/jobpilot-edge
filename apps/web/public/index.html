@@ -540,6 +540,52 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 .neg-script b{ display:block;margin-bottom:.2rem; }
 .neg-script p{ margin:0;color:var(--muted);font-size:.9rem; }
 @media (max-width: 700px){ .bench-grid{ grid-template-columns:1fr; } }
+
+  /* ===== SIGNAL BƯỚC 2 — thẻ job, vòng điểm, chip, panel giải thích ===== */
+  .score{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font:700 30px/1 var(--f-head);position:relative;flex:none;background:var(--brand);color:var(--brand-ink)}
+  .score.partial{background:var(--sun);color:var(--sun-ink)}
+  .score.weak{background:var(--weak);color:var(--ink)}
+  .score small{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);font:800 10px var(--f-body);padding:3px 8px;border-radius:var(--r-pill);background:var(--ink);color:var(--surface);white-space:nowrap}
+  #jobsContainer .chip{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:var(--r-pill);font:700 13px var(--f-body);border:var(--bw) solid transparent}
+  #jobsContainer .chip::before{content:none}
+  #jobsContainer .chip.on{background:var(--mint);color:var(--mint-ink)}
+  #jobsContainer .chip.off{border-color:var(--line);color:var(--mute)}
+  #jobsContainer .chip.flag{background:var(--pop);color:var(--pop-ink)}
+  #jobsContainer .chip.src{background:var(--bg);border-color:var(--line);color:var(--ink)}
+  .card{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise .5s cubic-bezier(.22,.8,.3,1) both;animation-delay:calc(min(var(--i,0),12) * 45ms)}
+  .card .ttl{font:700 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
+  .card .ttl a{color:inherit;text-decoration:none}
+  .card .ttl a:hover{text-decoration:underline}
+  .card .meta{color:var(--mute);font-size:14px;margin-bottom:12px}
+  .card .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
+  .card .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  .why{grid-column:1/-1;border-top:var(--bw) dashed var(--line);padding-top:14px;margin-top:4px;display:grid;gap:10px}
+  .why .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline}
+  .why .row b{font-family:var(--f-head);font-weight:700;font-size:15px}
+  .why .row span{color:var(--mute);font-size:14px}
+  .why .row .n{font:700 18px var(--f-head);color:var(--brand)}
+  .why .row .n.g{color:var(--mint)}.why .row .n.y{color:#B8860B}
+  html[data-theme="dark"] .why .row .n.y{color:var(--sun)}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:22px}
+  .skel{background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:sh 1.2s linear infinite;border-radius:var(--r-sm);height:14px}
+  @keyframes sh{to{background-position:-200% 0}}
+  #jobsContainer .empty{border:var(--bw) dashed var(--line);border-radius:var(--r-lg);padding:32px;text-align:center;color:var(--mute)}
+  .input,select.input{min-height:var(--tap);padding:0 14px;border-radius:var(--r-sm);border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink);font:600 15px var(--f-body);width:100%}
+  .input:focus{border-color:var(--ink)}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .check{display:inline-flex;align-items:center;gap:10px;min-height:var(--tap);font-weight:700;cursor:pointer}
+  .check input{width:22px;height:22px;accent-color:var(--brand)}
+  #jobsContainer .btn:not(.primary),.toolbar .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:800 14px var(--f-body);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+  #jobsContainer .btn.p,.toolbar .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+  #jobsContainer .btn.sm,.toolbar .btn.sm{min-height:36px;padding:0 14px;font-size:13px}
+  #jobsContainer .btn:active,.toolbar .btn:active{transform:translate(2px,2px)}
+  #jobsContainer .btn:disabled,.toolbar .btn:disabled{opacity:.45;cursor:not-allowed}
+  @media (max-width:640px){
+    .list{grid-template-columns:1fr}
+    .card{grid-template-columns:1fr}
+    .card .score{width:56px;height:56px;font-size:20px}
+    .card .actions .btn{min-height:36px;padding:0 14px;font-size:13px}
+  }
 </style>
 </head>
 <body>
@@ -729,22 +775,22 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 
         <div id="digestStrip" class="digest"></div>
 
-        <div class="toolbar">
-          <select id="filterTier" title="Lọc theo độ khớp">
+        <div class="toolbar filters">
+          <select class="input" style="width:150px" id="filterTier" title="Lọc theo độ khớp">
             <option value="">Mọi mức khớp</option>
             <option value="strong">Khớp mạnh (strong)</option>
             <option value="partial">Khớp một phần (partial)</option>
             <option value="weak">Khớp yếu (weak)</option>
           </select>
-          <select id="filterSource" title="Lọc theo nguồn">
+          <select class="input" style="width:150px" id="filterSource" title="Lọc theo nguồn">
             <option value="">Mọi nguồn</option>
             <option value="topdev">TopDev</option>
             <option value="itviec">ITviec</option>
           </select>
-          <label class="small muted" style="display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap"><input id="filterFlags" type="checkbox"> Ẩn tin có cờ</label>
-          <div class="grow"><input id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
-          <button id="refreshJobsBtn" class="btn small" type="button">Làm mới</button>
-          <button id="scanBtn" class="btn primary small" type="button">Quét job mới</button>
+          <label class="check"><input id="filterFlags" type="checkbox"> Ẩn tin có cờ</label>
+          <div class="grow"><input class="input" style="width:260px" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
+          <button id="refreshJobsBtn" class="btn sm" type="button">Làm mới</button>
+          <button id="scanBtn" class="btn sm p" type="button">Quét job mới</button>
         </div>
 
         <form id="submitForm" class="submit-row">
@@ -1248,18 +1294,11 @@ async function loadDigest(){
 }
 
 /* ---------------- Jobs ---------------- */
-function scoreRing(score, tier){
+function scoreDiv(score, tier){
   const s = Math.max(0, Math.min(100, Number(score) || 0));
-  const r = 23, c = 2 * Math.PI * r;
-  const col = tier === "strong" ? "#f6821f" : tier === "partial" ? "#e7c07a" : "#3f434c";
-  const glow = tier === "strong" ? ' style="filter:drop-shadow(0 0 7px rgba(246,130,31,.45))"' : "";
-  return `<div class="ring-wrap" title="Điểm khớp: ${Math.round(s)}/100">
-    <svg width="54" height="54" viewBox="0 0 54 54"${glow}>
-      <circle cx="27" cy="27" r="${r}" fill="none" style="stroke:rgba(var(--ov),.1)" stroke-width="5"/>
-      <circle cx="27" cy="27" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round"
-        stroke-dasharray="${(s / 100 * c).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 27 27)"/>
-      <text x="27" y="32" text-anchor="middle" font-size="14" font-weight="700" style="fill:var(--text)">${Math.round(s)}</text>
-    </svg></div>`;
+  const cls = tier === "strong" ? "" : tier === "partial" ? " partial" : " weak";
+  const lbl = tier ? `<small>${esc(tier)}</small>` : "";
+  return `<div class="score${cls}" title="Điểm khớp: ${Math.round(s)}/100">${Math.round(s)}${lbl}</div>`;
 }
 
 async function loadJobs(){
@@ -1280,7 +1319,7 @@ async function loadJobs(){
     if (ob) ob.addEventListener("click", () => switchTab("profile"));
     return;
   }
-  box.innerHTML = '<div class="jobs-list"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>';
+  box.innerHTML = '<div class="list">' + [1,2,3].map(() => `<article class="card" aria-busy="true"><div class="score weak" style="background:var(--line)"></div><div style="display:grid;gap:10px"><div class="skel" style="width:70%;height:20px"></div><div class="skel" style="width:45%"></div><div class="skel" style="width:90%"></div></div></article>`).join("") + '</div>';
   const qs = new URLSearchParams({ profile_id: p.id });
   if (state.filters.tier) qs.set("tier", state.filters.tier);
   if (state.filters.source) qs.set("source", state.filters.source);
@@ -1289,25 +1328,20 @@ async function loadJobs(){
     state.jobs = await api("/api/jobs?" + qs.toString());
     renderJobs();
   } catch (e) {
-    box.innerHTML = `<div class="panel empty">${esc(e.message)}</div>`;
+    box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
   }
 }
 
 function explainBlock(job, m){
   const rd = m.rule_detail, fb = m.fit;
-  const rulePart = rd ? `
-  <h4>Quy tắc — ${Math.round(rd.rule_score || 0)} / 50</h4>
-  <div class="row">${rd.matched.map(x => `<span class="chip ok">${esc(x.skill)} <span class="w">trọng số ${x.weight}</span></span>`).join("") || '<span class="muted small">Chưa khớp kỹ năng nào</span>'}</div>
-  <div class="row">${rd.missing.map(x => `<span class="chip miss">${esc(x.skill)} <span class="w">thiếu · trọng số ${x.weight}</span></span>`).join("")}</div>
-  <div class="fit-line">Điểm quy tắc = trọng số kỹ năng bạn có / tổng trọng số job yêu cầu (${rd.total_weight}) × 50.</div>` : "";
-  const fitPart = fb ? `
-  <h4 style="margin-top:.8rem">Độ phù hợp — ${fb.total} / 20</h4>
-  <div class="fit-line">Địa điểm: <b>+${fb.location}/8</b> — ${esc(fb.locationWhy)}</div>
-  <div class="fit-line">Độ tươi: <b>+${fb.freshness}/7</b> — tin đăng ${fb.ageDays} ngày trước</div>
-  <div class="fit-line">Cấp bậc: <b>+${fb.level}/5</b> — ${esc(fb.levelWhy)}</div>` : "";
-  return `<div class="explain hidden" id="explain-${esc(job.id)}">${rulePart}${fitPart}
-  <div class="fit-line">Điểm cuối: <b>${Math.round(m.final_score)}/100</b> = (quy tắc + fit) / 70 × 100.${rd && rd.capped ? " Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng)." : ""}</div>
-</div>`;
+  const nCls = (v, max) => v >= max ? " g" : v > max / 2 ? " y" : "";
+  const matchedTxt = rd ? rd.matched.map(x => `${esc(x.skill)} ${x.weight}`).join(" + ") : "";
+  const ruleRow = rd ? `<div class="row"><div><b>Quy tắc</b><br><span>${matchedTxt ? matchedTxt + `, trên tổng ${rd.total_weight} job yêu cầu` : "Chưa khớp kỹ năng nào"}</span></div><span class="n${nCls(rd.rule_score || 0, 50)}">${Math.round(rd.rule_score || 0)} / 50</span></div>` : "";
+  const fitRows = fb ? `<div class="row"><div><b>Địa điểm</b><br><span>${esc(fb.locationWhy)}</span></div><span class="n${nCls(fb.location, 8)}">${fb.location} / 8</span></div>
+  <div class="row"><div><b>Độ tươi</b><br><span>Tin đăng ${fb.ageDays} ngày trước</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
+  <div class="row"><div><b>Cấp bậc</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
+  const finalRow = `<div class="row"><div><b>Điểm cuối</b><br><span>(quy tắc + fit) / 70 × 100${rd && rd.capped ? ". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng)." : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
+  return `<div class="why hidden" id="explain-${esc(job.id)}">${ruleRow}${fitRows}${finalRow}</div>`;
 }
 
 function renderJobs(){
@@ -1316,44 +1350,31 @@ function renderJobs(){
   const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
   if (cnt) cnt.textContent = list.length ? `— ${list.length} job đang theo dõi` : "";
   if (!list.length) {
-    box.innerHTML = '<div class="panel empty">Chưa có job nào khớp bộ lọc. Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.</div>';
+    box.innerHTML = '<div class="empty">Chưa có job nào khớp bộ lọc. Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.</div>';
     return;
   }
-  box.innerHTML = '<div class="jobs-list">' + list.map((job, i) => {
+  box.innerHTML = '<div class="list">' + list.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
     const stage = app ? app.stage : "new";
     const chips = [];
     if (m) {
-      (m.matched_skills || []).forEach(s => chips.push(`<span class="chip ok">${esc(s)}</span>`));
-      (m.missing_skills || []).forEach(s => chips.push(`<span class="chip miss">${esc(s)}</span>`));
+      (m.matched_skills || []).forEach(s => chips.push(`<span class="chip on">${esc(s)}</span>`));
+      (m.missing_skills || []).forEach(s => chips.push(`<span class="chip off">${esc(s)}</span>`));
     }
     const date = job.posted_at || job.first_seen_at;
-    return `<article class="job panel" style="--i:${i}">
-      <div class="job-head">
-        ${m ? scoreRing(m.final_score, m.tier) : scoreRing(0, "")}
-        <div style="min-width:0;flex:1">
-          <div class="job-title"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></div>
-          <div class="job-meta">
-            <span>${esc(job.company || "")}</span>
-            ${job.location ? `<span>· ${esc(job.location)}</span>` : ""}
-            ${date ? `<span>· ${fmtDate(date)}</span>` : ""}
-          </div>
-          <div class="job-meta" style="margin-top:.45rem">
-            <span class="badge">${esc(srcLabel(job.source))}</span>
-            ${m ? `<span class="badge ${esc(m.tier)}">${esc(m.tier)}</span>` : '<span class="badge">chưa chấm</span>'}
-            ${job.salary_text ? `<span class="badge">${esc(job.salary_text)}</span>` : ""}
-          </div>
-          ${job.flags && job.flags.length ? `<div class="job-meta" style="margin-top:.4rem;gap:.35rem">${job.flags.map(f => `<span class="flag-chip ${esc(f.type)}">${esc(f.label)}</span>`).join("")}</div>` : ""}
+    return `<article class="card" style="--i:${i}">
+      ${m ? scoreDiv(m.final_score, m.tier) : scoreDiv(0, "")}
+      <div style="min-width:0">
+        <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
+        <div class="meta">${[esc(job.company || ""), job.location ? "· " + esc(job.location) : "", date ? "· " + fmtDate(date) : "", job.salary_text ? "· " + esc(job.salary_text) : ""].filter(x => x).join(" ")}</div>
+        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">chưa chấm</span>`}${chips.join("")}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="actions">
+          <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
+            ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${x.label}</option>`).join("")}
+          </select>
+          ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
         </div>
-      </div>
-      ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
-      <div class="job-foot">
-        <label class="muted small" style="margin:0">Giai đoạn</label>
-        <select data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
-          ${STAGES.map(s => `<option value="${s.key}" ${s.key === stage ? "selected" : ""}>${s.label}</option>`).join("")}
-        </select>
-        ${m && (m.rule_detail || m.fit) ? `<button class="btn small explain-toggle" data-explain-for="${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
       </div>
       ${m && (m.rule_detail || m.fit) ? explainBlock(job, m) : ""}
     </article>`;
@@ -1366,7 +1387,9 @@ function renderJobs(){
   $$(".explain-toggle", box).forEach(btn => {
     btn.addEventListener("click", () => {
       const el = document.getElementById("explain-" + btn.dataset.explainFor);
-      if (el) el.classList.toggle("hidden");
+      if (!el) return;
+      el.classList.toggle("hidden");
+      btn.textContent = el.classList.contains("hidden") ? "Vì sao điểm này?" : "Ẩn giải thích";
     });
   });
 }
