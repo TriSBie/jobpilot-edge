@@ -340,16 +340,21 @@ function pct(sorted, p) {
 
 // Fit (0..20): location 8, freshness 7, level 5 — tách riêng để /api/jobs
 // giải thích được điểm khớp mà không cần chấm lại toàn bộ.
+// So khớp địa điểm không phân biệt dấu tiếng Việt: "Hồ Chí Minh" = "Ho Chi Minh".
+function normLoc(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d");
+}
 function fitBreakdown(profile, job) {
-  const locs = (profile.locations || []).map((l) => l.toLowerCase());
-  const jobLoc = (job.location || "").toLowerCase();
+  const locs = (profile.locations || []).map(normLoc);
+  const jobLoc = normLoc(job.location);
   let location = 0, locationWhy = "";
   if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
   else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
   else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
   else { location = 0; locationWhy = "Địa điểm không khớp với hồ sơ"; }
   const refTs = job.posted_at || job.first_seen_at || now();
-  const ageDays = (now() - refTs) / 86400;
+  // Tuổi dùng số ngày làm tròn xuống — cùng con số hiển thị "N ngày trước".
+  const ageDays = Math.floor((now() - refTs) / 86400);
   const freshness = ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : ageDays <= 14 ? 3 : 1;
   const titleAndJd = `${job.title || ""} ${(job.jd_text || "").slice(0, 500)}`.toLowerCase();
   const seniorish = /(senior|sr\.|lead|principal|staff|manager|architect|trưởng|cao cấp)/.test(titleAndJd);
@@ -358,7 +363,7 @@ function fitBreakdown(profile, job) {
   let level = 5, levelWhy = "Cấp bậc phù hợp";
   if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
   else if (juniorish && /senior/.test(lvl)) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
-  return { location, locationWhy, freshness, ageDays: Math.floor(ageDays), level, levelWhy, total: location + freshness + level };
+  return { location, locationWhy, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
 function scoreJob(profile, profileSkills, job) {
@@ -603,6 +608,11 @@ export default {
 
     const user = await getUser(request, env);
     if (!user) return json({ error: "unauthorized" }, 401);
+
+    // Route /api/admin/* chỉ dành cho tài khoản owner.
+    if (path.startsWith("/api/admin/") && user.email !== "tribui.it.work@gmail.com") {
+      return json({ error: "forbidden" }, 403);
+    }
 
     if (path === "/api/me") {
       const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
