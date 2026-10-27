@@ -493,6 +493,32 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 .ring-wrap text{ font-family:"Space Grotesk",sans-serif; }
 .lp-cta h2{ font-weight:700; letter-spacing:-.025em; }
 .lp-lede, .lp-sec .lede{ font-size:1.13rem; }
+
+/* ================= PHASE 2 ================= */
+.flag-chip{ display:inline-flex;align-items:center;font-size:.74rem;font-weight:600;
+  border:1px solid rgba(231,192,122,.45);color:var(--amber);background:rgba(231,192,122,.08);
+  border-radius:999px;padding:.15rem .55rem; }
+.flag-chip.stale{ border-color:rgba(248,113,113,.4);color:var(--red);background:rgba(248,113,113,.08); }
+.explain{ margin-top:.8rem;border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;background:rgba(var(--ov),.02); }
+.explain h4{ margin:0 0 .5rem;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted); }
+.explain .row{ display:flex;flex-wrap:wrap;gap:.35rem;margin:.3rem 0 .6rem; }
+.explain .w{ color:var(--faint);font-size:.76rem;border:1px solid var(--line);border-radius:999px;padding:.1rem .5rem; }
+.explain .fit-line{ font-size:.88rem;color:var(--muted);margin:.2rem 0; }
+.explain .fit-line b{ color:var(--text); }
+.alerts{ border:1px solid rgba(246,130,31,.4);background:rgba(246,130,31,.06);border-radius:16px;padding:1rem 1.1rem;margin-bottom:1.2rem; }
+.alerts h3{ margin:0;font-size:1rem; }
+.alert-item{ display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--line); }
+.alert-item .t{ font-weight:600; }
+.alert-item .meta{ color:var(--muted);font-size:.85rem; }
+.alert-badge{ display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:.4rem;border-radius:999px;background:var(--accent);color:#1c1106;font-size:.72rem;font-weight:700; }
+.bench-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:.8rem 0; }
+.bench-stat{ border:1px solid var(--line);border-radius:12px;padding:.8rem; }
+.bench-stat b{ display:block;font-family:"Space Grotesk",sans-serif;font-size:1.3rem; }
+.bench-stat span{ color:var(--muted);font-size:.8rem; }
+.neg-script{ border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;margin:.6rem 0; }
+.neg-script b{ display:block;margin-bottom:.2rem; }
+.neg-script p{ margin:0;color:var(--muted);font-size:.9rem; }
+@media (max-width: 700px){ .bench-grid{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -662,7 +688,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
       <div class="brand"><span class="mark">J</span>JobPilot <span>Edge</span></div>
       <div class="nav-label">Điều hướng</div>
       <button class="tab active" data-tab="jobs"><span class="ic">▤</span>Việc làm</button>
-      <button class="tab" data-tab="kanban"><span class="ic">▦</span>Kanban</button>
+      <button class="tab" data-tab="kanban"><span class="ic">▦</span>Kanban<span id="kanbanAlertBadge" class="alert-badge hidden">0</span></button>
       <button class="tab" data-tab="profile"><span class="ic">◉</span>Hồ sơ &amp; CV</button>
       <div class="nav-label">Hồ sơ đang dùng</div>
       <div class="prof-block"><select id="profileSelect" title="Chọn hồ sơ"></select></div>
@@ -694,6 +720,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
             <option value="topdev">TopDev</option>
             <option value="itviec">ITviec</option>
           </select>
+          <label class="small muted" style="display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap"><input id="filterFlags" type="checkbox"> Ẩn tin có cờ</label>
           <div class="grow"><input id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
           <button id="refreshJobsBtn" class="btn small" type="button">Làm mới</button>
           <button id="scanBtn" class="btn primary small" type="button">Quét job mới</button>
@@ -711,6 +738,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
       <section id="tab-kanban" class="hidden">
         <h2 class="page-title">Pipeline ứng tuyển <span class="gray">— kéo từng cơ hội về phía offer</span></h2>
         <p class="page-sub">Mỗi job có điểm khớp đều tự vào cột Mới. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
+        <div id="alertsStrip"></div>
         <div id="kanbanContainer"></div>
       </section>
 
@@ -791,6 +819,29 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
             </div>
           </div>
         </div>
+        <div class="panel card-p" style="margin-top:1.2rem">
+          <h3>Benchmark lương <span class="gray">— biết mình đáng bao nhiêu trước khi đàm phán</span></h3>
+          <p class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
+          <div class="inline-row">
+            <div class="grow"><input id="benchRole" type="text" placeholder="Vị trí: backend, java…"></div>
+            <select id="benchLevel" title="Cấp bậc">
+              <option value="">Mọi cấp bậc</option>
+              <option value="junior">Junior</option>
+              <option value="middle">Middle</option>
+              <option value="senior">Senior</option>
+            </select>
+            <div class="grow"><input id="benchLoc" type="text" placeholder="Khu vực: ho chi minh…"></div>
+            <button id="benchBtn" class="btn primary" type="button">Xem benchmark</button>
+          </div>
+          <div id="benchResult" style="margin-top:.8rem"></div>
+          <div style="border-top:1px solid var(--line);margin-top:1.2rem;padding-top:1rem">
+            <h3 style="font-size:1rem">Kịch bản đàm phán</h3>
+            <div class="neg-script"><b>1. Bị hỏi lương mong muốn trước</b><p>"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
+            <div class="neg-script"><b>2. Offer thấp hơn kỳ vọng</b><p>"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
+            <div class="neg-script"><b>3. Có offer khác / counter-offer</b><p>"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
+            <div class="neg-script"><b>4. Muốn hỏi lại range của công ty</b><p>"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng — để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
+          </div>
+        </div>
       </section>
     </main>
   </div>
@@ -828,7 +879,7 @@ const state = {
   jobs: [],
   applications: [],
   suggested: [],
-  filters: { tier: "", source: "", q: "" },
+  filters: { tier: "", source: "", q: "", hideFlagged: false },
 };
 
 const $ = (sel, el) => (el || document).querySelector(sel);
@@ -1221,15 +1272,33 @@ async function loadJobs(){
   }
 }
 
+function explainBlock(job, m){
+  const rd = m.rule_detail, fb = m.fit;
+  const rulePart = rd ? `
+  <h4>Quy tắc — ${Math.round(rd.rule_score || 0)} / 50</h4>
+  <div class="row">${rd.matched.map(x => `<span class="chip ok">${esc(x.skill)} <span class="w">trọng số ${x.weight}</span></span>`).join("") || '<span class="muted small">Chưa khớp kỹ năng nào</span>'}</div>
+  <div class="row">${rd.missing.map(x => `<span class="chip miss">${esc(x.skill)} <span class="w">thiếu · trọng số ${x.weight}</span></span>`).join("")}</div>
+  <div class="fit-line">Điểm quy tắc = trọng số kỹ năng bạn có / tổng trọng số job yêu cầu (${rd.total_weight}) × 50.</div>` : "";
+  const fitPart = fb ? `
+  <h4 style="margin-top:.8rem">Độ phù hợp — ${fb.total} / 20</h4>
+  <div class="fit-line">Địa điểm: <b>+${fb.location}/8</b> — ${esc(fb.locationWhy)}</div>
+  <div class="fit-line">Độ tươi: <b>+${fb.freshness}/7</b> — tin đăng ${fb.ageDays} ngày trước</div>
+  <div class="fit-line">Cấp bậc: <b>+${fb.level}/5</b> — ${esc(fb.levelWhy)}</div>` : "";
+  return `<div class="explain hidden" id="explain-${esc(job.id)}">${rulePart}${fitPart}
+  <div class="fit-line">Điểm cuối: <b>${Math.round(m.final_score)}/100</b> = (quy tắc + fit) / 70 × 100.${rd && rd.capped ? " Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng)." : ""}</div>
+</div>`;
+}
+
 function renderJobs(){
   const box = $("#jobsContainer");
   const cnt = $("#jobsCount");
-  if (cnt) cnt.textContent = state.jobs.length ? `— ${state.jobs.length} job đang theo dõi` : "";
-  if (!state.jobs.length) {
+  const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
+  if (cnt) cnt.textContent = list.length ? `— ${list.length} job đang theo dõi` : "";
+  if (!list.length) {
     box.innerHTML = '<div class="panel empty">Chưa có job nào khớp bộ lọc. Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.</div>';
     return;
   }
-  box.innerHTML = '<div class="jobs-list">' + state.jobs.map((job, i) => {
+  box.innerHTML = '<div class="jobs-list">' + list.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
     const stage = app ? app.stage : "new";
@@ -1254,6 +1323,7 @@ function renderJobs(){
             ${m ? `<span class="badge ${esc(m.tier)}">${esc(m.tier)}</span>` : '<span class="badge">chưa chấm</span>'}
             ${job.salary_text ? `<span class="badge">${esc(job.salary_text)}</span>` : ""}
           </div>
+          ${job.flags && job.flags.length ? `<div class="job-meta" style="margin-top:.4rem;gap:.35rem">${job.flags.map(f => `<span class="flag-chip ${esc(f.type)}">${esc(f.label)}</span>`).join("")}</div>` : ""}
         </div>
       </div>
       ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
@@ -1262,12 +1332,21 @@ function renderJobs(){
         <select data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
           ${STAGES.map(s => `<option value="${s.key}" ${s.key === stage ? "selected" : ""}>${s.label}</option>`).join("")}
         </select>
+        ${m && (m.rule_detail || m.fit) ? `<button class="btn small explain-toggle" data-explain-for="${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
       </div>
+      ${m && (m.rule_detail || m.fit) ? explainBlock(job, m) : ""}
     </article>`;
   }).join("") + "</div>";
 
   $$("select[data-stage-for]", box).forEach(sel => {
     sel.addEventListener("change", () => changeJobStage(sel.dataset.stageFor, sel.value, sel));
+  });
+
+  $$(".explain-toggle", box).forEach(btn => {
+    btn.addEventListener("click", () => {
+      const el = document.getElementById("explain-" + btn.dataset.explainFor);
+      if (el) el.classList.toggle("hidden");
+    });
   });
 }
 
@@ -1301,6 +1380,7 @@ async function changeJobStage(jobId, stage, selEl){
 }
 
 $("#filterTier").addEventListener("change", (e) => { state.filters.tier = e.target.value; loadJobs(); });
+$("#filterFlags").addEventListener("change", (e) => { state.filters.hideFlagged = e.target.checked; renderJobs(); });
 $("#filterSource").addEventListener("change", (e) => { state.filters.source = e.target.value; loadJobs(); });
 $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
 $("#refreshJobsBtn").addEventListener("click", () => { loadJobs(); loadDigest(); loadSourceStatus(); });
@@ -1354,6 +1434,35 @@ async function loadApplications(){
 
 function renderKanban(){
   const box = $("#kanbanContainer");
+  // Phase 2 — cảnh báo im lặng / quá hạn follow-up
+  const nowS = Math.floor(Date.now() / 1000);
+  const alerts = [];
+  (state.applications || []).forEach(a => {
+    if (!a.job) return;
+    if (a.next_follow_up_at && a.next_follow_up_at < nowS) {
+      alerts.push({ ...a, label: `Quá hạn follow-up (${fmtDate(a.next_follow_up_at)})` });
+    } else if ((a.stage === "applied" || a.stage === "interview") && a.updated_at && (nowS - a.updated_at) / 86400 >= 7) {
+      alerts.push({ ...a, label: `Im lặng ${Math.floor((nowS - a.updated_at) / 86400)} ngày` });
+    }
+  });
+  const strip = $("#alertsStrip");
+  if (strip) {
+    strip.innerHTML = alerts.length ? `<div class="alerts"><h3>Cần chú ý · ${alerts.length} đơn</h3>
+      <p class="muted small" style="margin:.15rem 0 .4rem">Những đơn đã nộp/phỏng vấn nhưng nhà tuyển dụng im lặng từ 7 ngày, hoặc đã quá hạn follow-up bạn đặt.</p>` + alerts.map(a => `
+      <div class="alert-item">
+        <span class="t"><a href="${esc(a.job.source_url)}" target="_blank" rel="noopener">${esc(a.job.title)}</a></span>
+        <span class="meta">${esc(a.job.company)} · ${esc((STAGES.find(s => s.key === a.stage) || {}).label || a.stage)} · ${esc(a.label)}</span>
+        <span class="spacer"></span>
+        <button class="btn small" data-alert-follow="${esc(a.id)}" type="button">Đã follow-up</button>
+        <button class="btn small" data-alert-snooze="${esc(a.id)}" type="button">Nhắc sau 3 ngày</button>
+        <button class="btn small" data-alert-archive="${esc(a.id)}" type="button">Lưu trữ</button>
+      </div>`).join("") + `</div>` : "";
+    $$("[data-alert-follow]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertFollow, "follow", b)));
+    $$("[data-alert-snooze]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertSnooze, "snooze", b)));
+    $$("[data-alert-archive]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertArchive, "archive", b)));
+  }
+  const badge = $("#kanbanAlertBadge");
+  if (badge) { badge.textContent = alerts.length; badge.classList.toggle("hidden", !alerts.length); }
   const byStage = {};
   STAGE_KEYS.forEach(k => byStage[k] = []);
   state.applications.forEach(a => { if (byStage[a.stage]) byStage[a.stage].push(a); });
@@ -1400,6 +1509,24 @@ async function moveApplication(appId, dir, btn){
     toast(e.message, "err");
     btn.disabled = false;
   }
+}
+
+async function alertAction(appId, kind, btn){
+  btn.disabled = true;
+  try {
+    const nowS = Math.floor(Date.now() / 1000);
+    if (kind === "follow") {
+      await api("/api/applications/" + encodeURIComponent(appId), { method: "PATCH", body: JSON.stringify({ next_follow_up_at: nowS + 7 * 86400 }) });
+      toast("Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.", "ok");
+    } else if (kind === "snooze") {
+      await api("/api/applications/" + encodeURIComponent(appId), { method: "PATCH", body: JSON.stringify({ next_follow_up_at: nowS + 3 * 86400 }) });
+      toast("Đã hẹn nhắc sau 3 ngày.", "ok");
+    } else {
+      await api("/api/applications/" + encodeURIComponent(appId), { method: "PATCH", body: JSON.stringify({ stage: "archived" }) });
+      toast("Đã chuyển sang Lưu trữ.", "ok");
+    }
+    await loadApplications();
+  } catch (e) { toast(e.message, "err"); btn.disabled = false; }
 }
 
 /* ---------------- Profile ---------------- */
@@ -1476,6 +1603,43 @@ $("#createProfileBtn").addEventListener("click", async () => {
     btn.disabled = false;
   }
 });
+
+/* ---------------- Benchmark lương (Phase 2) ---------------- */
+const BENCH_REF = [
+  { role: "Backend", median: 37.8, note: "Median toàn thị trường" },
+  { role: "QA / Kiểm thử", median: 31.2, note: "Median toàn thị trường" },
+  { role: "AI Engineer (2–4 năm)", median: 45, note: "Khoảng 30–60tr, ~1,5x engineer thường" },
+];
+async function loadBenchmark(){
+  const role = $("#benchRole").value.trim();
+  const level = $("#benchLevel").value;
+  const loc = $("#benchLoc").value.trim();
+  const box = $("#benchResult");
+  box.innerHTML = '<div class="muted small">Đang tính…</div>';
+  try {
+    const qs = new URLSearchParams();
+    if (role) qs.set("role", role);
+    if (level) qs.set("level", level);
+    if (loc) qs.set("location", loc);
+    const d = await api("/api/benchmark?" + qs.toString());
+    const fmt = (v) => v == null ? "—" : (v / 1e6).toFixed(1).replace(/\.0$/, "") + "tr";
+    if (d.count >= 5) {
+      box.innerHTML = `<div class="bench-grid">
+        <div class="bench-stat"><b>${fmt(d.median_min)} – ${fmt(d.median_max)}</b><span>Khoảng trung vị (min–max)</span></div>
+        <div class="bench-stat"><b>${fmt(d.median_mid)}</b><span>Trung vị điểm giữa</span></div>
+        <div class="bench-stat"><b>${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</b><span>Khoảng P25–P75</span></div>
+      </div>
+      <p class="muted small" style="margin:0">Dựa trên ${d.count} tin tuyển có ghi lương trong hệ thống. ${esc(d.note || "")}</p>`;
+    } else {
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">Chưa đủ dữ liệu lương trong hệ thống (mới ${d.count} tin có ghi lương). Tham khảo thị trường bên dưới — hệ thống sẽ tự tính từ tin mới khi nhà tuyển dụng ghi lương.</p>
+      <div class="bench-grid">
+        ${BENCH_REF.map(r => `<div class="bench-stat"><b>${r.median}tr</b><span>${esc(r.role)} · ${esc(r.note)}</span></div>`).join("")}
+      </div>
+      <p class="muted small" style="margin:.4rem 0 0">Nguồn tham khảo: báo cáo thị trường ITviec/TopDev 2025–2026 (qua tổng hợp thứ cấp — đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức).</p>`;
+    }
+  } catch (e) { box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
+}
+$("#benchBtn").addEventListener("click", loadBenchmark);
 
 /* ---------------- Skills ---------------- */
 function renderCurrentSkills(){
