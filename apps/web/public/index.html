@@ -9,19 +9,40 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
+/* ===== SIGNAL TOKENS (bước 1) — dán nguyên khối 1 từ spec ===== */
+:root{
+  --bg:#F4F2FF; --surface:#FFFFFF; --ink:#1B1B2F; --mute:#6B6B85; --line:#E4E1F6;
+  --brand:#2D4BFF; --brand-ink:#FFFFFF; --pop:#FF5C7A; --pop-ink:#1B1B2F;
+  --mint:#2EC8A6; --mint-ink:#0D2F27; --sun:#FFC83D; --sun-ink:#2A2200;
+  --strong:var(--mint); --partial:var(--sun); --weak:#C9C7DB;
+  --shadow:var(--ink);
+  --r-lg:22px; --r-md:14px; --r-sm:10px; --r-pill:999px;
+  --bw:2px; --off:6px;
+  --f-head:"Unbounded",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,sans-serif;
+  --fs-1:13px; --fs-2:16px; --fs-3:20px; --fs-4:26px; --fs-5:44px;
+  --tap:44px; --gap:12px; --pad:18px;
+  --focus:0 0 0 3px #FFC83D;
+}
+html[data-theme="dark"]{
+  --bg:#15152A; --surface:#1E1E36; --ink:#F3F2FF; --mute:#A3A2C2; --line:#2E2E4D;
+  --brand:#6D84FF; --brand-ink:#15152A; --pop:#FF7A92; --pop-ink:#15152A; --weak:#3B3B5C; --shadow:#6D84FF;
+  --focus:0 0 0 3px #FFC83D;
+}
   :root{
     color-scheme: dark;
-    --ov:255,255,255;
-    --bg:#08090a;
+    --ov:243,242,255;
+    --bg:#15152A;
     --panel:rgba(var(--ov),.03);
     --panel-2:rgba(var(--ov),.05);
-    --line:rgba(var(--ov),.08);
-    --line-strong:rgba(var(--ov),.14);
-    --text:#f7f8f8;
-    --muted:rgba(247,248,248,.62);
-    --faint:rgba(247,248,248,.42);
+    --line:#2E2E4D;
+    --line-strong:#3B3B5C;
+    --text:#F3F2FF;
+    --muted:#A3A2C2;
+    --faint:var(--mute);
     --accent:#f6821f;
     --accent-2:#ffb347;
     --grad:linear-gradient(120deg,#f6821f,#ffb347);
@@ -29,9 +50,9 @@
     --green-bg:rgba(52,211,153,.09);
     --amber:#e7c07a;
     --red:#f87171;
-    --r-lg:20px; --r-md:16px; --r-sm:10px;
-    --font:"Inter",ui-sans-system,system-ui,"Segoe UI",Roboto,sans-serif;
-    --serif:"Space Grotesk","Inter",sans-serif;
+    --r-lg:22px; --r-md:14px; --r-sm:10px;
+    --font:var(--f-body);
+    --serif:var(--f-head);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -399,15 +420,15 @@
 /* ================= THEME: LIGHT ================= */
 html[data-theme="light"]{
   color-scheme: light;
-  --ov:13,20,36;
-  --bg:#f6f6f3;
-  --panel:rgba(13,20,36,.028);
-  --panel-2:rgba(13,20,36,.05);
-  --line:rgba(13,20,36,.1);
-  --line-strong:rgba(13,20,36,.2);
-  --text:#16181d;
-  --muted:rgba(22,24,29,.66);
-  --faint:rgba(22,24,29,.46);
+  --ov:27,27,47;
+  --bg:#F4F2FF;
+  --panel:rgba(var(--ov),.028);
+  --panel-2:rgba(var(--ov),.05);
+  --line:#E4E1F6;
+  --line-strong:#C9C7DB;
+  --text:#1B1B2F;
+  --muted:#6B6B85;
+  --faint:var(--mute);
   --green:#0c8a5f;
   --green-bg:rgba(12,138,95,.1);
   --amber:#9a7414;
