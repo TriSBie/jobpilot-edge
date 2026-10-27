@@ -1,4 +1,4 @@
-// JobPilot Edge — API Worker v1 (Phase 1 MVP)
+// JobPilot Edge — API Worker (Phase 2: alerts, explain, flags, benchmark)
 // Vanilla Workers runtime. Bindings: DB(D1) KV FILES(R2) Q_INGEST Q_SCORE
 // Q_NOTIFY USER_HUB(DO) AI EMB(Vectorize) EVENTS(Analytics Engine).
 
@@ -245,11 +245,13 @@ async function fetchITviec(keyword, location = "Ho Chi Minh") {
     const postedM = card.match(/Posted\s*([^<]+)/i);
     const skills = [...card.matchAll(/class="[^"]*itag[^"]*"[^>]*>([\s\S]*?)<\/a>/g)].map((mm) => canonSkill(stripTags(mm[1])));
     const cityM = card.match(/(Ho Chi Minh|Ha Noi|Da Nang|Can Tho|Binh Duong|Dong Nai|Hai Phong|Remote)/i);
+    const salM = card.match(/(\d{1,3})\s*[-–]\s*(\d{1,3})\s*triệu/i);
     jobs.push({
       title: stripTags(titleM[1]), company,
       location: cityM ? cityM[1] : location,
       url: `https://itviec.com/it-jobs/${slug}`,
       postedAt: postedM ? relativePostedToISO(postedM[1]) : null,
+      salaryText: salM ? `${salM[1]} - ${salM[2]} triệu` : null,
       skills: [...new Set(skills)],
     });
   }
@@ -280,12 +282,22 @@ async function fetchTopDev(keyword) {
       for (const q of sm[1].matchAll(/"([^"]+)"/g)) skills.add(q[1]);
     }
     const locM = seg.match(/"address_short_region_list":"([^"]+)"/);
+    const tdMin = seg.match(/"salary_min"\s*:\s*(\d{3,})/);
+    const tdMax = seg.match(/"salary_max"\s*:\s*(\d{3,})/);
+    const tdTxt = seg.match(/"salary"\s*:\s*"([^"]+)"/);
+    let tdSalary = null;
+    if (tdMin && tdMax && Number(tdMin[1]) >= 1e6 && Number(tdMax[1]) <= 5e8) {
+      tdSalary = `${Math.round(Number(tdMin[1]) / 1e6)} - ${Math.round(Number(tdMax[1]) / 1e6)} triệu`;
+    } else if (tdTxt && !/thương lượng|negotiable/i.test(tdTxt[1])) {
+      tdSalary = decodeUnicodeEscapes(tdTxt[1]);
+    }
     jobs.push({
       title: decodeUnicodeEscapes(m[2]),
       company: companyM ? decodeUnicodeEscapes(companyM[1]) : "",
       location: locM ? decodeUnicodeEscapes(locM[1]) : "Vietnam",
       url: `https://topdev.vn/detail-jobs/${slugM ? slugM[1] : ""}-${id}`,
       postedAt: publishedM ? parseDMY(publishedM[1]) : null,
+      salaryText: tdSalary,
       skills: filterTechTags([...skills]),
     });
     re.lastIndex = m.index + 100;
@@ -307,6 +319,48 @@ async function upsertJob(env, sourceId, job) {
   return row;
 }
 
+// Parse lương VNĐ từ salary_text: "25 - 40 triệu" / "30 triệu" / "25 - 40k".
+// "Thương lượng", USD và các dạng khác → null (không đoán mò).
+function parseSalaryVND(text) {
+  if (!text) return null;
+  const t = String(text);
+  if (/thương lượng|negotiable|competitive|thỏa thuận/i.test(t)) return null;
+  let m = t.match(/(\d{1,3})\s*[-–]\s*(\d{1,3})\s*(triệu|tr)\b/i);
+  if (m) return { min: Number(m[1]) * 1e6, max: Number(m[2]) * 1e6 };
+  m = t.match(/(\d{1,3})\s*(triệu|tr)\b/i);
+  if (m) return { min: Number(m[1]) * 1e6, max: Number(m[1]) * 1e6 };
+  m = t.match(/(\d{2,3})\s*[-–]\s*(\d{2,3})\s*k\b/i);
+  if (m) return { min: Number(m[1]) * 1e3, max: Number(m[2]) * 1e3 };
+  return null;
+}
+function pct(sorted, p) {
+  if (!sorted.length) return null;
+  return sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
+}
+
+// Fit (0..20): location 8, freshness 7, level 5 — tách riêng để /api/jobs
+// giải thích được điểm khớp mà không cần chấm lại toàn bộ.
+function fitBreakdown(profile, job) {
+  const locs = (profile.locations || []).map((l) => l.toLowerCase());
+  const jobLoc = (job.location || "").toLowerCase();
+  let location = 0, locationWhy = "";
+  if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
+  else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
+  else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
+  else { location = 0; locationWhy = "Địa điểm không khớp với hồ sơ"; }
+  const refTs = job.posted_at || job.first_seen_at || now();
+  const ageDays = (now() - refTs) / 86400;
+  const freshness = ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : ageDays <= 14 ? 3 : 1;
+  const titleAndJd = `${job.title || ""} ${(job.jd_text || "").slice(0, 500)}`.toLowerCase();
+  const seniorish = /(senior|sr\.|lead|principal|staff|manager|architect|trưởng|cao cấp)/.test(titleAndJd);
+  const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
+  const lvl = (profile.level || "").toLowerCase();
+  let level = 5, levelWhy = "Cấp bậc phù hợp";
+  if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
+  else if (juniorish && /senior/.test(lvl)) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
+  return { location, locationWhy, freshness, ageDays: Math.floor(ageDays), level, levelWhy, total: location + freshness + level };
+}
+
 function scoreJob(profile, profileSkills, job) {
   const jobSkills = [...new Set([...(job.skills || []), ...extractSkillsFromText(job.jd_text || "")])];
   const profileByKey = new Map(profileSkills.map((ps) => [ps.skill.toLowerCase(), ps]));
@@ -323,23 +377,7 @@ function scoreJob(profile, profileSkills, job) {
     else missing.push(js);
   }
   const rule = jobSkills.length ? (matchedW / jobTotalW) * 50 : 10;
-  // fit (0..20): location 8, freshness 7, level 5
-  let fit = 0;
-  const locs = (profile.locations || []).map((l) => l.toLowerCase());
-  const jobLoc = (job.location || "").toLowerCase();
-  if (!jobLoc) fit += 4;
-  else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) fit += 8;
-  else if (locs.some((l) => /remote/.test(l))) fit += 6;
-  const refTs = job.posted_at || job.first_seen_at || now();
-  const ageDays = (now() - refTs) / 86400;
-  fit += ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : ageDays <= 14 ? 3 : 1;
-  const titleAndJd = `${job.title || ""} ${(job.jd_text || "").slice(0, 500)}`.toLowerCase();
-  const seniorish = /(senior|sr\.|lead|principal|staff|manager|architect|trưởng|cao cấp)/.test(titleAndJd);
-  const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
-  const lvl = (profile.level || "").toLowerCase();
-  if (seniorish && /middle|junior|fresher/.test(lvl)) fit += 2;
-  else if (juniorish && /senior/.test(lvl)) fit += 2;
-  else fit += 5;
+  const fit = fitBreakdown(profile, job).total;
   let finalScore = Math.round(((rule + fit) / 70) * 100);
   // Bằng chứng mỏng (job khai < 3 skills) thì không cho lên strong.
   if (jobSkills.length < 3) finalScore = Math.min(finalScore, 69);
@@ -505,7 +543,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
     if (path === "/api/health") {
-      return json({ ok: true, service: "jobpilot-api", phase: 1, ts: new Date().toISOString(),
+      return json({ ok: true, service: "jobpilot-api", phase: 2, ts: new Date().toISOString(),
         bindings: { DB: !!env.DB, KV: !!env.KV, FILES: !!env.FILES, AI: !!env.AI, EMB: !!env.EMB, EVENTS: !!env.EVENTS } });
     }
     if (path === "/api/realtime") {
@@ -606,6 +644,9 @@ export default {
       ).bind(b.name ?? p.name, JSON.stringify(b.target_roles ?? JSON.parse(p.target_roles || "[]")),
         b.level ?? p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
         b.salary_min ?? p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
+      // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
+      const { results: allJobs } = await env.DB.prepare("SELECT id FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
+      for (const j of allJobs) await env.Q_SCORE.send({ kind: "score", jobId: j.id });
       const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
       return json(await profileWithSkills(env, upd));
     }
@@ -663,18 +704,58 @@ export default {
         const { results } = await env.DB.prepare("SELECT j.*, NULL AS app_id, NULL AS app_stage FROM jobs j ORDER BY j.first_seen_at DESC LIMIT 300").all();
         rows = results;
       }
-      let out = rows.map((r) => ({
-        id: r.id, title: r.title, company: r.company, location: r.location,
-        source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
-        skills: JSON.parse(r.skills || "[]"),
-        posted_at: r.posted_at, first_seen_at: r.first_seen_at,
-        match: r.final_score !== null && r.final_score !== undefined ? {
-          final_score: r.final_score, tier: r.tier, rule_score: r.rule_score,
-          matched_skills: JSON.parse(r.matched_skills || "[]"),
-          missing_skills: JSON.parse(r.missing_skills || "[]"),
-        } : null,
-        application: r.app_id ? { id: r.app_id, stage: r.app_stage } : null,
-      }));
+      // Phase 2 — flags + giải thích điểm (tính trực tiếp, không cần chấm lại)
+      let prof = null; const skillW = new Map();
+      if (profileId) {
+        const prow = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(profileId).first();
+        if (prow) {
+          prof = { ...prow, locations: JSON.parse(prow.locations || "[]") };
+          const { results: sk } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ?").bind(profileId).all();
+          sk.forEach((s) => skillW.set(String(s.skill).toLowerCase(), s.weight));
+        }
+      }
+      const normKey = (r) => `${String(r.company || "").toLowerCase().replace(/\s+/g, " ").trim()}|${String(r.title || "").toLowerCase().replace(/[^a-z0-9à-ỹ\s]/gi, "").replace(/\s+/g, " ").trim()}`;
+      const keyCount = new Map(), keyFirst = new Map();
+      for (const r of rows) {
+        const k = normKey(r);
+        keyCount.set(k, (keyCount.get(k) || 0) + 1);
+        if (!keyFirst.has(k) || (r.first_seen_at || 0) < keyFirst.get(k)) keyFirst.set(k, r.first_seen_at || 0);
+      }
+      let out = rows.map((r) => {
+        const skillsArr = JSON.parse(r.skills || "[]");
+        const flags = [];
+        const refTs = r.posted_at || r.first_seen_at;
+        const ageDays = refTs ? Math.floor((now() - refTs) / 86400) : null;
+        if (ageDays !== null && ageDays > 30) flags.push({ type: "stale", label: `Tin cũ ${ageDays} ngày` });
+        if ((keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r))) flags.push({ type: "duplicate", label: "Đăng trùng / đăng lại" });
+        if (skillsArr.length > 12) flags.push({ type: "bloated", label: `JD nhồi ${skillsArr.length} kỹ năng` });
+        let fit = null, ruleDetail = null;
+        const hasMatch = r.final_score !== null && r.final_score !== undefined;
+        if (prof && hasMatch) {
+          fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: r.jd_text || "" });
+          const matched = JSON.parse(r.matched_skills || "[]");
+          const missing = JSON.parse(r.missing_skills || "[]");
+          let totalW = 0;
+          const matchedW = matched.map((s) => { const w = skillW.get(String(s).toLowerCase()) || 3; totalW += w; return { skill: s, weight: w }; });
+          const missingW = missing.map((s) => { totalW += 3; return { skill: s, weight: 3 }; });
+          const jobSkillCount = new Set([...skillsArr.map((s) => String(s).toLowerCase()), ...extractSkillsFromText(r.jd_text || "").map((s) => s.toLowerCase())]).size;
+          ruleDetail = { matched: matchedW, missing: missingW, total_weight: totalW, rule_score: r.rule_score, capped: jobSkillCount < 3 };
+        }
+        return {
+          id: r.id, title: r.title, company: r.company, location: r.location,
+          source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
+          skills: skillsArr,
+          posted_at: r.posted_at, first_seen_at: r.first_seen_at,
+          flags,
+          match: hasMatch ? {
+            final_score: r.final_score, tier: r.tier, rule_score: r.rule_score,
+            matched_skills: JSON.parse(r.matched_skills || "[]"),
+            missing_skills: JSON.parse(r.missing_skills || "[]"),
+            fit, rule_detail: ruleDetail,
+          } : null,
+          application: r.app_id ? { id: r.app_id, stage: r.app_stage } : null,
+        };
+      });
       if (tier) out = out.filter((j) => j.match && j.match.tier === tier);
       if (source) out = out.filter((j) => (j.source || "").includes(source));
       if (q) out = out.filter((j) => `${j.title} ${j.company}`.toLowerCase().includes(q));
@@ -791,8 +872,35 @@ export default {
       return json(results);
     }
 
+    // Phase 2 — benchmark lương từ tin tuyển hệ thống đã gom (chỉ VNĐ).
+    if (path === "/api/benchmark" && request.method === "GET") {
+      const role = (url.searchParams.get("role") || "").toLowerCase().trim();
+      const level = (url.searchParams.get("level") || "").toLowerCase().trim();
+      const loc = (url.searchParams.get("location") || "").toLowerCase().trim();
+      const { results } = await env.DB.prepare("SELECT title, location, salary_text FROM jobs WHERE salary_text IS NOT NULL AND salary_text != '' LIMIT 1000").all();
+      const vals = [];
+      for (const j of results) {
+        const title = (j.title || "").toLowerCase();
+        if (role && !title.includes(role)) continue;
+        if (level && !title.includes(level)) continue;
+        if (loc && !(j.location || "").toLowerCase().includes(loc)) continue;
+        const p = parseSalaryVND(j.salary_text);
+        if (p) vals.push(p);
+      }
+      const mins = vals.map((v) => v.min).sort((a, b) => a - b);
+      const maxs = vals.map((v) => v.max).sort((a, b) => a - b);
+      const mids = vals.map((v) => (v.min + v.max) / 2).sort((a, b) => a - b);
+      return json({
+        count: vals.length, currency: "VND",
+        median_min: pct(mins, 0.5), median_max: pct(maxs, 0.5),
+        p25_mid: pct(mids, 0.25), median_mid: pct(mids, 0.5), p75_mid: pct(mids, 0.75),
+        filters: { role: role || null, level: level || null, location: loc || null },
+        note: "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính.",
+      });
+    }
+
     if (path.startsWith("/api/")) return json({ error: "not_found", path }, 404);
-    return json({ service: "jobpilot-api", phase: 1 });
+    return json({ service: "jobpilot-api", phase: 2 });
   },
 
   async queue(batch, env, ctx) {

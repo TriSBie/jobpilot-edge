@@ -28,6 +28,9 @@ It is the product-grade successor of a personal job-watcher tool, rebuilt from s
 - **Dual-source ingestion** — ITviec + TopDev fetched every 30 minutes via Queues + cron, deduplicated by content hash, with a title gate that filters out non-tech postings.
 - **Transparent scoring** — rule-based and explainable: matched-skill weight over the *job's* required-skill weight, plus location / freshness / level fit. Jobs listing fewer than 3 skills are capped — no more "Senior HR" scoring 90%.
 - **Application kanban** — 7 stages (New → Saved → Applied → Interview → Offer / Rejected / Archived) with follow-up dates and an event history.
+- **Silence alerts** — kanban badge + "Cần chú ý" panel for applications silent ≥ 7 days or past their follow-up date, with follow-up / snooze / archive actions.
+- **Score explanation** — every matched job expands to show rule score /50 (matched/missing skills with weights), fit /20 (location / freshness / level with reasons), and the final formula.
+- **Job flags** — stale (>30 days), duplicate (same company+title), and bloated-JD (>12 skills) chips, plus a hide-flagged filter.
 - **Morning brief** — a daily 08:00 (ICT) digest of strong matches and due follow-ups, rendered as a gradient-edged panel with animated counters.
 - **Command palette** — `Cmd/Ctrl + K` to search jobs, jump between views, trigger a scan or switch profiles. Keyboard-first: `1/2/3` switch tabs, `/` focuses search.
 - **Realtime-ready** — a Durable Object hub broadcasts strong-match events to connected clients.
@@ -139,7 +142,7 @@ Authentication is password-based: passwords are hashed with PBKDF2-SHA256 (100k 
 - [x] **Phase 1** — MVP: auth, profiles, CV skills, ingestion, scoring, kanban, digest
 - [x] **UI v2** — Linear × Resend redesign, command palette
 - [x] **Phase 1.5** — Password auth (register / login / first-time claim), landing page, empty-start onboarding
-- [ ] **Phase 2** — Semantic matching (Vectorize), AI cover-letter drafts
+- [x] **Phase 2** — Silence alerts + follow-up reminders (kanban badge + "Cần chú ý" panel), per-job score explanation (matched/missing weights, fit breakdown), stale/duplicate/bloated-JD flags + hide-flagged filter, salary benchmark + negotiation scripts. JD-by-years contradiction flag deferred: fetchers capture no JD text (detail-page fetch = Phase 3, rate-limit risk); benchmark runs on a labeled market-reference table until new ingests capture salary_text.
 - [ ] **Phase 3** — Custom domain, email digest (Resend), Cloudflare Access for `/admin`
 - [ ] **Phase 4** — Public beta for Vietnamese devs
 
