@@ -595,20 +595,7 @@ export default {
       return json(await issueSession(env, user));
     }
     if (path === "/api/auth/set-password" && request.method === "POST") {
-      // Claim tài khoản cũ (chưa từng có mật khẩu): đặt mật khẩu lần đầu rồi đăng nhập luôn.
-      const body = await readBody(request);
-      const email = (body.email || "").trim().toLowerCase();
-      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
-      const pwErr = passwordError(body.password);
-      if (pwErr) return json({ error: pwErr }, 400);
-      const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
-      if (!user) return json({ error: "account_not_found" }, 404);
-      if (user.password_hash) return json({ error: "password_already_set" }, 409);
-      const rec = await makePasswordRecord(body.password);
-      await env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ? WHERE id = ?")
-        .bind(rec.hash, rec.salt, now(), user.id).run();
-      const fresh = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(user.id).first();
-      return json(await issueSession(env, fresh));
+      return json({ error: "password_setup_disabled" }, 410);
     }
 
     const user = await getUser(request, env);
