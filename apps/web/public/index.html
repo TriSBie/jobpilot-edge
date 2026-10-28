@@ -662,19 +662,6 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
         <div id="registerError"></div>
       </form>
 
-      <form id="claimForm" class="hidden">
-        <div class="auth-note">Tài khoản <b id="claimEmailLabel"></b> được tạo trước khi JobPilot có mật khẩu. Hãy đặt mật khẩu để khóa tài khoản và đăng nhập tiếp — chỉ cần làm một lần.</div>
-        <div class="field">
-          <label for="claimPassword">Mật khẩu mới</label>
-          <input id="claimPassword" type="password" required placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
-        </div>
-        <div class="field">
-          <label for="claimPassword2">Nhập lại mật khẩu mới</label>
-          <input id="claimPassword2" type="password" required placeholder="Nhập lại mật khẩu" autocomplete="new-password">
-        </div>
-        <button id="claimBtn" class="btn primary" type="submit" style="width:100%">Đặt mật khẩu &amp; đăng nhập</button>
-        <div id="claimError"></div>
-      </form>
     </div>
     <a class="auth-back" href="#" id="authBack">← Về trang giới thiệu</a>
     <p class="login-foot">Chạy trên Cloudflare Edge · Dữ liệu của bạn, ở máy chủ của bạn</p>
@@ -991,7 +978,6 @@ function setAuthMode(mode){
   $$("#authTabs button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
   $("#loginForm").classList.toggle("hidden", mode !== "login");
   $("#registerForm").classList.toggle("hidden", mode !== "register");
-  $("#claimForm").classList.add("hidden");
   $("#authTabs").classList.remove("hidden");
   if (mode === "register") {
     $("#authTitle").innerHTML = "Tạo tài khoản <em>miễn phí.</em>";
@@ -1000,17 +986,6 @@ function setAuthMode(mode){
     $("#authTitle").innerHTML = "Chào mừng <em>trở lại.</em>";
     $("#authSub").textContent = "Đăng nhập để tiếp tục pipeline săn việc của bạn.";
   }
-}
-function showClaim(email){
-  $$("#authTabs button").forEach(b => b.classList.remove("active"));
-  $("#authTabs").classList.add("hidden");
-  $("#loginForm").classList.add("hidden");
-  $("#registerForm").classList.add("hidden");
-  $("#claimForm").classList.remove("hidden");
-  $("#claimEmailLabel").textContent = email;
-  $("#authTitle").innerHTML = "Đặt mật khẩu <em>lần đầu.</em>";
-  $("#authSub").textContent = "Tài khoản của bạn có từ trước khi JobPilot dùng mật khẩu.";
-  $("#claimForm").dataset.email = email;
 }
 function logout(manual){
   state.token = ""; state.user = null; state.profiles = []; state.profileId = "";
@@ -1042,7 +1017,7 @@ $("#loginForm").addEventListener("submit", async (ev) => {
     const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
     await afterAuth(data, false);
   } catch (e) {
-    if (e.message === "password_setup_required") { showClaim(email); toast("Tài khoản này cần đặt mật khẩu lần đầu.", "ok"); }
+    if (e.message === "password_setup_required") err.textContent = "Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.";
     else err.textContent = authErr(e);
   } finally {
     btn.disabled = false; btn.textContent = "Đăng nhập";
@@ -1065,24 +1040,6 @@ $("#registerForm").addEventListener("submit", async (ev) => {
     err.textContent = authErr(e);
   } finally {
     btn.disabled = false; btn.textContent = "Tạo tài khoản";
-  }
-});
-
-$("#claimForm").addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  const email = $("#claimForm").dataset.email || "";
-  const pw = $("#claimPassword").value, pw2 = $("#claimPassword2").value;
-  const btn = $("#claimBtn"), err = $("#claimError");
-  err.textContent = "";
-  if (pw !== pw2) { err.textContent = "Hai mật khẩu chưa khớp nhau."; return; }
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang đặt mật khẩu...';
-  try {
-    const data = await api("/api/auth/set-password", { method: "POST", body: JSON.stringify({ email, password: pw }) });
-    await afterAuth(data, false);
-  } catch (e) {
-    err.textContent = authErr(e);
-  } finally {
-    btn.disabled = false; btn.textContent = "Đặt mật khẩu & đăng nhập";
   }
 });
 
@@ -1562,7 +1519,8 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       const i = state.profiles.findIndex(x => x.id === p.id);
       if (i >= 0) state.profiles[i] = updated;
       renderProfileSelect();
-      toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok");
+      if (updated.rescore_queued === false) toast("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
+      else toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok");
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
     } else {
       const created = await api("/api/profiles", { method: "POST", body: JSON.stringify(payload) });
@@ -1678,11 +1636,12 @@ $("#addSkillBtn").addEventListener("click", async () => {
   const btn = $("#addSkillBtn");
   btn.disabled = true;
   try {
-    await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
+    const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
       method: "POST", body: JSON.stringify({ skills: merged }),
     });
     $("#manualSkill").value = "";
-    toast("Đã thêm kỹ năng: " + skill, "ok");
+    if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
+    else toast("Đã thêm kỹ năng: " + skill, "ok");
     await refreshProfiles();
   } catch (e) {
     toast(e.message, "err");
@@ -1774,10 +1733,11 @@ $("#confirmSkillsBtn").addEventListener("click", async () => {
   const btn = $("#confirmSkillsBtn");
   btn.disabled = true;
   try {
-    await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
+    const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
       method: "POST", body: JSON.stringify({ skills: chosen }),
     });
-    toast("Đã lưu " + chosen.length + " kỹ năng vào hồ sơ.", "ok");
+    if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
+    else toast("Đã lưu " + chosen.length + " kỹ năng vào hồ sơ.", "ok");
     state.suggested = [];
     $("#suggestedWrap").classList.add("hidden");
     await refreshProfiles();
