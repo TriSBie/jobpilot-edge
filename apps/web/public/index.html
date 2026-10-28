@@ -593,6 +593,30 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   .jobsum .miss{font-size:13px}
   #jobsContainer button.chip{background:transparent;cursor:pointer}
   .loadmore{display:flex;justify-content:center;margin-top:18px}
+
+  /* ===== SIGNAL BƯỚC 3 — shell thanh trên + tab bar mobile ===== */
+  .app{display:grid;grid-template-columns:1fr;gap:16px;max-width:1120px;margin:0 auto;padding:16px}
+  .app main{padding:0;max-width:none;margin:0}
+  .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .topbar .logo{font:700 18px var(--f-head)}
+  .topbar .logo em{font-style:normal;color:var(--brand)}
+  .topbar .sp{flex:1}
+  .topbar .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:800 14px var(--f-body);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+  .topbar .btn.sm{min-height:36px;padding:0 14px;font-size:13px}
+  .topbar .btn.ghost{background:transparent;color:var(--brand);border-color:transparent}
+  .topbar .btn:active{transform:translate(2px,2px)}
+  .tabbar-row{display:flex;gap:8px;flex-wrap:wrap}
+  .tabbar-row .tab{width:auto}
+  .src-status{display:flex;align-items:center;gap:.45rem;font-size:.78rem;color:var(--faint);padding:.5rem 0}
+  .src-status .dot{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.8);flex:none}
+  @media (max-width:640px){
+    .app{padding:12px 12px 90px}
+    .tabbar-row{position:fixed;left:12px;right:12px;bottom:12px;z-index:50;background:var(--ink);color:var(--surface);border-radius:var(--r-pill);padding:8px;justify-content:space-around;gap:0;flex-wrap:nowrap}
+    .tabbar-row .tab{color:var(--surface);padding:8px 14px;border-radius:var(--r-pill);border-color:transparent;position:relative;flex:1;justify-content:center;font-size:12px;font-weight:800}
+    .tabbar-row .tab .ic{display:none}
+    .tabbar-row .tab.active{background:var(--brand);color:var(--brand-ink);border-color:transparent}
+    .tabbar-row .alert-badge{position:absolute;top:-2px;right:0;background:var(--pop);color:var(--pop-ink);font-size:10px;padding:1px 6px;border-radius:var(--r-pill);margin-left:0;min-width:0;height:auto}
+  }
 </style>
 </head>
 <body>
@@ -757,22 +781,20 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 
 <!-- ================= APP ================= -->
 <div id="appView" class="hidden">
-  <div class="shell">
-    <aside class="side">
-      <div class="brand"><span class="mark">J</span>JobPilot <span>Edge</span></div>
-      <div class="nav-label">Điều hướng</div>
+  <div class="app">
+    <div class="topbar">
+      <span class="logo">JobPilot <em>Edge</em></span>
+      <select id="profileSelect" class="input" style="width:170px" title="Chọn hồ sơ"></select>
+      <span class="sp"></span>
+      <button class="btn sm" id="paletteBtn" type="button">⌘K</button>
+      <button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+      <button id="logoutBtn" class="btn sm ghost" type="button">Đăng xuất</button>
+    </div>
+    <nav class="tabbar-row">
       <button class="tab active" data-tab="jobs"><span class="ic">▤</span>Việc làm</button>
       <button class="tab" data-tab="kanban"><span class="ic">▦</span>Kanban<span id="kanbanAlertBadge" class="alert-badge hidden">0</span></button>
       <button class="tab" data-tab="profile"><span class="ic">◉</span>Hồ sơ &amp; CV</button>
-      <div class="nav-label">Hồ sơ đang dùng</div>
-      <div class="prof-block"><select id="profileSelect" title="Chọn hồ sơ"></select></div>
-      <div style="height:.7rem"></div>
-      <button class="cmdk-hint" id="paletteBtn"><span>Tìm nhanh / ra lệnh…</span><span class="spacer"></span><kbd>⌘K</kbd></button>
-      <div class="spacer"></div>
-      <div class="sys"><span class="dot"></span><span id="sourceStatus">Nguồn job: đang kiểm tra…</span></div>
-      <button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" style="align-self:flex-start;margin-top:.6rem"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
-      <button id="logoutBtn" class="btn ghost small" style="align-self:flex-start;margin-top:.4rem">Đăng xuất</button>
-    </aside>
+    </nav>
 
     <main>
       <!-- ===== TAB: JOBS ===== -->
@@ -918,6 +940,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
         </div>
       </section>
     </main>
+    <div class="src-status"><span class="dot"></span><span id="sourceStatus">Nguồn job: đang kiểm tra…</span></div>
   </div>
 </div>
 
