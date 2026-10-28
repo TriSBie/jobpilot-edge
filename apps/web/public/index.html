@@ -240,38 +240,31 @@ html[data-theme="dark"]{
   @keyframes shimmer{to{background-position:-200% 0}}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-  /* ---------- kanban ---------- */
-  .kanban{display:grid;grid-template-columns:repeat(7,minmax(215px,1fr));gap:0;overflow-x:auto;padding-bottom:.6rem}
-  .kcol{padding:0 .8rem;border-left:1px solid var(--line)}
-  .kcol:first-child{border-left:none;padding-left:0}
-  .kcol-head{
-    display:flex;align-items:center;gap:.5rem;font-weight:600;font-size:.9rem;
-    padding:.35rem .2rem .8rem;position:sticky;top:0;
-  }
-  .kcol-head .count{
-    font-size:.74rem;color:var(--muted);border:1px solid var(--line);
-    border-radius:999px;padding:.02rem .5rem;background:rgba(var(--ov),.03);
-  }
-  .kcol-body{display:flex;flex-direction:column;gap:9px;min-height:60px}
-  .kcard{
-    padding:.8rem .9rem;border-radius:14px;
-    animation:rise .45s cubic-bezier(.22,.8,.3,1) both;animation-delay:calc(min(var(--i,0),10) * 40ms);
-    transition:border-color .15s ease, transform .15s ease;
-  }
-  .kcard:hover{border-color:var(--line-strong);transform:translateY(-1px)}
-  .kcard .t{font-weight:600;font-size:.92rem;line-height:1.4}
-  .kcard .t a{color:var(--text)} .kcard .t a:hover{color:var(--accent-2);text-decoration:none}
-  .kcard .c{color:var(--muted);font-size:.82rem;margin-top:.3rem}
-  .kcard .row{display:flex;align-items:center;gap:.4rem;margin-top:.65rem}
-  .mv{
-    width:26px;height:26px;border-radius:8px;border:1px solid var(--line);
-    background:rgba(var(--ov),.03);color:var(--muted);font-size:.72rem;line-height:1;
-  }
-  .mv:hover:not(:disabled){color:var(--text);border-color:var(--line-strong)}
+  /* ---------- kanban (Signal bước 5) ---------- */
+  .kanban{display:grid;grid-template-columns:repeat(7,minmax(215px,1fr));gap:14px;overflow-x:auto;padding-bottom:10px;width:0;min-width:100%} /* width:0+min-width: bảng tự cuộn, không kéo rộng track 1fr của .app */
+  .kcol{background:var(--bg);border:var(--bw) solid var(--line);border-radius:var(--r-md);padding:10px;display:flex;flex-direction:column;gap:10px;min-height:220px}
+  .kcol-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 14px var(--f-head);color:var(--ink)}
+  .kcol-head .count{font:700 12px var(--f-body);color:var(--ink);background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-pill);padding:2px 8px}
+  .kcol-body{display:flex;flex-direction:column;gap:10px;min-height:60px}
+  .kcard{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-md);padding:12px;box-shadow:none;font-size:13px}
+  .kcard.warn{border-color:var(--sun)}
+  .kcard .t{font:700 14px/1.3 var(--f-head)}
+  .kcard .t a{color:var(--ink)} .kcard .t a:hover{color:var(--brand);text-decoration:none}
+  .kcard .c{color:var(--mute);font-size:13px;margin-top:4px}
+  .kcard .c.due{color:#866000;font-weight:700}
+  html[data-theme="dark"] .kcard .c.due{color:var(--sun)}
+  .kcard .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+  .mv{min-width:var(--tap);min-height:var(--tap);border-radius:50%;border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink);font-weight:800;font-size:13px;line-height:1;cursor:pointer}
+  .mv:hover:not(:disabled){border-color:var(--ink)}
   .mv:disabled{opacity:.35;cursor:default}
-  .score-pill{font-size:.76rem;font-weight:700;border-radius:999px;padding:.14rem .55rem;border:1px solid var(--line);color:var(--muted)}
-  .score-pill.strong{color:var(--mint-ink);border-color:transparent;background:var(--mint)}
-  .score-pill.partial{color:var(--amber)}
+  .score-pill{white-space:nowrap;font-size:12px;font-weight:800;border-radius:var(--r-pill);padding:3px 9px;border:var(--bw) solid var(--line);background:transparent;color:var(--mute)}
+  .score-pill.strong{background:var(--mint);color:var(--mint-ink);border-color:transparent}
+  .score-pill.partial{background:var(--sun);color:var(--sun-ink);border-color:transparent}
+  .kmore{min-height:var(--tap);border-radius:var(--r-pill);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink);font:800 13px var(--f-body);cursor:pointer}
+  @media (max-width:640px){
+    .kanban{grid-template-columns:repeat(7,85vw);scroll-snap-type:x mandatory}
+    .kcol{scroll-snap-align:start}
+  }
 
   /* ---------- profile ---------- */
   .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;align-items:start}
@@ -1576,6 +1569,7 @@ async function loadApplications(){
   }
 }
 
+let kanbanNewAll = false; // cột "Mới" >20 thẻ: mặc định gập, bấm "Xem thêm" để mở
 function renderKanban(){
   const box = $("#kanbanContainer");
   // Phase 2 — cảnh báo im lặng / quá hạn follow-up
@@ -1617,16 +1611,21 @@ function renderKanban(){
   }
   const badge = $("#kanbanAlertBadge");
   if (badge) { badge.textContent = alerts.length; badge.classList.toggle("hidden", !alerts.length); }
+  const warnById = new Map(alerts.map(a => [a.id, a.label]));
   const byStage = {};
   STAGE_KEYS.forEach(k => byStage[k] = []);
   state.applications.forEach(a => { if (byStage[a.stage]) byStage[a.stage].push(a); });
   box.innerHTML = '<div class="kanban">' + STAGES.map((s, idx) => {
-    const cards = byStage[s.key].map((a, ci) => {
+    const list = byStage[s.key];
+    const shown = s.key === "new" && !kanbanNewAll ? list.slice(0, 20) : list;
+    const cards = shown.map(a => {
       const m = a.match || null;
-      return `<div class="kcard panel" style="--i:${ci}">
+      const warn = warnById.get(a.id);
+      const due = warn || (a.next_follow_up_at ? `Follow-up: ${fmtDate(a.next_follow_up_at)}` : "");
+      return `<div class="kcard${warn ? " warn" : ""}">
         <div class="t"><a href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
         <div class="c">${esc(a.job ? a.job.company : "")}${a.job && a.job.location ? " · " + esc(a.job.location) : ""}</div>
-        ${a.next_follow_up_at ? `<div class="c" style="color:var(--amber)">Follow-up: ${fmtDate(a.next_follow_up_at)}</div>` : ""}
+        ${due ? `<div class="c due">${esc(due)}</div>` : ""}
         ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
         <div class="row">
           <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước">◀</button>
@@ -1635,13 +1634,14 @@ function renderKanban(){
           ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ · ${esc(m.tier)}</span>` : ""}
         </div>
       </div>`;
-    }).join("");
+    }).join("") + (list.length > shown.length ? `<button class="kmore" data-kmore type="button">Xem thêm ${list.length - shown.length}</button>` : "");
     return `<div class="kcol">
       <div class="kcol-head"><span>${s.label}</span><span class="count">${byStage[s.key].length}</span></div>
       <div class="kcol-body">${cards || '<div class="muted small" style="text-align:center;padding:.4rem">Trống</div>'}</div>
     </div>`;
   }).join("") + "</div>";
 
+  $$("[data-kmore]", box).forEach(b => b.addEventListener("click", () => { kanbanNewAll = true; renderKanban(); }));
   $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
 }
 
