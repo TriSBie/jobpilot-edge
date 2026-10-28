@@ -618,8 +618,32 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
     .tabbar-row .alert-badge{position:absolute;top:-2px;right:0;background:var(--pop);color:var(--pop-ink);font-size:10px;padding:1px 6px;border-radius:var(--r-pill);margin-left:0;min-width:0;height:auto}
     .app{padding-bottom:calc(96px + env(safe-area-inset-bottom))}   /* tab bar cố định không che nội dung cuối */
   }
+
+  /* ===== SIGNAL BƯỚC 4 — panel Cần chú ý + toast + chỉ báo chấm lại ===== */
+  .alert{background:var(--sun);color:var(--sun-ink);border-radius:var(--r-md);padding:14px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-weight:600;margin-bottom:16px}
+  .alert b{font:700 15px var(--f-head)}
+  .alert .alert-items{flex:1 1 100%;display:grid;gap:10px}
+  .alert-item{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+  .alert-item a{color:var(--sun-ink);font-weight:700}
+  .alert-item .meta{font-size:13px;font-weight:500}
+  .alert-item .alert-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .alert .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 14px;border-radius:var(--r-pill);font:800 13px var(--f-body);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer}
+  .alert .btn:active{transform:translate(2px,2px)}
+  .alert .btn.ink{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+  .alert .btn.ghost{background:transparent;color:var(--sun-ink);border-color:transparent}
+  .toast{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--surface);border:none;border-radius:var(--r-md);padding:12px 16px;font-weight:700;box-shadow:6px 6px 0 var(--brand)}
+  .toast.ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint);flex:none}
+  .toast.err{box-shadow:6px 6px 0 var(--pop)}
+  .toast.err::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pop);flex:none}
+  .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;padding:0 0 0 4px}
+  .toast-x:hover{opacity:1}
+  .rescoring{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-pill);background:var(--surface);border:var(--bw) solid var(--brand);color:var(--brand);font-weight:700;font-size:13px}
+  .rescoring i{width:12px;height:12px;border-radius:50%;border:3px solid var(--brand);border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
+  @media (max-width:640px){
+    #toasts{right:12px;bottom:76px}
+  }
   /* Signal: mọi vùng chạm ≥ 44px (spec mục 8) */
-  .topbar .btn.sm,.toolbar .btn.sm,#jobsContainer .btn.sm,.theme-toggle,.tabbar-row .tab,#submitUrl{min-height:var(--tap)}
+  .topbar .btn.sm,.toolbar .btn.sm,#jobsContainer .btn.sm,.theme-toggle,.tabbar-row .tab,#submitUrl,.alert .btn{min-height:var(--tap)}
   .theme-toggle{min-width:var(--tap)}
   .check{min-height:var(--tap);padding-right:4px}
   #jobsContainer button.chip[data-expand-for]{min-height:var(--tap);min-width:var(--tap);justify-content:center;cursor:pointer}
@@ -811,9 +835,12 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
           </select>
           <label class="check"><input id="filterFlags" type="checkbox"> Ẩn tin có cờ</label>
           <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
+          <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText">Đang chấm lại…</span></span>
           <button id="refreshJobsBtn" class="btn sm" type="button">Làm mới</button>
           <button id="scanBtn" class="btn sm p" type="button">Quét job mới</button>
         </div>
+
+        <div id="jobsAlertStrip"></div>
 
         <form id="submitForm" class="submit-row">
           <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…"></div>
@@ -1011,9 +1038,49 @@ function toast(msg, kind){
   const box = $("#toasts");
   const el = document.createElement("div");
   el.className = "toast" + (kind ? " " + kind : "");
-  el.textContent = msg;
+  el.innerHTML = `<span>${esc(msg)}</span><button class="toast-x" type="button" aria-label="Đóng">×</button>`;
+  const close = () => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(() => el.remove(), 320); };
+  el.querySelector(".toast-x").addEventListener("click", close);
   box.appendChild(el);
-  setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(() => el.remove(), 320); }, 4200);
+  setTimeout(close, 4000);
+}
+
+/* ---------------- Chỉ báo chấm lại (Signal bước 4) ---------------- */
+let rescoreTimer = null, rescorePoll = null, rescoreBase = null, rescoreStarted = 0, rescoreCount = 0;
+function stopRescoringWatch(){
+  if (rescoreTimer) { clearInterval(rescoreTimer); rescoreTimer = null; }
+  if (rescorePoll) { clearInterval(rescorePoll); rescorePoll = null; }
+  const pill = $("#rescoringPill");
+  if (pill) pill.classList.add("hidden");
+}
+function startRescoringWatch(){
+  const p = currentProfile();
+  if (!p || !state.jobs.length) return;
+  stopRescoringWatch();
+  rescoreBase = {};
+  state.jobs.forEach(j => { rescoreBase[String(j.id)] = j.match ? j.match.final_score : null; });
+  rescoreCount = state.jobs.length;
+  rescoreStarted = Date.now();
+  const pill = $("#rescoringPill"), txt = $("#rescoringText");
+  if (!pill || !txt) return;
+  const tick = () => { txt.textContent = `Đang chấm lại ${rescoreCount} job… ${Math.floor((Date.now() - rescoreStarted) / 1000)} giây`; };
+  tick();
+  pill.classList.remove("hidden");
+  rescoreTimer = setInterval(tick, 1000);
+  const check = async () => {
+    let done = false;
+    try {
+      const jobs = await api("/api/jobs?profile_id=" + encodeURIComponent(p.id));
+      jobs.forEach(j => {
+        const id = String(j.id);
+        if (Object.prototype.hasOwnProperty.call(rescoreBase, id) && (j.match ? j.match.final_score : null) !== rescoreBase[id]) done = true;
+      });
+    } catch (e) {
+      if (!state.token) { stopRescoringWatch(); return; }
+    }
+    if (done || Date.now() - rescoreStarted >= 120000) { stopRescoringWatch(); await loadJobs(); }
+  };
+  rescorePoll = setInterval(check, 10000);
 }
 
 async function api(path, opts){
@@ -1524,19 +1591,29 @@ function renderKanban(){
   });
   const strip = $("#alertsStrip");
   if (strip) {
-    strip.innerHTML = alerts.length ? `<div class="alerts"><h3>Cần chú ý · ${alerts.length} đơn</h3>
-      <p class="muted small" style="margin:.15rem 0 .4rem">Những đơn đã nộp/phỏng vấn nhưng nhà tuyển dụng im lặng từ 7 ngày, hoặc đã quá hạn follow-up bạn đặt.</p>` + alerts.map(a => `
+    strip.innerHTML = alerts.length ? `<div class="alert">
+      <div><b>Cần chú ý · ${alerts.length} đơn</b><div>Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt</div></div>
+      <div class="alert-items">` + alerts.map(a => `
       <div class="alert-item">
-        <span class="t"><a href="${esc(a.job.source_url)}" target="_blank" rel="noopener">${esc(a.job.title)}</a></span>
-        <span class="meta">${esc(a.job.company)} · ${esc((STAGES.find(s => s.key === a.stage) || {}).label || a.stage)} · ${esc(a.label)}</span>
-        <span class="spacer"></span>
-        <button class="btn small" data-alert-follow="${esc(a.id)}" type="button">Đã follow-up</button>
-        <button class="btn small" data-alert-snooze="${esc(a.id)}" type="button">Nhắc sau 3 ngày</button>
-        <button class="btn small" data-alert-archive="${esc(a.id)}" type="button">Lưu trữ</button>
-      </div>`).join("") + `</div>` : "";
+        <div><a href="${esc(a.job.source_url)}" target="_blank" rel="noopener">${esc(a.job.title)}</a>
+        <div class="meta">${esc(a.job.company)} · ${esc((STAGES.find(s => s.key === a.stage) || {}).label || a.stage)} · ${esc(a.label)}</div></div>
+        <div class="alert-btns">
+        <button class="btn sm ink" data-alert-follow="${esc(a.id)}" type="button">Đã follow-up</button>
+        <button class="btn sm" data-alert-snooze="${esc(a.id)}" type="button">Nhắc sau 3 ngày</button>
+        <button class="btn sm ghost" data-alert-archive="${esc(a.id)}" type="button">Lưu trữ</button>
+        </div>
+      </div>`).join("") + `</div></div>` : "";
     $$("[data-alert-follow]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertFollow, "follow", b)));
     $$("[data-alert-snooze]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertSnooze, "snooze", b)));
     $$("[data-alert-archive]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertArchive, "archive", b)));
+  }
+  // Bước 4 — cùng nguồn dữ liệu, bản tóm tắt ở tab Việc làm + nút Mở Kanban
+  const jstrip = $("#jobsAlertStrip");
+  if (jstrip) {
+    jstrip.innerHTML = alerts.length ? `<div class="alert">
+      <div><b>Cần chú ý · ${alerts.length} đơn</b><div>${alerts.slice(0, 2).map(a => `${esc(a.job.company)} ${esc(a.label)}`).join(", ")}${alerts.length > 2 ? ` và ${alerts.length - 2} đơn khác` : ""}</div></div>
+      <button class="btn sm" data-goto-kanban type="button">Mở Kanban</button></div>` : "";
+    $$("[data-goto-kanban]", jstrip).forEach(b => b.addEventListener("click", () => switchTab("kanban")));
   }
   const badge = $("#kanbanAlertBadge");
   if (badge) { badge.textContent = alerts.length; badge.classList.toggle("hidden", !alerts.length); }
@@ -1640,7 +1717,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       if (i >= 0) state.profiles[i] = updated;
       renderProfileSelect();
       if (updated.rescore_queued === false) toast("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
-      else toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok");
+      else { toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok"); startRescoringWatch(); }
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
     } else {
       const created = await api("/api/profiles", { method: "POST", body: JSON.stringify(payload) });
@@ -1761,7 +1838,7 @@ $("#addSkillBtn").addEventListener("click", async () => {
     });
     $("#manualSkill").value = "";
     if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
-    else toast("Đã thêm kỹ năng: " + skill, "ok");
+    else { toast("Đã thêm kỹ năng: " + skill, "ok"); startRescoringWatch(); }
     await refreshProfiles();
   } catch (e) {
     toast(e.message, "err");
@@ -1857,7 +1934,7 @@ $("#confirmSkillsBtn").addEventListener("click", async () => {
       method: "POST", body: JSON.stringify({ skills: chosen }),
     });
     if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
-    else toast("Đã lưu " + chosen.length + " kỹ năng vào hồ sơ.", "ok");
+    else { toast("Đã lưu " + chosen.length + " kỹ năng vào hồ sơ.", "ok"); startRescoringWatch(); }
     state.suggested = [];
     $("#suggestedWrap").classList.add("hidden");
     await refreshProfiles();
