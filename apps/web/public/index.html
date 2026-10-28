@@ -274,7 +274,6 @@ html[data-theme="dark"]{
   .score-pill.partial{color:var(--amber)}
 
   /* ---------- profile ---------- */
-  .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;align-items:start}
   .card-p{padding:1.3rem;border-radius:var(--r-lg)}
   .card-p h3{margin:.1rem 0 1rem;font-size:1.05rem;font-weight:600;letter-spacing:-.01em}
   .card-p h3 .gray{color:var(--faint);font-weight:500}
@@ -324,7 +323,6 @@ html[data-theme="dark"]{
 
   /* ---------- responsive ---------- */
   @media (max-width: 980px){
-    .cols-2{grid-template-columns:1fr}
     .brief-in{grid-template-columns:1fr}
   }
   @media (max-width: 860px){
@@ -647,6 +645,36 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   .theme-toggle{min-width:var(--tap)}
   .check{min-height:var(--tap);padding-right:4px}
   #jobsContainer button.chip[data-expand-for]{min-height:var(--tap);min-width:var(--tap);justify-content:center;cursor:pointer}
+
+  /* ===== SIGNAL BƯỚC 6 — Hồ sơ & CV: 3 khối, chip khu vực, 5 vạch trọng số ===== */
+  .pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:22px;align-items:start}
+  #tab-profile .card-p{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-lg);box-shadow:none;min-width:0}
+  #tab-profile .card-p h3{font:700 18px/1.3 var(--f-head);color:var(--ink)}
+  #tab-profile .pf-sep{border-top:var(--bw) dashed var(--line);margin-top:1.2rem;padding-top:1rem}
+  #tab-profile .chip{min-height:var(--tap);padding:0 16px;border-radius:var(--r-pill);font:700 14px var(--f-body);border:var(--bw) solid transparent;background:transparent;cursor:pointer}
+  #tab-profile .chip::before{content:none}
+  #tab-profile .chip.on{background:var(--mint);color:var(--mint-ink)}
+  #tab-profile .chip.off{border-color:var(--line);color:var(--mute)}
+  #tab-profile .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:800 14px var(--f-body);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink)}
+  #tab-profile .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+  #tab-profile .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}
+  #tab-profile .btn.ghost:hover{color:var(--ink)}
+  #tab-profile .btn:active{transform:translate(2px,2px)}
+  #tab-profile button:focus-visible{outline:none;box-shadow:var(--focus)}
+  #cvFile{min-height:var(--tap)}
+  .skill{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;padding:8px 0;border-bottom:var(--bw) dashed var(--line)}
+  .skill b{font:700 15px var(--f-head);color:var(--ink);overflow-wrap:anywhere}
+  .skill .wbar{grid-column:1/-1}
+  .skill .btn{grid-row:1;grid-column:2}
+  .wbar{display:flex}
+  .wbar button{width:var(--tap);height:var(--tap);padding:0;border:0;background:none;display:grid;place-items:center;border-radius:var(--r-sm)}
+  .wbar button i{display:block;width:34px;height:12px;border-radius:4px;background:var(--line)}
+  .wbar button.on i{background:var(--brand)}
+  .wbar button:disabled{cursor:wait;opacity:.6}
+  #suggestedList .skill-row{min-height:var(--tap)}
+  #suggestedList .skill-row label.nm{min-height:var(--tap);display:flex;align-items:center}
+  #suggestedList .skill-row select{min-height:var(--tap)}
+  #suggestedList .skill-row input[type=checkbox]{width:22px;height:22px}
 </style>
 </head>
 <body>
@@ -862,21 +890,21 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
       <section id="tab-profile" class="hidden">
         <h2 class="page-title">Hồ sơ &amp; CV <span class="gray">— nền của mọi điểm số</span></h2>
         <p class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
-        <div class="cols-2">
-          <div class="panel card-p">
+        <div class="pf-grid">
+          <section class="card-p">
             <h3>Thông tin hồ sơ</h3>
             <form id="profileForm">
               <div class="field">
                 <label for="pfName">Tên hồ sơ</label>
-                <input id="pfName" type="text" placeholder="VD: Kriss Bui — Backend">
+                <input id="pfName" class="input" type="text" placeholder="VD: Kriss Bui — Backend">
               </div>
               <div class="field">
                 <label for="pfRoles">Vị trí mục tiêu (cách nhau bởi dấu phẩy)</label>
-                <input id="pfRoles" type="text" placeholder="Backend Developer, Backend Engineer">
+                <input id="pfRoles" class="input" type="text" placeholder="Backend Developer, Backend Engineer">
               </div>
               <div class="field">
                 <label for="pfLevel">Cấp bậc</label>
-                <select id="pfLevel">
+                <select id="pfLevel" class="input">
                   <option value="">— Chưa đặt —</option>
                   <option value="fresher">Fresher</option>
                   <option value="junior">Junior</option>
@@ -885,78 +913,71 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
                 </select>
               </div>
               <div class="field">
-                <label for="pfLocations">Khu vực (cách nhau bởi dấu phẩy)</label>
-                <input id="pfLocations" type="text" placeholder="Ho Chi Minh, Remote">
+                <label id="pfAreaLbl">Khu vực</label>
+                <div id="pfAreaChips" class="chips" role="group" aria-labelledby="pfAreaLbl"></div>
               </div>
               <div class="field">
                 <label for="pfSalary">Mức lương tối thiểu kỳ vọng (VNĐ/tháng)</label>
-                <input id="pfSalary" type="number" min="0" step="100000" placeholder="VD: 25000000">
+                <input id="pfSalary" class="input" type="number" min="0" step="100000" placeholder="VD: 25000000">
               </div>
-              <button id="pfSaveBtn" class="btn primary" type="submit" style="margin-top:1.1rem">Lưu hồ sơ</button>
+              <button id="pfSaveBtn" class="btn p" type="submit" style="margin-top:1.1rem">Lưu hồ sơ</button>
             </form>
-            <div style="border-top:1px solid var(--line);margin-top:1.4rem;padding-top:1.1rem">
+            <div class="pf-sep">
               <label for="newProfileName">Tạo hồ sơ mới</label>
               <div class="inline-row">
-                <div class="grow"><input id="newProfileName" type="text" placeholder="Tên hồ sơ mới…"></div>
+                <div class="grow"><input id="newProfileName" class="input" type="text" placeholder="Tên hồ sơ mới…"></div>
                 <button id="createProfileBtn" class="btn" type="button">Tạo hồ sơ</button>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <div class="panel card-p">
-              <h3>Tải CV lên <span class="gray">— AI trích xuất kỹ năng</span></h3>
-              <div class="field">
-                <label for="cvFile">File CV (PDF, TXT hoặc MD)</label>
-                <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
+          <section class="card-p">
+            <h3>Kỹ năng</h3>
+            <div id="currentSkills"></div>
+            <div class="pf-sep">
+              <label for="manualSkill">Thêm kỹ năng thủ công</label>
+              <div class="inline-row">
+                <div class="grow"><input id="manualSkill" class="input" type="text" placeholder="VD: Kafka"></div>
+                <div id="manualWeight" class="wbar" role="group" aria-label="Trọng số kỹ năng mới" data-value="3"></div>
+                <button id="addSkillBtn" class="btn" type="button">Thêm</button>
               </div>
+            </div>
+            <div class="pf-sep">
+              <label for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
+              <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
               <button id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
               <div id="cvStatus"></div>
               <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
                 <label>Kỹ năng gợi ý — tích chọn &amp; đặt trọng số (1–5)</label>
                 <div id="suggestedList"></div>
-                <button id="confirmSkillsBtn" class="btn primary" type="button" style="margin-top:.9rem">Lưu kỹ năng đã chọn</button>
+                <button id="confirmSkillsBtn" class="btn p" type="button" style="margin-top:.9rem">Lưu kỹ năng đã chọn</button>
               </div>
             </div>
-            <div class="panel card-p" style="margin-top:1.1rem">
-              <h3>Kỹ năng hiện có</h3>
-              <div id="currentSkills"></div>
-              <div style="border-top:1px solid var(--line);margin-top:1rem;padding-top:1rem">
-                <label>Thêm kỹ năng thủ công</label>
-                <div class="inline-row">
-                  <div class="grow"><input id="manualSkill" type="text" placeholder="VD: Kafka"></div>
-                  <select id="manualWeight" title="Trọng số">
-                    <option value="1">1</option><option value="2">2</option>
-                    <option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
-                  </select>
-                  <button id="addSkillBtn" class="btn" type="button">Thêm</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="panel card-p" style="margin-top:1.2rem">
+          </section>
+
+          <section class="card-p">
           <h3>Benchmark lương <span class="gray">— biết mình đáng bao nhiêu trước khi đàm phán</span></h3>
           <p class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
           <div class="inline-row">
-            <div class="grow"><input id="benchRole" type="text" placeholder="Vị trí: backend, java…"></div>
-            <select id="benchLevel" title="Cấp bậc">
+            <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí: backend, java…"></div>
+            <select id="benchLevel" class="input" title="Cấp bậc" style="width:auto">
               <option value="">Mọi cấp bậc</option>
               <option value="junior">Junior</option>
               <option value="middle">Middle</option>
               <option value="senior">Senior</option>
             </select>
-            <div class="grow"><input id="benchLoc" type="text" placeholder="Khu vực: ho chi minh…"></div>
-            <button id="benchBtn" class="btn primary" type="button">Xem benchmark</button>
+            <div class="grow"><input id="benchLoc" class="input" type="text" placeholder="Khu vực: ho chi minh…"></div>
+            <button id="benchBtn" class="btn p" type="button">Xem benchmark</button>
           </div>
           <div id="benchResult" style="margin-top:.8rem"></div>
-          <div style="border-top:1px solid var(--line);margin-top:1.2rem;padding-top:1rem">
+          <div class="pf-sep">
             <h3 style="font-size:1rem">Kịch bản đàm phán</h3>
             <div class="neg-script"><b>1. Bị hỏi lương mong muốn trước</b><p>"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
             <div class="neg-script"><b>2. Offer thấp hơn kỳ vọng</b><p>"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
             <div class="neg-script"><b>3. Có offer khác / counter-offer</b><p>"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
             <div class="neg-script"><b>4. Muốn hỏi lại range của công ty</b><p>"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng — để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
           </div>
+        </section>
         </div>
       </section>
     </main>
@@ -1687,12 +1708,34 @@ async function alertAction(appId, kind, btn){
 function splitList(v){
   return String(v || "").split(",").map(x => x.trim()).filter(Boolean);
 }
+// Danh mục khu vực có dấu. Backend so khớp bỏ dấu (normLoc, worker.js) nên chuỗi cũ "Ho Chi Minh" được map về preset có dấu.
+const AREA_PRESETS = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"];
+const normArea = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").trim();
+let pfAreaOpts = AREA_PRESETS.slice(), pfAreas = new Set();
+function renderAreaChips(){
+  $("#pfAreaChips").innerHTML = pfAreaOpts.map(a => {
+    const on = pfAreas.has(a);
+    return `<button type="button" class="chip ${on ? "on" : "off"}" aria-pressed="${on}" data-area="${esc(a)}">${esc(a)}</button>`;
+  }).join("");
+}
+$("#pfAreaChips").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-area]");
+  if (!b) return;
+  const a = b.dataset.area, on = !pfAreas.has(a);
+  if (on) pfAreas.add(a); else pfAreas.delete(a);
+  b.className = "chip " + (on ? "on" : "off");
+  b.setAttribute("aria-pressed", on);
+});
 function fillProfileForm(){
   const p = currentProfile();
   $("#pfName").value = p ? (p.name || "") : "";
   $("#pfRoles").value = p ? (p.target_roles || []).join(", ") : "";
   $("#pfLevel").value = p ? (p.level || "") : "";
-  $("#pfLocations").value = p ? (p.locations || []).join(", ") : "";
+  // giá trị ngoài danh mục vẫn hiện (đã chọn) để không mất khi lưu
+  const locs = (p ? p.locations || [] : []).map(l => AREA_PRESETS.find(x => normArea(x) === normArea(l)) || l);
+  pfAreas = new Set(locs);
+  pfAreaOpts = [...new Set(AREA_PRESETS.concat(locs))];
+  renderAreaChips();
   $("#pfSalary").value = p && p.salary_min ? p.salary_min : "";
 }
 
@@ -1703,7 +1746,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
     name: $("#pfName").value.trim(),
     target_roles: splitList($("#pfRoles").value),
     level: $("#pfLevel").value || null,
-    locations: splitList($("#pfLocations").value),
+    locations: pfAreaOpts.filter(a => pfAreas.has(a)),
     salary_min: $("#pfSalary").value ? Number($("#pfSalary").value) : null,
   };
   const btn = $("#pfSaveBtn");
@@ -1797,6 +1840,11 @@ async function loadBenchmark(){
 $("#benchBtn").addEventListener("click", loadBenchmark);
 
 /* ---------------- Skills ---------------- */
+function weightBars(w){
+  let out = "";
+  for (let k = 1; k <= 5; k++) out += `<button type="button" class="${k <= w ? "on" : ""}" data-w="${k}" aria-label="Trọng số ${k}/5" aria-pressed="${k === w}"><i></i></button>`;
+  return out;
+}
 function renderCurrentSkills(){
   const box = $("#currentSkills");
   const p = currentProfile();
@@ -1806,11 +1854,52 @@ function renderCurrentSkills(){
     box.innerHTML = '<p class="muted small">Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.</p>';
     return;
   }
-  box.innerHTML = skills.map(s =>
-    `<div class="skill-row"><span class="nm">${esc(s.skill)}</span>
-     <span class="badge">${esc(s.source || "manual")}</span>
-     <span class="chip neutral">trọng số ${esc(s.weight)}</span></div>`).join("");
+  box.innerHTML = skills.map((s, i) =>
+    `<div class="skill" data-i="${i}"><b>${esc(s.skill)}</b>
+     <div class="wbar" role="group" aria-label="Trọng số ${esc(s.skill)}">${weightBars(Number(s.weight))}</div>
+     <button type="button" class="btn ghost" data-del aria-label="Xóa ${esc(s.skill)}">Xóa</button></div>`).join("");
 }
+
+// Gửi trọn danh sách lên /skills/confirm (API thay toàn bộ kỹ năng của hồ sơ).
+async function saveSkills(p, list, okMsg){
+  const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
+    method: "POST", body: JSON.stringify({ skills: list }),
+  });
+  if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
+  else { toast(okMsg, "ok"); startRescoringWatch(); }
+  await refreshProfiles();
+}
+
+$("#currentSkills").addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button"), row = b && b.closest(".skill[data-i]");
+  const p = currentProfile();
+  if (!row || !p || b.disabled) return;
+  const i = Number(row.dataset.i), cur = (p.skills || [])[i];
+  if (!cur) return;
+  const w = Number(b.dataset.w);
+  if (w && w === Number(cur.weight)) return;
+  const list = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
+  if (w) list[i].weight = w; else list.splice(i, 1);
+  $$("#currentSkills button").forEach(x => x.disabled = true);
+  try {
+    await saveSkills(p, list, w ? `Đã đổi trọng số ${cur.skill}: ${w}/5` : "Đã xóa kỹ năng: " + cur.skill);
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    renderCurrentSkills();
+    const f = w && $(`#currentSkills .skill[data-i="${i}"] [data-w="${w}"]`);
+    if (f) f.focus(); // giữ focus cho người dùng bàn phím sau khi render lại
+  }
+});
+
+$("#manualWeight").innerHTML = weightBars(3);
+$("#manualWeight").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-w]");
+  if (!b) return;
+  $("#manualWeight").dataset.value = b.dataset.w;
+  $("#manualWeight").innerHTML = weightBars(Number(b.dataset.w));
+  $(`#manualWeight [data-w="${b.dataset.w}"]`).focus();
+});
 
 async function refreshProfiles(){
   try {
@@ -1826,20 +1915,15 @@ $("#addSkillBtn").addEventListener("click", async () => {
   if (!p) { toast("Chưa có hồ sơ.", "err"); return; }
   const skill = $("#manualSkill").value.trim();
   if (!skill) { toast("Nhập tên kỹ năng trước đã.", "err"); return; }
-  const weight = Number($("#manualWeight").value) || 3;
+  const weight = Number($("#manualWeight").dataset.value) || 3;
   const existing = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
   const merged = existing.filter(s => s.skill.toLowerCase() !== skill.toLowerCase());
   merged.push({ skill, weight });
   const btn = $("#addSkillBtn");
   btn.disabled = true;
   try {
-    const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
-      method: "POST", body: JSON.stringify({ skills: merged }),
-    });
+    await saveSkills(p, merged, "Đã thêm kỹ năng: " + skill);
     $("#manualSkill").value = "";
-    if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
-    else { toast("Đã thêm kỹ năng: " + skill, "ok"); startRescoringWatch(); }
-    await refreshProfiles();
   } catch (e) {
     toast(e.message, "err");
   } finally {
