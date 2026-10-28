@@ -586,6 +586,13 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
     .card .score{width:56px;height:56px;font-size:20px}
     .card .actions .btn{min-height:36px;padding:0 14px;font-size:13px}
   }
+
+  /* ===== SIGNAL P0 — chip +N, xem thêm, strip tổng quan ===== */
+  .jobsum{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-bottom:16px;display:grid;gap:6px;color:var(--mute);font-size:14px}
+  .jobsum b{color:var(--ink)}
+  .jobsum .miss{font-size:13px}
+  #jobsContainer button.chip{background:transparent;cursor:pointer}
+  .loadmore{display:flex;justify-content:center;margin-top:18px}
 </style>
 </head>
 <body>
@@ -944,6 +951,8 @@ const state = {
   profiles: [],
   profileId: localStorage.getItem("jp_profile") || "",
   jobs: [],
+  jobsVisible: 20,
+  expandedChips: new Set(),
   applications: [],
   suggested: [],
   filters: { tier: "", source: "", q: "", hideFlagged: false },
@@ -1326,6 +1335,7 @@ async function loadJobs(){
   if (state.filters.q) qs.set("q", state.filters.q);
   try {
     state.jobs = await api("/api/jobs?" + qs.toString());
+    state.jobsVisible = 20;
     renderJobs();
   } catch (e) {
     box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
@@ -1353,22 +1363,47 @@ function renderJobs(){
     box.innerHTML = '<div class="empty">Chưa có job nào khớp bộ lọc. Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.</div>';
     return;
   }
-  box.innerHTML = '<div class="list">' + list.map((job, i) => {
+  // P0 — strip tổng quan: tính từ danh sách đã lọc, không gọi API thêm
+  let strong = 0, partial = 0, weak = 0, unscored = 0;
+  const missCount = {};
+  let newest = 0;
+  list.forEach(j => {
+    const t = j.match ? j.match.tier : "";
+    if (t === "strong") strong++;
+    else if (t === "partial") partial++;
+    else if (t === "weak") weak++;
+    else unscored++;
+    ((j.match && j.match.missing_skills) || []).forEach(s => { missCount[s] = (missCount[s] || 0) + 1; });
+    const d = Number(j.posted_at || j.first_seen_at);
+    if (!isNaN(d) && d > newest) newest = d;
+  });
+  const topMiss = Object.entries(missCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const sumHTML = `<div class="jobsum"><div><b>${list.length}</b> job · <b>${strong}</b> khớp mạnh · <b>${partial}</b> một phần · <b>${weak}</b> khớp yếu${unscored ? ` · <b>${unscored}</b> chưa chấm` : ""}${newest ? ` · Mới nhất: ${fmtDate(newest)}` : ""}</div>${topMiss.length ? `<div class="miss">Thiếu nhiều nhất: ${topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", ")}</div>` : ""}</div>`;
+  // P0 — phân trang "Xem thêm": hiện 20 job đầu, bấm để hiện thêm
+  const visible = Math.min(state.jobsVisible || 20, list.length);
+  const page = list.slice(0, visible);
+  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">Xem thêm (${list.length - visible} job còn lại)</button></div>` : "";
+  box.innerHTML = sumHTML + '<div class="list">' + page.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
     const stage = app ? app.stage : "new";
-    const chips = [];
+    const skillChips = [];
     if (m) {
-      (m.matched_skills || []).forEach(s => chips.push(`<span class="chip on">${esc(s)}</span>`));
-      (m.missing_skills || []).forEach(s => chips.push(`<span class="chip off">${esc(s)}</span>`));
+      (m.matched_skills || []).forEach(s => skillChips.push(`<span class="chip on">${esc(s)}</span>`));
+      (m.missing_skills || []).forEach(s => skillChips.push(`<span class="chip off">${esc(s)}</span>`));
     }
+    // P0 — chip +N: quá 5 chip kỹ năng thì thu gọn, bấm để mở rộng
+    const expanded = state.expandedChips.has(String(job.id));
+    const shownSkills = (!expanded && skillChips.length > 5) ? skillChips.slice(0, 5) : skillChips;
+    const moreChip = (!expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">+${skillChips.length - 5}</button>` : "";
+    const lessChip = (expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">Thu gọn</button>` : "";
     const date = job.posted_at || job.first_seen_at;
     return `<article class="card" style="--i:${i}">
       ${m ? scoreDiv(m.final_score, m.tier) : scoreDiv(0, "")}
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         <div class="meta">${[esc(job.company || ""), job.location ? "· " + esc(job.location) : "", date ? "· " + fmtDate(date) : "", job.salary_text ? "· " + esc(job.salary_text) : ""].filter(x => x).join(" ")}</div>
-        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">chưa chấm</span>`}${chips.join("")}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">chưa chấm</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${x.label}</option>`).join("")}
@@ -1378,7 +1413,7 @@ function renderJobs(){
       </div>
       ${m && (m.rule_detail || m.fit) ? explainBlock(job, m) : ""}
     </article>`;
-  }).join("") + "</div>";
+  }).join("") + "</div>" + moreHTML;
 
   $$("select[data-stage-for]", box).forEach(sel => {
     sel.addEventListener("change", () => changeJobStage(sel.dataset.stageFor, sel.value, sel));
@@ -1392,6 +1427,18 @@ function renderJobs(){
       btn.textContent = el.classList.contains("hidden") ? "Vì sao điểm này?" : "Ẩn giải thích";
     });
   });
+
+  $$("[data-expand-for]", box).forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.expandFor;
+      if (state.expandedChips.has(id)) state.expandedChips.delete(id);
+      else state.expandedChips.add(id);
+      renderJobs();
+    });
+  });
+
+  const lm = $("#loadMoreJobs", box);
+  if (lm) lm.addEventListener("click", () => { state.jobsVisible = (state.jobsVisible || 20) + 20; renderJobs(); });
 }
 
 async function changeJobStage(jobId, stage, selEl){
@@ -1424,7 +1471,7 @@ async function changeJobStage(jobId, stage, selEl){
 }
 
 $("#filterTier").addEventListener("change", (e) => { state.filters.tier = e.target.value; loadJobs(); });
-$("#filterFlags").addEventListener("change", (e) => { state.filters.hideFlagged = e.target.checked; renderJobs(); });
+$("#filterFlags").addEventListener("change", (e) => { state.filters.hideFlagged = e.target.checked; state.jobsVisible = 20; renderJobs(); });
 $("#filterSource").addEventListener("change", (e) => { state.filters.source = e.target.value; loadJobs(); });
 $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
 $("#refreshJobsBtn").addEventListener("click", () => { loadJobs(); loadDigest(); loadSourceStatus(); });
