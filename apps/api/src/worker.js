@@ -139,6 +139,21 @@ async function getUser(request, env) {
   return env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first();
 }
 
+async function ownsProfile(env, user, profileId) {
+  if (!profileId) return false;
+  return !!(await env.DB.prepare("SELECT id FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first());
+}
+
+async function enqueueProfileRescore(env, profileId) {
+  try {
+    await env.Q_SCORE.send({ kind: "rescore_profile", profileId });
+    return true;
+  } catch (error) {
+    console.error("profile rescore enqueue failed", profileId, error);
+    return false;
+  }
+}
+
 // ---------------- profiles & CV ----------------
 async function profileWithSkills(env, profile) {
   const { results } = await env.DB.prepare(
@@ -407,11 +422,44 @@ async function scoreJobForAllProfiles(env, job) {
     ).bind(uid(), p.id, job.id, now(), now()).run();
     if (s.tier === "strong") {
       await env.DB.prepare(
-        "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) VALUES (?, ?, 'strong_match', ?, ?, ?, ?)"
-      ).bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now()).run();
+        "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)"
+      ).bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id).run();
       try {
         const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
         await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore }) });
+      } catch (_) { /* realtime là best-effort */ }
+    }
+  }
+}
+
+async function rescoreProfile(env, profileId) {
+  const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND is_active = 1").bind(profileId).first();
+  if (!p) return;
+  const { results: skills } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ?").bind(p.id).all();
+  if (!skills.length) return;
+  const { results: jobs } = await env.DB.prepare("SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
+  const profile = { ...p, locations: JSON.parse(p.locations || "[]") };
+  for (let i = 0; i < jobs.length; i += 50) {
+    const stmts = [], broadcasts = [];
+    for (const job of jobs.slice(i, i + 50)) {
+      job.skills = JSON.parse(job.skills || "[]");
+      const s = scoreJob(profile, skills, job);
+      stmts.push(env.DB.prepare(`INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
+        VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`)
+        .bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
+      stmts.push(env.DB.prepare("INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)")
+        .bind(uid(), p.id, job.id, now(), now()));
+      if (s.tier === "strong") {
+        stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)")
+          .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id));
+        broadcasts.push({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore });
+      }
+    }
+    await env.DB.batch(stmts);
+    for (const event of broadcasts) {
+      try {
+        const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
+        await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify(event) });
       } catch (_) { /* realtime là best-effort */ }
     }
   }
@@ -543,6 +591,7 @@ function passwordError(pw) {
 // ---------------- router ----------------
 export default {
   async fetch(request, env, ctx) {
+    try {
     const url = new URL(request.url);
     const path = url.pathname;
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
@@ -550,10 +599,6 @@ export default {
     if (path === "/api/health") {
       return json({ ok: true, service: "jobpilot-api", phase: 2, ts: new Date().toISOString(),
         bindings: { DB: !!env.DB, KV: !!env.KV, FILES: !!env.FILES, AI: !!env.AI, EMB: !!env.EMB, EVENTS: !!env.EVENTS } });
-    }
-    if (path === "/api/realtime") {
-      const user = url.searchParams.get("user") || "anonymous";
-      return env.USER_HUB.get(env.USER_HUB.idFromName(user)).fetch(request);
     }
 
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
@@ -590,24 +635,15 @@ export default {
       return json(await issueSession(env, user));
     }
     if (path === "/api/auth/set-password" && request.method === "POST") {
-      // Claim tài khoản cũ (chưa từng có mật khẩu): đặt mật khẩu lần đầu rồi đăng nhập luôn.
-      const body = await readBody(request);
-      const email = (body.email || "").trim().toLowerCase();
-      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
-      const pwErr = passwordError(body.password);
-      if (pwErr) return json({ error: pwErr }, 400);
-      const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
-      if (!user) return json({ error: "account_not_found" }, 404);
-      if (user.password_hash) return json({ error: "password_already_set" }, 409);
-      const rec = await makePasswordRecord(body.password);
-      await env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ? WHERE id = ?")
-        .bind(rec.hash, rec.salt, now(), user.id).run();
-      const fresh = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(user.id).first();
-      return json(await issueSession(env, fresh));
+      return json({ error: "password_setup_disabled" }, 410);
     }
 
     const user = await getUser(request, env);
     if (!user) return json({ error: "unauthorized" }, 401);
+
+    if (path === "/api/realtime") {
+      return env.USER_HUB.get(env.USER_HUB.idFromName(user.id)).fetch(request);
+    }
 
     // Route /api/admin/* chỉ dành cho tài khoản owner.
     if (path.startsWith("/api/admin/") && user.email !== "tribui.it.work@gmail.com") {
@@ -655,10 +691,9 @@ export default {
         b.level ?? p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
         b.salary_min ?? p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
       // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
-      const { results: allJobs } = await env.DB.prepare("SELECT id FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
-      for (const j of allJobs) await env.Q_SCORE.send({ kind: "score", jobId: j.id });
+      const rescoreQueued = await enqueueProfileRescore(env, p.id);
       const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
-      return json(await profileWithSkills(env, upd));
+      return json({ ...(await profileWithSkills(env, upd)), rescore_queued: rescoreQueued });
     }
     const cvMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-text$/);
     if (cvMatch && request.method === "POST") return handleCvText(request, env, user, cvMatch[1]);
@@ -689,14 +724,14 @@ export default {
       }
       await env.DB.batch(stmts);
       // chấm lại toàn bộ job hiện có cho profile này
-      const { results: allJobs } = await env.DB.prepare("SELECT id FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
-      for (const j of allJobs) await env.Q_SCORE.send({ kind: "score", jobId: j.id });
-      return json(await profileWithSkills(env, profile));
+      const rescoreQueued = await enqueueProfileRescore(env, profile.id);
+      return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
     }
 
     // --- jobs ---
     if (path === "/api/jobs" && request.method === "GET") {
       const profileId = url.searchParams.get("profile_id");
+      if (profileId && !(await ownsProfile(env, user, profileId))) return json({ error: "profile_not_found" }, 404);
       const tier = url.searchParams.get("tier");
       const source = url.searchParams.get("source");
       const q = (url.searchParams.get("q") || "").toLowerCase();
@@ -808,13 +843,15 @@ export default {
     if (jobMatch && request.method === "GET") {
       const job = await env.DB.prepare("SELECT * FROM jobs WHERE id = ?").bind(jobMatch[1]).first();
       if (!job) return json({ error: "job_not_found" }, 404);
-      const { results: matches } = await env.DB.prepare("SELECT * FROM job_matches WHERE job_id = ?").bind(job.id).all();
+      const { results: matches } = await env.DB.prepare("SELECT m.* FROM job_matches m JOIN profiles p ON p.id = m.profile_id WHERE m.job_id = ? AND p.user_id = ?").bind(job.id, user.id).all();
       return json({ ...job, skills: JSON.parse(job.skills || "[]"), matches });
     }
 
     // --- applications (kanban) ---
     if (path === "/api/applications" && request.method === "GET") {
       const profileId = url.searchParams.get("profile_id");
+      if (!profileId) return json({ error: "profile_id_required" }, 400);
+      if (!(await ownsProfile(env, user, profileId))) return json({ error: "profile_not_found" }, 404);
       const sql = profileId
         ? `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier
            FROM applications a JOIN jobs j ON j.id = a.job_id
@@ -835,6 +872,7 @@ export default {
     }
     if (path === "/api/applications" && request.method === "POST") {
       const b = await readBody(request);
+      if (!(await ownsProfile(env, user, b.profile_id))) return json({ error: "profile_not_found" }, 404);
       const id = uid();
       await env.DB.prepare(
         "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
@@ -845,7 +883,7 @@ export default {
     const appMatch = path.match(/^\/api\/applications\/([^/]+)$/);
     if (appMatch && request.method === "PATCH") {
       const b = await readBody(request);
-      const app = await env.DB.prepare("SELECT * FROM applications WHERE id = ?").bind(appMatch[1]).first();
+      const app = await env.DB.prepare("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE a.id = ? AND p.user_id = ?").bind(appMatch[1], user.id).first();
       if (!app) return json({ error: "application_not_found" }, 404);
       const stage = b.stage ?? app.stage;
       const appliedAt = stage === "applied" && !app.applied_at ? now() : app.applied_at;
@@ -911,6 +949,10 @@ export default {
 
     if (path.startsWith("/api/")) return json({ error: "not_found", path }, 404);
     return json({ service: "jobpilot-api", phase: 2 });
+    } catch (error) {
+      console.error("request failed", error);
+      return json({ error: "internal_error" }, 500);
+    }
   },
 
   async queue(batch, env, ctx) {
@@ -926,6 +968,8 @@ export default {
             job.skills = JSON.parse(job.skills || "[]");
             await scoreJobForAllProfiles(env, job);
           }
+        } else if (batch.queue === "jobpilot-score" && body.kind === "rescore_profile") {
+          await rescoreProfile(env, body.profileId);
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
           const u = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(body.userId).first();
           if (u) await buildDigest(env, u);
