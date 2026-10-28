@@ -422,8 +422,8 @@ async function scoreJobForAllProfiles(env, job) {
     ).bind(uid(), p.id, job.id, now(), now()).run();
     if (s.tier === "strong") {
       await env.DB.prepare(
-        "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) VALUES (?, ?, 'strong_match', ?, ?, ?, ?)"
-      ).bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now()).run();
+        "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)"
+      ).bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id).run();
       try {
         const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
         await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore }) });
@@ -450,8 +450,8 @@ async function rescoreProfile(env, profileId) {
       stmts.push(env.DB.prepare("INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)")
         .bind(uid(), p.id, job.id, now(), now()));
       if (s.tier === "strong") {
-        stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) VALUES (?, ?, 'strong_match', ?, ?, ?, ?)")
-          .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now()));
+        stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)")
+          .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id));
         broadcasts.push({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore });
       }
     }
