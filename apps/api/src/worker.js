@@ -144,6 +144,16 @@ async function ownsProfile(env, user, profileId) {
   return !!(await env.DB.prepare("SELECT id FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first());
 }
 
+async function enqueueProfileRescore(env, profileId) {
+  try {
+    await env.Q_SCORE.send({ kind: "rescore_profile", profileId });
+    return true;
+  } catch (error) {
+    console.error("profile rescore enqueue failed", profileId, error);
+    return false;
+  }
+}
+
 // ---------------- profiles & CV ----------------
 async function profileWithSkills(env, profile) {
   const { results } = await env.DB.prepare(
@@ -581,6 +591,7 @@ function passwordError(pw) {
 // ---------------- router ----------------
 export default {
   async fetch(request, env, ctx) {
+    try {
     const url = new URL(request.url);
     const path = url.pathname;
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
@@ -680,9 +691,9 @@ export default {
         b.level ?? p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
         b.salary_min ?? p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
       // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
-      await env.Q_SCORE.send({ kind: "rescore_profile", profileId: p.id });
+      const rescoreQueued = await enqueueProfileRescore(env, p.id);
       const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
-      return json(await profileWithSkills(env, upd));
+      return json({ ...(await profileWithSkills(env, upd)), rescore_queued: rescoreQueued });
     }
     const cvMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-text$/);
     if (cvMatch && request.method === "POST") return handleCvText(request, env, user, cvMatch[1]);
@@ -713,8 +724,8 @@ export default {
       }
       await env.DB.batch(stmts);
       // chấm lại toàn bộ job hiện có cho profile này
-      await env.Q_SCORE.send({ kind: "rescore_profile", profileId: profile.id });
-      return json(await profileWithSkills(env, profile));
+      const rescoreQueued = await enqueueProfileRescore(env, profile.id);
+      return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
     }
 
     // --- jobs ---
@@ -938,6 +949,10 @@ export default {
 
     if (path.startsWith("/api/")) return json({ error: "not_found", path }, 404);
     return json({ service: "jobpilot-api", phase: 2 });
+    } catch (error) {
+      console.error("request failed", error);
+      return json({ error: "internal_error" }, 500);
+    }
   },
 
   async queue(batch, env, ctx) {
