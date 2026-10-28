@@ -139,6 +139,11 @@ async function getUser(request, env) {
   return env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first();
 }
 
+async function ownsProfile(env, user, profileId) {
+  if (!profileId) return false;
+  return !!(await env.DB.prepare("SELECT id FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first());
+}
+
 // ---------------- profiles & CV ----------------
 async function profileWithSkills(env, profile) {
   const { results } = await env.DB.prepare(
@@ -697,6 +702,7 @@ export default {
     // --- jobs ---
     if (path === "/api/jobs" && request.method === "GET") {
       const profileId = url.searchParams.get("profile_id");
+      if (profileId && !(await ownsProfile(env, user, profileId))) return json({ error: "profile_not_found" }, 404);
       const tier = url.searchParams.get("tier");
       const source = url.searchParams.get("source");
       const q = (url.searchParams.get("q") || "").toLowerCase();
@@ -808,13 +814,15 @@ export default {
     if (jobMatch && request.method === "GET") {
       const job = await env.DB.prepare("SELECT * FROM jobs WHERE id = ?").bind(jobMatch[1]).first();
       if (!job) return json({ error: "job_not_found" }, 404);
-      const { results: matches } = await env.DB.prepare("SELECT * FROM job_matches WHERE job_id = ?").bind(job.id).all();
+      const { results: matches } = await env.DB.prepare("SELECT m.* FROM job_matches m JOIN profiles p ON p.id = m.profile_id WHERE m.job_id = ? AND p.user_id = ?").bind(job.id, user.id).all();
       return json({ ...job, skills: JSON.parse(job.skills || "[]"), matches });
     }
 
     // --- applications (kanban) ---
     if (path === "/api/applications" && request.method === "GET") {
       const profileId = url.searchParams.get("profile_id");
+      if (!profileId) return json({ error: "profile_id_required" }, 400);
+      if (!(await ownsProfile(env, user, profileId))) return json({ error: "profile_not_found" }, 404);
       const sql = profileId
         ? `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier
            FROM applications a JOIN jobs j ON j.id = a.job_id
@@ -835,6 +843,7 @@ export default {
     }
     if (path === "/api/applications" && request.method === "POST") {
       const b = await readBody(request);
+      if (!(await ownsProfile(env, user, b.profile_id))) return json({ error: "profile_not_found" }, 404);
       const id = uid();
       await env.DB.prepare(
         "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
@@ -845,7 +854,7 @@ export default {
     const appMatch = path.match(/^\/api\/applications\/([^/]+)$/);
     if (appMatch && request.method === "PATCH") {
       const b = await readBody(request);
-      const app = await env.DB.prepare("SELECT * FROM applications WHERE id = ?").bind(appMatch[1]).first();
+      const app = await env.DB.prepare("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE a.id = ? AND p.user_id = ?").bind(appMatch[1], user.id).first();
       if (!app) return json({ error: "application_not_found" }, 404);
       const stage = b.stage ?? app.stage;
       const appliedAt = stage === "applied" && !app.applied_at ? now() : app.applied_at;
