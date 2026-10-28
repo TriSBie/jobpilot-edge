@@ -422,6 +422,39 @@ async function scoreJobForAllProfiles(env, job) {
   }
 }
 
+async function rescoreProfile(env, profileId) {
+  const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND is_active = 1").bind(profileId).first();
+  if (!p) return;
+  const { results: skills } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ?").bind(p.id).all();
+  if (!skills.length) return;
+  const { results: jobs } = await env.DB.prepare("SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
+  const profile = { ...p, locations: JSON.parse(p.locations || "[]") };
+  for (let i = 0; i < jobs.length; i += 50) {
+    const stmts = [], broadcasts = [];
+    for (const job of jobs.slice(i, i + 50)) {
+      job.skills = JSON.parse(job.skills || "[]");
+      const s = scoreJob(profile, skills, job);
+      stmts.push(env.DB.prepare(`INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
+        VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`)
+        .bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
+      stmts.push(env.DB.prepare("INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)")
+        .bind(uid(), p.id, job.id, now(), now()));
+      if (s.tier === "strong") {
+        stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) VALUES (?, ?, 'strong_match', ?, ?, ?, ?)")
+          .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now()));
+        broadcasts.push({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore });
+      }
+    }
+    await env.DB.batch(stmts);
+    for (const event of broadcasts) {
+      try {
+        const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
+        await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify(event) });
+      } catch (_) { /* realtime là best-effort */ }
+    }
+  }
+}
+
 // ---------------- ingest ----------------
 const DEFAULT_KEYWORDS = ["Java", "Node.js", "Backend", "Spring Boot"];
 async function ensureSources(env) {
@@ -647,8 +680,7 @@ export default {
         b.level ?? p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
         b.salary_min ?? p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
       // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
-      const { results: allJobs } = await env.DB.prepare("SELECT id FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
-      for (const j of allJobs) await env.Q_SCORE.send({ kind: "score", jobId: j.id });
+      await env.Q_SCORE.send({ kind: "rescore_profile", profileId: p.id });
       const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
       return json(await profileWithSkills(env, upd));
     }
@@ -681,8 +713,7 @@ export default {
       }
       await env.DB.batch(stmts);
       // chấm lại toàn bộ job hiện có cho profile này
-      const { results: allJobs } = await env.DB.prepare("SELECT id FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
-      for (const j of allJobs) await env.Q_SCORE.send({ kind: "score", jobId: j.id });
+      await env.Q_SCORE.send({ kind: "rescore_profile", profileId: profile.id });
       return json(await profileWithSkills(env, profile));
     }
 
@@ -922,6 +953,8 @@ export default {
             job.skills = JSON.parse(job.skills || "[]");
             await scoreJobForAllProfiles(env, job);
           }
+        } else if (batch.queue === "jobpilot-score" && body.kind === "rescore_profile") {
+          await rescoreProfile(env, body.profileId);
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
           const u = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(body.userId).first();
           if (u) await buildDigest(env, u);
