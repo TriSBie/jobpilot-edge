@@ -647,34 +647,6 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   .theme-toggle{min-width:var(--tap)}
   .check{min-height:var(--tap);padding-right:4px}
   #jobsContainer button.chip[data-expand-for]{min-height:var(--tap);min-width:var(--tap);justify-content:center;cursor:pointer}
-
-  /* ===== SIGNAL BƯỚC 5 — Kanban ===== */
-  .kb{display:grid;grid-auto-flow:column;grid-auto-columns:230px;gap:14px;overflow-x:auto;padding-bottom:8px}
-  .col{background:var(--bg);border:var(--bw) solid var(--line);border-radius:var(--r-md);padding:10px;min-height:220px}
-  .col h3{font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;margin:0 0 10px}
-  .col h3 .n{background:var(--line);color:var(--mute);font-size:12px;padding:2px 8px;border-radius:var(--r-pill)}
-  .col .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 14px;border-radius:var(--r-pill);font:800 13px var(--f-body);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink);cursor:pointer;width:100%}
-  .col .btn:active{transform:translate(2px,2px)}
-  .kb .empty{border:2px dashed var(--line);border-radius:var(--r-lg);padding:18px;font-size:13px}
-  .kcard{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-md);padding:12px;font-size:13px;box-shadow:none;animation:none;transition:none;display:grid;gap:4px;margin-bottom:10px}
-  .kcard:hover{border-color:var(--ink);transform:none}
-  .kcard.flag{border-color:var(--sun)}
-  .kcard.flag:hover{border-color:var(--sun)}
-  .kcard b{font:700 14px var(--f-head);line-height:1.4}
-  .kcard b a{color:var(--ink);text-decoration:none}
-  .kcard b a:hover{color:var(--brand)}
-  .kcard .c{color:var(--mute);margin-top:0}
-  .kcard .due{color:#B8860B;font-weight:700}
-  html[data-theme="dark"] .kcard .due{color:var(--sun)}
-  .kcard .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
-  .mv{display:flex;gap:6px}
-  .mv button{width:32px;height:32px;border-radius:50%;border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;font-size:12px;line-height:1}
-  .mv button:hover:not(:disabled){border-color:var(--ink)}
-  .mv button:disabled{opacity:.35;cursor:default}
-  @media (max-width:640px){
-    .kb{grid-auto-columns:85vw;scroll-snap-type:x mandatory}
-    .col{scroll-snap-align:start}
-  }
 </style>
 </head>
 <body>
@@ -1024,7 +996,6 @@ const state = {
   jobs: [],
   jobsVisible: 20,
   expandedChips: new Set(),
-  kanbanNewExpanded: false,
   applications: [],
   suggested: [],
   filters: { tier: "", source: "", q: "", hideFlagged: false },
@@ -1613,9 +1584,9 @@ function renderKanban(){
   (state.applications || []).forEach(a => {
     if (!a.job) return;
     if (a.next_follow_up_at && a.next_follow_up_at < nowS) {
-      alerts.push({ ...a, label: `Quá hạn follow-up (${fmtDate(a.next_follow_up_at)})`, due: `Quá hạn ${fmtDate(a.next_follow_up_at)}` });
+      alerts.push({ ...a, label: `Quá hạn follow-up (${fmtDate(a.next_follow_up_at)})` });
     } else if ((a.stage === "applied" || a.stage === "interview") && a.updated_at && (nowS - a.updated_at) / 86400 >= 7) {
-      alerts.push({ ...a, label: `Im lặng ${Math.floor((nowS - a.updated_at) / 86400)} ngày`, due: `Im lặng ${Math.floor((nowS - a.updated_at) / 86400)} ngày` });
+      alerts.push({ ...a, label: `Im lặng ${Math.floor((nowS - a.updated_at) / 86400)} ngày` });
     }
   });
   const strip = $("#alertsStrip");
@@ -1646,45 +1617,32 @@ function renderKanban(){
   }
   const badge = $("#kanbanAlertBadge");
   if (badge) { badge.textContent = alerts.length; badge.classList.toggle("hidden", !alerts.length); }
-  const alertById = {};
-  alerts.forEach(a => { alertById[String(a.id)] = a; });
   const byStage = {};
   STAGE_KEYS.forEach(k => byStage[k] = []);
   state.applications.forEach(a => { if (byStage[a.stage]) byStage[a.stage].push(a); });
-  box.innerHTML = '<div class="kb">' + STAGES.map((s, idx) => {
-    const list = byStage[s.key];
-    const collapsed = s.key === "new" && list.length > 20 && !state.kanbanNewExpanded;
-    const cards = list.map((a) => {
+  box.innerHTML = '<div class="kanban">' + STAGES.map((s, idx) => {
+    const cards = byStage[s.key].map((a, ci) => {
       const m = a.match || null;
-      const al = alertById[String(a.id)];
-      return `<div class="kcard${al ? " flag" : ""}">
-        <b><a href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></b>
+      return `<div class="kcard panel" style="--i:${ci}">
+        <div class="t"><a href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
         <div class="c">${esc(a.job ? a.job.company : "")}${a.job && a.job.location ? " · " + esc(a.job.location) : ""}</div>
         ${a.next_follow_up_at ? `<div class="c" style="color:var(--amber)">Follow-up: ${fmtDate(a.next_follow_up_at)}</div>` : ""}
         ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
-        ${al ? `<div class="due">${esc(al.due)}</div>` : ""}
-        <div class="foot">
-          ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ · ${esc(m.tier)}</span>` : `<span></span>`}
-          <div class="mv">
-          <button data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước">◀</button>
-          <button data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau">▶</button>
-          </div>
+        <div class="row">
+          <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước">◀</button>
+          <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau">▶</button>
+          <span class="spacer"></span>
+          ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ · ${esc(m.tier)}</span>` : ""}
         </div>
       </div>`;
     }).join("");
-    const body = collapsed
-      ? `<button class="btn sm" data-kanban-new-toggle type="button">Mở ${list.length} thẻ</button>`
-      : (s.key === "new" && list.length > 20
-        ? `<button class="btn sm" data-kanban-new-toggle type="button">Thu gọn</button>` + cards
-        : cards);
-    return `<div class="col">
-      <h3>${s.label} <span class="n">${list.length}</span></h3>
-      ${body || '<div class="empty">Trống</div>'}
+    return `<div class="kcol">
+      <div class="kcol-head"><span>${s.label}</span><span class="count">${byStage[s.key].length}</span></div>
+      <div class="kcol-body">${cards || '<div class="muted small" style="text-align:center;padding:.4rem">Trống</div>'}</div>
     </div>`;
   }).join("") + "</div>";
 
   $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
-  $$("[data-kanban-new-toggle]", box).forEach(b => b.addEventListener("click", () => { state.kanbanNewExpanded = !state.kanbanNewExpanded; renderKanban(); }));
 }
 
 async function moveApplication(appId, dir, btn){
