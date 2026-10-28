@@ -600,10 +600,6 @@ export default {
       return json({ ok: true, service: "jobpilot-api", phase: 2, ts: new Date().toISOString(),
         bindings: { DB: !!env.DB, KV: !!env.KV, FILES: !!env.FILES, AI: !!env.AI, EMB: !!env.EMB, EVENTS: !!env.EVENTS } });
     }
-    if (path === "/api/realtime") {
-      const user = url.searchParams.get("user") || "anonymous";
-      return env.USER_HUB.get(env.USER_HUB.idFromName(user)).fetch(request);
-    }
 
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
     if (path === "/api/auth/register" && request.method === "POST") {
@@ -644,6 +640,10 @@ export default {
 
     const user = await getUser(request, env);
     if (!user) return json({ error: "unauthorized" }, 401);
+
+    if (path === "/api/realtime") {
+      return env.USER_HUB.get(env.USER_HUB.idFromName(user.id)).fetch(request);
+    }
 
     // Route /api/admin/* chỉ dành cho tài khoản owner.
     if (path.startsWith("/api/admin/") && user.email !== "tribui.it.work@gmail.com") {
