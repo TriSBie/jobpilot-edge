@@ -52,6 +52,9 @@ html[data-theme="dark"]{
     --r-lg:22px; --r-md:14px; --r-sm:10px;
     --font:var(--f-body);
     --serif:var(--f-head);
+    /* ===== MOTION TOKENS (JE-M01) ===== */
+    --m-fast:120ms; --m-base:200ms; --m-slow:320ms; --m-enter:480ms;
+    --e-out:cubic-bezier(.22,.8,.3,1); --e-inout:cubic-bezier(.65,0,.35,1); --e-exit:cubic-bezier(.5,0,.75,0);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
@@ -85,7 +88,7 @@ html[data-theme="dark"]{
     font:inherit;color:var(--text);background:rgba(var(--ov),.04);
     border:1px solid var(--line);border-radius:var(--r-sm);
     padding:.55rem .75rem;outline:none;width:100%;
-    transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    transition:border-color var(--m-fast) var(--e-out), box-shadow var(--m-fast) var(--e-out), background var(--m-fast) var(--e-out);
   }
   input:focus,select:focus,textarea:focus{
     border-color:rgba(45,75,255,.55); box-shadow:0 0 0 3px rgba(45,75,255,.18); background:rgba(var(--ov),.05);
@@ -99,7 +102,7 @@ html[data-theme="dark"]{
     background:rgba(var(--ov),.06);color:var(--text);
     border:1px solid var(--line);border-radius:999px;
     padding:.5rem 1.05rem;font-weight:600;font-size:.9rem;white-space:nowrap;
-    transition:background .15s ease,border-color .15s ease,transform .08s ease;
+    transition:background var(--m-fast) var(--e-out),border-color var(--m-fast) var(--e-out),transform var(--m-fast) var(--e-out);
   }
   .btn:hover{background:rgba(var(--ov),.1);border-color:var(--line-strong)}
   .btn:active{transform:scale(.97)}
@@ -115,7 +118,7 @@ html[data-theme="dark"]{
 
   /* ---------- login ---------- */
   .login-wrap{min-height:100vh;display:grid;place-items:center;padding:1.5rem}
-  .login-in{width:100%;max-width:430px;text-align:center;animation:rise .6s cubic-bezier(.22,.8,.3,1) both}
+  .login-in{width:100%;max-width:430px;text-align:center;animation:rise var(--m-enter) var(--e-out) both}
   .login-in h1{font-family:var(--serif);font-weight:400;font-size:2.9rem;line-height:1.08;margin:.2rem 0 .6rem;letter-spacing:-.01em}
   .login-in h1 em{color:var(--faint)}
   .login-in .sub{color:var(--muted);margin:0 auto 1.8rem;max-width:36ch}
@@ -144,7 +147,7 @@ html[data-theme="dark"]{
     display:flex;align-items:center;gap:.6rem;width:100%;text-align:left;
     background:transparent;border:1px solid transparent;border-radius:10px;
     padding:.52rem .65rem;font-weight:500;font-size:.94rem;color:var(--muted);
-    transition:background .15s ease,color .15s ease;
+    transition:background var(--m-fast) var(--e-out),color var(--m-fast) var(--e-out);
   }
   .tab .ic{width:1.15rem;text-align:center;flex:none}
   .tab:hover{color:var(--text);background:rgba(var(--ov),.04)}
@@ -169,7 +172,7 @@ html[data-theme="dark"]{
   .brief{
     position:relative;border-radius:var(--r-lg);padding:1px;margin-bottom:1.4rem;
     background:linear-gradient(120deg,rgba(45,75,255,.55),rgba(var(--ov),.09) 45%,rgba(45,75,255,.35));
-    animation:rise .55s cubic-bezier(.22,.8,.3,1) both;
+    animation:rise var(--m-enter) var(--e-out) both;
   }
   .brief-in{
     border-radius:19px;background:#0b0c0e;padding:1.25rem 1.4rem;
@@ -194,8 +197,8 @@ html[data-theme="dark"]{
   .jobs-list{display:flex;flex-direction:column;gap:10px}
   .job{
     padding:1rem 1.15rem;border-radius:var(--r-md);
-    animation:rise .5s cubic-bezier(.22,.8,.3,1) both;animation-delay:calc(min(var(--i,0),12) * 45ms);
-    transition:border-color .15s ease, transform .15s ease, background .15s ease;
+    animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),12) * 45ms);
+    transition:border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out), background var(--m-fast) var(--e-out);
   }
   .job:hover{border-color:var(--line-strong);transform:translateY(-1px)}
   .job-head{display:flex;gap:1rem;align-items:flex-start}
@@ -275,7 +278,7 @@ html[data-theme="dark"]{
   .toast{
     background:rgba(18,19,22,.92);backdrop-filter:blur(10px);color:var(--text);
     border:1px solid var(--line-strong);border-radius:12px;padding:.7rem .95rem;font-size:.9rem;
-    box-shadow:0 12px 32px rgba(0,0,0,.45);animation:rise .3s ease both;
+    box-shadow:0 12px 32px rgba(0,0,0,.45);animation:toast-in var(--m-base) var(--e-out) both;
   }
   .toast.ok{border-color:rgba(52,211,153,.4)} .toast.err{border-color:rgba(248,113,113,.45)}
 
@@ -288,7 +291,7 @@ html[data-theme="dark"]{
     width:100%;max-width:560px;border-radius:18px;overflow:hidden;
     background:rgba(16,17,20,.96);border:1px solid var(--line-strong);
     box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(var(--ov),.06);
-    animation:rise .22s cubic-bezier(.22,.8,.3,1) both;
+    animation:pal-box-in var(--m-base) var(--e-out) both;
   }
   .pal-box input{border:none;background:transparent;font-size:1.02rem;padding:1rem 1.15rem;box-shadow:none}
   .pal-box input:focus{box-shadow:none;border:none}
@@ -372,7 +375,7 @@ html[data-theme="dark"]{
   border:1px solid rgba(45,75,255,.5); color:var(--brand); font-weight:700; font-size:.9rem; margin-bottom:.7rem; }
 .lp-foot{ border-top:1px solid var(--line); padding:2rem clamp(1rem,4vw,2.5rem); display:flex; gap:1rem; flex-wrap:wrap;
   color:var(--muted); font-size:.88rem; max-width:1180px; margin:0 auto; }
-.rv{ opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+.rv{ opacity:0; transform:translateY(18px); transition:opacity var(--m-enter) var(--e-out), transform var(--m-enter) var(--e-out); }
 .rv.in{ opacity:1; transform:none; }
 @media (max-width: 900px){ .lp-grid3,.lp-steps{ grid-template-columns:1fr 1fr; } .lp-bento{ grid-template-columns:1fr 1fr; } .lp-links{ display:none; } }
 @media (max-width: 560px){ .lp-grid3,.lp-steps,.lp-bento{ grid-template-columns:1fr; } .lp-bento .wide{ grid-column:span 1; } }
@@ -383,7 +386,7 @@ html[data-theme="dark"]{
 .auth-tabs button{ flex:1; border:0; background:transparent; color:var(--muted); padding:.55rem 1rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.95rem; }
 .auth-tabs button.active{ background:var(--brand); color:var(--brand-ink); font-weight:700; }
 .pw-meter{ height:6px; border-radius:99px; background:rgba(var(--ov),.08); overflow:hidden; margin-top:.5rem; }
-.pw-meter i{ display:block; height:100%; width:0; border-radius:99px; background:#e5534b; transition:width .25s ease, background .25s ease; }
+.pw-meter i{ display:block; height:100%; width:0; border-radius:99px; background:#e5534b; transition:width var(--m-base) var(--e-out), background var(--m-base) var(--e-out); }
 .pw-hint{ font-size:.8rem; color:var(--muted); margin-top:.35rem; min-height:1em; }
 .auth-note{ border:1px solid rgba(45,75,255,.45); background:rgba(45,75,255,.08); border-radius:12px; padding:.8rem 1rem; font-size:.9rem; line-height:1.55; margin-bottom:1.1rem; color:#f3e3cd; }
 .auth-back{ display:inline-block; margin-top:1.1rem; color:var(--muted); text-decoration:none; font-size:.9rem; }
@@ -429,7 +432,7 @@ html[data-theme="light"] ::selection{ background:rgba(45,75,255,.28); }
 /* Nút gạt theme */
 .theme-toggle{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; flex:none;
   border-radius:50%; border:1px solid var(--line); background:rgba(var(--ov),.04); color:var(--text);
-  font-size:1rem; line-height:1; transition:background .15s ease, border-color .15s ease, transform .15s ease; }
+  font-size:1rem; line-height:1; transition:background var(--m-fast) var(--e-out), border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out); }
 .theme-toggle:hover{ background:rgba(var(--ov),.09); border-color:var(--line-strong); transform:translateY(-1px); }
 .theme-toggle .ic-sun{ display:none; }
 html[data-theme="light"] .theme-toggle .ic-sun{ display:inline; }
@@ -445,7 +448,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 #lp-how, #lp-scoring{ position:relative; }
 #lp-how::before, #lp-scoring::before{ content:""; position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(44rem 18rem at 50% 0%, rgba(45,75,255,.05), transparent 65%); }
-.lp-card{ transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.lp-card{ transition:transform var(--m-base) var(--e-out), border-color var(--m-base) var(--e-out), box-shadow var(--m-base) var(--e-out); }
 .lp-card:hover{ transform:translateY(-3px); border-color:var(--line-strong); box-shadow:0 16px 40px rgba(0,0,0,.18); }
 html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1); }
 .lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2){ transition-delay:.07s; }
@@ -527,14 +530,15 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   #jobsContainer .chip.off{border-color:var(--line);color:var(--mute)}
   #jobsContainer .chip.flag{background:var(--pop);color:var(--pop-ink)}
   #jobsContainer .chip.src{background:var(--bg);border-color:var(--line);color:var(--ink)}
-  .card{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise .5s cubic-bezier(.22,.8,.3,1) both;animation-delay:calc(min(var(--i,0),12) * 45ms)}
+  .card{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),12) * 45ms)}
   .card .ttl{font:700 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
   .card .ttl a{color:inherit;text-decoration:none}
   .card .ttl a:hover{text-decoration:underline}
   .card .meta{color:var(--mute);font-size:14px;margin-bottom:12px}
   .card .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
   .card .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  .why{grid-column:1/-1;border-top:var(--bw) dashed var(--line);padding-top:14px;margin-top:4px;display:grid;gap:10px}
+  .why{grid-column:1/-1;display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--m-slow) var(--e-inout);overflow:hidden}
+  .why.open{grid-template-rows:1fr}
   .why .row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline}
   .why .row b{font-family:var(--f-head);font-weight:700;font-size:15px}
   .why .row span{color:var(--mute);font-size:14px}
@@ -663,12 +667,46 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 
   /* ===== KANBAN DRAG & DROP (desktop, HTML5) ===== */
   .kcard[draggable="true"]{cursor:grab}
-  .kcard.dragging{opacity:.45;cursor:grabbing}
+  .kcard.dragging{opacity:.45;cursor:grabbing;transform:scale(1.02);box-shadow:var(--off) var(--off) 0 var(--shadow)}
   .kcol.drop-target{outline:2px dashed var(--brand);outline-offset:-2px}
 
   /* ===== LOGO CHROME MARK (header landing) ===== */
   .lp-nav .brand .mark-img{width:30px;height:30px;border-radius:9px;object-fit:cover;flex:none}
   .medallion-img{width:74px;height:74px;margin:0 auto 1.4rem;border-radius:22px;object-fit:cover;display:block}
+
+  /* ===== MOTION M01-M08 (Dot 0+1) ===== */
+  @keyframes toast-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+  @keyframes toast-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(12px)}}
+  .toast.out{animation:toast-out var(--m-fast) var(--e-exit) both}
+  @keyframes pal-ov-in{from{opacity:0}to{opacity:1}}
+  @keyframes pal-ov-out{from{opacity:1}to{opacity:0}}
+  @keyframes pal-box-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-6px) scale(.98)}}
+  #palette{animation:pal-ov-in var(--m-fast) var(--e-out) both}
+  #palette.closing{animation:pal-ov-out var(--m-fast) var(--e-exit) both}
+  #palette.closing .pal-box{animation:pal-box-out var(--m-fast) var(--e-exit) both}
+  .pal-item{transition:background var(--m-fast) var(--e-out),color var(--m-fast) var(--e-out)}
+  @keyframes tab-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .tabview-in{animation:tab-in var(--m-base) var(--e-out) both}
+  @keyframes flash-ring{0%{outline:3px solid var(--mint);outline-offset:2px}100%{outline:3px solid transparent;outline-offset:2px}}
+  .flash{animation:flash-ring var(--m-enter) var(--e-out)}
+  @keyframes col-flash{0%{outline:3px solid var(--brand);outline-offset:-2px}100%{outline:3px solid transparent;outline-offset:-2px}}
+  .kcol.col-flash{animation:col-flash var(--m-enter) var(--e-out)}
+  @keyframes count-bump{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .kcol-head .count.count-bump{animation:count-bump var(--m-slow) var(--e-out)}
+  .kdrop{border:2px dashed var(--brand);border-radius:var(--r-md);background:rgba(45,75,255,.06)}
+  .card:hover{transform:translateY(-2px);box-shadow:8px 8px 0 var(--shadow)}
+  .card{transition:transform var(--m-fast) var(--e-out),box-shadow var(--m-fast) var(--e-out)}
+  .kcard{transition:transform var(--m-fast) var(--e-out),box-shadow var(--m-fast) var(--e-out)}
+  #jobsContainer.no-anim .card,#jobsContainer.no-anim .job{animation:none}
+  #jobsContainer.xfade .list,#kanbanContainer.xfade .kanban{animation:tab-in var(--m-base) var(--e-out) both}
+  .why-in{overflow:hidden;min-height:0}
+  .why-body{display:grid;gap:10px;border-top:var(--bw) dashed var(--line);padding-top:14px;margin-top:4px}
+  .why .row{opacity:0;transform:translateY(4px);transition:opacity var(--m-base) var(--e-out),transform var(--m-base) var(--e-out)}
+  .why.open .row{opacity:1;transform:none}
+  .why.open .row:nth-child(1){transition-delay:0ms}
+  .why.open .row:nth-child(2){transition-delay:40ms}
+  .why.open .row:nth-child(3){transition-delay:80ms}
+  .why.open .row:nth-child(4){transition-delay:120ms}
 </style>
 </head>
 <body>
@@ -1017,6 +1055,8 @@ const state = {
   filters: { tier: "", source: "", q: "", hideFlagged: false },
 };
 
+let jobsFirstRender = true, kanbanFirstLoad = true, palCloseTimer = null;
+
 const $ = (sel, el) => (el || document).querySelector(sel);
 const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
 
@@ -1052,10 +1092,28 @@ function srcLabel(src){
 
 function toast(msg, kind){
   const box = $("#toasts");
+  while (box.childElementCount >= 3) box.firstElementChild.remove();
   const el = document.createElement("div");
   el.className = "toast" + (kind ? " " + kind : "");
   el.innerHTML = `<span>${esc(msg)}</span><button class="toast-x" type="button" aria-label="Đóng">×</button>`;
-  const close = () => { el.style.opacity = "0"; el.style.transition = "opacity .3s"; setTimeout(() => el.remove(), 320); };
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const close = () => {
+    if (el.classList.contains("out")) return;
+    el.classList.add("out");
+    const sibs = Array.from(box.children).filter(c => c !== el);
+    const rects = new Map(sibs.map(c => [c, c.getBoundingClientRect()]));
+    setTimeout(() => {
+      el.remove();
+      if (reduced) return;
+      sibs.forEach(c => {
+        if (!c.isConnected) return;
+        const r0 = rects.get(c);
+        const r1 = c.getBoundingClientRect();
+        const dy = r0.top - r1.top;
+        if (dy) c.animate([{ transform: "translateY(" + dy + "px)" }, { transform: "translateY(0)" }], { duration: 200, easing: "cubic-bezier(.22,.8,.3,1)" });
+      });
+    }, reduced ? 0 : 120);
+  };
   el.querySelector(".toast-x").addEventListener("click", close);
   box.appendChild(el);
   setTimeout(close, 4000);
@@ -1294,6 +1352,7 @@ function renderProfileSelect(){
 $("#profileSelect").addEventListener("change", async (ev) => {
   state.profileId = ev.target.value;
   localStorage.setItem("jp_profile", state.profileId);
+  jobsFirstRender = true; kanbanFirstLoad = true;
   fillProfileForm();
   renderCurrentSkills();
   state.suggested = [];
@@ -1316,9 +1375,12 @@ async function loadSourceStatus(){
 /* ---------------- Tabs ---------------- */
 function switchTab(t){
   $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
-  $("#tab-jobs").classList.toggle("hidden", t !== "jobs");
-  $("#tab-kanban").classList.toggle("hidden", t !== "kanban");
-  $("#tab-profile").classList.toggle("hidden", t !== "profile");
+  const panels = { jobs: $("#tab-jobs"), kanban: $("#tab-kanban"), profile: $("#tab-profile") };
+  const show = panels[t];
+  Object.keys(panels).forEach(k => { const p = panels[k]; if (p) p.classList.toggle("hidden", k !== t); });
+  if (show) {
+    show.classList.remove("tabview-in"); void show.offsetWidth; show.classList.add("tabview-in");
+  }
   if (t === "kanban") loadApplications();
 }
 $$(".tab").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
@@ -1342,6 +1404,7 @@ async function loadDigest(){
   const strip = $("#digestStrip");
   const p = currentProfile();
   if (!p) { strip.innerHTML = ""; return; }
+  strip.innerHTML = `<div class="brief"><div class="brief-in"><div style="display:grid;gap:10px"><div class="skel" style="width:45%;height:14px"></div><div class="skel" style="width:70%;height:44px"></div><div class="skel" style="width:90%"></div></div><div style="display:grid;gap:10px"><div class="skel" style="width:45%;height:14px"></div><div class="skel" style="width:60%;height:44px"></div></div></div></div>`;
   try {
     const d = await api("/api/digest/today?profile_id=" + encodeURIComponent(p.id));
     const strong = d.strong || [];
@@ -1397,6 +1460,8 @@ async function loadJobs(){
     if (ob) ob.addEventListener("click", () => switchTab("profile"));
     return;
   }
+  const skelAt = Date.now();
+  const firstJobsLoad = jobsFirstRender;
   box.innerHTML = '<div class="list">' + [1,2,3].map(() => `<article class="card" aria-busy="true"><div class="score weak" style="background:var(--line)"></div><div style="display:grid;gap:10px"><div class="skel" style="width:70%;height:20px"></div><div class="skel" style="width:45%"></div><div class="skel" style="width:90%"></div></div></article>`).join("") + '</div>';
   const qs = new URLSearchParams({ profile_id: p.id });
   if (state.filters.tier) qs.set("tier", state.filters.tier);
@@ -1404,8 +1469,14 @@ async function loadJobs(){
   if (state.filters.q) qs.set("q", state.filters.q);
   try {
     state.jobs = await api("/api/jobs?" + qs.toString());
+    if (firstJobsLoad) {
+      const wait = Math.max(0, 500 - (Date.now() - skelAt));
+      if (wait) await new Promise(r => setTimeout(r, wait));
+    }
     state.jobsVisible = 20;
+    box.classList.add("xfade");
     renderJobs();
+    setTimeout(() => box.classList.remove("xfade"), 240);
   } catch (e) {
     box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
   }
@@ -1420,11 +1491,14 @@ function explainBlock(job, m){
   <div class="row"><div><b>Độ tươi</b><br><span>Tin đăng ${fb.ageDays} ngày trước</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
   <div class="row"><div><b>Cấp bậc</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
   const finalRow = `<div class="row"><div><b>Điểm cuối</b><br><span>(quy tắc + fit) / 70 × 100${rd && rd.capped ? ". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng)." : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
-  return `<div class="why hidden" id="explain-${esc(job.id)}">${ruleRow}${fitRows}${finalRow}</div>`;
+  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${ruleRow}${fitRows}${finalRow}</div></div></div>`;
 }
 
 function renderJobs(){
   const box = $("#jobsContainer");
+  const firstJobs = jobsFirstRender;
+  jobsFirstRender = false;
+  box.classList.toggle("no-anim", !firstJobs);
   const cnt = $("#jobsCount");
   const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
   if (cnt) cnt.textContent = list.length ? `— ${list.length} job đang theo dõi` : "";
@@ -1477,7 +1551,7 @@ function renderJobs(){
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${x.label}</option>`).join("")}
           </select>
-          ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
+          ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
         </div>
       </div>
       ${m && (m.rule_detail || m.fit) ? explainBlock(job, m) : ""}
@@ -1492,8 +1566,9 @@ function renderJobs(){
     btn.addEventListener("click", () => {
       const el = document.getElementById("explain-" + btn.dataset.explainFor);
       if (!el) return;
-      el.classList.toggle("hidden");
-      btn.textContent = el.classList.contains("hidden") ? "Vì sao điểm này?" : "Ẩn giải thích";
+      const open = el.classList.toggle("open");
+      btn.textContent = open ? "Ẩn giải thích" : "Vì sao điểm này?";
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
     });
   });
 
@@ -1530,6 +1605,7 @@ async function changeJobStage(jobId, stage, selEl){
       job.application = created && created.id ? created : { id: null, stage };
     }
     toast("Đã chuyển sang giai đoạn: " + (STAGES.find(s => s.key === stage) || {}).label, "ok");
+    flashJobCard(selEl);
     loadApplications();
   } catch (e) {
     selEl.value = prev;
@@ -1584,15 +1660,27 @@ async function loadApplications(){
   const box = $("#kanbanContainer");
   const p = currentProfile();
   if (!p) { box.innerHTML = '<div class="panel empty">Chưa có hồ sơ nào.</div>'; return; }
+  const skelAt = Date.now();
+  const firstKbLoad = kanbanFirstLoad;
+  box.innerHTML = '<div class="kanban">' + STAGES.map(s => `<div class="kcol"><div class="kcol-head"><span>${esc(s.label)}</span><span class="count">–</span></div><div class="kcol-body"><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:48px"></div></div></div>`).join("") + "</div>";
   try {
     state.applications = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
+    kanbanFirstLoad = false;
+    if (firstKbLoad) {
+      const wait = Math.max(0, 500 - (Date.now() - skelAt));
+      if (wait) await new Promise(r => setTimeout(r, wait));
+    }
+    box.classList.add("xfade");
     renderKanban();
+    setTimeout(() => box.classList.remove("xfade"), 240);
   } catch (e) {
     box.innerHTML = `<div class="panel empty">${esc(e.message)}</div>`;
   }
 }
 
 let kanbanNewAll = false; // cột "Mới" >20 thẻ: mặc định gập, bấm "Xem thêm" để mở
+let dragCardH = 0;
+function removeKDrop(root){ $$(".kdrop", root).forEach(d => d.remove()); }
 function renderKanban(){
   const box = $("#kanbanContainer");
   // Phase 2 — cảnh báo im lặng / quá hạn follow-up
@@ -1667,16 +1755,33 @@ function renderKanban(){
   $$("[data-kmore]", box).forEach(b => b.addEventListener("click", () => { kanbanNewAll = true; renderKanban(); }));
   $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
   // KANBAN DRAG & DROP: keo the sang cot khac (desktop). Nut ◀ ▶ giu nguyen.
+  // Placeholder .kdrop chi mang tinh thi giac (vi tri tha) — thu tu trong cot khong luu xuong backend.
   $$(".kcard", box).forEach(card => {
     card.addEventListener("dragstart", (ev) => {
       ev.dataTransfer.setData("application/x-jobpilot-app", card.dataset.app);
       ev.dataTransfer.setData("text/plain", card.dataset.app);
       ev.dataTransfer.effectAllowed = "move";
+      dragCardH = card.offsetHeight || 96;
       card.classList.add("dragging");
     });
     card.addEventListener("dragend", () => {
       card.classList.remove("dragging");
       $$(".kcol", box).forEach(c => c.classList.remove("drop-target"));
+      removeKDrop(box);
+    });
+    card.addEventListener("dragover", (ev) => {
+      if (!document.querySelector(".kcard.dragging")) return;
+      ev.preventDefault();
+      const body = card.closest(".kcol-body");
+      if (!body) return;
+      removeKDrop(box);
+      const r = card.getBoundingClientRect();
+      const after = (ev.clientY - r.top) > r.height / 2;
+      const target = after ? card.nextElementSibling : card;
+      const d = document.createElement("div");
+      d.className = "kdrop";
+      d.style.height = (dragCardH || 96) + "px";
+      body.insertBefore(d, target);
     });
   });
   $$(".kcol", box).forEach(col => {
@@ -1684,25 +1789,74 @@ function renderKanban(){
       ev.preventDefault();
       ev.dataTransfer.dropEffect = "move";
       col.classList.add("drop-target");
+      const body = col.querySelector(".kcol-body");
+      if (body && !body.querySelector(".kcard") && !body.querySelector(".kdrop")) {
+        const d = document.createElement("div");
+        d.className = "kdrop";
+        d.style.height = (dragCardH || 96) + "px";
+        body.appendChild(d);
+      }
     });
     col.addEventListener("dragleave", (ev) => {
-      if (!col.contains(ev.relatedTarget)) col.classList.remove("drop-target");
+      if (!col.contains(ev.relatedTarget)) {
+        col.classList.remove("drop-target");
+        $$(".kdrop", col).forEach(d => d.remove());
+      }
     });
     col.addEventListener("drop", (ev) => {
       ev.preventDefault();
       col.classList.remove("drop-target");
+      removeKDrop(box);
       const appId = ev.dataTransfer.getData("application/x-jobpilot-app") || ev.dataTransfer.getData("text/plain");
       if (appId) moveApplicationTo(appId, col.dataset.stage);
     });
   });
 }
 
+// FLIP khong optimistic (M08): PATCH truoc, render sau, roi truot the tu vi tri cu sang vi tri moi.
+// Neu PATCH loi, the o yen + toast err (khong can rollback). Reduced-motion thi bo qua hoat hinh.
+function flipKanbanCard(appId, fromRect, fromStage, toStage){
+  if (!fromRect) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const card = $$(".kcard").find(c => c.dataset.app === String(appId));
+  if (card) {
+    const r1 = card.getBoundingClientRect();
+    const dx = fromRect.left - r1.left, dy = fromRect.top - r1.top;
+    if (dx || dy) card.animate([{ transform: "translate(" + dx + "px," + dy + "px)" }, { transform: "translate(0,0)" }], { duration: 320, easing: "cubic-bezier(.65,0,.35,1)" });
+  }
+  const bump = (stage) => {
+    const col = $$(".kcol").find(c => c.dataset.stage === stage);
+    const c = col && col.querySelector(".count");
+    if (c) { c.classList.remove("count-bump"); void c.offsetWidth; c.classList.add("count-bump"); setTimeout(() => c.classList.remove("count-bump"), 360); }
+  };
+  const dest = $$(".kcol").find(c => c.dataset.stage === toStage);
+  if (dest) { dest.classList.remove("col-flash"); void dest.offsetWidth; dest.classList.add("col-flash"); setTimeout(() => dest.classList.remove("col-flash"), 520); }
+  bump(toStage);
+  if (fromStage && fromStage !== toStage) bump(fromStage);
+}
+function flashCard(appId){
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const card = $$(".kcard").find(c => c.dataset.app === String(appId));
+  if (!card) return;
+  card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
+  setTimeout(() => card.classList.remove("flash"), 520);
+}
+function flashJobCard(selEl){
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const art = selEl.closest("article");
+  if (!art) return;
+  art.classList.remove("flash"); void art.offsetWidth; art.classList.add("flash");
+  setTimeout(() => art.classList.remove("flash"), 520);
+}
 async function moveApplication(appId, dir, btn){
   const app = state.applications.find(a => a.id === appId);
   if (!app) return;
   const i = STAGE_KEYS.indexOf(app.stage);
   const next = STAGE_KEYS[Math.max(0, Math.min(STAGE_KEYS.length - 1, i + dir))];
   if (next === app.stage) return;
+  const fromStage = app.stage;
+  const fromEl = btn.closest(".kcard");
+  const fromRect = fromEl ? fromEl.getBoundingClientRect() : null;
   btn.disabled = true;
   try {
     await api("/api/applications/" + encodeURIComponent(appId), {
@@ -1710,6 +1864,8 @@ async function moveApplication(appId, dir, btn){
     });
     app.stage = next;
     renderKanban();
+    flipKanbanCard(appId, fromRect, fromStage, next);
+    flashCard(appId);
     toast("Đã chuyển sang: " + (STAGES.find(s => s.key === next) || {}).label, "ok");
   } catch (e) {
     toast(e.message, "err");
@@ -1721,12 +1877,16 @@ async function moveApplication(appId, dir, btn){
 async function moveApplicationTo(appId, targetStage){
   const app = state.applications.find(a => a.id === appId);
   if (!app || !targetStage || targetStage === app.stage) return;
+  const fromStage = app.stage;
+  const dragEl = document.querySelector(".kcard.dragging");
+  const fromRect = dragEl ? dragEl.getBoundingClientRect() : null;
   try {
     await api("/api/applications/" + encodeURIComponent(appId), {
       method: "PATCH", body: JSON.stringify({ stage: targetStage }),
     });
     app.stage = targetStage;
     renderKanban();
+    flipKanbanCard(appId, fromRect, fromStage, targetStage);
     toast("Đã chuyển sang: " + (STAGES.find(s => s.key === targetStage) || {}).label, "ok");
   } catch (e) {
     toast(e.message, "err");
@@ -2134,14 +2294,23 @@ function renderPalette(){
 function openPalette(){
   if (!state.token) return;
   palette.open = true; palette.sel = 0;
-  $("#palette").classList.remove("hidden");
+  const p = $("#palette");
+  clearTimeout(palCloseTimer);
+  p.classList.remove("closing");
+  p.classList.remove("hidden");
   $("#paletteInput").value = "";
   renderPalette();
   setTimeout(() => $("#paletteInput").focus(), 10);
 }
 function closePalette(){
   palette.open = false;
-  $("#palette").classList.add("hidden");
+  const p = $("#palette");
+  if (p.classList.contains("hidden")) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { p.classList.add("hidden"); p.classList.remove("closing"); return; }
+  if (p.classList.contains("closing")) return;
+  p.classList.add("closing");
+  clearTimeout(palCloseTimer);
+  palCloseTimer = setTimeout(() => { p.classList.add("hidden"); p.classList.remove("closing"); }, 130);
 }
 async function runPalette(i){
   const c = palette.items[i];
