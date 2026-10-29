@@ -107,3 +107,9 @@ OS preference. Buttons are 44px pills with a 2px ink border and a
 - Landing + login/register screens are out of the restyle scope except for
   receiving the new tokens. API, scoring logic, and business text
   (stage names, score-reason strings) were not changed by the restyle.
+
+## Landing motion (preview only, branch landing-motion, NOT on main yet)
+- Wave 1 (P0): hero entrance stagger (mask/fade, <900ms), slow ambient glow 18s, reveal upgraded (translateY 24px + blur 6px for emphasis, view() + IO fallback), count-up strip (30'/2 sources/7 stages/4 steps — true product facts only), card hover lift -6px (hover-capable only), specific CTA copy, magnetic hero primary CTA (pointer:fine only).
+- Wave 2 (P1): hero DOM mock with Jobs/Kanban/Brief tabs (replaces hero-jobs.png shot), playable kanban mini-demo (local state, demoMoveCard — never touches real data), score slider using the real rule+fit formula, ⌘K palette mock (landing-only, silent when logged in), source marquee (text names ITviec/TopDev only).
+- Wave 3 (P2): sticky product tour on #lp-how (4 stages), scroll progress bar (scaleX, CSS scroll() + JS fallback), before/after tabs (#lp-compare, no invented numbers).
+- Guardrails: transform/opacity only, ≤1s, reduced-motion shows instantly + freezes ambient/marquee, touch/keyboard fallbacks, no Lottie/WebGL/video/scroll-jacking. Preview: jobpilot-edge-signal.pages.dev.
