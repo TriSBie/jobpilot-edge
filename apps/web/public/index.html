@@ -668,6 +668,13 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   #suggestedList .skill-row label.nm{min-height:var(--tap);display:flex;align-items:center}
   #suggestedList .skill-row select{min-height:var(--tap)}
   #suggestedList .skill-row input[type=checkbox]{width:22px;height:22px}
+
+  /* ===== SIGNAL BƯỚC 6B — bổ sung: benchmark tile ===== */
+  #tab-profile .tile{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-md);padding:14px}
+  #tab-profile .tile .num{font:700 28px var(--f-head);color:var(--brand)}
+  #tab-profile .tile span{display:block;font-weight:600;margin-top:2px}
+  #tab-profile .tile small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
+  #tab-profile .bench-note{border:2px dashed var(--line);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
 </style>
 </head>
 <body>
@@ -908,6 +915,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
               <div class="field">
                 <label id="pfAreaLbl">Khu vực</label>
                 <div id="pfAreaChips" class="chips" role="group" aria-labelledby="pfAreaLbl"></div>
+                <input id="pfAreaCustom" class="input" type="text" placeholder="Thêm khu vực khác (cách nhau bởi dấu phẩy)…">
               </div>
               <div class="field">
                 <label for="pfSalary">Mức lương tối thiểu kỳ vọng (VNĐ/tháng)</label>
@@ -1736,6 +1744,7 @@ function fillProfileForm(){
   pfAreas = new Set(locs);
   pfAreaOpts = [...new Set(AREA_PRESETS.concat(locs))];
   renderAreaChips();
+  $("#pfAreaCustom").value = "";
   $("#pfSalary").value = p && p.salary_min ? p.salary_min : "";
 }
 
@@ -1746,7 +1755,17 @@ $("#profileForm").addEventListener("submit", async (ev) => {
     name: $("#pfName").value.trim(),
     target_roles: splitList($("#pfRoles").value),
     level: $("#pfLevel").value || null,
-    locations: pfAreaOpts.filter(a => pfAreas.has(a)),
+    locations: (() => {
+      const selected = pfAreaOpts.filter(a => pfAreas.has(a));
+      const seen = new Set(selected.map(normArea));
+      const extra = [];
+      splitList($("#pfAreaCustom").value).forEach(v => {
+        const match = pfAreaOpts.find(o => normArea(o) === normArea(v));
+        const val = match || v;
+        if (!seen.has(normArea(val))) { seen.add(normArea(val)); extra.push(val); }
+      });
+      return selected.concat(extra);
+    })(),
     salary_min: $("#pfSalary").value ? Number($("#pfSalary").value) : null,
   };
   const btn = $("#pfSaveBtn");
@@ -1759,6 +1778,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       const i = state.profiles.findIndex(x => x.id === p.id);
       if (i >= 0) state.profiles[i] = updated;
       renderProfileSelect();
+      fillProfileForm();
       if (updated.rescore_queued === false) toast("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
       else { toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok"); startRescoringWatch(); }
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
@@ -1804,9 +1824,9 @@ $("#createProfileBtn").addEventListener("click", async () => {
 
 /* ---------------- Benchmark lương (Phase 2) ---------------- */
 const BENCH_REF = [
-  { role: "Backend", median: 37.8, note: "Median toàn thị trường" },
-  { role: "QA / Kiểm thử", median: 31.2, note: "Median toàn thị trường" },
-  { role: "AI Engineer (2–4 năm)", median: 45, note: "Khoảng 30–60tr, ~1,5x engineer thường" },
+  { role: "Backend", median: 37.8, note: "median tham khảo" },
+  { role: "QA / Kiểm thử", median: 31.2, note: "median tham khảo" },
+  { role: "AI Engineer (2–4 năm)", median: 45, note: "khoảng 30–60tr · median tham khảo" },
 ];
 async function loadBenchmark(){
   const role = $("#benchRole").value.trim();
@@ -1820,20 +1840,20 @@ async function loadBenchmark(){
     if (level) qs.set("level", level);
     if (loc) qs.set("location", loc);
     const d = await api("/api/benchmark?" + qs.toString());
-    const fmt = (v) => v == null ? "—" : (v / 1e6).toFixed(1).replace(/\.0$/, "") + "tr";
+    const fmt = (v) => v == null ? "—" : (v / 1e6).toFixed(1).replace(/\.0$/, "").replace(".", ",") + "tr";
     if (d.count >= 5) {
       box.innerHTML = `<div class="bench-grid">
-        <div class="bench-stat"><b>${fmt(d.median_min)} – ${fmt(d.median_max)}</b><span>Khoảng trung vị (min–max)</span></div>
-        <div class="bench-stat"><b>${fmt(d.median_mid)}</b><span>Trung vị điểm giữa</span></div>
-        <div class="bench-stat"><b>${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</b><span>Khoảng P25–P75</span></div>
+        <div class="tile"><div class="num">${fmt(d.median_min)} – ${fmt(d.median_max)}</div><span>Khoảng trung vị (min–max)</span></div>
+        <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>Trung vị điểm giữa</span></div>
+        <div class="tile"><div class="num">${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</div><span>Khoảng P25–P75</span></div>
       </div>
       <p class="muted small" style="margin:0">Dựa trên ${d.count} tin tuyển có ghi lương trong hệ thống. ${esc(d.note || "")}</p>`;
     } else {
       box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">Chưa đủ dữ liệu lương trong hệ thống (mới ${d.count} tin có ghi lương). Tham khảo thị trường bên dưới — hệ thống sẽ tự tính từ tin mới khi nhà tuyển dụng ghi lương.</p>
       <div class="bench-grid">
-        ${BENCH_REF.map(r => `<div class="bench-stat"><b>${r.median}tr</b><span>${esc(r.role)} · ${esc(r.note)}</span></div>`).join("")}
+        ${BENCH_REF.map(r => `<div class="tile"><div class="num">${String(r.median).replace(".", ",")}tr</div><span>${esc(r.role)}</span><small>${esc(r.note)}</small></div>`).join("")}
       </div>
-      <p class="muted small" style="margin:.4rem 0 0">Nguồn tham khảo: báo cáo thị trường ITviec/TopDev 2025–2026 (qua tổng hợp thứ cấp — đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức).</p>`;
+      <div class="bench-note">Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp — đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.</div>`;
     }
   } catch (e) { box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
 }
