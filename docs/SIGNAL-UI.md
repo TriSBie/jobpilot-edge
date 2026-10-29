@@ -39,7 +39,7 @@ OS preference. Buttons are 44px pills with a 2px ink border and a
 - One column: `.app` (max-width 1120px), a `.topbar` (logo "JobPilot *Edge*",
   profile select, ⌘K button, theme toggle, logout) and a `.tabbar-row` with
   the 3 tabs (Việc làm / Kanban / Hồ sơ). **There is no sidebar.
-- Landing header (.lp-nav): brand in Unbounded 700 18px ("Edge" in brand blue); nav links in Manrope 600 15px ink, hover brand. Mark: chrome tile image (assets/logo-chrome-mark.png), 30x30, radius 9px, same in both themes.**
+- Landing header (.lp-nav): brand in Unbounded 700 18px ("Edge" in brand blue); nav links in Manrope 600 15px ink, hover brand. Mark: chrome tile image (assets/logo-chrome-mark.png), 30x30, radius 9px, same in both themes. Hero + auth medallion also chrome (74x74, radius 22px); old blue .mark/.medallion CSS removed.**
 - Mobile (≤640px): the tab bar becomes a fixed bottom pill bar (ink
   background, active tab in brand blue, pop badge for the attention count);
   page bottom padding leaves room for it. All taps are 44px except spec-sized
