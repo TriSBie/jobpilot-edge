@@ -681,6 +681,9 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   .kcard[draggable="true"]{cursor:grab}
   .kcard.dragging{opacity:.45;cursor:grabbing}
   .kcol.drop-target{outline:2px dashed var(--brand);outline-offset:-2px}
+
+  /* ===== LOGO CHROME MARK (header landing) ===== */
+  .lp-nav .brand .mark-img{width:30px;height:30px;border-radius:9px;object-fit:cover;flex:none}
 </style>
 </head>
 <body>
@@ -689,7 +692,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 <!-- ================= LANDING ================= -->
 <div id="landingView" class="hidden">
   <header class="lp-nav">
-    <div class="brand"><span class="mark">J</span>JobPilot <span>Edge</span></div>
+    <div class="brand"><img class="mark-img" src="assets/logo-chrome-mark.png" alt="" width="30" height="30">JobPilot <span>Edge</span></div>
     <nav class="lp-links">
       <a href="#lp-how">Cách hoạt động</a>
       <a href="#lp-features">Tính năng</a>
