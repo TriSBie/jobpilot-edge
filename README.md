@@ -34,9 +34,9 @@ It is the product-grade successor of a personal job-watcher tool, rebuilt from s
 - **Morning brief** — a daily 08:00 (ICT) digest of strong matches and due follow-ups, rendered as a gradient-edged panel with animated counters.
 - **Command palette** — `Cmd/Ctrl + K` to search jobs, jump between views, trigger a scan or switch profiles. Keyboard-first: `1/2/3` switch tabs, `/` focuses search.
 - **Realtime-ready** — a Durable Object hub broadcasts strong-match events to connected clients.
-- **Modern UI** — Linear-style product shell with Resend-style accents: hairline surfaces, Inter + Space Grotesk, score rings, skeleton loading, staggered reveals.
-- **Light / dark themes** — a single toggle (landing nav, auth screen, app sidebar); the whole token system flips, the choice persists and the first visit follows the OS preference.
-- **Real accounts** — email + password registration and login (PBKDF2-SHA256, salted, via WebCrypto; brute-force throttling). Accounts created before passwords existed claim one on first sign-in.
+- **Modern UI (Signal)** — one-column shell with a topbar (mobile: fixed bottom tabbar), Unbounded display + Manrope body, brand blue #2D4BFF, hard-shadow cards, flat kanban/profile cards, skeleton loading, 44px touch targets. See [`docs/SIGNAL-UI.md`](docs/SIGNAL-UI.md).
+- **Light / dark themes** — a single toggle (landing nav, auth screen, app topbar); the whole token system flips, the choice persists (`jp_theme`) and the first visit follows the OS preference.
+- **Real accounts** — email + password registration and login (PBKDF2-SHA256, salted, via WebCrypto; brute-force throttling). The legacy password-claim flow was removed by the Oct 2026 security fix: `/api/auth/set-password` returns 410.
 - **Landing page** — logged-out visitors get a product landing that explains the scoring formula and the 4-step quickstart *before* the app; new accounts start completely empty with a 3-step onboarding checklist (no seeded demo data).
 
 ## Screenshots
@@ -52,6 +52,8 @@ It is the product-grade successor of a personal job-watcher tool, rebuilt from s
 | Profile & CV skills |
 |---|
 | <img src="docs/screenshots/05-profile.png" width="430"> |
+
+> Note: screenshots show the pre-Signal UI (Linear × Resend). The shipped UI is Signal — see [`docs/SIGNAL-UI.md`](docs/SIGNAL-UI.md); screenshots will be refreshed.
 
 ## Architecture
 
@@ -120,8 +122,9 @@ jobpilot-edge/
 │   └── web/public/index.html     # The entire SPA
 ├── db/migrations/                # 0001 schema (14 tables) · 0002 password auth
 └── docs/
-    ├── UI-V2-SPEC.md             # UI v2 design spec
-    └── screenshots/              # README screenshots
+    ├── SIGNAL-UI.md              # Shipped UI (Signal restyle, Oct 2026)
+    ├── UI-V2-SPEC.md             # UI v2 design spec (superseded by Signal)
+    └── screenshots/              # README screenshots (pre-Signal UI)
 ```
 
 ## Getting started
@@ -143,6 +146,8 @@ Authentication is password-based: passwords are hashed with PBKDF2-SHA256 (100k 
 - [x] **UI v2** — Linear × Resend redesign, command palette
 - [x] **Phase 1.5** — Password auth (register / login / first-time claim), landing page, empty-start onboarding
 - [x] **Phase 2** — Silence alerts + follow-up reminders (kanban badge + "Cần chú ý" panel), per-job score explanation (matched/missing weights, fit breakdown), stale/duplicate/bloated-JD flags + hide-flagged filter, salary benchmark + negotiation scripts. JD-by-years contradiction flag deferred: fetchers capture no JD text (detail-page fetch = Phase 3, rate-limit risk); benchmark runs on a labeled market-reference table until new ingests capture salary_text.
+- [x] **Security fix (PR #1, Oct 2026)** — set-password disabled (410), profile/application authorization fixes, rescore scoped to the updated profile only, admin endpoints owner-only.
+- [x] **Signal UI restyle (Oct 2026)** — steps 1–6 + P0 usability + step 2b review fixes + 6b (free-text location input, benchmark tiles); live on production. Spec: [`docs/SIGNAL-UI.md`](docs/SIGNAL-UI.md).
 - [ ] **Phase 3** — Custom domain, email digest (Resend), Cloudflare Access for `/admin`
 - [ ] **Phase 4** — Public beta for Vietnamese devs
 
