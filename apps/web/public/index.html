@@ -339,10 +339,11 @@ html[data-theme="dark"]{
 .lp-nav{ position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:1rem;
   padding:.8rem clamp(1rem,4vw,2.5rem); background:color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line); }
-.lp-nav .brand{ font-size:1.05rem; }
+.lp-nav .brand{ font:700 18px var(--f-head); letter-spacing:-.01em; }
+.lp-nav .brand span{ color:var(--brand); }
 .lp-links{ display:flex; gap:1.4rem; margin-left:2rem; }
-.lp-links a{ color:var(--muted); text-decoration:none; font-size:.92rem; }
-.lp-links a:hover{ color:var(--text); }
+.lp-links a{ color:var(--ink); text-decoration:none; font-family:var(--f-body); font-weight:600; font-size:15px; }
+.lp-links a:hover{ color:var(--brand); }
 .lp-nav .sp{ flex:1; }
 .lp-sec{ max-width:1180px; margin:0 auto; padding:clamp(3.5rem,9vh,6.5rem) clamp(1rem,4vw,2.5rem) clamp(2rem,5vh,3.5rem);
   display:flex; flex-direction:column; align-items:center; text-align:center; }
