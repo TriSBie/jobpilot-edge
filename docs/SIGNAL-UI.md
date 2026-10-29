@@ -67,8 +67,9 @@ OS preference. Buttons are 44px pills with a 2px ink border and a
 
 - Flat columns (`.kanban` / `.kcol`, 230px, horizontal scroll; mobile 85vw +
   scroll-snap) and flat cards (`.kcard`, 2px ink border, no shadow).
-- **Cards move with ◀ ▶ buttons, not drag & drop** (drag & drop is not
-  implemented; the buttons call the same `moveApplication` PATCH).
+- Cards move with ◀ ▶ buttons or by dragging the card to another column
+  (HTML5 drag & drop on desktop; on touch devices the buttons remain the way
+  to move). Drops call the same application PATCH as the buttons.
 - The "Mới" column shows the first 20 cards + a one-way "xem thêm" expand
   when it holds more.
 - Attention cards get a sun warning border + a due line ("Quá hạn {date}" /

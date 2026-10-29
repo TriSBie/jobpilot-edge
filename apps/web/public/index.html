@@ -675,6 +675,11 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   #tab-profile .tile span{display:block;font-weight:600;margin-top:2px}
   #tab-profile .tile small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
   #tab-profile .bench-note{border:2px dashed var(--line);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
+
+  /* ===== KANBAN DRAG & DROP (desktop, HTML5) ===== */
+  .kcard[draggable="true"]{cursor:grab}
+  .kcard.dragging{opacity:.45;cursor:grabbing}
+  .kcol.drop-target{outline:2px dashed var(--brand);outline-offset:-2px}
 </style>
 </head>
 <body>
@@ -1651,8 +1656,8 @@ function renderKanban(){
       const m = a.match || null;
       const warn = warnById.get(a.id);
       const due = warn || (a.next_follow_up_at ? `Follow-up: ${fmtDate(a.next_follow_up_at)}` : "");
-      return `<div class="kcard${warn ? " warn" : ""}">
-        <div class="t"><a href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
+      return `<div class="kcard${warn ? " warn" : ""}" draggable="true" data-app="${esc(a.id)}">
+        <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
         <div class="c">${esc(a.job ? a.job.company : "")}${a.job && a.job.location ? " · " + esc(a.job.location) : ""}</div>
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
         ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
@@ -1664,7 +1669,7 @@ function renderKanban(){
         </div>
       </div>`;
     }).join("") + (list.length > shown.length ? `<button class="kmore" data-kmore type="button">Xem thêm ${list.length - shown.length}</button>` : "");
-    return `<div class="kcol">
+    return `<div class="kcol" data-stage="${s.key}">
       <div class="kcol-head"><span>${s.label}</span><span class="count">${byStage[s.key].length}</span></div>
       <div class="kcol-body">${cards || '<div class="muted small" style="text-align:center;padding:.4rem">Trống</div>'}</div>
     </div>`;
@@ -1672,6 +1677,35 @@ function renderKanban(){
 
   $$("[data-kmore]", box).forEach(b => b.addEventListener("click", () => { kanbanNewAll = true; renderKanban(); }));
   $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
+  // KANBAN DRAG & DROP: keo the sang cot khac (desktop). Nut ◀ ▶ giu nguyen.
+  $$(".kcard", box).forEach(card => {
+    card.addEventListener("dragstart", (ev) => {
+      ev.dataTransfer.setData("application/x-jobpilot-app", card.dataset.app);
+      ev.dataTransfer.setData("text/plain", card.dataset.app);
+      ev.dataTransfer.effectAllowed = "move";
+      card.classList.add("dragging");
+    });
+    card.addEventListener("dragend", () => {
+      card.classList.remove("dragging");
+      $$(".kcol", box).forEach(c => c.classList.remove("drop-target"));
+    });
+  });
+  $$(".kcol", box).forEach(col => {
+    col.addEventListener("dragover", (ev) => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = "move";
+      col.classList.add("drop-target");
+    });
+    col.addEventListener("dragleave", (ev) => {
+      if (!col.contains(ev.relatedTarget)) col.classList.remove("drop-target");
+    });
+    col.addEventListener("drop", (ev) => {
+      ev.preventDefault();
+      col.classList.remove("drop-target");
+      const appId = ev.dataTransfer.getData("application/x-jobpilot-app") || ev.dataTransfer.getData("text/plain");
+      if (appId) moveApplicationTo(appId, col.dataset.stage);
+    });
+  });
 }
 
 async function moveApplication(appId, dir, btn){
@@ -1691,6 +1725,22 @@ async function moveApplication(appId, dir, btn){
   } catch (e) {
     toast(e.message, "err");
     btn.disabled = false;
+  }
+}
+
+// Keo-tha Kanban: chuyen thang toi cot dich (nut ◀ ▶ chi di 1 buoc nen khong dung lai duoc).
+async function moveApplicationTo(appId, targetStage){
+  const app = state.applications.find(a => a.id === appId);
+  if (!app || !targetStage || targetStage === app.stage) return;
+  try {
+    await api("/api/applications/" + encodeURIComponent(appId), {
+      method: "PATCH", body: JSON.stringify({ stage: targetStage }),
+    });
+    app.stage = targetStage;
+    renderKanban();
+    toast("Đã chuyển sang: " + (STAGES.find(s => s.key === targetStage) || {}).label, "ok");
+  } catch (e) {
+    toast(e.message, "err");
   }
 }
 
