@@ -43,6 +43,7 @@ function json(data, status = 200) {
   });
 }
 const now = () => Math.floor(Date.now() / 1000);
+const OWNER_EMAIL = "tribui.it.work@gmail.com";
 const uid = () => crypto.randomUUID();
 async function sha256hex(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -646,7 +647,7 @@ export default {
     }
 
     // Route /api/admin/* chỉ dành cho tài khoản owner.
-    if (path.startsWith("/api/admin/") && user.email !== "tribui.it.work@gmail.com") {
+    if (path.startsWith("/api/admin/") && user.email !== OWNER_EMAIL) {
       return json({ error: "forbidden" }, 403);
     }
 
@@ -654,7 +655,7 @@ export default {
       const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
-      return json({ user: { id: user.id, email: user.email, name: user.name }, profiles });
+      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL }, profiles });
     }
     if (path === "/api/admin/quota") {
       const out = {};

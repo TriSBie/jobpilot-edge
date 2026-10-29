@@ -1811,6 +1811,7 @@ function initLandingMagnet(root){
 async function boot(){
   const me = await api("/api/me");
   state.user = me.user;
+  { const owner = !!(me.user && me.user.is_owner); $("#scanBtn").classList.toggle("hidden", !owner); $(".src-status").classList.toggle("hidden", !owner); }
   state.profiles = me.profiles || [];
   if (!state.profiles.length) {
     try { state.profiles = await api("/api/profiles"); } catch (e) { /* bỏ qua */ }
@@ -1849,6 +1850,7 @@ $("#profileSelect").addEventListener("change", async (ev) => {
 });
 
 async function loadSourceStatus(){
+  if (!(state.user && state.user.is_owner)) return; // /api/admin/* chỉ owner
   try {
     const rows = await api("/api/admin/ingest/status");
     if (Array.isArray(rows) && rows.length) {
@@ -1991,7 +1993,7 @@ function renderJobs(){
   const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
   if (cnt) cnt.textContent = list.length ? `— ${list.length} job đang theo dõi` : "";
   if (!list.length) {
-    box.innerHTML = '<div class="empty">Chưa có job nào khớp bộ lọc. Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.</div>';
+    box.innerHTML = '<div class="empty">Chưa có job nào khớp bộ lọc. ' + (state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     return;
   }
   // P0 — strip tổng quan: tính từ danh sách đã lọc, không gọi API thêm
@@ -2747,7 +2749,7 @@ function paletteCommands(q){
   push("Đi tới: Việc làm", "tab", () => switchTab("jobs"));
   push("Đi tới: Kanban", "tab", () => switchTab("kanban"));
   push("Đi tới: Hồ sơ & CV", "tab", () => switchTab("profile"));
-  push("Quét job mới từ ITviec + TopDev", "hành động", () => $("#scanBtn").click());
+  if (state.user && state.user.is_owner) push("Quét job mới từ ITviec + TopDev", "hành động", () => $("#scanBtn").click());
   push("Làm mới dữ liệu", "hành động", () => { loadJobs(); loadDigest(); loadApplications(); });
   state.profiles.forEach(p => {
     if (p.id !== state.profileId) push("Chuyển hồ sơ: " + p.name, "hồ sơ", async () => {
