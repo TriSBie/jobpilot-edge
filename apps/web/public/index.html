@@ -381,6 +381,59 @@ html[data-theme="dark"]{
 @media (max-width: 560px){ .lp-grid3,.lp-steps,.lp-bento{ grid-template-columns:1fr; } .lp-bento .wide{ grid-column:span 1; } }
 @media (prefers-reduced-motion: reduce){ .rv{ opacity:1; transform:none; transition:none; } }
 
+/* ================= LANDING MOTION — ĐỢT 1 (P0) ================= */
+/* 1.1 Hero entrance (CSS là chính): stagger 60ms, mỗi bước 600ms ease-out,
+   bước cuối kết thúc ở 240+600=840ms (<900ms). Trạng thái mặc định HIỆN:
+   không có animation thì hero vẫn đủ; animation chỉ thêm nhịp vào. */
+/* LƯU Ý: class entrance đặt lên wrapper .lp-shot (không đặt lên img bên
+   trong) để Đợt 2 thay visual bên trong mà vẫn giữ entrance. */
+@keyframes lp-hero-in{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+.lp-hero .medallion-img{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 0ms backwards; }
+.lp-hero h1{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 60ms backwards; }
+.lp-hero .sub{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 120ms backwards; }
+.lp-hero .lp-cta{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 180ms backwards; }
+.lp-hero .lp-shot{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 240ms backwards; }
+/* 1.2 Ambient glow: 1 lớp duy nhất sau hero, vòng 18s (trong 15–20s),
+   bão hoà thấp, chỉ transform/opacity, không phủ toàn trang. */
+.lp-hero{ position:relative; overflow:hidden; }
+.lp-glow{ position:absolute; left:50%; top:-10rem; width:min(64rem,140vw); height:34rem;
+  transform:translateX(-50%); pointer-events:none; z-index:0;
+  background:radial-gradient(closest-side, rgba(45,75,255,.16), rgba(45,75,255,.05) 55%, transparent 72%);
+  animation:lp-glow-drift 18s cubic-bezier(.4,0,.2,1) infinite alternate; }
+@keyframes lp-glow-drift{ from{ transform:translateX(-50%) translateY(0) scale(1); opacity:.85; }
+  to{ transform:translateX(-52%) translateY(1.5rem) scale(1.06); opacity:1; } }
+.lp-hero > *:not(.lp-glow){ position:relative; z-index:1; }
+/* 1.3 Reveal upgrade: translateY 18px → 24px; khối nhấn mạnh (.rv-strong:
+   ảnh sản phẩm, công thức) thêm blur 6px → 0; stagger con 50ms. */
+.rv{ transform:translateY(24px); transition:opacity var(--m-enter) var(--e-out), transform var(--m-enter) var(--e-out), filter var(--m-enter) var(--e-out); }
+.rv-strong{ filter:blur(6px); }
+.rv-strong.in{ filter:blur(0); }
+.lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2), .lp-bento .rv:nth-child(2){ transition-delay:.05s; }
+.lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3), .lp-bento .rv:nth-child(3){ transition-delay:.10s; }
+.lp-steps .rv:nth-child(4), .lp-bento .rv:nth-child(4){ transition-delay:.15s; }
+.lp-bento .rv:nth-child(5){ transition-delay:.20s; }
+.lp-bento .rv:nth-child(6){ transition-delay:.25s; }
+/* Thử animation-timeline: view() trong @supports; trình duyệt không hỗ trợ
+   vẫn dùng IntersectionObserver sẵn có làm fallback. */
+@supports (animation-timeline: view()){
+  .rv{ opacity:1; transform:none; filter:none; transition:none;
+    animation:lp-rv 500ms cubic-bezier(.16,1,.3,1) both;
+    animation-timeline:view(); animation-range:entry 0% cover 40%; }
+  .rv-strong{ animation-name:lp-rv-strong; }
+  @keyframes lp-rv{ from{ opacity:0; transform:translateY(24px); } to{ opacity:1; transform:none; } }
+  @keyframes lp-rv-strong{ from{ opacity:0; transform:translateY(24px); filter:blur(6px); }
+    to{ opacity:1; transform:none; filter:blur(0); } }
+}
+/* 1.4 Count-up: tabular numerals + giữ sẵn chiều rộng để không lệch layout. */
+.lp-stat b{ font-variant-numeric:tabular-nums; }
+.lp-stat [data-count]{ display:inline-block; min-width:2ch; font-variant-numeric:tabular-nums; }
+/* Mở rộng prefers-reduced-motion cho toàn bộ motion mới của Đợt 1. */
+@media (prefers-reduced-motion: reduce){
+  .lp-glow{ animation:none; opacity:.5; }
+  .lp-hero .medallion-img, .lp-hero h1, .lp-hero .sub, .lp-hero .lp-cta, .lp-hero .lp-shot{ animation:none; }
+  .rv-strong{ filter:none; }
+}
+
 /* ================= AUTH (v3) ================= */
 .auth-tabs{ display:flex; gap:.4rem; padding:.35rem; border:1px solid var(--line); border-radius:999px; margin-bottom:1.2rem; background:rgba(var(--ov),.03); }
 .auth-tabs button{ flex:1; border:0; background:transparent; color:var(--muted); padding:.55rem 1rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.95rem; }
@@ -449,8 +502,10 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 #lp-how::before, #lp-scoring::before{ content:""; position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(44rem 18rem at 50% 0%, rgba(45,75,255,.05), transparent 65%); }
 .lp-card{ transition:transform var(--m-base) var(--e-out), border-color var(--m-base) var(--e-out), box-shadow var(--m-base) var(--e-out); }
-.lp-card:hover{ transform:translateY(-3px); border-color:var(--line-strong); box-shadow:0 16px 40px rgba(0,0,0,.18); }
-html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1); }
+@media (hover:hover) and (pointer:fine){
+  .lp-card:hover{ transform:translateY(-6px); border-color:var(--line-strong); box-shadow:0 14px 32px rgba(0,0,0,.16); transition-delay:0s; }
+  html[data-theme="light"] .lp-card:hover{ box-shadow:0 14px 32px rgba(13,20,36,.1); }
+}
 .lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2){ transition-delay:.07s; }
 .lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3){ transition-delay:.14s; }
 .lp-steps .rv:nth-child(4){ transition-delay:.21s; }
@@ -707,6 +762,157 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   .why.open .row:nth-child(2){transition-delay:40ms}
   .why.open .row:nth-child(3){transition-delay:80ms}
   .why.open .row:nth-child(4){transition-delay:120ms}
+/* ================= LANDING DEMO — ĐỢT 2 (P1) ================= */
+/* Chỉ transform/opacity, easing cubic-bezier(0.4,0,0.2,1), micro 100–300ms. */
+.demo-chip{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:.2rem .8rem;font-size:.78rem;font-weight:700;color:var(--muted);background:rgba(var(--ov),.04)}
+.demo-note{color:var(--muted);font-size:.85rem;line-height:1.6;margin:1rem 0 0}
+.demo-hero{border:1px solid var(--line);border-radius:12px;background:rgba(var(--ov),.03);padding:1rem;text-align:left}
+.demo-tabs{position:relative;display:flex;gap:.25rem;margin-top:.9rem;border-bottom:1px solid var(--line);padding:0 .25rem .25rem}
+.demo-tabs button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:.9rem;padding:.5rem .9rem;border-radius:10px;position:relative;z-index:1}
+.demo-tabs button.on{color:var(--text)}
+.demo-tab-ind{position:absolute;bottom:-1px;left:0;height:2px;background:var(--brand);border-radius:2px;opacity:0;transition:transform 300ms cubic-bezier(0.4,0,0.2,1),width 300ms cubic-bezier(0.4,0,0.2,1),opacity 200ms cubic-bezier(0.4,0,0.2,1)}
+.demo-frames{margin-top:1rem}
+.demo-frame{display:none}
+.demo-frame.on{display:grid;grid-template-columns:200px minmax(0,1fr);gap:1rem;animation:demo-frame-in 300ms cubic-bezier(0.4,0,0.2,1) both}
+@keyframes demo-frame-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.demo-side{display:flex;flex-direction:column;gap:.3rem;color:var(--muted);font-size:.88rem}
+.demo-side b{color:var(--text)}
+.demo-side .on{color:var(--text);font-weight:700}
+.demo-side .demo-prof{margin-top:auto;border-top:1px solid var(--line);padding-top:.6rem}
+.demo-list{display:flex;flex-direction:column;gap:.6rem}
+.demo-job{display:flex;gap:.8rem;justify-content:space-between;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;background:rgba(var(--ov),.02)}
+.demo-job b{display:block;font-size:.92rem}
+.demo-job span{display:block;color:var(--muted);font-size:.82rem}
+.demo-job .score-pill{flex:none}
+.demo-frame[data-demo-frame="kanban"]{grid-template-columns:repeat(3,1fr)}
+.demo-minicol{display:flex;flex-direction:column;gap:.5rem;border:1px solid var(--line);border-radius:12px;padding:.8rem}
+.demo-minicol b{font-size:.88rem}
+.demo-minicol span{font-size:.85rem;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:.5rem .7rem;background:rgba(var(--ov),.02)}
+.demo-brief{display:flex;flex-direction:column;gap:.4rem}
+.demo-brief b{font-size:1rem}
+.demo-brief p,.demo-brief span{color:var(--muted);font-size:.9rem;margin:0}
+.demo-count{font-weight:700;margin-top:1.6rem}
+.demo-kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;width:100%;text-align:left;margin-top:1rem}
+.demo-kcol{border:1px solid var(--line);border-radius:20px;padding:1rem;background:linear-gradient(180deg,rgba(var(--ov),.045),rgba(var(--ov),.015))}
+.demo-kcol h3{margin:0 0 .8rem;font-size:1rem}
+.demo-kbody{display:flex;flex-direction:column;gap:.7rem;min-height:120px}
+.demo-kbody.demo-drop{outline:2px dashed var(--brand);outline-offset:-2px;border-radius:12px}
+.demo-kcard{border:1px solid var(--line);border-radius:14px;padding:.9rem;background:rgba(var(--ov),.03);cursor:grab;transition:transform 200ms cubic-bezier(0.4,0,0.2,1),opacity 200ms cubic-bezier(0.4,0,0.2,1)}
+.demo-kcard b{display:block;font-size:.92rem}
+.demo-kcard>span{display:block;color:var(--muted);font-size:.82rem;margin-top:.2rem}
+.demo-kcard.demo-just-moved{animation:demo-frame-in 200ms cubic-bezier(0.4,0,0.2,1) both}
+.demo-kmv{display:flex;gap:.4rem;margin-top:.7rem}
+.demo-kmv button{min-width:38px;min-height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--text);font-size:.85rem}
+.demo-kmv button:disabled{opacity:.35;cursor:default}
+.demo-score{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;width:100%;text-align:left;margin-top:2rem}
+.demo-controls,.demo-result{border:1px solid var(--line);border-radius:20px;padding:1.5rem;background:linear-gradient(180deg,rgba(var(--ov),.045),rgba(var(--ov),.015))}
+.demo-controls label{font-size:.9rem}
+.demo-controls input[type="range"]{margin:0 0 1.2rem;padding:0;accent-color:var(--brand)}
+.demo-controls select{width:100%}
+.demo-final{display:flex;align-items:center;gap:.8rem}
+.demo-final b{font-family:var(--f-head);font-size:2.6rem;line-height:1}
+.demo-break{margin:1.2rem 0 0;display:flex;flex-direction:column;gap:.4rem}
+.demo-break div{display:flex;justify-content:space-between;gap:1rem;font-size:.92rem}
+.demo-break dt{color:var(--muted)}
+.demo-break dd{margin:0;font-weight:700}
+.demo-explain{color:var(--muted);font-size:.92rem;line-height:1.6}
+.demo-cap{border:1px dashed var(--line-strong);border-radius:12px;padding:.7rem 1rem;font-size:.9rem;color:var(--muted)}
+#demo-cmdk-btn{margin-bottom:.9rem}
+#demo-palette{position:fixed;inset:0;z-index:300;display:grid;justify-items:center;align-items:start;padding:12vh 1rem 1rem;background:rgba(4,5,6,.6);backdrop-filter:blur(6px)}
+.demo-pal-box{width:100%;max-width:560px;border-radius:18px;overflow:hidden;background:rgba(16,17,20,.96);border:1px solid var(--line-strong);box-shadow:0 30px 80px rgba(0,0,0,.6);animation:demo-frame-in 200ms cubic-bezier(0.4,0,0.2,1) both}
+.demo-pal-box input{border:none;background:transparent;font-size:1.02rem;padding:1rem 1.15rem;box-shadow:none}
+.demo-pal-box input:focus{box-shadow:none;border:none}
+#demo-palette-list{max-height:46vh;overflow:auto;border-top:1px solid var(--line);padding:.45rem}
+.demo-pal-item{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;background:transparent;border:none;border-radius:10px;padding:.6rem .7rem;color:var(--muted);font-size:.93rem}
+.demo-pal-item .hint{margin-left:auto;font-size:.76rem;color:var(--faint)}
+.demo-pal-item.sel{background:rgba(45,75,255,.13);color:var(--text)}
+.demo-pal-empty{padding:1rem;text-align:center;color:var(--faint);font-size:.9rem}
+.demo-pal-foot{color:var(--faint);font-size:.8rem;text-align:center;margin:.4rem 0 .8rem}
+.demo-marquee{display:flex;align-items:center;gap:1rem;max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,2.5rem);color:var(--muted);font-weight:700}
+.demo-marquee-label{flex:none;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase}
+.demo-marquee-viewport{flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.demo-marquee-track{display:flex;width:max-content;animation:demo-marquee 30s linear infinite}
+.demo-marquee-group{white-space:nowrap;font-size:1rem;letter-spacing:.02em}
+@keyframes demo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.demo-hero button:focus-visible,.demo-kanban button:focus-visible,.demo-score input:focus-visible,.demo-score select:focus-visible,.demo-pal-item:focus-visible{outline:none;box-shadow:var(--focus)}
+@media (hover:hover) and (pointer:fine){
+  .demo-kcard:hover{transform:translateY(-2px)}
+  .demo-marquee:hover .demo-marquee-track{animation-play-state:paused}
+}
+@media (max-width:640px){
+  .demo-frame.on,.demo-frame[data-demo-frame="kanban"]{grid-template-columns:1fr}
+  .demo-side{flex-direction:row;flex-wrap:wrap}
+  .demo-side .demo-prof{margin-top:0}
+  .demo-kanban,.demo-score{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion: reduce){
+  .demo-frame.on,.demo-kcard.demo-just-moved,.demo-pal-box{animation:none}
+  .demo-tab-ind,.demo-kcard{transition:none}
+  .demo-marquee-track{animation:none}
+}
+/* ===== LANDING WAVE 3 (P2): sticky tour + progress + before/after ===== */
+  /* 3.2 — thanh tiến trình đọc: cố định ở đỉnh viewport, chỉ transform scaleX.
+     Header .lp-nav cao ~56px (padding .8rem + mark 30px) nên thanh 3px ở top:0
+     chỉ phủ phần padding nền của header, không che chữ brand, link nav hay CTA. */
+  #lp-progress{ position:fixed; top:0; left:0; width:100%; height:3px; z-index:60;
+    background:var(--brand); transform-origin:0 50%; transform:scaleX(0); pointer-events:none; }
+  @supports (animation-timeline: scroll()){
+    #lp-progress{ animation:lp-progress linear both; animation-timeline:scroll(); }
+  }
+  @keyframes lp-progress{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+  /* 3.1 — sticky product tour cho #lp-how: frame dính 1 bên, bước cuộn bên còn lại.
+     Crossfade frame ~300ms, chỉ opacity/transform, easing theo guardrails đợt 3. */
+  .lp-tour{ display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:2rem; align-items:start; width:100%; margin-top:2.6rem; text-align:left; }
+  .lp-tour-frame{ position:sticky; top:76px; border:1px solid var(--line); border-radius:20px; padding:1.4rem;
+    background:linear-gradient(180deg, rgba(var(--ov),.045), rgba(var(--ov),.015)); }
+  .lp-tour-frames{ display:grid; }
+  .lp-tour-state{ grid-area:1/1; opacity:0; transform:translateY(8px); pointer-events:none;
+    transition:opacity 300ms cubic-bezier(0.16,1,0.3,1), transform 300ms cubic-bezier(0.16,1,0.3,1); }
+  .lp-tour-state.active{ opacity:1; transform:none; pointer-events:auto; }
+  .lp-tour-state h3{ margin:0 0 .4rem; font-size:1rem; }
+  .lp-tour-state p{ color:var(--muted); line-height:1.6; margin:0 0 1rem; font-size:.92rem; }
+  .lp-tour-note{ color:var(--muted); font-size:.82rem; line-height:1.6; margin:1rem 0 0; }
+  .lp-mini{ display:flex; flex-direction:column; gap:.55rem; }
+  .lp-mini-row{ display:flex; gap:.6rem; align-items:center; border:1px solid var(--line); border-radius:12px; padding:.6rem .8rem; font-size:.88rem; }
+  .lp-mini-row b{ font-weight:600; }
+  .lp-mini-row span{ color:var(--muted); font-size:.82rem; margin-left:auto; text-align:right; }
+  .lp-mini-cols{ display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
+  .lp-mini-col{ border:1px solid var(--line); border-radius:12px; padding:.55rem .5rem; font-size:.8rem; color:var(--muted); min-height:4.2rem; }
+  .lp-mini-col b{ display:block; color:var(--text); font-size:.82rem; margin-bottom:.35rem; }
+  .lp-mini-card{ border:1px solid var(--line); border-radius:10px; padding:.45rem .6rem; font-size:.8rem; color:var(--text); background:rgba(var(--ov),.03); }
+  .lp-tour-steps{ display:flex; flex-direction:column; gap:1rem; }
+  .lp-tour-step{ min-height:52vh; display:flex; flex-direction:column; justify-content:center;
+    opacity:.75; transition:opacity 300ms cubic-bezier(0.16,1,0.3,1); }
+  .lp-tour-step.is-active{ opacity:1; }
+  .lp-tour-step .n{ font-family:var(--f-head); font-weight:700; font-size:1.5rem; color:var(--brand); }
+  .lp-tour-step h3{ margin:.6rem 0 .45rem; font-size:1.05rem; }
+  .lp-tour-step p{ color:var(--muted); line-height:1.6; margin:0; font-size:.94rem; }
+  @media (max-width: 900px){
+    .lp-tour{ grid-template-columns:1fr; }
+    .lp-tour-frame{ position:static; }
+    .lp-tour-step{ min-height:0; padding:1rem 0; }
+    .lp-mini-cols{ grid-template-columns:1fr 1fr; }
+  }
+  /* 3.3 — tab before/after: chỉ đổi panel theo tab, không số bịa (xem chú thích dưới section). */
+  .lp-compare-tabs{ display:flex; gap:.4rem; padding:.35rem; border:1px solid var(--line); border-radius:999px; margin-top:2.2rem; background:rgba(var(--ov),.03); }
+  .lp-compare-tab{ flex:1; border:0; background:transparent; color:var(--muted); padding:.6rem 1rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.95rem; font-weight:600;
+    transition:background 200ms cubic-bezier(0.16,1,0.3,1), color 200ms cubic-bezier(0.16,1,0.3,1); }
+  .lp-compare-tab[aria-selected="true"]{ background:var(--brand); color:var(--brand-ink); }
+  .lp-compare-tab:focus-visible{ outline:none; box-shadow:var(--focus); }
+  @media (hover:hover) and (pointer:fine){ .lp-compare-tab:not([aria-selected="true"]):hover{ color:var(--text); } }
+  .lp-compare-panel{ display:none; width:100%; margin-top:1.6rem; text-align:left; }
+  .lp-compare-panel.active{ display:block; animation:tab-in 300ms cubic-bezier(0.16,1,0.3,1) both; }
+  .lp-compare-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:1rem 0; border-top:1px solid var(--line); }
+  .lp-compare-row:first-child{ border-top:0; }
+  .lp-compare-row h3{ margin:0 0 .3rem; font-size:.95rem; }
+  .lp-compare-row p{ margin:0; color:var(--muted); line-height:1.6; font-size:.92rem; }
+  .lp-compare-note{ color:var(--muted); font-size:.85rem; line-height:1.6; margin:1.2rem 0 0; max-width:62ch; text-align:center; }
+  @media (max-width: 560px){ .lp-compare-row{ grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion: reduce){
+    #lp-progress{ animation:none; }
+    .lp-tour-state, .lp-tour-step{ transition:none; }
+    .lp-compare-panel.active{ animation:none; }
+  }
 </style>
 </head>
 <body>
@@ -714,6 +920,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
 
 <!-- ================= LANDING ================= -->
 <div id="landingView" class="hidden">
+  <div id="lp-progress" aria-hidden="true"></div>
   <header class="lp-nav">
     <div class="brand"><img class="mark-img" src="assets/logo-chrome-mark.png" alt="" width="30" height="30">JobPilot <span>Edge</span></div>
     <nav class="lp-links">
@@ -721,6 +928,7 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
       <a href="#lp-features">Tính năng</a>
       <a href="#lp-scoring">Điểm khớp</a>
       <a href="#lp-guide">Bắt đầu</a>
+      <a href="#lp-compare">Trước / Sau</a>
     </nav>
     <div class="sp"></div>
     <button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
@@ -729,30 +937,106 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
   </header>
 
   <section class="lp-sec lp-hero">
+    <div class="lp-glow" aria-hidden="true"></div>
     <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
     <h1>Săn việc, <em>có hệ thống.</em></h1>
     <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV của bạn bằng công thức minh bạch, và xếp mọi cơ hội vào một pipeline duy nhất — để job tốt tìm đến bạn mỗi sáng, thay vì ngược lại.</p>
     <div class="lp-cta">
-      <button class="btn primary big" data-auth="register">Bắt đầu miễn phí</button>
+      <button class="btn primary big lp-magnet" data-auth="register">Xem job khớp của bạn</button>
       <a class="btn ghost big" href="#lp-how" style="text-decoration:none">Xem cách hoạt động</a>
     </div>
     <div class="lp-stats">
       <div class="lp-stat"><b><em data-count="30">0</em>'</b><span>một lần quét mới</span></div>
-      <div class="lp-stat"><b data-count="2">0</b><span>nguồn job lớn nhất VN</span></div>
-      <div class="lp-stat"><b data-count="7">0</b><span>giai đoạn ứng tuyển</span></div>
-      <div class="lp-stat"><b>$0</b><span>chi phí hạ tầng</span></div>
+      <div class="lp-stat"><b data-count="2">0</b><span>nguồn job · ITviec &amp; TopDev</span></div>
+      <div class="lp-stat"><b data-count="7">0</b><span>giai đoạn kanban</span></div>
+      <div class="lp-stat"><b data-count="4">0</b><span>bước bắt đầu</span></div>
     </div>
-    <div class="lp-shot rv"><div class="lp-chrome"><i></i><i></i><i></i><span>jobpilot-edge.pages.dev</span></div><img src="assets/hero-jobs.png" alt="JobPilot Edge — danh sách job kèm điểm khớp và Morning brief"></div>
+    <div class="lp-shot"><div class="lp-chrome"><i></i><i></i><i></i><span>jobpilot-edge.pages.dev</span></div><div class="demo-hero" id="demoHero">
+  <span class="demo-chip">Demo minh hoạ</span>
+  <div class="demo-tabs" role="tablist" aria-label="Xem thử giao diện JobPilot">
+    <button type="button" role="tab" aria-selected="true" data-demo-tab="jobs">Jobs</button>
+    <button type="button" role="tab" aria-selected="false" data-demo-tab="kanban">Kanban</button>
+    <button type="button" role="tab" aria-selected="false" data-demo-tab="brief">Morning brief</button>
+    <span class="demo-tab-ind" aria-hidden="true"></span>
+  </div>
+  <div class="demo-frames">
+    <div class="demo-frame on" role="tabpanel" data-demo-frame="jobs">
+      <div class="demo-side"><b>JobPilot Edge</b><span class="on">▤ Việc làm</span><span>▦ Kanban</span><span>◉ Hồ sơ &amp; CV</span><span class="demo-prof">Backend Java · Hồ Chí Minh</span></div>
+      <div class="demo-list">
+        <div class="demo-job"><div><b>Backend Engineer (Java, Spring Boot)</b><span>Công ty Demo A · Hồ Chí Minh · 2 ngày trước</span></div><span class="score-pill strong">82đ</span></div>
+        <div class="demo-job"><div><b>Backend Developer (Java, Kafka)</b><span>Công ty Demo B · Hồ Chí Minh · 5 ngày trước</span></div><span class="score-pill partial">68đ</span></div>
+        <div class="demo-job"><div><b>Java Developer (Fresher)</b><span>Công ty Demo C · Hà Nội · 12 ngày trước</span></div><span class="score-pill">41đ</span></div>
+      </div>
+    </div>
+    <div class="demo-frame" role="tabpanel" data-demo-frame="kanban">
+      <div class="demo-minicol"><b>Mới</b><span>Backend Java — Demo A</span><span>Java + Kafka — Demo B</span></div>
+      <div class="demo-minicol"><b>Đang theo</b><span>Spring Boot — Demo D</span></div>
+      <div class="demo-minicol"><b>Đã apply</b><span>Backend Java — Demo E</span></div>
+    </div>
+    <div class="demo-frame" role="tabpanel" data-demo-frame="brief">
+      <div class="demo-brief"><b>☀ Morning brief — demo</b><p>2 job khớp mạnh mới · 1 việc cần follow-up hôm nay.</p><span>• Backend Java — Demo A: 82đ, khớp 6/8 kỹ năng</span><span>• Nhắn lại Demo D: đã 4 ngày chưa phản hồi</span></div>
+    </div>
+  </div>
+  <p class="demo-note">Giao diện minh hoạ bằng dữ liệu demo — không phải tài khoản thật của bạn.</p>
+</div></div>
   </section>
+
+<div class="demo-marquee" aria-label="Nguồn job JobPilot đang dùng">
+  <span class="demo-marquee-label">Nguồn job:</span>
+  <div class="demo-marquee-viewport"><div class="demo-marquee-track"><span class="demo-marquee-group">ITviec ✦ TopDev ✦&nbsp;</span><span class="demo-marquee-group" aria-hidden="true">ITviec ✦ TopDev ✦&nbsp;</span></div></div>
+</div>
 
   <section class="lp-sec" id="lp-how">
     <span class="lp-pill">Cách hoạt động</span>
-    <h2>Ba bước, <em>không cần săn tay nữa</em></h2>
-    <p class="lede">Bạn chỉ làm một việc: cho JobPilot biết bạn là ai. Phần còn lại — quét, lọc, chấm điểm, nhắc việc — chạy tự động trên Cloudflare Edge.</p>
-    <div class="lp-grid3">
-      <div class="lp-card rv"><div class="n">01</div><h3>Tải CV lên</h3><p>AI trích xuất kỹ năng từ CV của bạn (Java, Spring Boot, Kafka…) kèm trọng số. Bạn duyệt lại trước khi lưu — không hộp đen.</p></div>
-      <div class="lp-card rv"><div class="n">02</div><h3>Quét mỗi 30 phút</h3><p>ITviec &amp; TopDev được quét liên tục, khử trùng theo nội dung và lọc bỏ tin không thuộc ngành tech trước khi tới bạn.</p></div>
-      <div class="lp-card rv"><div class="n">03</div><h3>Chấm điểm &amp; theo dõi</h3><p>Mỗi job có điểm khớp kèm lý do (kỹ năng khớp / còn thiếu). Kéo từng cơ hội qua 7 giai đoạn tới offer trên kanban.</p></div>
+    <h2>Bốn chặng, <em>không cần săn tay nữa</em></h2>
+    <p class="lede">Bạn chỉ làm một việc: cho JobPilot biết bạn là ai — bắt đầu bằng việc tải CV lên để AI trích xuất kỹ năng kèm trọng số, bạn duyệt lại trước khi lưu, không hộp đen. Phần còn lại — quét, lọc, chấm điểm, nhắc việc — chạy tự động trên Cloudflare Edge, theo đúng luồng dưới đây.</p>
+    <div class="lp-tour">
+      <div class="lp-tour-frame">
+        <div class="lp-tour-frames">
+          <div class="lp-tour-state active" data-tour="jobs" aria-hidden="false">
+            <h3>Jobs mới từ 2 nguồn</h3>
+            <p>Danh sách job kèm nguồn và mức khớp, đã khử trùng và lọc tin lệch ngành.</p>
+            <div class="lp-mini">
+              <div class="lp-mini-row"><b>Backend Java · Spring Boot</b><span>ITviec · khớp mạnh</span></div>
+              <div class="lp-mini-row"><b>Backend Node · NestJS</b><span>TopDev · khớp một phần</span></div>
+            </div>
+          </div>
+          <div class="lp-tour-state" data-tour="scoring" aria-hidden="true">
+            <h3>Vì sao job này khớp</h3>
+            <p>Điểm kèm lý do, tính theo công thức minh bạch ở mục Điểm khớp.</p>
+            <div class="lp-mini">
+              <div class="lp-mini-row"><b>Kỹ năng khớp</b><span>Java · Spring Boot</span></div>
+              <div class="lp-mini-row"><b>Còn thiếu</b><span>Kafka</span></div>
+              <div class="lp-mini-row"><b>Mức khớp</b><span>strong ≥ 75</span></div>
+            </div>
+          </div>
+          <div class="lp-tour-state" data-tour="kanban" aria-hidden="true">
+            <h3>Pipeline 7 giai đoạn</h3>
+            <p>Kéo từng cơ hội qua các giai đoạn tới offer, kèm ngày follow-up.</p>
+            <div class="lp-mini-cols">
+              <div class="lp-mini-col"><b>Mới</b><div class="lp-mini-card">Backend Java</div></div>
+              <div class="lp-mini-col"><b>Đã lưu</b><div class="lp-mini-card">Backend Node</div></div>
+              <div class="lp-mini-col"><b>Đã apply</b></div>
+              <div class="lp-mini-col"><b>Offer</b></div>
+            </div>
+          </div>
+          <div class="lp-tour-state" data-tour="brief" aria-hidden="true">
+            <h3>Morning brief · 8:00 sáng</h3>
+            <p>Một panel duy nhất cho buổi sáng: job mới và việc cần làm.</p>
+            <div class="lp-mini">
+              <div class="lp-mini-row"><b>Job khớp mạnh mới</b><span>xem trong Jobs</span></div>
+              <div class="lp-mini-row"><b>Việc follow-up</b><span>tới hạn hôm nay</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="lp-tour-note">Khung minh hoạ giao diện — không phải dữ liệu thật của bạn.</p>
+      </div>
+      <div class="lp-tour-steps">
+        <article class="lp-tour-step is-active" data-tour="jobs"><div class="n">01</div><h3>Jobs mới, tự tìm đến bạn</h3><p>ITviec &amp; TopDev được quét mỗi 30 phút, khử trùng theo nội dung và lọc bỏ tin không thuộc ngành tech trước khi tới bạn.</p></article>
+        <article class="lp-tour-step" data-tour="scoring"><div class="n">02</div><h3>Chấm điểm kèm lý do</h3><p>Mỗi job có điểm khớp kèm lý do: kỹ năng nào khớp, kỹ năng nào còn thiếu — tính theo công thức minh bạch ở mục Điểm khớp.</p></article>
+        <article class="lp-tour-step" data-tour="kanban"><div class="n">03</div><h3>Kéo qua 7 giai đoạn tới offer</h3><p>Từng cơ hội đi qua kanban 7 giai đoạn, có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p></article>
+        <article class="lp-tour-step" data-tour="brief"><div class="n">04</div><h3>Morning brief lúc 8:00 sáng</h3><p>Mỗi sáng: số job khớp mạnh mới + những việc cần follow-up, gói trong một panel duy nhất.</p></article>
+      </div>
     </div>
   </section>
 
@@ -760,20 +1044,36 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
     <span class="lp-pill">Tính năng</span>
     <h2>Nhỏ gọn, <em>nhưng có võ</em></h2>
     <div class="lp-bento">
-      <div class="lp-card wide rv"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
+      <div class="lp-card wide rv"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><button class="btn sm" id="demo-cmdk-btn" type="button">Thử palette demo ⌘K</button><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
       <div class="lp-card rv"><h3>Morning brief</h3><p>8:00 mỗi sáng: số job khớp mạnh mới + những việc cần follow-up, gói trong một panel duy nhất.</p></div>
       <div class="lp-card rv"><h3>Đa hồ sơ</h3><p>Theo dõi nhiều hướng cùng lúc — “Backend Java” và “Backend Node” chấm điểm độc lập theo từng bộ kỹ năng.</p></div>
-      <div class="lp-card wide rv"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
+      <div class="lp-card wide rv rv-strong"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
       <div class="lp-card rv"><h3>Thêm job thủ công</h3><p>Thấy job hay ở bất cứ đâu? Dán link — JobPilot tự lấy nội dung và chấm điểm như job được quét.</p></div>
       <div class="lp-card rv"><h3>Chạy trên Edge</h3><p>Workers · D1 · Queues · Vectorize · Workers AI — không server, không container, gần như toàn bộ trong free tier.</p></div>
     </div>
   </section>
 
+<section class="lp-sec" id="lp-demo-kanban">
+  <span class="lp-pill">Demo</span>
+  <h2>Thử kéo <em>1 thẻ kanban</em></h2>
+  <p class="lede">Bản demo — dữ liệu giả lập, không đụng tới pipeline thật của bạn. Trên máy tính thì kéo-thả, trên điện thoại thì bấm ◀ ▶ trên thẻ.</p>
+  <p class="demo-count" id="demoKanbanCount" aria-live="polite">Đã chuyển 0/3</p>
+  <div class="demo-kanban">
+    <div class="demo-kcol" data-demo-col="new"><h3>Mới</h3><div class="demo-kbody">
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-1" data-demo-start="new"><b>Backend Java — Công ty Demo A</b><span>82đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-1" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-1" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka — Công ty Demo B</b><span>68đ · TopDev (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot — Công ty Demo D</b><span>74đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+    </div></div>
+    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"></div></div>
+    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"></div></div>
+  </div>
+</section>
+
   <section class="lp-sec" id="lp-scoring">
     <span class="lp-pill">Điểm khớp minh bạch</span>
     <h2>Điểm số <em>có công thức</em>, không phải cảm tính AI</h2>
     <p class="lede">Mỗi điểm đều truy ngược được: kỹ năng nào khớp, kỹ năng nào thiếu, và vì sao trần điểm bị chặn. Job ghi ít hơn 3 kỹ năng sẽ bị chặn ở 69 điểm — chống “khớp ảo”.</p>
-    <div class="lp-formula rv"><span class="k">rule</span> = kỹ_năng_khớp / kỹ_năng_job_yêu_cầu × 50<br><span class="k">fit</span> = khu_vực (≤8) + độ_mới (≤7) + cấp_bậc (≤5)<br><span class="k">final</span> = (rule + fit) / 70 × 100</div>
+    <div class="lp-formula rv rv-strong"><span class="k">rule</span> = kỹ_năng_khớp / kỹ_năng_job_yêu_cầu × 50<br><span class="k">fit</span> = khu_vực (≤8) + độ_mới (≤7) + cấp_bậc (≤5)<br><span class="k">final</span> = (rule + fit) / 70 × 100</div>
     <div class="lp-tiers">
       <span class="badge strong">strong ≥ 75</span>
       <span class="badge partial">partial ≥ 50</span>
@@ -781,6 +1081,40 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
       <span class="badge">bằng chứng &lt; 3 kỹ năng → tối đa 69</span>
     </div>
   </section>
+
+<section class="lp-sec" id="lp-demo-scoring">
+  <span class="lp-pill">Bản demo — thử tính điểm</span>
+  <h2>Tính điểm khớp <em>thử của bạn</em></h2>
+  <p class="lede">Kéo là số đổi ngay, theo đúng công thức ở trên. Đây là bản demo — không dùng CV hay dữ liệu thật của bạn.</p>
+  <div class="demo-score">
+    <div class="demo-controls">
+      <label for="demoScoreMatched">Số kỹ năng khớp: <output id="demoScoreMatchedVal">6</output></label>
+      <input id="demoScoreMatched" type="range" min="0" max="10" step="1" value="6">
+      <label for="demoScoreRequired">Kỹ năng job yêu cầu: <output id="demoScoreRequiredVal">8</output></label>
+      <input id="demoScoreRequired" type="range" min="3" max="12" step="1" value="8">
+      <label for="demoScoreFresh">Độ mới của tin</label>
+      <select id="demoScoreFresh">
+        <option value="7">≤ 3 ngày (7đ)</option>
+        <option value="5" selected>≤ 7 ngày (5đ)</option>
+        <option value="3">≤ 14 ngày (3đ)</option>
+        <option value="1">Trên 14 ngày (1đ)</option>
+      </select>
+    </div>
+    <div class="demo-result">
+      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong">strong</span></div>
+      <dl class="demo-break">
+        <div><dt>rule</dt><dd id="demoScoreRule">37,5 / 50</dd></div>
+        <div><dt>khu vực (demo: khớp)</dt><dd>8 / 8</dd></div>
+        <div><dt>độ mới</dt><dd id="demoScoreFreshVal">5 / 7</dd></div>
+        <div><dt>cấp bậc (mặc định)</dt><dd>5 / 5</dd></div>
+        <div><dt>fit</dt><dd id="demoScoreFit">18 / 20</dd></div>
+      </dl>
+      <p class="demo-explain" id="demoScoreExplain" aria-live="polite"></p>
+      <p class="demo-cap hidden" id="demoScoreCap">Đã chặn ở 69đ: bằng chứng dưới 3 kỹ năng nên điểm không vượt 69.</p>
+      <p class="demo-note">Công thức: final = round((rule + fit) / 70 × 100); strong ≥ 75, partial ≥ 50, còn lại weak.</p>
+    </div>
+  </div>
+</section>
 
   <section class="lp-sec" id="lp-guide">
     <span class="lp-pill">Bắt đầu trong 2 phút</span>
@@ -791,7 +1125,26 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
       <div class="lp-card lp-step rv"><span class="n">3</span><h3>Tải CV</h3><p>AI gợi ý kỹ năng + trọng số, bạn xác nhận trong 1 phút.</p></div>
       <div class="lp-card lp-step rv"><span class="n">4</span><h3>Nhận job khớp</h3><p>Lần quét gần nhất áp dụng ngay; Morning brief tới lúc 8:00 sáng.</p></div>
     </div>
-    <div class="lp-cta"><button class="btn primary big" data-auth="register">Tạo tài khoản miễn phí</button></div>
+    <div class="lp-cta"><button class="btn primary big" data-auth="register">Nhận job khớp đầu tiên</button></div>
+  </section>
+
+<section class="lp-sec" id="lp-compare">
+    <span class="lp-pill">Trước / Sau</span>
+    <h2>Cùng một buổi săn việc, <em>hai cách làm khác nhau</em></h2>
+    <p class="lede">Chọn một tab để xem từng cách làm việc theo từng khía cạnh. Đây là so sánh định tính về cách làm việc, không phải kết quả đo được của JobPilot.</p>
+    <div class="lp-compare-tabs" role="tablist" aria-label="So sánh cách tìm việc">
+      <button type="button" class="lp-compare-tab" role="tab" id="lp-tab-manual" aria-selected="true" aria-controls="lp-panel-manual">Tìm việc thủ công</button>
+      <button type="button" class="lp-compare-tab" role="tab" id="lp-tab-jp" aria-selected="false" aria-controls="lp-panel-jp" tabindex="-1">Có JobPilot</button>
+    </div>
+    <div class="lp-compare-panel active" role="tabpanel" id="lp-panel-manual" aria-labelledby="lp-tab-manual">
+      <div class="lp-compare-row"><div><h3>Tìm job</h3><p>Tự mở từng trang ITviec, TopDev, lướt từng tin mới rồi tự nhớ tin nào đã xem.</p></div><div><h3>Lọc tin</h3><p>Đọc từng mô tả, tự đối chiếu với CV của mình; tin trùng hoặc lệch ngành vẫn phải lọc bằng mắt.</p></div></div>
+      <div class="lp-compare-row"><div><h3>Theo dõi</h3><p>Ghi chú rời rạc ở nhiều chỗ — đã apply ở đâu, hẹn phỏng vấn khi nào, việc nào tới hạn follow-up đều dễ quên.</p></div><div><h3>Bắt đầu</h3><p>Chưa có luồng chung: mỗi lần đổi hướng tìm việc lại phải sắp xếp lại từ đầu.</p></div></div>
+    </div>
+    <div class="lp-compare-panel" role="tabpanel" id="lp-panel-jp" aria-labelledby="lp-tab-jp" hidden>
+      <div class="lp-compare-row"><div><h3>Tìm job</h3><p>Quét tự động mỗi 30 phút từ ITviec &amp; TopDev, khử trùng theo nội dung, lọc bỏ tin không thuộc ngành tech.</p></div><div><h3>Lọc tin</h3><p>Mỗi job có điểm khớp kèm lý do — kỹ năng nào khớp, kỹ năng nào thiếu — theo công thức minh bạch.</p></div></div>
+      <div class="lp-compare-row"><div><h3>Theo dõi</h3><p>Kanban 7 giai đoạn với ngày follow-up, lịch sử chuyển trạng thái, và Morning brief lúc 8:00 sáng nhắc việc cần làm.</p></div><div><h3>Bắt đầu</h3><p>4 bước: đăng ký, tạo hồ sơ, tải CV để AI gợi ý kỹ năng, rồi nhận job khớp — lần quét gần nhất áp dụng ngay.</p></div></div>
+    </div>
+    <p class="lp-compare-note">So sánh định tính về cách làm việc. JobPilot không công bố số liệu tiết kiệm thời gian hay tỉ lệ trúng tuyển — mọi con số trên trang này chỉ là thông số sản phẩm (2 nguồn, 7 giai đoạn, 4 bước, quét mỗi 30 phút).</p>
   </section>
 
   <footer class="lp-foot">
@@ -799,6 +1152,14 @@ html[data-theme="light"] .lp-card:hover{ box-shadow:0 16px 40px rgba(13,20,36,.1
     <span class="spacer"></span>
     <span>Chạy trên Cloudflare Edge · © 2026 Kriss Bui</span>
   </footer>
+</div>
+
+<div id="demo-palette" class="hidden" role="dialog" aria-modal="true" aria-label="Palette demo">
+  <div class="demo-pal-box">
+    <input id="demo-palette-input" type="text" placeholder="Gõ để lọc lệnh demo… (⌘K hoặc / để mở)" autocomplete="off">
+    <div id="demo-palette-list" role="listbox"></div>
+    <p class="demo-pal-foot">Bản demo — ↑ ↓ để chọn · Enter để chọn · Esc để đóng</p>
+  </div>
 </div>
 
 <!-- ================= AUTH ================= -->
@@ -1306,17 +1667,144 @@ $("#regPassword").addEventListener("input", (e) => {
   hint.textContent = v ? "Độ mạnh: " + label + (v.length < 8 ? " — cần tối thiểu 8 ký tự" : "") : "";
 });
 
+function initLpTour(root){
+  const tour = root.querySelector(".lp-tour");
+  if (!tour || tour.dataset.bound) return;
+  tour.dataset.bound = "1";
+  const steps = Array.from(tour.querySelectorAll(".lp-tour-step"));
+  const states = Array.from(tour.querySelectorAll(".lp-tour-state"));
+  if (!steps.length || !states.length) return;
+  const setActive = (key) => {
+    states.forEach(s => {
+      const on = s.dataset.tour === key;
+      s.classList.toggle("active", on);
+      s.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    steps.forEach(s => s.classList.toggle("is-active", s.dataset.tour === key));
+  };
+  if (!("IntersectionObserver" in window)) return; // không có observer thì frame mặc định (jobs) giữ nguyên
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting) setActive(en.target.dataset.tour); });
+  }, { rootMargin: "-45% 0px -45% 0px" }); // chỉ đổi frame khi bước qua vùng giữa màn hình, không cướp nhịp cuộn
+  steps.forEach(s => io.observe(s));
+}
+function initLpProgress(){
+  const bar = document.getElementById("lp-progress");
+  if (!bar || bar.dataset.bound) return;
+  bar.dataset.bound = "1";
+  // Trình duyệt đã hỗ trợ animation-timeline: scroll() thì CSS lo, khỏi JS.
+  if (window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()")) return;
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const landing = document.getElementById("landingView");
+    if (landing && landing.classList.contains("hidden")) return;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    bar.style.transform = "scaleX(" + p + ")";
+  };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  update();
+}
+function initLpCompare(root){
+  const tabs = Array.from(root.querySelectorAll(".lp-compare-tab"));
+  if (!tabs.length || tabs[0].dataset.bound) return;
+  const panels = tabs.map(t => document.getElementById(t.getAttribute("aria-controls"))).filter(Boolean);
+  const select = (tab) => {
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+    });
+    panels.forEach(p => {
+      const on = p.id === tab.getAttribute("aria-controls");
+      p.classList.toggle("active", on);
+      p.hidden = !on;
+    });
+  };
+  tabs.forEach((tab, i) => {
+    tab.dataset.bound = "1";
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      e.preventDefault();
+      const next = tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+      next.focus();
+      select(next);
+    });
+  });
+}
+
 function initLandingFx(){
   const root = $("#landingView");
   if (!root || root.classList.contains("hidden")) return;
   if (!landingAnimated) {
     landingAnimated = true;
-    animateCountUps(root);
+    initLandingCounts(root);
+    initLandingMagnet(root);
     const io = new IntersectionObserver((entries) => {
       entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
     }, { threshold: 0.12 });
     $$(".rv", root).forEach(el => io.observe(el));
+    initLpTour(root);
+    initLpProgress();
+    initLpCompare(root);
   }
+}
+
+/* Đợt 1 (P0) — count-up landing: CHỈ số thật (30' quét, 2 nguồn, 7 giai đoạn,
+   4 bước), chạy bằng requestAnimationFrame khi strip vào viewport.
+   Hàm animateCountUps() dùng chung cho app (digest) được giữ nguyên, không đụng. */
+function initLandingCounts(root){
+  const stats = root.querySelector(".lp-stats");
+  if (!stats) return;
+  const els = Array.from(stats.querySelectorAll("[data-count]"));
+  const run = () => els.forEach(el => {
+    const target = Number(el.dataset.count) || 0;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = target; return; }
+    const t0 = performance.now(), dur = 700;
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { run(); return; }
+  if (!("IntersectionObserver" in window)) { run(); return; }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if (en.isIntersecting) { run(); io.disconnect(); } });
+  }, { threshold: 0.4 });
+  io.observe(stats);
+}
+
+/* Đợt 1 (P0) — magnetic: CHỈ nút hero chính (.lp-magnet), CHỈ desktop có
+   hover tinh, KHÔNG reduced-motion. Kéo nhẹ stickDelta 0.15, kẹp tối đa 8px,
+   chạy bằng requestAnimationFrame, bật lại khi rời chuột (nhờ transition
+   sẵn có của .btn). Các nút khác hover thường, không ảnh hưởng. */
+function initLandingMagnet(root){
+  const btn = root.querySelector(".lp-hero .lp-magnet");
+  if (!btn) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  let raf = 0, tx = 0, ty = 0;
+  const apply = () => { raf = 0; btn.style.transform = "translate(" + tx + "px," + ty + "px)"; };
+  btn.addEventListener("mouseenter", () => { btn.style.transition = "none"; });
+  btn.addEventListener("mousemove", (ev) => {
+    const r = btn.getBoundingClientRect();
+    const dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+    tx = Math.max(-8, Math.min(8, dx * 0.15));
+    ty = Math.max(-8, Math.min(8, dy * 0.15));
+    if (!raf) raf = requestAnimationFrame(apply);
+  });
+  btn.addEventListener("mouseleave", () => {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    tx = 0; ty = 0;
+    btn.style.transition = "";
+    btn.style.transform = "";
+  });
 }
 
 /* ---------------- Boot / profiles ---------------- */
@@ -2361,6 +2849,235 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
     if (state.token) showLanding();
     toast(e.message, "err");
   }
+})();
+</script>
+<script>
+/* ================= LANDING DEMO — ĐỢT 2 (P1) ================= */
+/* State cục bộ, demo-only. Handler demo riêng, không đụng dữ liệu thật, không gọi API. */
+(function(){
+  var landing = document.getElementById("landingView");
+  function landingVisible(){ return landing && !landing.classList.contains("hidden"); }
+  function dq(s, r){ return (r || document).querySelector(s); }
+  function dqq(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function norm(s){ return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  function reduced(){ return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+  /* ---- 2.1 Hero mock tabs (frame đầu hiển thị tĩnh ngay cả khi không có JS) ---- */
+  var demoTabs = dqq("[data-demo-tab]"), demoFrames = dqq("[data-demo-frame]");
+  var demoInd = dq(".demo-tab-ind");
+  function demoPositionInd(){
+    var on = dq("[data-demo-tab].on") || demoTabs[0];
+    if (!on || !demoInd) return;
+    var r = on.getBoundingClientRect(), lr = on.parentNode.getBoundingClientRect();
+    if (!r.width) return;
+    demoInd.style.width = r.width + "px";
+    demoInd.style.transform = "translateX(" + (r.left - lr.left) + "px)";
+    demoInd.style.opacity = "1";
+  }
+  function demoSelectTab(name){
+    demoTabs.forEach(function(b){ var on = b.dataset.demoTab === name; b.classList.toggle("on", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
+    demoFrames.forEach(function(f){ f.classList.toggle("on", f.dataset.demoFrame === name); });
+    demoPositionInd();
+  }
+  demoTabs.forEach(function(b){
+    b.addEventListener("click", function(){ demoSelectTab(b.dataset.demoTab); });
+    b.addEventListener("keydown", function(e){
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      e.preventDefault();
+      var i = demoTabs.indexOf(b) + (e.key === "ArrowRight" ? 1 : -1);
+      i = (i + demoTabs.length) % demoTabs.length;
+      demoTabs[i].focus(); demoSelectTab(demoTabs[i].dataset.demoTab);
+    });
+  });
+  if (demoTabs.length) demoSelectTab("jobs");
+  window.addEventListener("resize", demoPositionInd);
+  if (landing && window.MutationObserver) {
+    new MutationObserver(function(){ if (landingVisible()) demoPositionInd(); })
+      .observe(landing, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  /* ---- 2.2 Kanban mini-demo: handler RIÊNG demoMoveCard, state cục bộ ---- */
+  var DEMO_COLS = ["new", "watch", "applied"];
+  var demoCountEl = dq("#demoKanbanCount");
+  function demoKanbanCount(){
+    if (!demoCountEl) return;
+    var moved = dqq("[data-demo-card]").filter(function(c){
+      var col = c.closest("[data-demo-col]");
+      return col && c.dataset.demoStart !== col.dataset.demoCol;
+    }).length;
+    demoCountEl.textContent = "Đã chuyển " + moved + "/3";
+  }
+  function demoMoveCard(cardId, targetCol){
+    var card = dq('[data-demo-card="' + cardId + '"]');
+    var body = dq('[data-demo-col="' + targetCol + '"] .demo-kbody');
+    if (!card || !body) return;
+    body.appendChild(card);
+    var idx = DEMO_COLS.indexOf(targetCol);
+    var prev = card.querySelector('[data-demo-dir="-1"]');
+    var next = card.querySelector('[data-demo-dir="1"]');
+    if (prev) prev.disabled = idx <= 0;
+    if (next) next.disabled = idx >= DEMO_COLS.length - 1;
+    card.classList.remove("demo-just-moved"); void card.offsetWidth; card.classList.add("demo-just-moved");
+    demoKanbanCount();
+  }
+  dqq("[data-demo-move]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var card = dq('[data-demo-card="' + btn.dataset.demoMove + '"]');
+      var col = card && card.closest("[data-demo-col]");
+      if (!col) return;
+      var next = DEMO_COLS.indexOf(col.dataset.demoCol) + Number(btn.dataset.demoDir);
+      if (next >= 0 && next < DEMO_COLS.length) demoMoveCard(btn.dataset.demoMove, DEMO_COLS[next]);
+    });
+  });
+  var demoDragId = null;
+  dqq("[data-demo-card]").forEach(function(card){
+    card.addEventListener("dragstart", function(e){
+      demoDragId = card.dataset.demoCard;
+      try { e.dataTransfer.setData("text/plain", demoDragId); } catch (err) {}
+    });
+    card.addEventListener("dragend", function(){
+      demoDragId = null;
+      dqq(".demo-kbody").forEach(function(b){ b.classList.remove("demo-drop"); });
+    });
+  });
+  dqq(".demo-kbody").forEach(function(body){
+    body.addEventListener("dragover", function(e){ e.preventDefault(); body.classList.add("demo-drop"); });
+    body.addEventListener("dragleave", function(){ body.classList.remove("demo-drop"); });
+    body.addEventListener("drop", function(e){
+      e.preventDefault(); body.classList.remove("demo-drop");
+      var id = demoDragId;
+      try { id = id || e.dataTransfer.getData("text/plain"); } catch (err) {}
+      var col = body.closest("[data-demo-col]");
+      if (id && col) demoMoveCard(id, col.dataset.demoCol);
+    });
+  });
+  demoKanbanCount();
+
+  /* ---- 2.3 Slider tính điểm: ĐÚNG công thức app ----
+     rule = min(50, khớp / yêu cầu × 50); fit = khu vực 8 + độ mới + cấp bậc 5;
+     final = round((rule + fit) / 70 × 100); strong ≥ 75, partial ≥ 50;
+     bằng chứng < 3 kỹ năng → tối đa 69. */
+  var mEl = dq("#demoScoreMatched"), rEl = dq("#demoScoreRequired"), fEl = dq("#demoScoreFresh");
+  function fmtVN(n){ return (Math.round(n * 10) / 10).toString().replace(".", ","); }
+  function demoScoreUpdate(){
+    if (!mEl || !rEl || !fEl) return;
+    var m = Number(mEl.value), req = Number(rEl.value), fresh = Number(fEl.value);
+    dq("#demoScoreMatchedVal").textContent = m;
+    dq("#demoScoreRequiredVal").textContent = req;
+    var rule = Math.min(50, m / req * 50);
+    var fit = 8 + fresh + 5;
+    var raw = Math.round((rule + fit) / 70 * 100);
+    var capped = (m < 3 || req < 3) && raw > 69;
+    var fin = capped ? 69 : raw;
+    var tier = fin >= 75 ? "strong" : fin >= 50 ? "partial" : "weak";
+    dq("#demoScoreRule").textContent = fmtVN(rule) + " / 50";
+    dq("#demoScoreFreshVal").textContent = fresh + " / 7";
+    dq("#demoScoreFit").textContent = fit + " / 20";
+    var tierEl = dq("#demoScoreTier");
+    tierEl.textContent = tier;
+    tierEl.className = "badge" + (tier === "weak" ? "" : " " + tier);
+    dq("#demoScoreCap").classList.toggle("hidden", !capped);
+    dq("#demoScoreExplain").textContent = "Khớp " + m + "/" + req + " kỹ năng (rule " + fmtVN(rule) + ") + fit " + fit +
+      " (khu vực 8 + độ mới " + fresh + " + cấp bậc 5) = " + fin + "đ, tier " + tier +
+      (capped ? " (đã chặn 69 vì bằng chứng dưới 3 kỹ năng)." : ".");
+    var finalEl = dq("#demoScoreFinal");
+    var from = Number(finalEl.dataset.prev || fin);
+    finalEl.dataset.prev = fin;
+    if (reduced() || from === fin) { finalEl.textContent = fin; return; }
+    var t0 = performance.now();
+    (function step(t){
+      var k = Math.min(1, (t - t0) / 200);
+      finalEl.textContent = Math.round(from + (fin - from) * k);
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  [mEl, rEl, fEl].forEach(function(el){
+    if (!el) return;
+    el.addEventListener("input", demoScoreUpdate);
+    el.addEventListener("change", demoScoreUpdate);
+  });
+  demoScoreUpdate();
+
+  /* ---- 2.4 Palette teaser ⌘K (mock) ----
+     App đã có handler ⌘K toàn cục nhưng openPalette() tự return khi chưa đăng nhập
+     (state.token rỗng), nên mock này không phá palette thật. Mock CHỈ mở khi
+     landingView đang hiển thị; khi đã đăng nhập, landingView hidden nên mock im lặng. */
+  var DEMO_PAL = [
+    { label: "Tìm job Backend Java", hint: "demo" },
+    { label: "Nhảy tới tab Việc làm", hint: "demo" },
+    { label: "Nhảy tới tab Kanban", hint: "demo" },
+    { label: "Quét job mới", hint: "demo" },
+    { label: "Đổi hồ sơ", hint: "demo" },
+    { label: "Xem Morning brief", hint: "demo" },
+    { label: "Tính điểm khớp thử", hint: "demo" },
+    { label: "Mở kanban demo", hint: "demo" },
+    { label: "Xem nguồn job", hint: "demo" },
+    { label: "Tạo tài khoản miễn phí", hint: "demo" }
+  ];
+  var demoPalOpen = false, demoPalSel = 0, demoPalItems = DEMO_PAL.slice();
+  function demoPalEsc(s){ return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  function demoPalRender(){
+    var list = dq("#demo-palette-list"); if (!list) return;
+    if (!demoPalItems.length) { list.innerHTML = '<div class="demo-pal-empty">Không có lệnh demo nào khớp.</div>'; return; }
+    list.innerHTML = demoPalItems.map(function(c, i){
+      return '<button type="button" class="demo-pal-item' + (i === demoPalSel ? " sel" : "") + '" data-demo-pal="' + i + '"><span>' + demoPalEsc(c.label) + '</span><span class="hint">' + c.hint + '</span></button>';
+    }).join("");
+    dqq("[data-demo-pal]", list).forEach(function(b){
+      b.addEventListener("click", function(){ demoPalPick(Number(b.dataset.demoPal)); });
+      b.addEventListener("mouseenter", function(){
+        demoPalSel = Number(b.dataset.demoPal);
+        dqq("[data-demo-pal]", list).forEach(function(x){ x.classList.toggle("sel", Number(x.dataset.demoPal) === demoPalSel); });
+      });
+    });
+  }
+  function demoPalOpenFn(){
+    if (!landingVisible()) return;
+    var p = dq("#demo-palette"); if (!p) return;
+    demoPalOpen = true; demoPalSel = 0; demoPalItems = DEMO_PAL.slice();
+    p.classList.remove("hidden"); demoPalRender();
+    var inp = dq("#demo-palette-input");
+    if (inp) { inp.value = ""; setTimeout(function(){ inp.focus(); }, 10); }
+  }
+  function demoPalClose(){
+    demoPalOpen = false;
+    var p = dq("#demo-palette"); if (p) p.classList.add("hidden");
+  }
+  function demoPalPick(i){
+    if (!demoPalItems[i]) return;
+    demoPalClose();
+    if (typeof toast === "function") toast("Đây là bản demo — đăng nhập để dùng thật.", "ok");
+  }
+  var demoBtn = dq("#demo-cmdk-btn");
+  if (demoBtn) demoBtn.addEventListener("click", demoPalOpenFn);
+  var demoInp = dq("#demo-palette-input");
+  if (demoInp) {
+    demoInp.addEventListener("input", function(){
+      var q = norm(demoInp.value);
+      demoPalSel = 0;
+      demoPalItems = q ? DEMO_PAL.filter(function(c){ return norm(c.label).indexOf(q) !== -1; }) : DEMO_PAL.slice();
+      demoPalRender();
+    });
+    demoInp.addEventListener("keydown", function(e){
+      if (e.key === "ArrowDown") { e.preventDefault(); if (demoPalItems.length) { demoPalSel = Math.min(demoPalItems.length - 1, demoPalSel + 1); demoPalRender(); } }
+      else if (e.key === "ArrowUp") { e.preventDefault(); demoPalSel = Math.max(0, demoPalSel - 1); demoPalRender(); }
+      else if (e.key === "Enter") { e.preventDefault(); demoPalPick(demoPalSel); }
+      else if (e.key === "Escape") { e.preventDefault(); demoPalClose(); }
+    });
+  }
+  var demoPal = dq("#demo-palette");
+  if (demoPal) demoPal.addEventListener("click", function(e){ if (e.target.id === "demo-palette") demoPalClose(); });
+  document.addEventListener("keydown", function(e){
+    if (!landingVisible()) return;
+    if (e.key === "Escape" && demoPalOpen) { demoPalClose(); return; }
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if (demoPalOpen) { demoPalClose(); return; }
+      e.preventDefault(); demoPalOpenFn(); return;
+    }
+    if (demoPalOpen) return;
+    var typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName || "");
+    if (typing) return;
+    if (e.key === "/") { e.preventDefault(); demoPalOpenFn(); }
+  });
 })();
 </script>
 </body>
