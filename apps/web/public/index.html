@@ -1044,6 +1044,10 @@ html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12
 /* Q5 — glow tĩnh sau CTA + viền gradient tĩnh cho khung demo hero */
 .lp-cta{ position:relative; isolation:isolate; }
 .lp-cta::before{ content:""; position:absolute; inset:-40% -20%; z-index:-1; pointer-events:none; background:radial-gradient(closest-side, rgba(45,75,255,.35), transparent 70%); filter:blur(24px); }
+/* OPUS-FIX 2026-10-30 (1): h1 nhận focus lập trình qua focusEl (tabindex=-1) không hiện viền đen mặc định của Chrome */
+[tabindex="-1"]:focus{ outline:none; }
+/* OPUS-FIX 2026-10-30 (2): glow CTA cuối tràn ngang mobile 390px -> clip riêng section cuối (không clip body, không giấu nút) */
+#lp-final{ overflow-x:clip; }
 .lp-shot{ border:1px solid transparent; background:linear-gradient(160deg, rgba(45,75,255,.35), rgba(var(--ov),.05) 40%, rgba(var(--ov),.02)) padding-box, linear-gradient(135deg, #2D4BFF, #FF5C7A) border-box; }
 /* M3 — beam chỉ trên khung demo hero, fallback = viền gradient tĩnh Q5 khi không có registerProperty */
 .lp-shot.beam-on::before{ content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; pointer-events:none; background:conic-gradient(from var(--angle), transparent 0%, transparent 70%, #a5b4fc 85%, #fff 92%, transparent 100%); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; animation:beam-spin 6s linear infinite; }
@@ -2278,10 +2282,6 @@ async function loadJobs(){
   if (state.filters.q) qs.set("q", state.filters.q);
   try {
     state.jobs = await api("/api/jobs?" + qs.toString());
-    if (firstJobsLoad) {
-      const wait = Math.max(0, 500 - (Date.now() - skelAt));
-      if (wait) await new Promise(r => setTimeout(r, wait));
-    }
     state.jobsVisible = 20;
     clearTimeout(jobsSkelTimer);
     box.classList.add("xfade");
@@ -2477,10 +2477,6 @@ async function loadApplications(){
   try {
     state.applications = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
     kanbanFirstLoad = false;
-    if (firstKbLoad) {
-      const wait = Math.max(0, 500 - (Date.now() - skelAt));
-      if (wait) await new Promise(r => setTimeout(r, wait));
-    }
     box.classList.add("xfade");
     renderKanban();
     setTimeout(() => box.classList.remove("xfade"), 240);
