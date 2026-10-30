@@ -934,6 +934,25 @@ html{scroll-padding-top:96px}
   .lp-nav [data-auth]{flex:1 1 0}
   html{scroll-padding-top:124px}
 }
+
+  /* PORT UI/UX (12 quyet dinh, duyet het): nhip mobile bento + khoang cach pill hero + layout breakdown/FAQ. Khong hieu ung moi, khong chua tran bang clip. */
+  @media (max-width:640px){
+    .lp-bento{grid-template-columns:1fr}
+    .lp-bento .wide{grid-column:auto}
+  }
+  .lp-hero .lp-pill{margin-bottom:.4rem}
+  .lp-break{width:min(760px,100%);text-align:left;margin-top:1.8rem}
+  .lp-break h3{margin:0 0 .6rem;font-size:1.05rem}
+  .lp-break h3:not(:first-child){margin-top:1.2rem}
+  .lp-break .row{display:flex;justify-content:space-between;gap:1rem;padding:.5rem 0;border-bottom:1px solid var(--line)}
+  .lp-break .row b{font-family:var(--f-head);font-weight:400}
+  .lp-break .mut{color:var(--muted)}
+  .lp-break ul{margin:.6rem 0 0;padding-left:1.2rem;color:var(--muted);line-height:1.6}
+  .lp-break ul b{color:var(--text)}
+  .lp-break p{color:var(--muted);line-height:1.6;margin-top:.8rem}
+  .lp-faq{width:min(760px,100%);display:flex;flex-direction:column;gap:.8rem;text-align:left;margin-top:2.6rem}
+  .lp-faq summary{cursor:pointer;font-weight:600}
+  .lp-faq details p{margin-top:.6rem}
 </style>
 </head>
 <body>
@@ -957,14 +976,15 @@ html{scroll-padding-top:96px}
     <button class="btn primary" data-auth="register">Đăng ký miễn phí</button>
   </header>
 
-  <section class="lp-sec lp-hero">
+  
+    <span class="lp-pill">Demo tương tác — không cần đăng ký</span><section class="lp-sec lp-hero">
     <div class="lp-glow" aria-hidden="true"></div>
     <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
     <h1>Săn việc, <em>có hệ thống.</em></h1>
-    <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV của bạn bằng công thức minh bạch, và xếp mọi cơ hội vào một pipeline duy nhất — để job tốt tìm đến bạn mỗi sáng, thay vì ngược lại.</p>
+    <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV bằng công thức minh bạch, xếp mọi cơ hội vào một pipeline duy nhất.</p>
     <div class="lp-cta">
-      <button class="btn primary big lp-magnet" data-auth="register">Xem job khớp của bạn</button>
-      <a class="btn ghost big" href="#lp-how" style="text-decoration:none">Xem cách hoạt động</a>
+      <a class="btn primary big lp-magnet" href="#lp-demo-kanban" style="text-decoration:none">Thử demo ngay</a>
+      <a class="btn ghost big" href="#lp-scoring" style="text-decoration:none">Xem cách tính điểm</a>
     </div>
     <div class="lp-stats">
       <div class="lp-stat"><b><em data-count="30">0</em>'</b><span>một lần quét mới</span></div>
@@ -1007,10 +1027,100 @@ html{scroll-padding-top:96px}
   <div class="demo-marquee-viewport"><div class="demo-marquee-track"><span class="demo-marquee-group">ITviec ✦ TopDev ✦ Quét mỗi 30 phút ✦ Khử trùng tin ✦ 7 giai đoạn ✦ Morning brief 8:00 ✦&nbsp;</span><span class="demo-marquee-group" aria-hidden="true">ITviec ✦ TopDev ✦ Quét mỗi 30 phút ✦ Khử trùng tin ✦ 7 giai đoạn ✦ Morning brief 8:00 ✦&nbsp;</span></div></div>
 </div>
 
-  <section class="lp-sec" id="lp-how">
+  <section class="lp-sec" id="lp-scoring">
+    <span class="lp-pill">Điểm khớp minh bạch</span>
+    <h2>Điểm số <em>có công thức</em>, không phải cảm tính AI</h2>
+    <p class="lede">Mỗi điểm truy ngược được: kỹ năng nào khớp, thiếu, và vì sao job dưới 3 kỹ năng bị chặn ở 69 — chống khớp ảo.</p>
+    <div class="lp-formula rv rv-strong"><span class="k">rule</span> = kỹ_năng_khớp / kỹ_năng_job_yêu_cầu × 50<br><span class="k">fit</span> = khu_vực (≤8) + độ_mới (≤7) + cấp_bậc (≤5)<br><span class="k">final</span> = (rule + fit) / 70 × 100</div>
+    <div class="lp-tiers">
+      <span class="badge strong">strong ≥ 75</span>
+      <span class="badge partial">partial ≥ 50</span>
+      <span class="badge">weak &lt; 50</span>
+      <span class="badge">bằng chứng &lt; 3 kỹ năng → tối đa 69</span>
+    </div>
+  
+    <div class="lp-break rv">
+      <h3>Ví dụ với trạng thái mặc định của demo bên dưới <span class="mut">(dữ liệu mẫu)</span></h3>
+      <div class="row"><span>rule — khớp 6/8 kỹ năng</span><b>37,5 / 50</b></div>
+      <div class="row"><span>fit — khu vực 8/8 + độ mới 5/7 + cấp bậc 5/5</span><b>18 / 20</b></div>
+      <div class="row"><span>final = (37,5 + 18) / 70 × 100</span><b>79 <span class="badge strong">strong</span></b></div>
+      <h3>Vì sao không phải 90?</h3>
+      <ul>
+        <li>Thiếu 2/8 kỹ năng job yêu cầu → rule mới 37,5/50, chiếm <b>~18 điểm</b> trong khoảng cách 21 điểm tới 100.</li>
+        <li>Tin ở mức ≤ 7 ngày → độ mới 5/7 thay vì 7/7, chiếm <b>~3 điểm</b>.</li>
+        <li>Muốn chạm 90 thì rule + fit phải ≥ 63 (hiện 55,5) — thêm 1 kỹ năng khớp (7/8) là lên <b>88 điểm</b>.</li>
+      </ul>
+      <p>Kéo slider ở demo bên dưới để xem số đổi theo đúng công thức này.</p>
+    </div>
+  </section>
+
+<section class="lp-sec" id="lp-demo-scoring">
+  <span class="lp-pill">Bản demo — thử tính điểm</span>
+  <h2>Tính điểm khớp <em>thử của bạn</em></h2>
+  <p class="lede">Kéo là số đổi ngay, theo đúng công thức ở trên. Đây là bản demo — không dùng CV hay dữ liệu thật của bạn.</p>
+  <div class="demo-score">
+    <div class="demo-controls">
+      <label for="demoScoreMatched">Số kỹ năng khớp: <output id="demoScoreMatchedVal">6</output></label>
+      <input id="demoScoreMatched" type="range" min="0" max="10" step="1" value="6">
+      <label for="demoScoreRequired">Kỹ năng job yêu cầu: <output id="demoScoreRequiredVal">8</output></label>
+      <input id="demoScoreRequired" type="range" min="3" max="12" step="1" value="8">
+      <label for="demoScoreFresh">Độ mới của tin</label>
+      <select id="demoScoreFresh">
+        <option value="7">≤ 3 ngày (7đ)</option>
+        <option value="5" selected>≤ 7 ngày (5đ)</option>
+        <option value="3">≤ 14 ngày (3đ)</option>
+        <option value="1">Trên 14 ngày (1đ)</option>
+      </select>
+    </div>
+    <div class="demo-result">
+      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong">strong</span></div>
+      <dl class="demo-break">
+        <div><dt>rule</dt><dd id="demoScoreRule">37,5 / 50</dd></div>
+        <div><dt>khu vực (demo: khớp)</dt><dd>8 / 8</dd></div>
+        <div><dt>độ mới</dt><dd id="demoScoreFreshVal">5 / 7</dd></div>
+        <div><dt>cấp bậc (mặc định)</dt><dd>5 / 5</dd></div>
+        <div><dt>fit</dt><dd id="demoScoreFit">18 / 20</dd></div>
+      </dl>
+      <p class="demo-explain" id="demoScoreExplain" aria-live="polite"></p>
+      <p class="demo-cap hidden" id="demoScoreCap">Đã chặn ở 69đ: bằng chứng dưới 3 kỹ năng nên điểm không vượt 69.</p>
+      <p class="demo-note">Công thức: final = round((rule + fit) / 70 × 100); strong ≥ 75, partial ≥ 50, còn lại weak.</p>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec" id="lp-demo-kanban">
+  <span class="lp-pill">Demo</span>
+  <h2>Thử kéo <em>1 thẻ kanban</em></h2>
+  <p class="lede">Bản demo — dữ liệu giả lập, không đụng pipeline thật của bạn. Máy tính thì kéo-thả, điện thoại thì bấm ◀ ▶ trên thẻ.</p>
+  <p class="demo-count" id="demoKanbanCount" aria-live="polite">Đã chuyển 0/3</p>
+  <div class="demo-kanban">
+    <div class="demo-kcol" data-demo-col="new"><h3>Mới</h3><div class="demo-kbody">
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-1" data-demo-start="new"><b>Backend Java — Công ty Demo A</b><span>82đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-1" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-1" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka — Công ty Demo B</b><span>68đ · TopDev (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot — Công ty Demo D</b><span>74đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+    </div></div>
+    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
+    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
+  </div>
+</section>
+
+<section class="lp-sec" id="lp-features">
+    <span class="lp-pill">Tính năng</span>
+    <h2>Nhỏ gọn, <em>nhưng có võ</em></h2>
+    <div class="lp-bento">
+      <div class="lp-card wide rv rv-scale"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><button class="btn sm" id="demo-cmdk-btn" type="button">Thử palette demo ⌘K</button><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
+      <div class="lp-card rv rv-scale"><h3>Morning brief</h3><p>8:00 mỗi sáng: số job khớp mạnh mới \+ những việc cần follow\-up, gói trong một panel duy nhất\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">☀ 8:00</span><span class="lp-mv-arrow">→</span><span class="lp-mv-chip">1 panel duy nhất</span></div></div>
+      <div class="lp-card rv rv-scale"><h3>Đa hồ sơ</h3><p>Theo dõi nhiều hướng cùng lúc — “Backend Java” và “Backend Node” chấm điểm độc lập theo từng bộ kỹ năng\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">Backend Java</span><span class="lp-mv-chip">Backend Node</span></div></div>
+      <div class="lp-card wide rv rv-strong rv-scale"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
+      <div class="lp-card rv rv-scale"><h3>Thêm job thủ công</h3><p>Thấy job hay ở bất cứ đâu\? Dán link — JobPilot tự lấy nội dung và chấm điểm như job được quét\.</p><div class="lp-mini-vis"><span class="lp-mv-input">Dán link job…</span></div></div>
+      <div class="lp-card rv rv-scale"><h3>Chạy trên Edge</h3><p>Workers · D1 · Queues · Vectorize · Workers AI — không server, không container, gần như toàn bộ trong free tier\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">Workers</span><span class="lp-mv-chip">D1</span><span class="lp-mv-chip">Queues</span><span class="lp-mv-chip">Vectorize</span></div></div>
+    </div>
+  </section>
+
+<section class="lp-sec" id="lp-how">
     <span class="lp-pill">Cách hoạt động</span>
     <h2>Bốn chặng, <em>không cần săn tay nữa</em></h2>
-    <p class="lede">Bạn chỉ làm một việc: cho JobPilot biết bạn là ai — bắt đầu bằng việc tải CV lên để AI trích xuất kỹ năng kèm trọng số, bạn duyệt lại trước khi lưu, không hộp đen. Phần còn lại — quét, lọc, chấm điểm, nhắc việc — chạy tự động trên Cloudflare Edge, theo đúng luồng dưới đây.</p>
+    <p class="lede">Bạn chỉ làm một việc: cho JobPilot biết bạn là ai. Tải CV, duyệt kỹ năng AI gợi ý — còn lại chạy tự động.</p>
     <div class="lp-tour">
       <div class="lp-tour-frame">
         <div class="lp-tour-frames">
@@ -1061,83 +1171,7 @@ html{scroll-padding-top:96px}
     </div>
   </section>
 
-  <section class="lp-sec" id="lp-features">
-    <span class="lp-pill">Tính năng</span>
-    <h2>Nhỏ gọn, <em>nhưng có võ</em></h2>
-    <div class="lp-bento">
-      <div class="lp-card wide rv rv-scale"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><button class="btn sm" id="demo-cmdk-btn" type="button">Thử palette demo ⌘K</button><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
-      <div class="lp-card rv rv-scale"><h3>Morning\ brief</h3><p>8:00\ mỗi\ sáng:\ số\ job\ khớp\ mạnh\ mới\ \+\ những\ việc\ cần\ follow\-up,\ gói\ trong\ một\ panel\ duy\ nhất\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">☀ 8:00</span><span class="lp-mv-arrow">→</span><span class="lp-mv-chip">1 panel duy nhất</span></div></div>
-      <div class="lp-card rv rv-scale"><h3>Đa\ hồ\ sơ</h3><p>Theo\ dõi\ nhiều\ hướng\ cùng\ lúc\ —\ “Backend\ Java”\ và\ “Backend\ Node”\ chấm\ điểm\ độc\ lập\ theo\ từng\ bộ\ kỹ\ năng\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">Backend Java</span><span class="lp-mv-chip">Backend Node</span></div></div>
-      <div class="lp-card wide rv rv-strong rv-scale"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
-      <div class="lp-card rv rv-scale"><h3>Thêm\ job\ thủ\ công</h3><p>Thấy\ job\ hay\ ở\ bất\ cứ\ đâu\?\ Dán\ link\ —\ JobPilot\ tự\ lấy\ nội\ dung\ và\ chấm\ điểm\ như\ job\ được\ quét\.</p><div class="lp-mini-vis"><span class="lp-mv-input">Dán link job…</span></div></div>
-      <div class="lp-card rv rv-scale"><h3>Chạy\ trên\ Edge</h3><p>Workers\ ·\ D1\ ·\ Queues\ ·\ Vectorize\ ·\ Workers\ AI\ —\ không\ server,\ không\ container,\ gần\ như\ toàn\ bộ\ trong\ free\ tier\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">Workers</span><span class="lp-mv-chip">D1</span><span class="lp-mv-chip">Queues</span><span class="lp-mv-chip">Vectorize</span></div></div>
-    </div>
-  </section>
-
-<section class="lp-sec" id="lp-demo-kanban">
-  <span class="lp-pill">Demo</span>
-  <h2>Thử kéo <em>1 thẻ kanban</em></h2>
-  <p class="lede">Bản demo — dữ liệu giả lập, không đụng tới pipeline thật của bạn. Trên máy tính thì kéo-thả, trên điện thoại thì bấm ◀ ▶ trên thẻ.</p>
-  <p class="demo-count" id="demoKanbanCount" aria-live="polite">Đã chuyển 0/3</p>
-  <div class="demo-kanban">
-    <div class="demo-kcol" data-demo-col="new"><h3>Mới</h3><div class="demo-kbody">
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-1" data-demo-start="new"><b>Backend Java — Công ty Demo A</b><span>82đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-1" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-1" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka — Công ty Demo B</b><span>68đ · TopDev (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot — Công ty Demo D</b><span>74đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
-    </div></div>
-    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
-    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
-  </div>
-</section>
-
-  <section class="lp-sec" id="lp-scoring">
-    <span class="lp-pill">Điểm khớp minh bạch</span>
-    <h2>Điểm số <em>có công thức</em>, không phải cảm tính AI</h2>
-    <p class="lede">Mỗi điểm đều truy ngược được: kỹ năng nào khớp, kỹ năng nào thiếu, và vì sao trần điểm bị chặn. Job ghi ít hơn 3 kỹ năng sẽ bị chặn ở 69 điểm — chống “khớp ảo”.</p>
-    <div class="lp-formula rv rv-strong"><span class="k">rule</span> = kỹ_năng_khớp / kỹ_năng_job_yêu_cầu × 50<br><span class="k">fit</span> = khu_vực (≤8) + độ_mới (≤7) + cấp_bậc (≤5)<br><span class="k">final</span> = (rule + fit) / 70 × 100</div>
-    <div class="lp-tiers">
-      <span class="badge strong">strong ≥ 75</span>
-      <span class="badge partial">partial ≥ 50</span>
-      <span class="badge">weak &lt; 50</span>
-      <span class="badge">bằng chứng &lt; 3 kỹ năng → tối đa 69</span>
-    </div>
-  </section>
-
-<section class="lp-sec" id="lp-demo-scoring">
-  <span class="lp-pill">Bản demo — thử tính điểm</span>
-  <h2>Tính điểm khớp <em>thử của bạn</em></h2>
-  <p class="lede">Kéo là số đổi ngay, theo đúng công thức ở trên. Đây là bản demo — không dùng CV hay dữ liệu thật của bạn.</p>
-  <div class="demo-score">
-    <div class="demo-controls">
-      <label for="demoScoreMatched">Số kỹ năng khớp: <output id="demoScoreMatchedVal">6</output></label>
-      <input id="demoScoreMatched" type="range" min="0" max="10" step="1" value="6">
-      <label for="demoScoreRequired">Kỹ năng job yêu cầu: <output id="demoScoreRequiredVal">8</output></label>
-      <input id="demoScoreRequired" type="range" min="3" max="12" step="1" value="8">
-      <label for="demoScoreFresh">Độ mới của tin</label>
-      <select id="demoScoreFresh">
-        <option value="7">≤ 3 ngày (7đ)</option>
-        <option value="5" selected>≤ 7 ngày (5đ)</option>
-        <option value="3">≤ 14 ngày (3đ)</option>
-        <option value="1">Trên 14 ngày (1đ)</option>
-      </select>
-    </div>
-    <div class="demo-result">
-      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong">strong</span></div>
-      <dl class="demo-break">
-        <div><dt>rule</dt><dd id="demoScoreRule">37,5 / 50</dd></div>
-        <div><dt>khu vực (demo: khớp)</dt><dd>8 / 8</dd></div>
-        <div><dt>độ mới</dt><dd id="demoScoreFreshVal">5 / 7</dd></div>
-        <div><dt>cấp bậc (mặc định)</dt><dd>5 / 5</dd></div>
-        <div><dt>fit</dt><dd id="demoScoreFit">18 / 20</dd></div>
-      </dl>
-      <p class="demo-explain" id="demoScoreExplain" aria-live="polite"></p>
-      <p class="demo-cap hidden" id="demoScoreCap">Đã chặn ở 69đ: bằng chứng dưới 3 kỹ năng nên điểm không vượt 69.</p>
-      <p class="demo-note">Công thức: final = round((rule + fit) / 70 × 100); strong ≥ 75, partial ≥ 50, còn lại weak.</p>
-    </div>
-  </div>
-</section>
-
-  <section class="lp-sec" id="lp-guide">
+<section class="lp-sec" id="lp-guide">
     <span class="lp-pill">Bắt đầu trong 2 phút</span>
     <h2>Từ đăng ký <em>tới Morning brief đầu tiên</em></h2>
     <div class="lp-steps">
@@ -1152,7 +1186,7 @@ html{scroll-padding-top:96px}
 <section class="lp-sec" id="lp-compare">
     <span class="lp-pill">Trước / Sau</span>
     <h2 class="rv rv-slide">Cùng một buổi săn việc, <em>hai cách làm khác nhau</em></h2>
-    <p class="lede rv rv-slide">Chọn một tab để xem từng cách làm việc theo từng khía cạnh. Đây là so sánh định tính về cách làm việc, không phải kết quả đo được của JobPilot.</p>
+    <p class="lede rv rv-slide">Chọn một tab để xem từng cách làm việc theo từng khía cạnh. Đây là so sánh định tính, không phải kết quả đo được.</p>
     <div class="lp-compare-tabs" role="tablist" aria-label="So sánh cách tìm việc">
       <button type="button" class="lp-compare-tab" role="tab" id="lp-tab-manual" aria-selected="true" aria-controls="lp-panel-manual">Tìm việc thủ công</button>
       <button type="button" class="lp-compare-tab" role="tab" id="lp-tab-jp" aria-selected="false" aria-controls="lp-panel-jp" tabindex="-1">Có JobPilot</button>
@@ -1166,6 +1200,25 @@ html{scroll-padding-top:96px}
       <div class="lp-compare-row"><div><h3>Theo dõi</h3><p>Kanban 7 giai đoạn với ngày follow-up, lịch sử chuyển trạng thái, và Morning brief lúc 8:00 sáng nhắc việc cần làm.</p></div><div><h3>Bắt đầu</h3><p>4 bước: đăng ký, tạo hồ sơ, tải CV để AI gợi ý kỹ năng, rồi nhận job khớp — lần quét gần nhất áp dụng ngay.</p></div></div>
     </div>
     <p class="lp-compare-note">So sánh định tính về cách làm việc. JobPilot không công bố số liệu tiết kiệm thời gian hay tỉ lệ trúng tuyển — mọi con số trên trang này chỉ là thông số sản phẩm (2 nguồn, 7 giai đoạn, 4 bước, quét mỗi 30 phút).</p>
+  </section>
+
+<section class="lp-sec" id="lp-faq">
+    <span class="lp-pill">Câu hỏi thường gặp</span>
+    <h2 class="rv">Hỏi nhanh, <em>đáp gọn</em></h2>
+    <div class="lp-faq">
+      <details class="lp-card rv"><summary>Job trên JobPilot lấy từ đâu?</summary><p>Từ ITviec và TopDev — hai nguồn job tech, quét tự động mỗi 30 phút, khử trùng theo nội dung và lọc tin lệch ngành.</p></details>
+      <details class="lp-card rv"><summary>Điểm khớp tính thế nào?</summary><p>Theo công thức minh bạch: rule = kỹ năng khớp / kỹ năng job yêu cầu × 50; fit = khu vực (≤8) + độ mới (≤7) + cấp bậc (≤5); final = (rule + fit) / 70 × 100. Job ghi dưới 3 kỹ năng bị chặn ở 69 điểm.</p></details>
+      <details class="lp-card rv"><summary>Có cần đăng ký để thử demo không?</summary><p>Không. Các demo trên trang này — kéo thẻ kanban, kéo slider tính điểm, mở palette ⌘K — chạy ngay không cần tài khoản.</p></details>
+      <details class="lp-card rv"><summary>Sau khi đăng ký thì sao?</summary><p>Bạn tạo hồ sơ (vị trí mục tiêu, cấp bậc, khu vực), tải CV để AI gợi ý kỹ năng rồi bạn duyệt trước khi lưu; lần quét gần nhất áp dụng ngay, Morning brief tới lúc 8:00 sáng và mọi cơ hội vào kanban.</p></details>
+      <details class="lp-card rv"><summary>Kanban có những giai đoạn nào?</summary><p>7 giai đoạn: Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, Từ chối, Lưu trữ — kèm ngày follow-up và lịch sử từng lần chuyển trạng thái.</p></details>
+    </div>
+  </section>
+
+<section class="lp-sec" id="lp-final">
+    <span class="lp-pill">Thử ngay</span>
+    <h2 class="rv">Thử demo trước, <em>đăng ký sau cũng được.</em></h2>
+    <p class="lede rv">Kéo một thẻ kanban, kéo slider tính điểm — thấy hợp thì đăng ký, chưa hợp thì cứ xem tiếp.</p>
+    <div class="lp-cta rv"><a class="btn primary big" href="#lp-demo-kanban" style="text-decoration:none">Thử demo ngay</a><button class="btn ghost big" data-auth="register">Đăng ký miễn phí</button></div>
   </section>
 
   <footer class="lp-foot">
