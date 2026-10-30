@@ -1077,6 +1077,11 @@ body:has(#landingView:not(.hidden)){ background:var(--bg); }
 /* App: nền phẳng như landing; chưa có hồ sơ thì giấu bộ lọc và ô dán link. */
 body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:var(--bg); }
 #tab-jobs.no-profile .toolbar, #tab-jobs.no-profile #submitForm{ display:none; }
+/* Morning brief theo đúng ngôn ngữ thẻ của app: viền mực, bóng cứng, không gradient, nhãn viết thường. */
+.brief{ padding:0; background:none; animation:none; }
+.brief-in{ background:var(--surface); border:var(--bw) solid var(--ink); border-radius:var(--r-md); box-shadow:var(--off) var(--off) 0 var(--shadow); }
+html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--off) var(--off) 0 var(--shadow); }
+.brief .lbl{ text-transform:none; letter-spacing:0; font-size:.9rem; font-weight:700; color:var(--mute); }
 #landingView .lp-card::before, #landingView .lp-card::after, #landingView .lp-cta::before{ content:none !important; }
 #landingView .lp-sec{ background:none; }
 #landingView .lp-nav{ background:var(--bg); backdrop-filter:none; border-bottom:var(--bw) solid var(--line); }
@@ -1138,7 +1143,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-split .sg-pair{ margin-top:0; width:auto; grid-template-columns:1fr; }
 @media (max-width:860px){ .sg-split{ grid-template-columns:1fr; gap:1.2rem; } }
 .sg-about{ width:100%; max-width:720px; margin:0 auto 0 max(0px, calc((100% - 1080px) / 2)); }
-.sg-about h2{ text-align:left; margin-left:0; font-size:1.6rem; }
+.sg-about h2{ text-align:left; margin-left:0; }
 .sg-about-note{ color:var(--mute); max-width:60ch; line-height:1.65; border-left:var(--bw) solid var(--line); padding-left:1rem; }
 .sg-log{ margin:1.4rem 0 0; display:grid; gap:.7rem; }
 .sg-log div{ display:grid; grid-template-columns:7.5rem minmax(0,1fr); gap:1rem; align-items:baseline; }
@@ -1282,8 +1287,9 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 <section class="lp-sec sg-left" id="lp-about">
   <div class="sg-about">
     <h2>Vì sao có JobPilot</h2>
-    <!-- TODO(Kriss): thay 3-4 câu bên dưới bằng lời của anh. Giữ ngắn, nói thật. -->
-    <p class="sg-about-note">Chỗ này dành cho vài câu của người làm ra JobPilot: vì sao làm, đang dùng nó thế nào, và điều gì chưa xong. Chưa có nội dung nên tạm để trống.</p>
+    <!-- TODO(Kriss): bỏ class "hidden" và điền 3-4 câu của anh vào đoạn dưới. Giữ ngắn, nói thật. -->
+    <p class="sg-about-note hidden"></p>
+    <p class="sg-mut">Nhật ký thay đổi gần đây.</p>
     <dl class="sg-log">
       <div><dt>30/10/2026</dt><dd>Trang chủ hiện tin thật quét trong ngày, bỏ ảnh minh hoạ. Tin lệch cấp bậc hoặc khác khu vực không còn được chấm "khớp mạnh".</dd></div>
       <div><dt>30/10/2026</dt><dd>Giới hạn đăng nhập sai 5 lần trong 10 phút, kể cả khi bị dồn nhiều yêu cầu cùng lúc.</dd></div>
@@ -1434,7 +1440,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 
       <!-- ===== TAB: KANBAN ===== -->
       <section id="tab-kanban" class="hidden">
-        <h2 class="page-title">Pipeline ứng tuyển <span class="gray">— kéo từng cơ hội về phía offer</span></h2>
+        <h2 class="page-title">Pipeline ứng tuyển</h2>
         <p class="page-sub">Mỗi job có điểm khớp đều tự vào cột Mới. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
         <div id="alertsStrip"></div>
         <div id="kanbanContainer"></div>
@@ -1442,7 +1448,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 
       <!-- ===== TAB: PROFILE ===== -->
       <section id="tab-profile" class="hidden">
-        <h2 class="page-title">Hồ sơ &amp; CV <span class="gray">— nền của mọi điểm số</span></h2>
+        <h2 class="page-title">Hồ sơ &amp; CV</h2>
         <p class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
         <div class="pf-grid">
           <section class="card-p">
@@ -1511,7 +1517,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
           </section>
 
           <section class="card-p">
-          <h3>Benchmark lương <span class="gray">— biết mình đáng bao nhiêu trước khi đàm phán</span></h3>
+          <h3>Benchmark lương</h3>
           <p class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
           <div class="inline-row">
             <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí: backend, java…"></div>
@@ -2175,7 +2181,7 @@ async function loadDigest(){
     strip.innerHTML = `
     <div class="brief"><div class="brief-in">
       <div>
-        <span class="lbl">Morning brief · job khớp mạnh</span>
+        <span class="lbl">Job khớp mạnh mới sáng nay</span>
         <div class="bignum"><em data-count="${sc}">0</em></div>
         ${strong.slice(0, 3).map(j =>
           `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
