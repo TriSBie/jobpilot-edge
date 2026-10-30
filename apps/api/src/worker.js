@@ -572,20 +572,20 @@ async function issueSession(env, user) {
   await env.KV.put(`session:${token}`, user.id, { expirationTtl: 2592000 });
   return { token, user: { id: user.id, email: user.email, name: user.name } };
 }
-// Đếm đăng nhập sai trong D1 (không dùng KV: Free chỉ 1.000 lượt ghi/ngày, email lạ từng đốt hết).
-// Chỉ có dòng cho tài khoản có thật; cửa sổ 10 phút tính từ lần sai gần nhất.
+// Giới hạn đăng nhập sai bằng D1 (không dùng KV: Free chỉ 1.000 lượt ghi/ngày, email lạ từng đốt hết).
+// Chỉ có dòng cho tài khoản có thật. Mỗi lượt thử "giữ chỗ" TRƯỚC khi băm mật khẩu bằng một câu upsert
+// nguyên tử: các request song song nhận số đếm khác nhau nên không vượt được MAX (đọc-rồi-ghi thì vượt được).
+// fail_count dừng ở MAX+1 và last_fail_at đứng yên khi đã bị khoá, nên kẻ tấn công không kéo dài được khoá.
 const LOGIN_FAIL_MAX = 5, LOGIN_FAIL_WINDOW = 600;
-async function loginThrottled(env, userId) {
-  const r = await env.DB.prepare("SELECT fail_count, last_fail_at FROM login_failures WHERE user_id = ?").bind(userId).first();
-  return !!r && r.fail_count >= LOGIN_FAIL_MAX && now() - r.last_fail_at <= LOGIN_FAIL_WINDOW;
-}
-async function loginFailed(env, userId) {
-  const t = now();
-  await env.DB.prepare(
-    `INSERT INTO login_failures (user_id, fail_count, last_fail_at) VALUES (?, 1, ?)
+async function loginAttemptAllowed(env, userId) {
+  const r = await env.DB.prepare(
+    `INSERT INTO login_failures (user_id, fail_count, last_fail_at) VALUES (?1, 1, ?2)
      ON CONFLICT(user_id) DO UPDATE SET
-       fail_count = CASE WHEN ? - last_fail_at > ? THEN 1 ELSE fail_count + 1 END, last_fail_at = ?`
-  ).bind(userId, t, t, LOGIN_FAIL_WINDOW, t).run();
+       fail_count = CASE WHEN ?2 - last_fail_at > ?3 THEN 1 WHEN fail_count > ?4 THEN fail_count ELSE fail_count + 1 END,
+       last_fail_at = CASE WHEN ?2 - last_fail_at > ?3 THEN ?2 WHEN fail_count > ?4 THEN last_fail_at ELSE ?2 END
+     RETURNING fail_count`
+  ).bind(userId, now(), LOGIN_FAIL_WINDOW, LOGIN_FAIL_MAX).first();
+  return r.fail_count <= LOGIN_FAIL_MAX;
 }
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 function passwordError(pw) {
@@ -634,10 +634,10 @@ export default {
       if (!body.password) return json({ error: "missing_password" }, 400);
       const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
       if (!user) return json({ error: "invalid_credentials" }, 401); // email lạ: không ghi gì
-      if (await loginThrottled(env, user.id)) return json({ error: "too_many_attempts" }, 429);
       if (!user.password_hash) return json({ error: "password_setup_required" }, 403);
+      if (!(await loginAttemptAllowed(env, user.id))) return json({ error: "too_many_attempts" }, 429); // trước khi băm: bị khoá thì không tốn CPU
       const ok = await verifyPassword(body.password, user.password_salt, user.password_hash);
-      if (!ok) { await loginFailed(env, user.id); return json({ error: "invalid_credentials" }, 401); }
+      if (!ok) return json({ error: "invalid_credentials" }, 401);
       await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id).run();
       return json(await issueSession(env, user));
     }
