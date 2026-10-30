@@ -373,7 +373,7 @@ function fitBreakdown(profile, job) {
   const ageDays = Math.floor((now() - refTs) / 86400);
   const freshness = ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : ageDays <= 14 ? 3 : 1;
   const titleAndJd = `${job.title || ""} ${(job.jd_text || "").slice(0, 500)}`.toLowerCase();
-  const seniorish = /(senior|sr\.|lead|principal|staff|manager|architect|trưởng|cao cấp)/.test(titleAndJd);
+  const seniorish = /(senior|\bsr\b|lead|principal|staff|manager|architect|expert|trưởng|cao cấp)/.test(titleAndJd);
   const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
   const lvl = (profile.level || "").toLowerCase();
   let level = 5, levelWhy = "Cấp bậc phù hợp";
@@ -398,10 +398,12 @@ function scoreJob(profile, profileSkills, job) {
     else missing.push(js);
   }
   const rule = jobSkills.length ? (matchedW / jobTotalW) * 50 : 10;
-  const fit = fitBreakdown(profile, job).total;
-  let finalScore = Math.round(((rule + fit) / 70) * 100);
+  const fb = fitBreakdown(profile, job);
+  let finalScore = Math.round(((rule + fb.total) / 70) * 100);
   // Bằng chứng mỏng (job khai < 3 skills) thì không cho lên strong.
   if (jobSkills.length < 3) finalScore = Math.min(finalScore, 69);
+  // Lệch cấp bậc hoặc khác khu vực thì không cho lên strong, dù kỹ năng khớp hết (T-46).
+  if (fb.level < 5 || fb.location === 0) finalScore = Math.min(finalScore, 74);
   const tier = finalScore >= 75 ? "strong" : finalScore >= 50 ? "partial" : "weak";
   return { rule, semantic: null, finalScore, tier, matched, missing, jobSkills };
 }
@@ -606,6 +608,47 @@ export default {
     if (path === "/api/health") {
       return json({ ok: true, service: "jobpilot-api", phase: 2, ts: new Date().toISOString(),
         bindings: { DB: !!env.DB, KV: !!env.KV, FILES: !!env.FILES, AI: !!env.AI, EMB: !!env.EMB, EVENTS: !!env.EVENTS } });
+    }
+
+    // Landing: job THẬT vừa quét chấm cho một hồ sơ mẫu cố định. Chỉ lấy link quét chuẩn của
+    // ITviec/TopDev (không bao giờ là job dán tay), chỉ đọc, chỉ trả trường công khai; cache 5 phút.
+    if (path === "/api/public/sample" && request.method === "GET") {
+      const SCRAPED = "(source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%') AND jd_text = ''";
+      const { results } = await env.DB.prepare(
+        `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at
+         FROM jobs WHERE ${SCRAPED} ORDER BY first_seen_at DESC LIMIT 60`
+      ).all();
+      const sampleProfile = { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
+      const sampleSkills = [
+        { skill: "Java", weight: 5 }, { skill: "Spring Boot", weight: 5 }, { skill: "PostgreSQL", weight: 3 },
+        { skill: "Docker", weight: 3 }, { skill: "REST APIs", weight: 3 }, { skill: "Git", weight: 2 },
+      ];
+      // Lọc chặt hơn titleGate: "kỹ sư"/"công nghệ" cho lọt cả tin xây dựng (T-07 chưa sửa).
+      const DEV_TITLE = /(developer|engineer|backend|back-end|fullstack|full-stack|software|programmer|lập trình|devops|frontend|front-end)/i;
+      const scored = results.map((j) => {
+        const job = { ...j, skills: JSON.parse(j.skills || "[]"), jd_text: "" };
+        const s = scoreJob(sampleProfile, sampleSkills, job);
+        const f = fitBreakdown(sampleProfile, job);
+        return {
+          title: j.title, company: j.company, location: j.location, source: j.source_id, url: j.source_url,
+          salary: j.salary_text, age_days: f.ageDays, score: s.finalScore, tier: s.tier,
+          rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level },
+          matched: s.matched, missing: s.missing.slice(0, 6), capped: s.jobSkills.length < 3,
+        };
+      }).filter((x) => x.matched.length > 0 && DEV_TITLE.test(x.title))
+        // Ưu tiên tin đúng cấp bậc hồ sơ mẫu, rồi mới tới điểm (chỉ là thứ tự hiển thị).
+        .sort((a, b) => (b.fit.level - a.fit.level) || (b.score - a.score));
+      const stats = await env.DB.prepare(
+        `SELECT (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED}) AS jobs,
+                (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED} AND first_seen_at > ?) AS new_24h,
+                (SELECT MAX(last_run_at) FROM sources) AS last_scan`
+      ).bind(now() - 86400).first();
+      const res = json({
+        profile: { label: "Backend Java · 3 năm · Hồ Chí Minh / Remote", skills: sampleSkills },
+        jobs: scored.slice(0, 5), stats,
+      });
+      res.headers.set("cache-control", "public, max-age=300");
+      return res;
     }
 
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
