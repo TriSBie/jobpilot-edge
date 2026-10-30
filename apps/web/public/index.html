@@ -1464,33 +1464,33 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 
       <!-- ===== TAB: KANBAN ===== -->
       <section id="tab-kanban" class="hidden">
-        <h2 class="page-title">Pipeline ứng tuyển</h2>
-        <p class="page-sub">Mỗi job có điểm khớp đều tự vào cột Mới. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
+        <h2 data-en="Application pipeline" class="page-title">Pipeline ứng tuyển</h2>
+        <p data-en="Every scored job lands in the New column. Use the arrows on a card to move it between stages." class="page-sub">Mỗi job có điểm khớp đều tự vào cột Mới. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
         <div id="alertsStrip"></div>
         <div id="kanbanContainer"></div>
       </section>
 
       <!-- ===== TAB: PROFILE ===== -->
       <section id="tab-profile" class="hidden">
-        <h2 class="page-title">Hồ sơ &amp; CV</h2>
-        <p class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
+        <h2 data-en="Profile &amp; CV" class="page-title">Hồ sơ &amp; CV</h2>
+        <p data-en="Skills in your profile drive how jobs are scored. Upload a CV for AI extraction, or add skills by hand." class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
         <div class="pf-grid">
           <section class="card-p">
-            <h3>Thông tin hồ sơ</h3>
+            <h3 data-en="Profile details">Thông tin hồ sơ</h3>
             <form id="profileForm">
               <div class="field">
-                <label for="pfName">Tên hồ sơ</label>
-                <input id="pfName" class="input" type="text" placeholder="Vd Kriss Bui, Backend">
+                <label data-en="Profile name" for="pfName">Tên hồ sơ</label>
+                <input id="pfName" class="input" type="text" placeholder="Vd Kriss Bui, Backend" data-en-placeholder="e.g. Kriss Bui, Backend">
               </div>
               <div class="field">
-                <label for="pfRoles">Vị trí mục tiêu</label>
-                <input id="pfRoles" class="input" type="text" placeholder="Vd Backend Developer, Backend Engineer">
-                <small>Nhiều vị trí cách nhau bởi dấu phẩy</small>
+                <label data-en="Target roles" for="pfRoles">Vị trí mục tiêu</label>
+                <input id="pfRoles" class="input" type="text" placeholder="Vd Backend Developer, Backend Engineer" data-en-placeholder="e.g. Backend Developer, Backend Engineer">
+                <small data-en="Separate roles with commas">Nhiều vị trí cách nhau bởi dấu phẩy</small>
               </div>
               <div class="field">
-                <label for="pfLevel">Cấp bậc</label>
+                <label data-en="Level" for="pfLevel">Cấp bậc</label>
                 <select id="pfLevel" class="input">
-                  <option value="">Chưa đặt</option>
+                  <option data-en="Not set" value="">Chưa đặt</option>
                   <option value="fresher">Fresher</option>
                   <option value="junior">Junior</option>
                   <option value="middle">Middle</option>
@@ -1498,72 +1498,72 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
                 </select>
               </div>
               <div class="field">
-                <label id="pfAreaLbl">Khu vực</label>
+                <label data-en="Location" id="pfAreaLbl">Khu vực</label>
                 <div id="pfAreaChips" class="chips" role="group" aria-labelledby="pfAreaLbl"></div>
-                <input id="pfAreaCustom" class="input" type="text" aria-label="Khu vực khác" placeholder="Vd Cần Thơ, Hải Phòng">
-                <small>Khu vực khác, cách nhau bởi dấu phẩy</small>
+                <input id="pfAreaCustom" class="input" type="text" aria-label="Khu vực khác" data-en-aria-label="Other location" placeholder="Vd Cần Thơ, Hải Phòng" data-en-placeholder="e.g. Can Tho, Hai Phong">
+                <small data-en="Other locations, separated by commas">Khu vực khác, cách nhau bởi dấu phẩy</small>
               </div>
               <div class="field">
-                <label for="pfSalary">Lương tối thiểu kỳ vọng</label>
-                <input id="pfSalary" class="input" type="number" inputmode="numeric" min="0" step="100000" placeholder="Vd 25000000" aria-describedby="pfSalaryHint">
+                <label data-en="Minimum expected salary" for="pfSalary">Lương tối thiểu kỳ vọng</label>
+                <input id="pfSalary" class="input" type="number" inputmode="numeric" min="0" step="100000" placeholder="Vd 25000000" data-en-placeholder="e.g. 25000000" aria-describedby="pfSalaryHint">
                 <small id="pfSalaryHint" aria-live="polite"></small>
               </div>
-              <button id="pfSaveBtn" class="btn p" type="submit" style="margin-top:20px">Lưu hồ sơ</button>
+              <button data-en="Save profile" id="pfSaveBtn" class="btn p" type="submit" style="margin-top:20px">Lưu hồ sơ</button>
             </form>
             <div class="pf-sep">
-              <label for="newProfileName">Tạo hồ sơ mới</label>
+              <label data-en="Create new profile" for="newProfileName">Tạo hồ sơ mới</label>
               <div class="inline-row">
-                <div class="grow"><input id="newProfileName" class="input" type="text" placeholder="Tên hồ sơ mới…"></div>
-                <button id="createProfileBtn" class="btn" type="button">Tạo hồ sơ</button>
+                <div class="grow"><input id="newProfileName" class="input" type="text" placeholder="Tên hồ sơ mới…" data-en-placeholder="New profile name…"></div>
+                <button data-en="Create profile" id="createProfileBtn" class="btn" type="button">Tạo hồ sơ</button>
               </div>
             </div>
           </section>
 
           <section class="card-p">
-            <h3>Kỹ năng</h3>
+            <h3 data-en="Skills">Kỹ năng</h3>
             <div id="currentSkills"></div>
             <div class="pf-sep">
-              <label for="manualSkill">Thêm kỹ năng thủ công</label>
-              <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka">
+              <label data-en="Add a skill manually" for="manualSkill">Thêm kỹ năng thủ công</label>
+              <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka" data-en-placeholder="e.g. Kafka">
               <div class="inline-row" style="margin-top:8px">
-                <div id="manualWeight" class="wbar" role="group" aria-label="Trọng số kỹ năng mới" data-value="3"></div>
-                <button id="addSkillBtn" class="btn" type="button">Thêm</button>
+                <div id="manualWeight" class="wbar" role="group" aria-label="Trọng số kỹ năng mới" data-en-aria-label="New skill weight" data-value="3"></div>
+                <button data-en="Add" id="addSkillBtn" class="btn" type="button">Thêm</button>
               </div>
             </div>
             <div class="pf-sep">
-              <label for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
+              <label data-en="Or upload a CV for AI extraction (PDF, TXT or MD)" for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
               <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
-              <button id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
+              <button data-en="Analyze CV" id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
               <div id="cvStatus"></div>
               <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
-                <label>Kỹ năng gợi ý (tích chọn, đặt trọng số 1 đến 5)</label>
+                <label data-en="Suggested skills (tick to keep, set weight 1 to 5)">Kỹ năng gợi ý (tích chọn, đặt trọng số 1 đến 5)</label>
                 <div id="suggestedList"></div>
-                <div class="sug-foot"><button id="confirmSkillsBtn" class="btn p" type="button">Lưu kỹ năng đã chọn</button></div>
+                <div class="sug-foot"><button data-en="Save selected skills" id="confirmSkillsBtn" class="btn p" type="button">Lưu kỹ năng đã chọn</button></div>
               </div>
             </div>
           </section>
 
           <section class="card-p bench-card">
-          <h3>Benchmark lương</h3>
-          <p class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
+          <h3 data-en="Salary benchmark">Benchmark lương</h3>
+          <p data-en="Computed from salaries listed in the jobs we have collected. When data is thin, a market reference table is shown instead." class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
           <div class="inline-row bench-row">
-            <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí, vd backend"></div>
-            <select id="benchLevel" class="input" title="Cấp bậc">
-              <option value="">Mọi cấp bậc</option>
+            <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí, vd backend" data-en-placeholder="Role, e.g. backend"></div>
+            <select id="benchLevel" class="input" title="Cấp bậc" data-en-title="Level">
+              <option data-en="All levels" value="">Mọi cấp bậc</option>
               <option value="junior">Junior</option>
               <option value="middle">Middle</option>
               <option value="senior">Senior</option>
             </select>
-            <div class="grow"><input id="benchLoc" class="input" type="text" placeholder="Khu vực, vd HCM"></div>
-            <button id="benchBtn" class="btn p" type="button">Xem benchmark</button>
+            <div class="grow"><input id="benchLoc" class="input" type="text" placeholder="Khu vực, vd HCM" data-en-placeholder="Location, e.g. HCM"></div>
+            <button data-en="View benchmark" id="benchBtn" class="btn p" type="button">Xem benchmark</button>
           </div>
           <div id="benchResult" style="margin-top:.8rem"></div>
           <div class="pf-sep">
-            <h3 style="font-size:1rem">Kịch bản đàm phán</h3>
-            <div class="neg-script"><b>1. Bị hỏi lương mong muốn trước</b><p>"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
-            <div class="neg-script"><b>2. Offer thấp hơn kỳ vọng</b><p>"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
-            <div class="neg-script"><b>3. Có offer khác / counter-offer</b><p>"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
-            <div class="neg-script"><b>4. Muốn hỏi lại range của công ty</b><p>"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng, để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
+            <h3 data-en="Negotiation scripts" style="font-size:1rem">Kịch bản đàm phán</h3>
+            <div class="neg-script"><b data-en="1. Asked for your expected salary first">1. Bị hỏi lương mong muốn trước</b><p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
+            <div class="neg-script"><b data-en="2. Offer below expectations">2. Offer thấp hơn kỳ vọng</b><p data-en="&quot;I am very excited about this role. This figure is below the range I am considering based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
+            <div class="neg-script"><b data-en="3. Competing offer / counter-offer">3. Có offer khác / counter-offer</b><p data-en="&quot;I have another offer at a higher level, but I would rather join you because of the product and the team. If you can get close to that figure, I will sign right away.&quot;">"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
+            <div class="neg-script"><b data-en="4. Asking about the company range">4. Muốn hỏi lại range của công ty</b><p data-en="&quot;Before I answer, I would like to understand the salary range, review cycle and bonus structure better, so I can evaluate total compensation, not just base salary.&quot;">"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng, để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
           </div>
         </section>
         </div>
@@ -2458,13 +2458,59 @@ $("#scanBtn").addEventListener("click", async () => {
 });
 
 /* ---------------- Kanban ---------------- */
+Object.assign(EN, { // Kanban + Hồ sơ & CV
+  "Mới": "New", "Đã lưu": "Saved", "Đã apply": "Applied", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
+  "Chưa có hồ sơ nào.": "No profile yet.",
+  "Quá hạn follow-up (%s)": "Follow-up overdue (%s)",
+  "Im lặng %s ngày": "Silent for %s days",
+  "Cần chú ý: %s đơn": "Needs attention: %s applications",
+  "Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt": "Silent for 7+ days or past the follow-up date you set",
+  "Đã follow-up": "Followed up", "Nhắc sau 3 ngày": "Remind in 3 days",
+  " và %s đơn khác": " and %s more", "Mở Kanban": "Open Kanban",
+  "Follow-up: %s": "Follow-up: %s", "(job đã xoá)": "(job deleted)",
+  "Chuyển sang cột trước": "Move to previous stage", "Chuyển sang cột sau": "Move to next stage",
+  "%sđ": "%s pts", "Xem thêm %s": "Show %s more", "Trống": "Empty",
+  "Đã chuyển sang: %s": "Moved to: %s",
+  "Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.": "Follow-up recorded. Next reminder in 7 days.",
+  "Đã hẹn nhắc sau 3 ngày.": "Reminder set for 3 days from now.",
+  "Đã chuyển sang Lưu trữ.": "Moved to Archived.",
+  "%s ₫/tháng": "%s VND/month", "Chỉ nhập số, đơn vị ₫/tháng": "Numbers only, in VND/month",
+  "Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau.": "Profile saved, but rescoring failed. Try saving again later.",
+  "Đã lưu hồ sơ. Đang chấm lại điểm các job...": "Profile saved. Rescoring jobs...",
+  "Đã tạo hồ sơ mới.": "New profile created.",
+  "Nhập tên hồ sơ mới trước đã.": "Enter a name for the new profile first.",
+  "Đã tạo và chuyển sang hồ sơ: %s": "Created and switched to profile: %s",
+  "QA / Kiểm thử": "QA / Testing", "AI Engineer (2–4 năm)": "AI Engineer (2–4 yrs)",
+  "trung vị tham khảo": "reference median", "trung vị tham khảo, khoảng 30 đến 60tr": "reference median, range 30M to 60M",
+  "Khoảng trung vị (min–max)": "Median range (min–max)", "Trung vị điểm giữa": "Median midpoint", "Khoảng P25–P75": "P25–P75 range",
+  "Dựa trên %s tin tuyển có ghi lương trong hệ thống.": "Based on %s job posts with a listed salary.",
+  "Chưa đủ dữ liệu lương trong hệ thống (mới %s tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.": "Not enough salary data yet (only %s posts list a salary). Below is a market reference; it recomputes as more posts with salaries arrive.",
+  "Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.": "Source: ITviec/TopDev 2025–2026 reports, secondary summary. Check the original PDFs before relying on it officially.",
+  "Trọng số %s/5": "Weight %s/5", "Trọng số %s": "Weight for %s", "Xóa %s": "Remove %s", "Xóa": "Remove",
+  "Chưa có hồ sơ.": "No profile yet.",
+  "Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.": "No skills yet. Upload a CV or add them manually below.",
+  "Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.": "Skills saved, but rescoring failed. Try saving again later.",
+  "Đã đổi trọng số %s: %s/5": "Weight for %s set to %s/5", "Đã xóa kỹ năng: %s": "Removed skill: %s",
+  "Nhập tên kỹ năng trước đã.": "Enter a skill name first.", "Đã thêm kỹ năng: %s": "Added skill: %s",
+  "Lưu %s kỹ năng đã chọn": "Save %s selected skills",
+  "Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại.": "Could not load PDF.js. Check your connection and try again.",
+  "Đang đọc trang %s/%s...": "Reading page %s/%s...",
+  "Chưa có hồ sơ để gắn CV.": "No profile to attach the CV to.", "Hãy chọn file CV trước đã.": "Choose a CV file first.",
+  "Đang phân tích...": "Analyzing...", "Đang trích xuất văn bản...": "Extracting text...",
+  "Không trích xuất được nội dung từ file này.": "Could not extract any text from this file.",
+  "Đã đọc %s ký tự. Đang gửi lên máy chủ...": "Read %s characters. Sending to server...",
+  "Đã gợi ý %s kỹ năng.": "Suggested %s skills.",
+  "Máy chủ không gợi ý được kỹ năng nào từ CV này.": "The server could not suggest any skills from this CV.",
+  "Đã trích xuất kỹ năng từ CV.": "Skills extracted from CV.", "Phân tích CV": "Analyze CV",
+  "Chưa chọn kỹ năng nào.": "No skills selected.", "Đã lưu %s kỹ năng vào hồ sơ.": "Saved %s skills to the profile.",
+});
 async function loadApplications(){
   const box = $("#kanbanContainer");
   const p = currentProfile();
-  if (!p) { box.innerHTML = '<div class="panel empty">Chưa có hồ sơ nào.</div>'; return; }
+  if (!p) { box.innerHTML = '<div class="panel empty">' + t("Chưa có hồ sơ nào.") + '</div>'; return; }
   const skelAt = Date.now();
   const firstKbLoad = kanbanFirstLoad;
-  box.innerHTML = '<div class="kanban">' + STAGES.map(s => `<div class="kcol"><div class="kcol-head"><span>${esc(s.label)}</span><span class="count">–</span></div><div class="kcol-body"><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:48px"></div></div></div>`).join("") + "</div>";
+  box.innerHTML = '<div class="kanban">' + STAGES.map(s => `<div class="kcol"><div class="kcol-head"><span>${esc(t(s.label))}</span><span class="count">–</span></div><div class="kcol-body"><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:48px"></div></div></div>`).join("") + "</div>";
   try {
     state.applications = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
     kanbanFirstLoad = false;
@@ -2487,23 +2533,23 @@ function renderKanban(){
   (state.applications || []).forEach(a => {
     if (!a.job) return;
     if (a.next_follow_up_at && a.next_follow_up_at < nowS) {
-      alerts.push({ ...a, label: `Quá hạn follow-up (${fmtDate(a.next_follow_up_at)})` });
+      alerts.push({ ...a, label: t("Quá hạn follow-up (%s)", fmtDate(a.next_follow_up_at)) });
     } else if ((a.stage === "applied" || a.stage === "interview") && a.updated_at && (nowS - a.updated_at) / 86400 >= 7) {
-      alerts.push({ ...a, label: `Im lặng ${Math.floor((nowS - a.updated_at) / 86400)} ngày` });
+      alerts.push({ ...a, label: t("Im lặng %s ngày", Math.floor((nowS - a.updated_at) / 86400)) });
     }
   });
   const strip = $("#alertsStrip");
   if (strip) {
     strip.innerHTML = alerts.length ? `<div class="alert">
-      <div><b>Cần chú ý: ${alerts.length} đơn</b><div>Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt</div></div>
+      <div><b>${t("Cần chú ý: %s đơn", alerts.length)}</b><div>${t("Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt")}</div></div>
       <div class="alert-items">` + alerts.map(a => `
       <div class="alert-item">
         <div><a href="${esc(a.job.source_url)}" target="_blank" rel="noopener">${esc(a.job.title)}</a>
-        <div class="meta">${esc(a.job.company)}, ${esc((STAGES.find(s => s.key === a.stage) || {}).label || a.stage)}. ${esc(a.label)}</div></div>
+        <div class="meta">${esc(a.job.company)}, ${esc(t((STAGES.find(s => s.key === a.stage) || {}).label || a.stage))}. ${esc(a.label)}</div></div>
         <div class="alert-btns">
-        <button class="btn sm ink" data-alert-follow="${esc(a.id)}" type="button">Đã follow-up</button>
-        <button class="btn sm" data-alert-snooze="${esc(a.id)}" type="button">Nhắc sau 3 ngày</button>
-        <button class="btn sm ghost" data-alert-archive="${esc(a.id)}" type="button">Lưu trữ</button>
+        <button class="btn sm ink" data-alert-follow="${esc(a.id)}" type="button">${t("Đã follow-up")}</button>
+        <button class="btn sm" data-alert-snooze="${esc(a.id)}" type="button">${t("Nhắc sau 3 ngày")}</button>
+        <button class="btn sm ghost" data-alert-archive="${esc(a.id)}" type="button">${LANG === "en" ? "Archive" : "Lưu trữ"}</button>
         </div>
       </div>`).join("") + `</div></div>` : "";
     $$("[data-alert-follow]", strip).forEach(b => b.addEventListener("click", () => alertAction(b.dataset.alertFollow, "follow", b)));
@@ -2514,8 +2560,8 @@ function renderKanban(){
   const jstrip = $("#jobsAlertStrip");
   if (jstrip) {
     jstrip.innerHTML = alerts.length ? `<div class="alert">
-      <div><b>Cần chú ý: ${alerts.length} đơn</b><div>${alerts.slice(0, 2).map(a => `${esc(a.job.company)} ${esc(a.label)}`).join(", ")}${alerts.length > 2 ? ` và ${alerts.length - 2} đơn khác` : ""}</div></div>
-      <button class="btn sm" data-goto-kanban type="button">Mở Kanban</button></div>` : "";
+      <div><b>${t("Cần chú ý: %s đơn", alerts.length)}</b><div>${alerts.slice(0, 2).map(a => `${esc(a.job.company)} ${esc(a.label)}`).join(", ")}${alerts.length > 2 ? t(" và %s đơn khác", alerts.length - 2) : ""}</div></div>
+      <button class="btn sm" data-goto-kanban type="button">${t("Mở Kanban")}</button></div>` : "";
     $$("[data-goto-kanban]", jstrip).forEach(b => b.addEventListener("click", () => switchTab("kanban")));
   }
   const badge = $("#kanbanAlertBadge");
@@ -2530,23 +2576,23 @@ function renderKanban(){
     const cards = shown.map(a => {
       const m = a.match || null;
       const warn = warnById.get(a.id);
-      const due = warn || (a.next_follow_up_at ? `Follow-up: ${fmtDate(a.next_follow_up_at)}` : "");
+      const due = warn || (a.next_follow_up_at ? t("Follow-up: %s", fmtDate(a.next_follow_up_at)) : "");
       return `<div class="kcard${warn ? " warn" : ""}" draggable="true" data-app="${esc(a.id)}">
-        <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
+        <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : t("(job đã xoá)"))}</a></div>
         <div class="c">${a.job ? `<span>${esc(a.job.company)}</span>${a.job.location ? `<span>${esc(a.job.location)}</span>` : ""}` : ""}</div>
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
         ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
         <div class="row">
-          <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="${t("Chuyển sang cột trước")}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="${t("Chuyển sang cột sau")}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <span class="spacer"></span>
-          ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ ${esc(m.tier)}</span>` : ""}
+          ${m ? `<span class="score-pill ${esc(m.tier)}">${t("%sđ", Math.round(m.final_score || 0))} ${esc(m.tier)}</span>` : ""}
         </div>
       </div>`;
-    }).join("") + (list.length > shown.length ? `<button class="kmore" data-kmore type="button">Xem thêm ${list.length - shown.length}</button>` : "");
+    }).join("") + (list.length > shown.length ? `<button class="kmore" data-kmore type="button">${t("Xem thêm %s", list.length - shown.length)}</button>` : "");
     return `<div class="kcol" data-stage="${s.key}">
-      <div class="kcol-head"><span>${s.label}</span><span class="count">${byStage[s.key].length}</span></div>
-      <div class="kcol-body">${cards || '<div class="muted small" style="text-align:center;padding:.4rem">Trống</div>'}</div>
+      <div class="kcol-head"><span>${esc(t(s.label))}</span><span class="count">${byStage[s.key].length}</span></div>
+      <div class="kcol-body">${cards || '<div class="muted small" style="text-align:center;padding:.4rem">' + t("Trống") + '</div>'}</div>
     </div>`;
   }).join("") + "</div>";
 
@@ -2664,7 +2710,7 @@ async function moveApplication(appId, dir, btn){
     renderKanban();
     flipKanbanCard(appId, fromRect, fromStage, next);
     flashCard(appId);
-    toast("Đã chuyển sang: " + (STAGES.find(s => s.key === next) || {}).label, "ok");
+    toast(t("Đã chuyển sang: %s", t((STAGES.find(s => s.key === next) || {}).label)), "ok");
   } catch (e) {
     toast(e.message, "err");
     btn.disabled = false;
@@ -2685,7 +2731,7 @@ async function moveApplicationTo(appId, targetStage){
     app.stage = targetStage;
     renderKanban();
     flipKanbanCard(appId, fromRect, fromStage, targetStage);
-    toast("Đã chuyển sang: " + (STAGES.find(s => s.key === targetStage) || {}).label, "ok");
+    toast(t("Đã chuyển sang: %s", t((STAGES.find(s => s.key === targetStage) || {}).label)), "ok");
   } catch (e) {
     toast(e.message, "err");
   }
@@ -2697,13 +2743,13 @@ async function alertAction(appId, kind, btn){
     const nowS = Math.floor(Date.now() / 1000);
     if (kind === "follow") {
       await api("/api/applications/" + encodeURIComponent(appId), { method: "PATCH", body: JSON.stringify({ next_follow_up_at: nowS + 7 * 86400 }) });
-      toast("Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.", "ok");
+      toast(t("Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày."), "ok");
     } else if (kind === "snooze") {
       await api("/api/applications/" + encodeURIComponent(appId), { method: "PATCH", body: JSON.stringify({ next_follow_up_at: nowS + 3 * 86400 }) });
-      toast("Đã hẹn nhắc sau 3 ngày.", "ok");
+      toast(t("Đã hẹn nhắc sau 3 ngày."), "ok");
     } else {
       await api("/api/applications/" + encodeURIComponent(appId), { method: "PATCH", body: JSON.stringify({ stage: "archived" }) });
-      toast("Đã chuyển sang Lưu trữ.", "ok");
+      toast(t("Đã chuyển sang Lưu trữ."), "ok");
     }
     await loadApplications();
   } catch (e) { toast(e.message, "err"); btn.disabled = false; }
@@ -2748,7 +2794,7 @@ function fillProfileForm(){
 // Gợi ý đọc số: "25.000.000 ₫/tháng"; giá trị gửi API vẫn là Number thô
 function renderSalaryHint(){
   const n = Number($("#pfSalary").value);
-  $("#pfSalaryHint").textContent = n > 0 ? new Intl.NumberFormat("vi-VN").format(n) + " ₫/tháng" : "Chỉ nhập số, đơn vị ₫/tháng";
+  $("#pfSalaryHint").textContent = n > 0 ? t("%s ₫/tháng", new Intl.NumberFormat(LANG === "en" ? "en-US" : "vi-VN").format(n)) : t("Chỉ nhập số, đơn vị ₫/tháng");
 }
 $("#pfSalary").addEventListener("input", renderSalaryHint);
 
@@ -2783,8 +2829,8 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       if (i >= 0) state.profiles[i] = updated;
       renderProfileSelect();
       fillProfileForm();
-      if (updated.rescore_queued === false) toast("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
-      else { toast("Đã lưu hồ sơ. Đang chấm lại điểm các job...", "ok"); startRescoringWatch(); }
+      if (updated.rescore_queued === false) toast(t("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
+      else { toast(t("Đã lưu hồ sơ. Đang chấm lại điểm các job..."), "ok"); startRescoringWatch(); }
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
     } else {
       const created = await api("/api/profiles", { method: "POST", body: JSON.stringify(payload) });
@@ -2792,7 +2838,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       state.profileId = created.id;
       localStorage.setItem("jp_profile", created.id);
       renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
-      toast("Đã tạo hồ sơ mới.", "ok");
+      toast(t("Đã tạo hồ sơ mới."), "ok");
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
     }
   } catch (e) {
@@ -2804,7 +2850,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
 
 $("#createProfileBtn").addEventListener("click", async () => {
   const name = $("#newProfileName").value.trim();
-  if (!name) { toast("Nhập tên hồ sơ mới trước đã.", "err"); return; }
+  if (!name) { toast(t("Nhập tên hồ sơ mới trước đã."), "err"); return; }
   const btn = $("#createProfileBtn");
   btn.disabled = true;
   try {
@@ -2817,7 +2863,7 @@ $("#createProfileBtn").addEventListener("click", async () => {
     localStorage.setItem("jp_profile", created.id);
     $("#newProfileName").value = "";
     renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
-    toast("Đã tạo và chuyển sang hồ sơ: " + name, "ok");
+    toast(t("Đã tạo và chuyển sang hồ sơ: %s", name), "ok");
     await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
   } catch (e) {
     toast(e.message, "err");
@@ -2847,20 +2893,21 @@ async function loadBenchmark(){
     if (loc) qs.set("location", loc);
     const d = await api("/api/benchmark?" + qs.toString());
     clearTimeout(benchSkelTimer);
-    const fmt = (v) => v == null ? "—" : (v / 1e6).toFixed(1).replace(/\.0$/, "").replace(".", ",") + "tr";
+    const mil = (x) => LANG === "en" ? x + "M" : x.replace(".", ",") + "tr"; // 37.8 → "37,8tr" | "37.8M"
+    const fmt = (v) => v == null ? "—" : mil((v / 1e6).toFixed(1).replace(/\.0$/, ""));
     if (d.count >= 5) {
       box.innerHTML = `<div class="bench-grid">
-        <div class="tile"><div class="num">${fmt(d.median_min)} – ${fmt(d.median_max)}</div><span>Khoảng trung vị (min–max)</span></div>
-        <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>Trung vị điểm giữa</span></div>
-        <div class="tile"><div class="num">${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</div><span>Khoảng P25–P75</span></div>
+        <div class="tile"><div class="num">${fmt(d.median_min)} – ${fmt(d.median_max)}</div><span>${t("Khoảng trung vị (min–max)")}</span></div>
+        <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>${t("Trung vị điểm giữa")}</span></div>
+        <div class="tile"><div class="num">${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</div><span>${t("Khoảng P25–P75")}</span></div>
       </div>
-      <p class="muted small" style="margin:0">Dựa trên ${d.count} tin tuyển có ghi lương trong hệ thống. ${esc(d.note || "")}</p>`;
+      <p class="muted small" style="margin:0">${t("Dựa trên %s tin tuyển có ghi lương trong hệ thống.", d.count)} ${esc(d.note || "")}</p>`;
     } else {
-      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">Chưa đủ dữ liệu lương trong hệ thống (mới ${d.count} tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.</p>
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">${t("Chưa đủ dữ liệu lương trong hệ thống (mới %s tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.", d.count)}</p>
       <div class="bench-grid">
-        ${BENCH_REF.map(r => `<div class="tile"><div class="num">${String(r.median).replace(".", ",")}tr</div><span>${esc(r.role)}</span><small>${esc(r.note)}</small></div>`).join("")}
+        ${BENCH_REF.map(r => `<div class="tile"><div class="num">${mil(String(r.median))}</div><span>${esc(t(r.role))}</span><small>${esc(t(r.note))}</small></div>`).join("")}
       </div>
-      <div class="bench-note">Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.</div>`;
+      <div class="bench-note">${t("Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.")}</div>`;
     }
     if (benchSkelShown && box.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
   } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
@@ -2870,22 +2917,22 @@ $("#benchBtn").addEventListener("click", loadBenchmark);
 /* ---------------- Skills ---------------- */
 function weightBars(w){
   let out = "";
-  for (let k = 1; k <= 5; k++) out += `<button type="button" class="${k <= w ? "on" : ""}" data-w="${k}" aria-label="Trọng số ${k}/5" aria-pressed="${k === w}"><i></i></button>`;
+  for (let k = 1; k <= 5; k++) out += `<button type="button" class="${k <= w ? "on" : ""}" data-w="${k}" aria-label="${t("Trọng số %s/5", k)}" aria-pressed="${k === w}"><i></i></button>`;
   return out;
 }
 function renderCurrentSkills(){
   const box = $("#currentSkills");
   const p = currentProfile();
-  if (!p) { box.innerHTML = '<p class="muted small">Chưa có hồ sơ.</p>'; return; }
+  if (!p) { box.innerHTML = '<p class="muted small">' + t("Chưa có hồ sơ.") + '</p>'; return; }
   const skills = p.skills || [];
   if (!skills.length) {
-    box.innerHTML = '<p class="muted small">Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.</p>';
+    box.innerHTML = '<p class="muted small">' + t("Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.") + '</p>';
     return;
   }
   box.innerHTML = skills.map((s, i) =>
     `<div class="skill" data-i="${i}"><b>${esc(s.skill)}</b>
-     <div class="wbar" role="group" aria-label="Trọng số ${esc(s.skill)}">${weightBars(Number(s.weight))}</div>
-     <button type="button" class="btn ghost" data-del aria-label="Xóa ${esc(s.skill)}">Xóa</button></div>`).join("");
+     <div class="wbar" role="group" aria-label="${t("Trọng số %s", esc(s.skill))}">${weightBars(Number(s.weight))}</div>
+     <button type="button" class="btn ghost" data-del aria-label="${t("Xóa %s", esc(s.skill))}">${t("Xóa")}</button></div>`).join("");
 }
 
 // Gửi trọn danh sách lên /skills/confirm (API thay toàn bộ kỹ năng của hồ sơ).
@@ -2893,7 +2940,7 @@ async function saveSkills(p, list, okMsg){
   const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
     method: "POST", body: JSON.stringify({ skills: list }),
   });
-  if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
+  if (updated.rescore_queued === false) toast(t("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
   else { toast(okMsg, "ok"); startRescoringWatch(); }
   await refreshProfiles();
 }
@@ -2910,7 +2957,7 @@ $("#currentSkills").addEventListener("click", async (ev) => {
   if (w) list[i].weight = w; else list.splice(i, 1);
   $$("#currentSkills button").forEach(x => x.disabled = true);
   try {
-    await saveSkills(p, list, w ? `Đã đổi trọng số ${cur.skill}: ${w}/5` : "Đã xóa kỹ năng: " + cur.skill);
+    await saveSkills(p, list, w ? t("Đã đổi trọng số %s: %s/5", cur.skill, w) : t("Đã xóa kỹ năng: %s", cur.skill));
   } catch (e) {
     toast(e.message, "err");
   } finally {
@@ -2944,9 +2991,9 @@ async function refreshProfiles(){
 
 $("#addSkillBtn").addEventListener("click", async () => {
   const p = currentProfile();
-  if (!p) { toast("Chưa có hồ sơ.", "err"); return; }
+  if (!p) { toast(t("Chưa có hồ sơ."), "err"); return; }
   const skill = $("#manualSkill").value.trim();
-  if (!skill) { toast("Nhập tên kỹ năng trước đã.", "err"); return; }
+  if (!skill) { toast(t("Nhập tên kỹ năng trước đã."), "err"); return; }
   const weight = Number($("#manualWeight").dataset.value) || 3;
   const existing = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
   const merged = existing.filter(s => s.skill.toLowerCase() !== skill.toLowerCase());
@@ -2954,7 +3001,7 @@ $("#addSkillBtn").addEventListener("click", async () => {
   const btn = $("#addSkillBtn");
   btn.disabled = true;
   try {
-    await saveSkills(p, merged, "Đã thêm kỹ năng: " + skill);
+    await saveSkills(p, merged, t("Đã thêm kỹ năng: %s", skill));
     $("#manualSkill").value = "";
   } catch (e) {
     toast(e.message, "err");
@@ -2965,7 +3012,7 @@ $("#addSkillBtn").addEventListener("click", async () => {
 
 /* ---------------- CV upload ---------------- */
 function updateSugCount(){
-  $("#confirmSkillsBtn").textContent = "Lưu " + $$("#suggestedList input:checked").length + " kỹ năng đã chọn";
+  $("#confirmSkillsBtn").textContent = t("Lưu %s kỹ năng đã chọn", $$("#suggestedList input:checked").length);
 }
 
 function renderSuggested(){
@@ -2976,13 +3023,13 @@ function renderSuggested(){
     `<div class="sug">
        <input type="checkbox" id="sug-${i}" checked>
        <label for="sug-${i}">${esc(s.skill)}</label>
-       <div class="wbar" id="sugw-${i}" role="group" aria-label="Trọng số ${esc(s.skill)}" data-value="${s.weight || 3}">${weightBars(s.weight || 3)}</div>
+       <div class="wbar" id="sugw-${i}" role="group" aria-label="${t("Trọng số %s", esc(s.skill))}" data-value="${s.weight || 3}">${weightBars(s.weight || 3)}</div>
      </div>`).join("");
   updateSugCount();
 }
 
 async function extractPdfText(file){
-  if (!window.pdfjsLib) throw new Error("Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại.");
+  if (!window.pdfjsLib) throw new Error(t("Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại."));
   window.pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   const buf = await file.arrayBuffer();
@@ -2992,20 +3039,20 @@ async function extractPdfText(file){
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     text += content.items.map(it => it.str).join(" ") + "\n";
-    $("#cvStatus").textContent = "Đang đọc trang " + i + "/" + pdf.numPages + "...";
+    $("#cvStatus").textContent = t("Đang đọc trang %s/%s...", i, pdf.numPages);
   }
   return text;
 }
 
 $("#cvUploadBtn").addEventListener("click", async () => {
   const p = currentProfile();
-  if (!p) { toast("Chưa có hồ sơ để gắn CV.", "err"); return; }
+  if (!p) { toast(t("Chưa có hồ sơ để gắn CV."), "err"); return; }
   const input = $("#cvFile");
   const file = input.files && input.files[0];
-  if (!file) { toast("Hãy chọn file CV trước đã.", "err"); return; }
+  if (!file) { toast(t("Hãy chọn file CV trước đã."), "err"); return; }
   const btn = $("#cvUploadBtn");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang phân tích...';
-  $("#cvStatus").textContent = "Đang trích xuất văn bản...";
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang phân tích...");
+  $("#cvStatus").textContent = t("Đang trích xuất văn bản...");
   try {
     let text;
     const name = file.name.toLowerCase();
@@ -3015,21 +3062,21 @@ $("#cvUploadBtn").addEventListener("click", async () => {
       text = await file.text();
     }
     text = (text || "").trim();
-    if (!text) throw new Error("Không trích xuất được nội dung từ file này.");
-    $("#cvStatus").textContent = "Đã đọc " + text.length.toLocaleString("vi-VN") + " ký tự. Đang gửi lên máy chủ...";
+    if (!text) throw new Error(t("Không trích xuất được nội dung từ file này."));
+    $("#cvStatus").textContent = t("Đã đọc %s ký tự. Đang gửi lên máy chủ...", text.length.toLocaleString(LANG === "en" ? "en-US" : "vi-VN"));
     const r = await api("/api/profiles/" + encodeURIComponent(p.id) + "/cv-text", {
       method: "POST", body: JSON.stringify({ text, filename: file.name }),
     });
     state.suggested = r.suggested_skills || [];
     renderSuggested();
-    $("#cvStatus").textContent = "Đã gợi ý " + state.suggested.length + " kỹ năng.";
-    if (!state.suggested.length) toast("Máy chủ không gợi ý được kỹ năng nào từ CV này.", "err");
-    else toast("Đã trích xuất kỹ năng từ CV.", "ok");
+    $("#cvStatus").textContent = t("Đã gợi ý %s kỹ năng.", state.suggested.length);
+    if (!state.suggested.length) toast(t("Máy chủ không gợi ý được kỹ năng nào từ CV này."), "err");
+    else toast(t("Đã trích xuất kỹ năng từ CV."), "ok");
   } catch (e) {
     $("#cvStatus").textContent = "";
     toast(e.message, "err");
   } finally {
-    btn.disabled = false; btn.textContent = "Phân tích CV";
+    btn.disabled = false; btn.textContent = t("Phân tích CV");
   }
 });
 
@@ -3041,15 +3088,15 @@ $("#confirmSkillsBtn").addEventListener("click", async () => {
     const cb = $("#sug-" + i), w = $("#sugw-" + i);
     if (cb && cb.checked) chosen.push({ skill: s.skill, weight: Number(w && w.dataset.value) || s.weight || 3 });
   });
-  if (!chosen.length) { toast("Chưa chọn kỹ năng nào.", "err"); return; }
+  if (!chosen.length) { toast(t("Chưa chọn kỹ năng nào."), "err"); return; }
   const btn = $("#confirmSkillsBtn");
   btn.disabled = true;
   try {
     const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
       method: "POST", body: JSON.stringify({ skills: chosen }),
     });
-    if (updated.rescore_queued === false) toast("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.", "err");
-    else { toast("Đã lưu " + chosen.length + " kỹ năng vào hồ sơ.", "ok"); startRescoringWatch(); }
+    if (updated.rescore_queued === false) toast(t("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
+    else { toast(t("Đã lưu %s kỹ năng vào hồ sơ.", chosen.length), "ok"); startRescoringWatch(); }
     state.suggested = [];
     $("#suggestedWrap").classList.add("hidden");
     await refreshProfiles();
