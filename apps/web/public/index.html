@@ -130,7 +130,9 @@ html[data-theme="dark"]{
   .login-in{width:100%;max-width:430px;text-align:center;animation:rise var(--m-enter) var(--e-out) both}
   .login-in h1{font-family:var(--serif);font-weight:400;font-size:2.9rem;line-height:1.08;margin:.2rem 0 .6rem;letter-spacing:-.01em}
   .login-in h1 em{color:var(--faint)}
-  .login-in .sub{color:var(--muted);margin:0 auto 1.8rem;max-width:36ch}
+  .login-in .sub{color:var(--muted);margin:0 auto 1.8rem;max-width:36ch;text-wrap:pretty}
+  .login-in h1{text-wrap:balance} /* tránh 1 từ "lại." rơi dòng ở desktop */
+  .login-card input{min-height:var(--tap)}
   .login-card{text-align:left;padding:1.5rem;border-radius:var(--r-lg)}
   .login-card .field{margin-top:1rem}
   .login-card .field:first-child{margin-top:0}
@@ -248,7 +250,7 @@ html[data-theme="dark"]{
   .kcard.warn{border-color:var(--sun)}
   .kcard .t{font:700 14px/1.3 var(--f-head)}
   .kcard .t a{color:var(--ink)}@media (hover:hover) and (pointer:fine){ .kcard .t a:hover{color:var(--brand);text-decoration:none}}
-  .kcard .c{color:var(--mute);font-size:13px;margin-top:4px}
+  .kcard .c{color:var(--mute);font-size:13px;margin-top:4px;display:flex;flex-wrap:wrap;gap:0 8px}
   .kcard .c.due{color:#866000;font-weight:700}
   html[data-theme="dark"] .kcard .c.due{color:var(--sun)}
   .kcard .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
@@ -306,6 +308,11 @@ html[data-theme="dark"]{
     box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(var(--ov),.06);
     animation:pal-box-in var(--m-base) var(--e-out) both;
   }
+  /* theo theme: hộp tối cố định làm chữ ink/muted chìm ở light (sel item không đọc được) */
+  .pal-box{background:var(--surface);border:var(--bw) solid var(--ink);box-shadow:var(--off) var(--off) 0 var(--shadow)}
+  .pal-item{min-height:var(--tap);color:var(--text)}
+  .pal-item>span:first-child{min-width:0}
+  .pal-item .hint{flex:none;white-space:nowrap;color:var(--mute)}
   .pal-box input{border:none;background:transparent;font-size:1.02rem;padding:1rem 1.15rem;box-shadow:none}
   .pal-box input:focus{box-shadow:none;border:none}
   #paletteList{max-height:46vh;overflow:auto;border-top:1px solid var(--line);padding:.45rem}
@@ -444,7 +451,8 @@ html[data-theme="dark"]{
 .pw-meter i{ display:block; height:100%; width:0; border-radius:var(--r-pill); background:#e5534b; transition:width var(--m-base) var(--e-out), background var(--m-base) var(--e-out); }
 .pw-hint{ font-size:.8rem; color:var(--muted); margin-top:.35rem; min-height:1em; }
 .auth-note{ border:1px solid rgba(45,75,255,.45); background:rgba(45,75,255,.08); border-radius:var(--r-md); padding:.8rem 1rem; font-size:.9rem; line-height:1.55; margin-bottom:1.1rem; color:#f3e3cd; }
-.auth-back{ display:inline-block; margin-top:1.1rem; color:var(--muted); text-decoration:none; font-size:.9rem; }@media (hover:hover) and (pointer:fine){
+.auth-tabs button{ min-height:var(--tap); }
+.auth-back{ display:inline-flex; align-items:center; min-height:var(--tap); margin-top:.4rem; color:var(--muted); text-decoration:none; font-size:.9rem; }@media (hover:hover) and (pointer:fine){
 .auth-back:hover{ color:var(--text); }}
 .ob-list{ text-align:left; display:flex; flex-direction:column; gap:.7rem; margin:1rem 0; }
 .ob-item{ display:flex; gap:.8rem; align-items:flex-start; }
@@ -582,7 +590,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .card .ttl{font:700 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
   .card .ttl a{color:inherit;text-decoration:none}@media (hover:hover) and (pointer:fine){
   .card .ttl a:hover{text-decoration:underline}}
-  .card .meta{color:var(--mute);font-size:14px;margin-bottom:12px}
+  .card .meta{color:var(--mute);font-size:14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:0 10px}
+  .jobsum span{margin-right:12px}
   .card .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
   .card .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
   .why{grid-column:1/-1;display:grid;grid-template-rows:0fr;transition:grid-template-rows var(--m-slow) var(--e-inout);overflow:hidden}
@@ -659,11 +668,12 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .alert .btn:active{transform:translate(2px,2px)}
   .alert .btn.ink{background:var(--ink);border-color:var(--ink);color:var(--surface)}
   .alert .btn.ghost{background:transparent;color:var(--sun-ink);border-color:transparent}
-  .toast{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--surface);border:none;border-radius:var(--r-md);padding:12px 16px;font-weight:700;box-shadow:6px 6px 0 var(--brand)}
+  .toast{display:inline-flex;align-items:center;gap:10px;min-height:var(--tap);background:var(--ink);color:var(--surface);border:none;border-radius:var(--r-md);padding:12px 16px;font-weight:700;box-shadow:6px 6px 0 var(--brand)}
   .toast.ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint);flex:none}
   .toast.err{box-shadow:6px 6px 0 var(--pop)}
   .toast.err::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pop);flex:none}
-  .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;padding:0 0 0 4px}@media (hover:hover) and (pointer:fine){
+  .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;align-self:stretch;min-width:var(--tap);margin:-12px -16px -12px 0;padding:0 16px 0 8px}
+  .tabbar-row .tab:focus-visible,.toast-x:focus-visible{outline-color:var(--sun)} /* outline brand chìm trên nền ink */@media (hover:hover) and (pointer:fine){
   .toast-x:hover{opacity:1}}
   .rescoring{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-pill);background:var(--surface);border:var(--bw) solid var(--brand);color:var(--brand);font-weight:700;font-size:13px}
   .rescoring i{width:12px;height:12px;border-radius:50%;border:3px solid var(--brand);border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
@@ -1393,7 +1403,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 
     </div>
     <a class="auth-back" href="#" id="authBack">← Về trang giới thiệu</a>
-    <p class="login-foot">Chạy trên Cloudflare Edge · Dữ liệu của bạn, ở máy chủ của bạn</p>
+    <p class="login-foot">Chạy trên Cloudflare Edge. Dữ liệu của bạn, ở máy chủ của bạn.</p>
   </div>
 </div>
 
@@ -1825,7 +1835,7 @@ function setAuthMode(mode){
   $("#authTabs").classList.remove("hidden");
   if (mode === "register") {
     $("#authTitle").innerHTML = "Tạo tài khoản <em>miễn phí.</em>";
-    $("#authSub").textContent = "2 phút để có pipeline săn việc của riêng bạn — không cần thẻ.";
+    $("#authSub").textContent = "2 phút để có pipeline săn việc của riêng bạn, không cần thẻ.";
   } else {
     $("#authTitle").innerHTML = "Chào mừng <em>trở lại.</em>";
     $("#authSub").textContent = "Đăng nhập để tiếp tục pipeline săn việc của bạn.";
@@ -2174,14 +2184,14 @@ async function loadDigest(){
         <div class="bignum"><em data-count="${sc}">0</em></div>
         ${strong.slice(0, 3).map(j =>
           `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
-           <span class="muted">· ${esc(j.company)} · ${Math.round(j.final_score || 0)}đ</span></div>`).join("") || '<div class="fu-item muted">Chưa có job khớp mạnh mới trong 24h.</div>'}
+           <span class="muted">${esc(j.company)}, ${Math.round(j.final_score || 0)}đ</span></div>`).join("") || '<div class="fu-item muted">Chưa có job khớp mạnh mới trong 24h.</div>'}
       </div>
       <div>
         <span class="lbl">Cần follow-up</span>
         <div class="bignum" data-count="${fus.length}">0</div>
         ${fus.length ? fus.slice(0, 3).map(f =>
-          `<div class="fu-item">${esc(f.title)} <span class="muted">· ${esc(f.company)}</span>
-           <span class="when">· hạn ${fmtDate(f.next_follow_up_at)}</span></div>`).join("")
+          `<div class="fu-item">${esc(f.title)} <span class="muted">${esc(f.company)},</span>
+           <span class="when">hạn ${fmtDate(f.next_follow_up_at)}</span></div>`).join("")
           : '<div class="fu-item muted">Không có việc nào tới hạn. Tuyệt.</div>'}
       </div>
     </div></div>`;
@@ -2281,7 +2291,7 @@ function renderJobs(){
     if (!isNaN(d) && d > newest) newest = d;
   });
   const topMiss = Object.entries(missCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const sumHTML = `<div class="jobsum"><div><b>${list.length}</b> job · <b>${strong}</b> khớp mạnh · <b>${partial}</b> một phần · <b>${weak}</b> khớp yếu${unscored ? ` · <b>${unscored}</b> chưa chấm` : ""}${newest ? ` · Mới nhất: ${fmtDate(newest)}` : ""}</div>${topMiss.length ? `<div class="miss">Thiếu nhiều nhất: ${topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", ")}</div>` : ""}</div>`;
+  const sumHTML = `<div class="jobsum"><div><span><b>${list.length}</b> job</span><span><b>${strong}</b> khớp mạnh</span><span><b>${partial}</b> một phần</span><span><b>${weak}</b> khớp yếu</span>${unscored ? `<span><b>${unscored}</b> chưa chấm</span>` : ""}${newest ? `<span>Mới nhất: ${fmtDate(newest)}</span>` : ""}</div>${topMiss.length ? `<div class="miss">Thiếu nhiều nhất: ${topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", ")}</div>` : ""}</div>`;
   // P0 — phân trang "Xem thêm": hiện 20 job đầu, bấm để hiện thêm
   const visible = Math.min(state.jobsVisible || 20, list.length);
   const page = list.slice(0, visible);
@@ -2305,7 +2315,7 @@ function renderJobs(){
       ${m ? scoreDiv(m.final_score, m.tier) : scoreDiv(0, "")}
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
-        <div class="meta">${[esc(job.company || ""), job.location ? "· " + esc(job.location) : "", date ? "· " + fmtDate(date) : "", job.salary_text ? "· " + esc(job.salary_text) : ""].filter(x => x).join(" ")}</div>
+        <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
         <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">chưa chấm</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
@@ -2453,11 +2463,11 @@ function renderKanban(){
   const strip = $("#alertsStrip");
   if (strip) {
     strip.innerHTML = alerts.length ? `<div class="alert">
-      <div><b>Cần chú ý · ${alerts.length} đơn</b><div>Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt</div></div>
+      <div><b>Cần chú ý: ${alerts.length} đơn</b><div>Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt</div></div>
       <div class="alert-items">` + alerts.map(a => `
       <div class="alert-item">
         <div><a href="${esc(a.job.source_url)}" target="_blank" rel="noopener">${esc(a.job.title)}</a>
-        <div class="meta">${esc(a.job.company)} · ${esc((STAGES.find(s => s.key === a.stage) || {}).label || a.stage)} · ${esc(a.label)}</div></div>
+        <div class="meta">${esc(a.job.company)}, ${esc((STAGES.find(s => s.key === a.stage) || {}).label || a.stage)}. ${esc(a.label)}</div></div>
         <div class="alert-btns">
         <button class="btn sm ink" data-alert-follow="${esc(a.id)}" type="button">Đã follow-up</button>
         <button class="btn sm" data-alert-snooze="${esc(a.id)}" type="button">Nhắc sau 3 ngày</button>
@@ -2472,7 +2482,7 @@ function renderKanban(){
   const jstrip = $("#jobsAlertStrip");
   if (jstrip) {
     jstrip.innerHTML = alerts.length ? `<div class="alert">
-      <div><b>Cần chú ý · ${alerts.length} đơn</b><div>${alerts.slice(0, 2).map(a => `${esc(a.job.company)} ${esc(a.label)}`).join(", ")}${alerts.length > 2 ? ` và ${alerts.length - 2} đơn khác` : ""}</div></div>
+      <div><b>Cần chú ý: ${alerts.length} đơn</b><div>${alerts.slice(0, 2).map(a => `${esc(a.job.company)} ${esc(a.label)}`).join(", ")}${alerts.length > 2 ? ` và ${alerts.length - 2} đơn khác` : ""}</div></div>
       <button class="btn sm" data-goto-kanban type="button">Mở Kanban</button></div>` : "";
     $$("[data-goto-kanban]", jstrip).forEach(b => b.addEventListener("click", () => switchTab("kanban")));
   }
@@ -2491,14 +2501,14 @@ function renderKanban(){
       const due = warn || (a.next_follow_up_at ? `Follow-up: ${fmtDate(a.next_follow_up_at)}` : "");
       return `<div class="kcard${warn ? " warn" : ""}" draggable="true" data-app="${esc(a.id)}">
         <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : "(job đã xoá)")}</a></div>
-        <div class="c">${esc(a.job ? a.job.company : "")}${a.job && a.job.location ? " · " + esc(a.job.location) : ""}</div>
+        <div class="c">${a.job ? `<span>${esc(a.job.company)}</span>${a.job.location ? `<span>${esc(a.job.location)}</span>` : ""}` : ""}</div>
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
         ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
         <div class="row">
           <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <span class="spacer"></span>
-          ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ · ${esc(m.tier)}</span>` : ""}
+          ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ ${esc(m.tier)}</span>` : ""}
         </div>
       </div>`;
     }).join("") + (list.length > shown.length ? `<button class="kmore" data-kmore type="button">Xem thêm ${list.length - shown.length}</button>` : "");
@@ -3040,7 +3050,7 @@ function paletteCommands(q){
     });
   });
   state.jobs.slice(0, 60).forEach(j => {
-    push(j.title + " — " + (j.company || ""), (j.match ? Math.round(j.match.final_score || 0) + "đ · " : "") + "mở link gốc",
+    push(j.title + (j.company ? ", " + j.company : ""), j.match ? Math.round(j.match.final_score || 0) + "đ" : "job",
       () => window.open(j.source_url, "_blank", "noopener"));
   });
   if (!query) return cmds.slice(0, 14);
