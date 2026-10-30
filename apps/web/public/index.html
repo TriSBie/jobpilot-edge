@@ -1086,6 +1086,46 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .lp-tour-frame::before{ transition:none !important; }
 }
 
+
+/* ===== PROTO signal-real-data: landing phẳng theo Signal, dữ liệu thật ===== */
+#landingView .lp-glow, #landingView .lp-shot, #lp-progress{ display:none !important; }
+#landingView .lp-card::before, #landingView .lp-card::after, #landingView .lp-cta::before{ content:none !important; }
+#landingView .lp-card{ background:var(--surface); border:var(--bw) solid var(--ink); border-radius:var(--r-lg); box-shadow:var(--off) var(--off) 0 var(--shadow); transition:transform .12s ease, box-shadow .12s ease; }
+@media (hover:hover) and (pointer:fine){ #landingView .lp-card:hover{ transform:translate(-2px,-2px); box-shadow:calc(var(--off) + 2px) calc(var(--off) + 2px) 0 var(--shadow); } }
+#landingView .lp-pill{ background:var(--sun); color:var(--sun-ink); border:var(--bw) solid var(--ink); letter-spacing:.04em; text-transform:none; font-family:var(--f-body); font-weight:800; }
+#landingView .lp-pill::before{ background:var(--ink); }
+#landingView h1 em, #landingView h2 em{ color:var(--brand); font-style:normal; }
+#landingView .btn.primary{ border:var(--bw) solid var(--ink); box-shadow:4px 4px 0 var(--shadow); }
+#landingView .btn.primary:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--shadow); }
+.sg-live{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--ink); border-radius:var(--r-lg); box-shadow:var(--off) var(--off) 0 var(--shadow); padding:1.1rem 1.2rem; }
+.sg-live-head{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+.sg-live-head b{ font-family:var(--f-head); font-size:1.05rem; }
+.sg-dot{ width:10px; height:10px; border-radius:50%; background:var(--mint); border:2px solid var(--ink); flex:none; }
+.sg-mut{ color:var(--mute); font-size:.88rem; }
+.sg-live-who{ margin:.5rem 0 .9rem; color:var(--mute); font-size:.92rem; }
+.sg-live-who b{ color:var(--ink); }
+.sg-jobs{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; }
+.sg-job{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.3rem 1rem; align-items:center; border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:.75rem .9rem; }
+.sg-job a{ color:var(--ink); text-decoration:none; font-weight:800; }
+.sg-job a:hover{ text-decoration:underline; }
+.sg-job .sg-meta{ grid-column:1; color:var(--mute); font-size:.84rem; }
+.sg-job .sg-chips{ grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:.35rem; }
+.sg-job .score-pill{ grid-row:1 / span 2; grid-column:2; align-self:start; font-size:.95rem; padding:.3rem .7rem; border-color:var(--ink); }
+.sg-chip{ font-size:.78rem; font-weight:700; border-radius:var(--r-pill); padding:.15rem .55rem; border:var(--bw) solid var(--line); color:var(--mute); }
+.sg-chip.ok{ background:var(--mint); color:var(--mint-ink); border-color:transparent; }
+.sg-skel{ height:64px; background:var(--line); border:none; opacity:.5; }
+.sg-live-foot{ margin:.9rem 0 0; color:var(--mute); font-size:.85rem; }
+.sg-strip{ text-align:center; color:var(--mute); font-weight:700; font-size:.92rem; margin:1.2rem auto 0; padding:0 1rem; }
+.sg-strip b{ color:var(--ink); }
+.sg-why{ margin-top:1.6rem; width:min(760px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--ink); border-radius:var(--r-lg); box-shadow:var(--off) var(--off) 0 var(--shadow); padding:1.1rem 1.2rem; }
+.sg-why h3{ margin:0 0 .2rem; font-size:1.05rem; }
+.sg-why h3 a{ color:var(--ink); }
+.sg-why .row{ display:flex; justify-content:space-between; gap:1rem; padding:.55rem 0; border-top:var(--bw) dashed var(--line); }
+.sg-why .row span{ color:var(--mute); }
+.sg-why .total{ font-family:var(--f-head); font-size:1.4rem; }
+@media (max-width:640px){
+  .sg-live, .sg-why{ box-shadow:4px 4px 0 var(--shadow); padding:.9rem; }
+}
 </style>
 </head>
 <body>
@@ -1111,60 +1151,32 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
   
     <section class="lp-sec lp-hero">
-    <span class="lp-pill">Demo tương tác — không cần đăng ký</span>
-    <div class="lp-glow" aria-hidden="true"></div>
+    <span class="lp-pill">Cho lập trình viên ở Việt Nam</span>
     <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
-    <h1>Săn việc, <em>có hệ thống.</em></h1>
-    <p class="sub">JobPilot gom job từ ITviec &amp; TopDev, chấm khớp với CV bằng công thức minh bạch, xếp mọi cơ hội vào một pipeline duy nhất.</p>
+    <h1>Nộp ít hơn, <em>đúng hơn.</em></h1>
+    <p class="sub">Mỗi sáng, JobPilot đọc tin mới trên ITviec và TopDev, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp.</p>
     <div class="lp-cta">
-      <a class="btn primary big lp-magnet" href="#lp-demo-kanban" style="text-decoration:none">Thử demo ngay</a>
-      <a class="btn ghost big" href="#lp-scoring" style="text-decoration:none">Xem cách tính điểm</a>
+      <a class="btn primary big" href="#lp-live" style="text-decoration:none">Xem tin sáng nay</a>
+      <a class="btn ghost big" data-auth="register" href="#" style="text-decoration:none">Đăng ký miễn phí</a>
     </div>
-    <div class="lp-stats">
-      <div class="lp-stat"><b><em data-count="30">0</em>'</b><span>một lần quét mới</span></div>
-      <div class="lp-stat"><b data-count="2">0</b><span>nguồn job · ITviec &amp; TopDev</span></div>
-      <div class="lp-stat"><b data-count="7">0</b><span>giai đoạn kanban</span></div>
-      <div class="lp-stat"><b data-count="4">0</b><span>bước bắt đầu</span></div>
-    </div>
-    <div class="lp-shot"><div class="lp-chrome"><i></i><i></i><i></i><span>jobpilot-edge.pages.dev</span></div><div class="demo-hero" id="demoHero">
-  <span class="demo-chip">Demo minh hoạ</span>
-  <div class="demo-tabs" role="tablist" aria-label="Xem thử giao diện JobPilot">
-    <button type="button" role="tab" aria-selected="true" data-demo-tab="jobs">Jobs</button>
-    <button type="button" role="tab" aria-selected="false" data-demo-tab="kanban">Kanban</button>
-    <button type="button" role="tab" aria-selected="false" data-demo-tab="brief">Morning brief</button>
-    <span class="demo-tab-ind" aria-hidden="true"></span>
-  </div>
-  <div class="demo-frames">
-    <div class="demo-frame on" role="tabpanel" data-demo-frame="jobs">
-      <div class="demo-side"><b>JobPilot Edge</b><span class="on">▤ Việc làm</span><span>▦ Kanban</span><span>◉ Hồ sơ &amp; CV</span><span class="demo-prof">Backend Java · Hồ Chí Minh</span></div>
-      <div class="demo-list">
-        <div class="demo-job"><div><b>Backend Engineer (Java, Spring Boot)</b><span>Công ty Demo A · Hồ Chí Minh · 2 ngày trước</span></div><span class="score-pill strong">82đ</span></div>
-        <div class="demo-job"><div><b>Backend Developer (Java, Kafka)</b><span>Công ty Demo B · Hồ Chí Minh · 5 ngày trước</span></div><span class="score-pill partial">68đ</span></div>
-        <div class="demo-job"><div><b>Java Developer (Fresher)</b><span>Công ty Demo C · Hà Nội · 12 ngày trước</span></div><span class="score-pill">41đ</span></div>         <div class="demo-job"><div><b>Backend Java (Spring, PostgreSQL)</b><span>Công ty Demo D · Remote · 8 ngày trước</span></div><span class="score-pill partial">57đ</span></div>
+    <div class="sg-live" id="lp-live" aria-live="polite">
+      <div class="sg-live-head">
+        <span class="sg-dot" aria-hidden="true"></span>
+        <b>Tin thật, quét sáng nay</b>
+        <span id="sgLiveMeta" class="sg-mut">đang tải…</span>
       </div>
+      <p class="sg-live-who">Chấm cho hồ sơ mẫu: <b id="sgLiveProfile">Backend Java · 3 năm · Hồ Chí Minh / Remote</b></p>
+      <ol class="sg-jobs" id="sgLiveJobs"><li class="sg-job sg-skel"></li><li class="sg-job sg-skel"></li><li class="sg-job sg-skel"></li></ol>
+      <p class="sg-live-foot">Bấm vào tin để mở trang gốc. Đăng ký để JobPilot chấm theo CV của chính bạn.</p>
     </div>
-    <div class="demo-frame" role="tabpanel" data-demo-frame="kanban">
-      <div class="demo-minicol"><b>Mới</b><span>Backend Java — Demo A</span><span>Java + Kafka — Demo B</span></div>
-      <div class="demo-minicol"><b>Đang theo</b><span>Spring Boot — Demo D</span></div>
-      <div class="demo-minicol"><b>Đã apply</b><span>Backend Java — Demo E</span></div>
-    </div>
-    <div class="demo-frame" role="tabpanel" data-demo-frame="brief">
-      <div class="demo-brief"><b>☀ Morning brief — demo</b><p>2 job khớp mạnh mới · 1 việc cần follow-up hôm nay.</p><span>• Backend Java — Demo A: 82đ, khớp 6/8 kỹ năng</span><span>• Nhắn lại Demo D: đã 4 ngày chưa phản hồi</span><span>• Java + Kafka — Demo B: 68đ, khớp một phần</span><span>• Demo A: lịch follow-up ngày mai</span></div>
-    </div>
-  </div>
-  <p class="demo-note">Giao diện minh hoạ bằng dữ liệu demo — không phải tài khoản thật của bạn.</p>
-</div></div>
   </section>
 
-<div class="demo-marquee" aria-label="Nguồn job JobPilot đang dùng">
-  <span class="demo-marquee-label">Nguồn job:</span>
-  <div class="demo-marquee-viewport"><div class="demo-marquee-track"><span class="demo-marquee-group">ITviec ✦ TopDev ✦ Quét mỗi 30 phút ✦ Khử trùng tin ✦ 7 giai đoạn ✦ Morning brief 8:00 ✦&nbsp;</span><span class="demo-marquee-group" aria-hidden="true">ITviec ✦ TopDev ✦ Quét mỗi 30 phút ✦ Khử trùng tin ✦ 7 giai đoạn ✦ Morning brief 8:00 ✦&nbsp;</span></div></div>
-</div>
+<p class="sg-strip" id="sgStrip">Nguồn: ITviec, TopDev · quét lại mỗi 30 phút</p>
 
   <section class="lp-sec" id="lp-scoring">
-    <span class="lp-pill">Điểm khớp minh bạch</span>
-    <h2>Điểm số <em>có công thức</em>, không phải cảm tính AI</h2>
-    <p class="lede">Mỗi điểm truy ngược được: kỹ năng nào khớp, thiếu, và vì sao job dưới 3 kỹ năng bị chặn ở 69 — chống khớp ảo.</p>
+    <h2>Mỗi điểm đều có lý do</h2>
+    <p class="lede">Đây là phần giải thích JobPilot hiện cho tin xếp đầu ở trên. Bạn thấy kỹ năng nào khớp, kỹ năng nào còn thiếu, và từng phần điểm cộng lại ra sao.</p>
+    <div class="sg-why" id="sgWhy"><p class="sg-mut">Đang tải tin thật…</p></div>
     <div class="lp-formula rv rv-strong"><span class="k">rule</span> = kỹ_năng_khớp / kỹ_năng_job_yêu_cầu × 50<br><span class="k">fit</span> = khu_vực (≤8) + độ_mới (≤7) + cấp_bậc (≤5)<br><span class="k">final</span> = (rule + fit) / 70 × 100</div>
     <div class="lp-tiers">
       <span class="badge strong">strong ≥ 75</span>
@@ -3400,6 +3412,37 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
     var typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName || "");
     if (typing) return;
     if (e.key === "/") { e.preventDefault(); demoPalOpenFn(); }
+  });
+})();
+
+/* PROTO signal-real-data: nạp tin thật cho landing */
+(function loadLandingSample(){
+  const box = document.getElementById("sgLiveJobs");
+  if (!box) return;
+  const ago = (d) => d == null ? "" : d <= 0 ? "hôm nay" : d + " ngày trước";
+  const loc = (s) => [...new Set(String(s || "").split(",").map(x => x.trim()).filter(Boolean))].join(", ");
+  const hhmm = (ts) => ts ? new Date(ts * 1000).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "";
+  fetch(API_BASE + "/api/public/sample").then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+    const jobs = d.jobs || [], st = d.stats || {};
+    $("#sgLiveMeta").textContent = st.last_scan ? "cập nhật " + hhmm(st.last_scan) : "";
+    $("#sgStrip").innerHTML = "Đang theo dõi <b>" + (st.jobs || 0) + "</b> tin · <b>" + (st.new_24h || 0) + "</b> tin mới trong 24 giờ · quét gần nhất <b>" + esc(hhmm(st.last_scan)) + "</b> · nguồn ITviec, TopDev";
+    if (!jobs.length) { box.innerHTML = '<li class="sg-mut">Chưa có tin nào, quay lại sau ít phút.</li>'; return; }
+    box.innerHTML = jobs.map(j => `<li class="sg-job">
+      <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
+      <span class="score-pill ${esc(j.tier)}">${Math.round(j.score)}đ</span>
+      <span class="sg-meta">${esc(j.company)} · ${esc(loc(j.location))} · ${esc(ago(j.age_days))}${j.salary ? " · " + esc(j.salary) : ""}</span>
+      <span class="sg-chips">${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}${(j.missing || []).slice(0, 3).map(x => `<span class="sg-chip">thiếu ${esc(x)}</span>`).join("")}</span>
+    </li>`).join("");
+    const t = jobs[0], f = t.fit || {};
+    $("#sgWhy").innerHTML = `<h3><a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.title)}</a></h3>
+      <p class="sg-mut">${esc(t.company)} · ${esc(loc(t.location))}</p>
+      <div class="row"><span>Kỹ năng khớp${t.matched.length ? ": " + esc(t.matched.join(", ")) : ""}</span><b>${String(t.rule).replace(".", ",")} / 50</b></div>
+      <div class="row"><span>Còn thiếu</span><b>${t.missing.length ? esc(t.missing.join(", ")) : "không"}</b></div>
+      <div class="row"><span>Khu vực / độ mới / cấp bậc</span><b>${f.location}/8 · ${f.freshness}/7 · ${f.level}/5</b></div>
+      <div class="row"><span>Tổng: (kỹ năng + phần còn lại) / 70 × 100${t.capped ? " · tin ghi dưới 3 kỹ năng nên tối đa 69" : ""}</span><b class="total">${Math.round(t.score)}</b></div>`;
+  }).catch(() => {
+    box.innerHTML = '<li class="sg-mut">Không tải được tin lúc này. Thử tải lại trang.</li>';
+    $("#sgWhy").innerHTML = '<p class="sg-mut">Không tải được ví dụ.</p>';
   });
 })();
 </script>

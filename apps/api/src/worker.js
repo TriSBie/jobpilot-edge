@@ -608,6 +608,43 @@ export default {
         bindings: { DB: !!env.DB, KV: !!env.KV, FILES: !!env.FILES, AI: !!env.AI, EMB: !!env.EMB, EVENTS: !!env.EVENTS } });
     }
 
+    // Landing: job THẬT vừa quét chấm cho một hồ sơ mẫu cố định. Chỉ lấy link quét chuẩn của
+    // ITviec/TopDev (không bao giờ là job dán tay), chỉ đọc, chỉ trả trường công khai; cache 5 phút.
+    if (path === "/api/public/sample" && request.method === "GET") {
+      const SCRAPED = "(source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%') AND jd_text = ''";
+      const { results } = await env.DB.prepare(
+        `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at
+         FROM jobs WHERE ${SCRAPED} ORDER BY first_seen_at DESC LIMIT 60`
+      ).all();
+      const sampleProfile = { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
+      const sampleSkills = [
+        { skill: "Java", weight: 5 }, { skill: "Spring Boot", weight: 5 }, { skill: "PostgreSQL", weight: 3 },
+        { skill: "Docker", weight: 3 }, { skill: "REST APIs", weight: 3 }, { skill: "Git", weight: 2 },
+      ];
+      const scored = results.map((j) => {
+        const job = { ...j, skills: JSON.parse(j.skills || "[]"), jd_text: "" };
+        const s = scoreJob(sampleProfile, sampleSkills, job);
+        const f = fitBreakdown(sampleProfile, job);
+        return {
+          title: j.title, company: j.company, location: j.location, source: j.source_id, url: j.source_url,
+          salary: j.salary_text, age_days: f.ageDays, score: s.finalScore, tier: s.tier,
+          rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level },
+          matched: s.matched, missing: s.missing.slice(0, 6), capped: s.jobSkills.length < 3,
+        };
+      }).sort((a, b) => b.score - a.score);
+      const stats = await env.DB.prepare(
+        `SELECT (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED}) AS jobs,
+                (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED} AND first_seen_at > ?) AS new_24h,
+                (SELECT MAX(last_run_at) FROM sources) AS last_scan`
+      ).bind(now() - 86400).first();
+      const res = json({
+        profile: { label: "Backend Java · 3 năm · Hồ Chí Minh / Remote", skills: sampleSkills },
+        jobs: scored.slice(0, 5), stats,
+      });
+      res.headers.set("cache-control", "public, max-age=300");
+      return res;
+    }
+
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
     if (path === "/api/auth/register" && request.method === "POST") {
       const body = await readBody(request);
