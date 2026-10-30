@@ -559,14 +559,13 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .alert-item .t{ font-weight:600; }
 .alert-item .meta{ color:var(--muted);font-size:.85rem; }
 .alert-badge{ display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:.4rem;border-radius:999px;background:var(--accent);color:var(--brand-ink);font-size:.72rem;font-weight:700; }
-.bench-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:.8rem 0; }
+.bench-grid{ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:.8rem;margin:.8rem 0; }
 .bench-stat{ border:1px solid var(--line);border-radius:var(--r-md);padding:.8rem; }
 .bench-stat b{ display:block;font-family:var(--f-head);font-size:1.3rem; }
 .bench-stat span{ color:var(--muted);font-size:.8rem; }
 .neg-script{ border:1px solid var(--line);border-radius:var(--r-md);padding:.8rem 1rem;margin:.6rem 0; }
 .neg-script b{ display:block;margin-bottom:.2rem; }
 .neg-script p{ margin:0;color:var(--muted);font-size:.9rem; }
-@media (max-width: 700px){ .bench-grid{ grid-template-columns:1fr; } }
 
   /* ===== SIGNAL BƯỚC 2 — thẻ job, vòng điểm, chip, panel giải thích ===== */
   .score{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font:700 30px/1 var(--f-head);position:relative;flex:none;background:var(--brand);color:var(--brand-ink)}
@@ -717,10 +716,17 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 
   /* ===== SIGNAL BƯỚC 6B — bổ sung: benchmark tile ===== */
   #tab-profile .tile{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-md);padding:14px}
-  #tab-profile .tile .num{font:700 28px var(--f-head);color:var(--brand)}
-  #tab-profile .tile span{display:block;font-weight:600;margin-top:2px}
+  #tab-profile .tile .num{font:700 26px/1.15 var(--f-head);color:var(--brand);font-variant-numeric:tabular-nums}
+  #tab-profile .tile span{display:block;font-weight:600;margin-top:4px;text-wrap:balance}
   #tab-profile .tile small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
   #tab-profile .bench-note{border:2px dashed var(--line);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
+  #tab-profile .bench-card{container-type:inline-size}
+  /* bộ lọc: 1 cột khi thẻ hẹp, 2 hàng (vị trí+cấp bậc / khu vực+nút) ở giữa, 1 hàng khi rộng */
+  #tab-profile .bench-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center}
+  #tab-profile .bench-row .grow{min-width:0}
+  #tab-profile .bench-row .btn{justify-self:start}
+  @container (min-width:312px){ #tab-profile .bench-row{grid-template-columns:minmax(0,1fr) max-content} #tab-profile .bench-row .btn{justify-self:stretch} }
+  @container (min-width:700px){ #tab-profile .bench-row{grid-template-columns:minmax(0,1fr) max-content minmax(0,1fr) max-content} }
 
   /* ===== KANBAN DRAG & DROP (desktop, HTML5) ===== */
   .kcard[draggable="true"]{cursor:grab}
@@ -1526,18 +1532,18 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             </div>
           </section>
 
-          <section class="card-p">
+          <section class="card-p bench-card">
           <h3>Benchmark lương</h3>
           <p class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
-          <div class="inline-row">
-            <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí: backend, java…"></div>
-            <select id="benchLevel" class="input" title="Cấp bậc" style="width:auto">
+          <div class="inline-row bench-row">
+            <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí, vd backend"></div>
+            <select id="benchLevel" class="input" title="Cấp bậc">
               <option value="">Mọi cấp bậc</option>
               <option value="junior">Junior</option>
               <option value="middle">Middle</option>
               <option value="senior">Senior</option>
             </select>
-            <div class="grow"><input id="benchLoc" class="input" type="text" placeholder="Khu vực: ho chi minh…"></div>
+            <div class="grow"><input id="benchLoc" class="input" type="text" placeholder="Khu vực, vd HCM"></div>
             <button id="benchBtn" class="btn p" type="button">Xem benchmark</button>
           </div>
           <div id="benchResult" style="margin-top:.8rem"></div>
@@ -1546,7 +1552,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             <div class="neg-script"><b>1. Bị hỏi lương mong muốn trước</b><p>"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
             <div class="neg-script"><b>2. Offer thấp hơn kỳ vọng</b><p>"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
             <div class="neg-script"><b>3. Có offer khác / counter-offer</b><p>"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
-            <div class="neg-script"><b>4. Muốn hỏi lại range của công ty</b><p>"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng — để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
+            <div class="neg-script"><b>4. Muốn hỏi lại range của công ty</b><p>"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng, để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
           </div>
         </section>
         </div>
@@ -2780,9 +2786,9 @@ $("#createProfileBtn").addEventListener("click", async () => {
 
 /* ---------------- Benchmark lương (Phase 2) ---------------- */
 const BENCH_REF = [
-  { role: "Backend", median: 37.8, note: "median tham khảo" },
-  { role: "QA / Kiểm thử", median: 31.2, note: "median tham khảo" },
-  { role: "AI Engineer (2–4 năm)", median: 45, note: "khoảng 30–60tr · median tham khảo" },
+  { role: "Backend", median: 37.8, note: "trung vị tham khảo" },
+  { role: "QA / Kiểm thử", median: 31.2, note: "trung vị tham khảo" },
+  { role: "AI Engineer (2–4 năm)", median: 45, note: "trung vị tham khảo, khoảng 30 đến 60tr" },
 ];
 async function loadBenchmark(){
   const role = $("#benchRole").value.trim();
@@ -2808,11 +2814,11 @@ async function loadBenchmark(){
       </div>
       <p class="muted small" style="margin:0">Dựa trên ${d.count} tin tuyển có ghi lương trong hệ thống. ${esc(d.note || "")}</p>`;
     } else {
-      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">Chưa đủ dữ liệu lương trong hệ thống (mới ${d.count} tin có ghi lương). Tham khảo thị trường bên dưới — hệ thống sẽ tự tính từ tin mới khi nhà tuyển dụng ghi lương.</p>
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">Chưa đủ dữ liệu lương trong hệ thống (mới ${d.count} tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.</p>
       <div class="bench-grid">
         ${BENCH_REF.map(r => `<div class="tile"><div class="num">${String(r.median).replace(".", ",")}tr</div><span>${esc(r.role)}</span><small>${esc(r.note)}</small></div>`).join("")}
       </div>
-      <div class="bench-note">Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp — đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.</div>`;
+      <div class="bench-note">Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.</div>`;
     }
     if (benchSkelShown && box.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
   } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
