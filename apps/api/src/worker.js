@@ -244,12 +244,14 @@ function stripTags(html) {
 }
 const decodeUnicodeEscapes = (s) => s.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
 const TECH_EXTRA = new Set(["c++", "c", "c/c++", "oop", "algorithms", "embedded", "agile", "scrum", "jira", "spring", "hibernate", "maven", "gradle", "oracle", "sql server", "mariadb", "cassandra", "hadoop", "spark", "airflow", "testing", "automation test", "manual test"]);
-const CATALOG_KEYS = new Set(SKILL_CATALOG.map((s) => s.toLowerCase()));
+const CATALOG_BY_LOWER = new Map(SKILL_CATALOG.map((s) => [s.toLowerCase(), s])); // "react" → "React" (tag chữ thường của RemoteOK/Remotive)
 function filterTechTags(tags) {
   const out = [];
   for (const raw of tags) {
     const tag = canonSkill(decodeUnicodeEscapes(raw));
-    if (CATALOG_KEYS.has(tag.toLowerCase()) || TECH_EXTRA.has(tag.toLowerCase())) out.push(tag);
+    const key = tag.toLowerCase();
+    if (CATALOG_BY_LOWER.has(key)) out.push(CATALOG_BY_LOWER.get(key));
+    else if (TECH_EXTRA.has(key)) out.push(tag);
   }
   return [...new Set(out)];
 }
@@ -343,6 +345,63 @@ async function fetchTopDev(keyword) {
   }
   return jobs;
 }
+
+// ---------------- Tầng 1: nguồn remote công khai, không key, không scrape ----------------
+// WWR RSS (5 feed programming/devops, 1 tin có thể nằm nhiều feed → dedupe theo link),
+// Remotive API (keyless), RemoteOK API (cần User-Agent; phần tử đầu là thông báo pháp lý,
+// ToS yêu cầu link ngược về remoteok.com — thẻ job đã link thẳng source_url).
+// Skill lấy bằng catalog từ mô tả (WWR/Remotive) hoặc tags (RemoteOK), nên nhiều tin < 3 skill → trần 69.
+const REMOTE_UA = "JobPilotEdge/1.0 (+https://jobpilot-edge.pages.dev)";
+const WWR_FEEDS = ["remote-programming-jobs", "remote-full-stack-programming-jobs", "remote-back-end-programming-jobs", "remote-front-end-programming-jobs", "remote-devops-sysadmin-jobs"];
+async function fetchJSON(url, timeoutMs = 20000) {
+  const res = await fetch(url, { headers: { "User-Agent": REMOTE_UA, Accept: "application/json" }, signal: AbortSignal.timeout(timeoutMs) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+const xmlTag = (s, tag) => { const m = s.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`)); return m ? m[1].trim() : ""; };
+const toISODate = (s) => { const t = Date.parse(s || ""); return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10); };
+async function fetchWWR() {
+  const seen = new Set(), jobs = [];
+  for (const feed of WWR_FEEDS) {
+    const res = await fetch(`https://weworkremotely.com/categories/${feed}.rss`, { headers: { "User-Agent": REMOTE_UA }, signal: AbortSignal.timeout(20000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${feed}`);
+    const xml = await res.text();
+    for (const item of xml.split("<item>").slice(1)) {
+      const link = xmlTag(item, "link");
+      if (!link || seen.has(link)) continue;
+      seen.add(link);
+      const rawTitle = stripTags(xmlTag(item, "title"));          // "Company: Title"
+      const i = rawTitle.indexOf(": ");
+      const desc = stripTags(stripTags(xmlTag(item, "description"))); // entity-escaped HTML → 2 lượt
+      jobs.push({
+        title: i > 0 ? rawTitle.slice(i + 2) : rawTitle, company: i > 0 ? rawTitle.slice(0, i) : "",
+        location: `Remote (${xmlTag(item, "region") || "Anywhere"})`, url: link,
+        postedAt: toISODate(xmlTag(item, "pubDate")), salaryText: null,
+        skills: extractSkillsFromText(desc),
+      });
+    }
+  }
+  return jobs;
+}
+async function fetchRemotive() {
+  const d = await fetchJSON("https://remotive.com/api/remote-jobs?category=software-dev&limit=200");
+  return (d.jobs || []).map((j) => ({
+    title: j.title, company: j.company_name, location: `Remote (${j.candidate_required_location || "Worldwide"})`,
+    url: j.url, postedAt: toISODate(j.publication_date), salaryText: j.salary || null,
+    skills: [...new Set([...filterTechTags(j.tags || []), ...extractSkillsFromText(stripTags(j.description || ""))])],
+  }));
+}
+async function fetchRemoteOK() {
+  const d = await fetchJSON("https://remoteok.com/api");
+  return (Array.isArray(d) ? d : []).filter((j) => j && j.position && j.url).map((j) => ({
+    title: j.position, company: j.company || "", location: `Remote (${j.location || "Worldwide"})`,
+    url: j.url, postedAt: toISODate(j.date),
+    salaryText: j.salary_min && j.salary_max ? `$${Math.round(j.salary_min / 1e3)}k - $${Math.round(j.salary_max / 1e3)}k/năm` : null,
+    skills: filterTechTags(j.tags || []),
+  }));
+}
+const REMOTE_FETCHERS = { wwr: fetchWWR, remotive: fetchRemotive, remoteok: fetchRemoteOK };
+const REMOTE_NAMES = { wwr: "We Work Remotely", remotive: "Remotive", remoteok: "Remote OK" };
 
 // ---------------- jobs: insert + score ----------------
 async function upsertJob(env, sourceId, job) {
@@ -500,6 +559,12 @@ async function ensureSources(env) {
     ).bind(`src-${type}`, type, type === "topdev" ? "TopDev" : "ITviec",
       JSON.stringify({ keywords: DEFAULT_KEYWORDS }), now()).run();
   }
+  // Nguồn remote không có keyword: 1 message ingest mỗi lượt cron.
+  for (const type of Object.keys(REMOTE_FETCHERS)) {
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO sources (id, type, name, config, is_enabled, created_at) VALUES (?, ?, ?, ?, 1, ?)"
+    ).bind(`src-${type}`, type, REMOTE_NAMES[type], JSON.stringify({ keywords: ["*"] }), now()).run();
+  }
 }
 // Cổng liên quan theo tiêu đề: loại tin phi kỹ thuật (HR/Sales/Kế toán...)
 // mà tìm kiếm từ khoá của TopDev hay trả lẫn vào.
@@ -516,7 +581,8 @@ async function runIngestSource(env, sourceType, keyword) {
   if (!source) return { error: "source_missing" };
   let jobs = [], status = "ok", error = null;
   try {
-    jobs = sourceType === "topdev" ? await fetchTopDev(keyword) : await fetchITviec(keyword);
+    jobs = REMOTE_FETCHERS[sourceType] ? await REMOTE_FETCHERS[sourceType]()
+      : sourceType === "topdev" ? await fetchTopDev(keyword) : await fetchITviec(keyword);
   } catch (e) {
     status = "error"; error = e.message;
   }
@@ -976,7 +1042,7 @@ export default {
     if (path === "/api/admin/ingest/run" && request.method === "POST") {
       await ensureSources(env);
       const b = await readBody(request);
-      const types = Array.isArray(b.sources) && b.sources.length ? b.sources : ["topdev", "itviec"];
+      const types = Array.isArray(b.sources) && b.sources.length ? b.sources : ["topdev", "itviec", ...Object.keys(REMOTE_FETCHERS)];
       let queued = 0;
       for (const t of types) {
         const src = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(t).first();

@@ -1419,7 +1419,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 <section class="lp-sec" id="lp-faq">
     <h2 data-en="Frequently asked questions">Câu hỏi thường gặp</h2>
     <div class="lp-faq">
-      <details class="lp-card"><summary data-en="Where do the jobs come from?">Job lấy từ đâu?</summary><p data-en="From ITviec and TopDev, rescanned every 30 minutes. Duplicates and non-tech postings are filtered out before they reach you. You can also paste a link from any other site.">Từ ITviec và TopDev, quét lại mỗi 30 phút. Tin trùng và tin không thuộc ngành tech bị lọc trước khi tới bạn. Bạn cũng dán được link từ trang khác.</p></details>
+      <details class="lp-card"><summary data-en="Where do the jobs come from?">Job lấy từ đâu?</summary><p data-en="From ITviec and TopDev for Vietnam, plus three public remote boards (We Work Remotely, Remotive, Remote OK), rescanned every 30 minutes. Duplicates and non-tech postings are filtered out before they reach you. You can also paste a link from any other site.">Từ ITviec và TopDev cho thị trường Việt Nam, cộng ba bảng việc remote công khai (We Work Remotely, Remotive, Remote OK), quét lại mỗi 30 phút. Tin trùng và tin không thuộc ngành tech bị lọc trước khi tới bạn. Bạn cũng dán được link từ trang khác.</p></details>
       <details class="lp-card"><summary data-en="Where is my CV stored, and who can see it?">CV của tôi được lưu ở đâu, ai xem được?</summary><p data-en="Your CV is only used to extract skills for your profile and is stored on Cloudflare infrastructure. JobPilot never sends it to any employer.">CV chỉ dùng để trích kỹ năng cho hồ sơ của bạn, lưu trên hạ tầng Cloudflare. JobPilot không gửi CV cho nhà tuyển dụng nào.</p></details>
       <details class="lp-card"><summary data-en="Does it cost anything?">Có mất phí không?</summary><p data-en="No. JobPilot runs almost entirely on Cloudflare's free tier. Legitimate employers never charge candidates either.">Không. JobPilot chạy gần như hoàn toàn trên gói miễn phí của Cloudflare. Nhà tuyển dụng thật cũng không bao giờ thu phí ứng viên.</p></details>
       <details class="lp-card"><summary data-en="Will JobPilot apply on my behalf?">JobPilot có tự nộp đơn giúp tôi không?</summary><p data-en="No, and it never will. Mass applying gets you treated as spam by employers. JobPilot helps you pick the right postings; you apply yourself.">Không, và sẽ không. Nộp hàng loạt làm nhà tuyển dụng coi là spam. JobPilot giúp bạn chọn đúng tin rồi tự nộp.</p></details>
@@ -1523,7 +1523,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <!-- ===== TAB: JOBS ===== -->
       <section id="tab-jobs">
         <h2 class="page-title" data-en='Jobs <span class="gray" id="jobsCount"></span>'>Việc làm <span class="gray" id="jobsCount"></span></h2>
-        <p class="page-sub" data-en="Jobs from ITviec and TopDev, scored against your profile. The higher the score, the closer to your CV.">Tin từ ITviec và TopDev, chấm theo hồ sơ của bạn. Điểm càng cao, càng gần với CV.</p>
+        <p class="page-sub" data-en="Jobs from ITviec, TopDev and remote boards (We Work Remotely, Remotive, Remote OK), scored against your profile. The higher the score, the closer to your CV.">Tin từ ITviec, TopDev và các bảng việc remote (We Work Remotely, Remotive, Remote OK), chấm theo hồ sơ của bạn. Điểm càng cao, càng gần với CV.</p>
 
         <div id="digestStrip" class="digest"></div>
 
@@ -1539,6 +1539,9 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             <option value="" data-en="Any source">Mọi nguồn</option>
             <option value="topdev">TopDev</option>
             <option value="itviec">ITviec</option>
+            <option value="wwr">We Work Remotely</option>
+            <option value="remotive">Remotive</option>
+            <option value="remoteok">Remote OK</option>
           </select>
           <label class="check"><input id="filterFlags" type="checkbox"> <span data-en="Hide flagged">Ẩn tin có cờ</span></label>
           <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )" data-en-placeholder="Search title, company…  ( / )"></div>
@@ -1784,6 +1787,9 @@ function srcLabel(src){
   if (src.includes("topdev")) return "TopDev";
   if (src.includes("itviec")) return "ITviec";
   if (src.includes("manual")) return t("Thủ công");
+  if (src.includes("wwr")) return "We Work Remotely";
+  if (src.includes("remotive")) return "Remotive";
+  if (src.includes("remoteok")) return "Remote OK";
   return src;
 }
 
