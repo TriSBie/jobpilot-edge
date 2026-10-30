@@ -623,6 +623,8 @@ export default {
         { skill: "Java", weight: 5 }, { skill: "Spring Boot", weight: 5 }, { skill: "PostgreSQL", weight: 3 },
         { skill: "Docker", weight: 3 }, { skill: "REST APIs", weight: 3 }, { skill: "Git", weight: 2 },
       ];
+      // Lọc chặt hơn titleGate: "kỹ sư"/"công nghệ" cho lọt cả tin xây dựng (T-07 chưa sửa).
+      const DEV_TITLE = /(developer|engineer|backend|back-end|fullstack|full-stack|software|programmer|lập trình|devops|frontend|front-end)/i;
       const scored = results.map((j) => {
         const job = { ...j, skills: JSON.parse(j.skills || "[]"), jd_text: "" };
         const s = scoreJob(sampleProfile, sampleSkills, job);
@@ -633,7 +635,9 @@ export default {
           rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level },
           matched: s.matched, missing: s.missing.slice(0, 6), capped: s.jobSkills.length < 3,
         };
-      }).sort((a, b) => b.score - a.score);
+      }).filter((x) => x.matched.length > 0 && DEV_TITLE.test(x.title))
+        // Ưu tiên tin đúng cấp bậc hồ sơ mẫu, rồi mới tới điểm (chỉ là thứ tự hiển thị).
+        .sort((a, b) => (b.fit.level - a.fit.level) || (b.score - a.score));
       const stats = await env.DB.prepare(
         `SELECT (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED}) AS jobs,
                 (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED} AND first_seen_at > ?) AS new_24h,
