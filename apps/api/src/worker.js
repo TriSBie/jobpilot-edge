@@ -33,9 +33,32 @@ export class UserHub {
 // ---------------- utils ----------------
 const CORS = {
   "access-control-allow-origin": "*",
-  "access-control-allow-headers": "authorization, content-type",
+  "access-control-allow-headers": "authorization, content-type, accept-language",
   "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
 };
+// i18n: tiếng Việt là nguồn; chỉ dịch chuỗi trả về client theo Accept-Language.
+// ponytail: chỉ có "en"; thêm ngôn ngữ thì đổi EN thành map theo lang.
+const EN = {
+  "Job không ghi địa điểm": "Job has no location",
+  "Địa điểm khớp với hồ sơ": "Location matches your profile",
+  "Bạn chấp nhận Remote, job này làm onsite": "You accept Remote; this job is onsite",
+  "Địa điểm không khớp với hồ sơ": "Location does not match your profile",
+  "Cấp bậc phù hợp": "Level fits",
+  "Job này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
+  "Job này thiên về junior hơn cấp bậc của bạn": "This job leans more junior than your level",
+  "Tin cũ %s ngày": "Posted %s days ago",
+  "Đăng trùng / đăng lại": "Duplicate / reposted",
+  "JD nhồi %s kỹ năng": "JD lists %s skills",
+  "Backend Java · 3 năm · Hồ Chí Minh / Remote": "Backend Java · 3 yrs · Ho Chi Minh City / Remote",
+  "%s strong match mới, %s việc cần follow-up": "%s new strong matches, %s items to follow up",
+  "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính.":
+    "Computed from salaries stated in collected job posts; 'Negotiable' posts are excluded. Filtered by job title only, so this is an estimate.",
+};
+function tr(lang, vi, ...args) {
+  let s = (lang === "en" && EN[vi]) || vi;
+  for (const a of args) s = s.replace("%s", () => a);
+  return s;
+}
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -511,7 +534,7 @@ async function runIngestSource(env, sourceType, keyword) {
 }
 
 // ---------------- digest ----------------
-async function buildDigest(env, user) {
+async function buildDigest(env, user, lang = "vi") {
   const since = now() - 86400;
   const { results: profiles } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1").bind(user.id).all();
   const strong = [], followUps = [];
@@ -533,7 +556,9 @@ async function buildDigest(env, user) {
     `INSERT INTO digests (id, user_id, date, summary, status, sent_at) VALUES (?, ?, ?, ?, 'in_app', ?)
      ON CONFLICT(user_id, date) DO UPDATE SET summary = excluded.summary`
   ).bind(uid(), user.id, dateStr, summary, now()).run();
-  return { date: dateStr, strong_count: strong.length, strong, follow_ups: followUps, summary };
+  // DB luôn lưu vi; chỉ bản trả về theo Accept-Language.
+  return { date: dateStr, strong_count: strong.length, strong, follow_ups: followUps,
+    summary: tr(lang, "%s strong match mới, %s việc cần follow-up", strong.length, followUps.length) };
 }
 
 // ---------------- auth: mật khẩu (PBKDF2-SHA256, WebCrypto) ----------------
@@ -603,6 +628,7 @@ export default {
     try {
     const url = new URL(request.url);
     const path = url.pathname;
+    const lang = /^en/i.test(request.headers.get("accept-language") || "") ? "en" : "vi";
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
     if (path === "/api/health") {
@@ -644,7 +670,7 @@ export default {
                 (SELECT MAX(last_run_at) FROM sources) AS last_scan`
       ).bind(now() - 86400).first();
       const res = json({
-        profile: { label: "Backend Java · 3 năm · Hồ Chí Minh / Remote", skills: sampleSkills },
+        profile: { label: tr(lang, "Backend Java · 3 năm · Hồ Chí Minh / Remote"), skills: sampleSkills },
         jobs: scored.slice(0, 5), stats,
       });
       res.headers.set("cache-control", "public, max-age=300");
@@ -821,13 +847,14 @@ export default {
         const flags = [];
         const refTs = r.posted_at || r.first_seen_at;
         const ageDays = refTs ? Math.floor((now() - refTs) / 86400) : null;
-        if (ageDays !== null && ageDays > 30) flags.push({ type: "stale", label: `Tin cũ ${ageDays} ngày` });
-        if ((keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r))) flags.push({ type: "duplicate", label: "Đăng trùng / đăng lại" });
-        if (skillsArr.length > 12) flags.push({ type: "bloated", label: `JD nhồi ${skillsArr.length} kỹ năng` });
+        if (ageDays !== null && ageDays > 30) flags.push({ type: "stale", label: tr(lang, "Tin cũ %s ngày", ageDays) });
+        if ((keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r))) flags.push({ type: "duplicate", label: tr(lang, "Đăng trùng / đăng lại") });
+        if (skillsArr.length > 12) flags.push({ type: "bloated", label: tr(lang, "JD nhồi %s kỹ năng", skillsArr.length) });
         let fit = null, ruleDetail = null;
         const hasMatch = r.final_score !== null && r.final_score !== undefined;
         if (prof && hasMatch) {
           fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: r.jd_text || "" });
+          fit.locationWhy = tr(lang, fit.locationWhy); fit.levelWhy = tr(lang, fit.levelWhy);
           const matched = JSON.parse(r.matched_skills || "[]");
           const missing = JSON.parse(r.missing_skills || "[]");
           let totalW = 0;
@@ -963,7 +990,7 @@ export default {
       return json(results);
     }
     if (path === "/api/digest/today") {
-      return json(await buildDigest(env, user));
+      return json(await buildDigest(env, user, lang));
     }
     if (path === "/api/notifications") {
       const { results } = await env.DB.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").bind(user.id).all();
@@ -993,7 +1020,7 @@ export default {
         median_min: pct(mins, 0.5), median_max: pct(maxs, 0.5),
         p25_mid: pct(mids, 0.25), median_mid: pct(mids, 0.5), p75_mid: pct(mids, 0.75),
         filters: { role: role || null, level: level || null, location: loc || null },
-        note: "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính.",
+        note: tr(lang, "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính."),
       });
     }
 
