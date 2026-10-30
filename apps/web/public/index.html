@@ -287,6 +287,8 @@ html[data-theme="dark"]{
   .inline-row{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
   .inline-row .grow{flex:1;min-width:150px}
   #cvStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
+  #tab-profile .draft-field{border-color:var(--brand)}
+  #cvDraftStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
 
   /* ---------- toasts ---------- */
   #toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;flex-direction:column;gap:.5rem;max-width:min(92vw,380px)}
@@ -654,6 +656,14 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
     .tabbar-row .tab.active{background:var(--brand);color:var(--brand-ink);border-color:transparent}
     .tabbar-row .alert-badge{position:absolute;top:-2px;right:0;background:var(--pop);color:var(--pop-ink);font-size:10px;padding:1px 6px;border-radius:var(--r-pill);margin-left:0;min-width:0;height:auto}
     .app{padding-bottom:calc(96px + env(safe-area-inset-bottom))}   /* tab bar cố định không che nội dung cuối */
+  }
+
+  /* ===== ICON SYSTEM: SVG sprite, layout B (nút) + layout C (tab bar mobile) ===== */
+  .tab .ic-svg{width:20px;height:20px;flex:none}
+  .tab.active .ic-svg{color:var(--accent-2)}
+  .toolbar .btn .ic-svg{width:20px;height:20px;flex:none}
+  @media (max-width:640px){
+    .tabbar-row .tab{flex-direction:column;gap:2px}
   }
 
   /* ===== SIGNAL BƯỚC 4 — panel Cần chú ý + toast + chỉ báo chấm lại ===== */
@@ -1184,6 +1194,82 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- JobPilot Edge icon system. 24-grid, stroke 2.5, round caps/joins, currentColor.
+       15 items = 16 symbols (chevron counts as one item, two symbols). -->
+  <symbol id="jobs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="7" width="18" height="13" rx="2"/>
+    <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+    <path d="M3 13h18"/>
+  </symbol>
+  <symbol id="kanban" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="5" height="16" rx="1.5"/>
+    <rect x="9.5" y="4" width="5" height="16" rx="1.5"/>
+    <rect x="16" y="4" width="5" height="16" rx="1.5"/>
+    <path d="M4 8h3M10.5 8h3M17 8h3"/>
+  </symbol>
+  <symbol id="profile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 21a8 8 0 0 1 16 0"/>
+  </symbol>
+  <symbol id="brief" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 18a7 7 0 0 1 14 0"/>
+    <path d="M2 18h20"/>
+    <path d="M12 5v2.5M6.3 9.3L4.6 7.6M17.7 9.3l1.7-1.7"/>
+  </symbol>
+  <symbol id="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <path d="M21 21l-4.35-4.35"/>
+  </symbol>
+  <symbol id="filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 5h16l-5 8v4l-3 3-3-3v-4z"/>
+  </symbol>
+  <symbol id="bookmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 4H6v16l6-4.5L18 20V4z"/>
+  </symbol>
+  <symbol id="apply" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 2L15 22l-4-9-9-4 20-7z"/>
+    <path d="M11 13L22 2"/>
+  </symbol>
+  <symbol id="interview" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 6h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7l-4 4V8a2 2 0 0 1 2-2z"/>
+    <path d="M21 4h-5a2 2 0 0 0-2 2v3h4l3 3V6a2 2 0 0 0 2-2z"/>
+  </symbol>
+  <symbol id="offer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="9" r="6"/>
+    <path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/>
+    <path d="M9.5 9l2 2 3.5-4"/>
+  </symbol>
+  <symbol id="reject" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M9 9l6 6M15 9l-6 6"/>
+  </symbol>
+  <symbol id="archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 8h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/>
+    <path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+    <path d="M10 12h4"/>
+  </symbol>
+  <symbol id="scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+    <path d="M21 3v5h-5"/>
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+    <path d="M3 21v-5h5"/>
+  </symbol>
+  <symbol id="salary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="7" width="18" height="10" rx="2"/>
+    <circle cx="12" cy="12" r="2.5"/>
+    <path d="M6.5 9.5h.01M17.5 14.5h.01"/>
+  </symbol>
+  <!-- chevron-left / chevron-right: the LIVE app chevrons, geometrically scaled x2
+       from the 12-grid paths (M8 2 L3 6 L8 10 / M4 2 L9 6 L4 10) into the 24 grid.
+       Stroke stays 2.5 to match this system. -->
+  <symbol id="chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 4L6 12l10 8"/>
+  </symbol>
+  <symbol id="chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 4l10 8-10 8"/>
+  </symbol>
+</svg>
 <div id="toasts"></div>
 
 <!-- ================= LANDING ================= -->
@@ -1419,9 +1505,9 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <button id="logoutBtn" class="btn sm ghost" type="button">Đăng xuất</button>
     </div>
     <nav class="tabbar-row">
-      <button class="tab active" data-tab="jobs"><span class="ic">▤</span>Việc làm</button>
-      <button class="tab" data-tab="kanban"><span class="ic">▦</span>Kanban<span id="kanbanAlertBadge" class="alert-badge hidden">0</span></button>
-      <button class="tab" data-tab="profile"><span class="ic">◉</span>Hồ sơ &amp; CV</button>
+      <button class="tab active" data-tab="jobs"><svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Việc làm</button>
+      <button class="tab" data-tab="kanban"><svg class="ic-svg" aria-hidden="true"><use href="#kanban"/></svg>Kanban<span id="kanbanAlertBadge" class="alert-badge hidden">0</span></button>
+      <button class="tab" data-tab="profile"><svg class="ic-svg" aria-hidden="true"><use href="#profile"/></svg>Hồ sơ &amp; CV</button>
     </nav>
 
     <main>
@@ -1433,6 +1519,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         <div id="digestStrip" class="digest"></div>
 
         <div class="toolbar filters">
+          <select class="input" style="width:auto;min-width:0;flex:1 1 140px;max-width:190px" id="jobsProfileSelect" title="Chuyển hồ sơ"></select>
           <select class="input" style="width:auto;min-width:0;flex:1 1 140px;max-width:170px" id="filterTier" title="Lọc theo độ khớp">
             <option value="">Mọi mức khớp</option>
             <option value="strong">Khớp mạnh (strong)</option>
@@ -1447,8 +1534,8 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <label class="check"><input id="filterFlags" type="checkbox"> Ẩn tin có cờ</label>
           <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
           <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText">Đang chấm lại…</span></span>
-          <button id="refreshJobsBtn" class="btn sm" type="button">Làm mới</button>
-          <button id="scanBtn" class="btn sm p" type="button">Quét job mới</button>
+          <button id="refreshJobsBtn" class="btn sm" type="button"><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Làm mới</button>
+          <button id="scanBtn" class="btn sm p" type="button"><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Quét job mới</button>
         </div>
 
         <div id="jobsAlertStrip"></div>
@@ -1473,6 +1560,21 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <section id="tab-profile" class="hidden">
         <h2 class="page-title">Hồ sơ &amp; CV</h2>
         <p class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
+          <section class="card-p">
+            <h3>Tạo hồ sơ từ CV</h3>
+            <p class="muted small" style="margin:.2rem 0 .8rem">Chưa có hồ sơ? Tải CV lên, hệ thống điền sẵn form bên dưới dạng nháp để bạn kiểm tra rồi mới lưu. Phân tích ngay trên trình duyệt, không gửi CV đi đâu. Lương không suy ra từ CV, bạn tự điền.</p>
+            <label for="cvDraftFile">Tải CV (PDF, TXT hoặc MD)</label>
+            <input id="cvDraftFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
+            <button id="cvDraftBtn" class="btn" type="button" style="margin-top:.9rem">Điền hồ sơ từ CV</button>
+            <div id="cvDraftStatus"></div>
+            <div id="cvDraftNote" class="bench-note hidden" style="margin-top:1rem"></div>
+            <div id="cvDraftSkillsWrap" class="hidden" style="margin-top:1rem">
+              <label>Kỹ năng suy ra từ CV: tích chọn &amp; đặt trọng số (1–5)</label>
+              <div id="cvDraftList"></div>
+              <button id="cvDraftConfirmBtn" class="btn p" type="button" style="margin-top:.9rem">Lưu kỹ năng đã chọn</button>
+              <p class="muted small" style="margin-top:.6rem">Nếu chưa có hồ sơ, bấm “Lưu hồ sơ” ở khối Thông tin hồ sơ bên dưới trước, rồi quay lại bấm nút này.</p>
+            </div>
+          </section>
         <div class="pf-grid">
           <section class="card-p">
             <h3>Thông tin hồ sơ</h3>
@@ -1513,7 +1615,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
               <label for="newProfileName">Tạo hồ sơ mới</label>
               <div class="inline-row">
                 <div class="grow"><input id="newProfileName" class="input" type="text" placeholder="Tên hồ sơ mới…"></div>
-                <button id="createProfileBtn" class="btn" type="button">Tạo hồ sơ</button>
+                <button id="createProfileBtn" class="btn" type="button">Tạo hồ sơ</button> <button id="cloneProfileBtn" class="btn" type="button">Nhân bản hồ sơ hiện tại</button>
               </div>
             </div>
           </section>
@@ -1606,6 +1708,7 @@ const state = {
   expandedChips: new Set(),
   applications: [],
   suggested: [],
+  cvDraftSkills: [],
   filters: { tier: "", source: "", q: "", hideFlagged: false },
 };
 
@@ -2104,21 +2207,16 @@ function renderProfileSelect(){
   if (!state.profiles.length) {
     sel.innerHTML = '<option value="">(Chưa có hồ sơ)</option>';
     sel.disabled = true;
+    syncJobsProfileSelect();
     return;
   }
   sel.disabled = false;
   sel.innerHTML = state.profiles.map(p =>
     `<option value="${esc(p.id)}" ${p.id === state.profileId ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+  syncJobsProfileSelect();
 }
 $("#profileSelect").addEventListener("change", async (ev) => {
-  state.profileId = ev.target.value;
-  localStorage.setItem("jp_profile", state.profileId);
-  jobsFirstRender = true; kanbanFirstLoad = true;
-  fillProfileForm();
-  renderCurrentSkills();
-  state.suggested = [];
-  $("#suggestedWrap").classList.add("hidden");
-  await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+  await switchProfile(ev.target.value);
 });
 
 async function loadSourceStatus(){
@@ -2221,7 +2319,7 @@ async function loadJobs(){
       <h3 style="margin:.1rem 0 .3rem;font-size:1.15rem">Chưa có gì để chấm. Bắt đầu bằng một hồ sơ.</h3>
       <p class="muted" style="margin:0">Tài khoản mới không có dữ liệu mẫu. Ba việc dưới đây mất khoảng 5 phút.</p>
       <div class="ob-list">
-        <div class="ob-item"><span class="n">1</span><div><b>Tạo hồ sơ</b><span>Vị trí bạn nhắm tới, cấp bậc và nơi muốn làm.</span></div></div>
+        <div class="ob-item"><span class="n">1</span><div><b>Tạo hồ sơ</b><span>Tải CV lên để điền sẵn dạng nháp, hoặc khai vị trí, cấp bậc và khu vực bằng tay.</span></div></div>
         <div class="ob-item"><span class="n">2</span><div><b>Tải CV lên</b><span>JobPilot gợi ý kỹ năng kèm trọng số, bạn duyệt lại rồi mới lưu.</span></div></div>
         <div class="ob-item"><span class="n">3</span><div><b>Xem tin đã chấm</b><span>Tin từ ITviec và TopDev được chấm theo hồ sơ của bạn ngay sau đó.</span></div></div>
       </div>
@@ -2321,6 +2419,10 @@ function renderJobs(){
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${x.label}</option>`).join("")}
           </select>
+          ${state.profiles.length > 1 ? `<select class="input" style="width:170px" data-rescore-for="${esc(job.id)}" title="Chấm lại job này bằng hồ sơ khác">
+            <option value="">Chấm bằng hồ sơ khác…</option>
+            ${state.profiles.filter(x => x.id !== state.profileId).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}
+          </select>` : ""}
           ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
         </div>
       </div>
@@ -2330,6 +2432,9 @@ function renderJobs(){
 
   $$("select[data-stage-for]", box).forEach(sel => {
     sel.addEventListener("change", () => changeJobStage(sel.dataset.stageFor, sel.value, sel));
+  });
+  $$("select[data-rescore-for]", box).forEach(sel => {
+    sel.addEventListener("change", () => { if (sel.value) switchProfile(sel.value); });
   });
 
   $$(".explain-toggle", box).forEach(btn => {
@@ -2421,7 +2526,7 @@ $("#scanBtn").addEventListener("click", async () => {
   } catch (e) {
     toast(e.message, "err");
   } finally {
-    btn.disabled = false; btn.textContent = "Quét job mới";
+    btn.disabled = false; btn.innerHTML = '<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Quét job mới';
   }
 });
 
@@ -2949,7 +3054,7 @@ function renderSuggested(){
   updateSugCount();
 }
 
-async function extractPdfText(file){
+async function extractPdfText(file, statusEl){
   if (!window.pdfjsLib) throw new Error("Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại.");
   window.pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -2960,7 +3065,7 @@ async function extractPdfText(file){
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     text += content.items.map(it => it.str).join(" ") + "\n";
-    $("#cvStatus").textContent = "Đang đọc trang " + i + "/" + pdf.numPages + "...";
+    (statusEl || $("#cvStatus")).textContent = "Đang đọc trang " + i + "/" + pdf.numPages + "...";
   }
   return text;
 }
@@ -3027,6 +3132,267 @@ $("#confirmSkillsBtn").addEventListener("click", async () => {
   } finally {
     btn.disabled = false;
   }
+});
+
+/* ---------------- Tạo hồ sơ từ CV (phân tích ngay trên trình duyệt) ---------------- */
+/* Heuristic minh bạch, không gọi server mới. Mọi field suy ra đều là NHÁP:
+   user kiểm tra rồi bấm "Lưu hồ sơ" mới tạo/lưu hồ sơ thật. Lương không suy ra. */
+const CV_DRAFT_TITLES = ["Backend Developer", "Backend Engineer", "Java Developer", "Java Engineer", "Fullstack Developer", "Full Stack Developer", "Fullstack Engineer", "Software Engineer", "Software Developer", "Frontend Developer", "Frontend Engineer", "DevOps Engineer", "QA Engineer", "Test Engineer", "Data Engineer", "Mobile Developer", "Android Developer", "iOS Developer", "System Engineer", "Web Developer", "Lập trình viên Backend", "Kỹ sư Backend", "Kỹ sư phần mềm"];
+const CV_DRAFT_SKILLS = ["Java", "Spring Boot", "Spring", "Hibernate", "Kafka", "PostgreSQL", "MySQL", "MongoDB", "Redis", "Docker", "Kubernetes", "React", "React Native", "Angular", "Vue", "Node.js", "TypeScript", "JavaScript", "Python", "Go", "AWS", "GCP", "Azure", "Terraform", "Jenkins", "Git", "Microservices", "REST API", "GraphQL", "Elasticsearch", "RabbitMQ", "SQL", "HTML", "CSS", "NestJS", ".NET", "C#", "C++", "Rust", "Flutter", "Kotlin", "Swift", "Android", "iOS", "CI/CD"];
+const CV_DRAFT_CITIES = [
+  { keys: ["hồ chí minh", "ho chi minh", "tp.hcm", "tp hcm", "thành phố hồ chí minh", "sài gòn", "saigon"], name: "Hồ Chí Minh" },
+  { keys: ["hà nội", "ha noi"], name: "Hà Nội" },
+  { keys: ["đà nẵng", "da nang"], name: "Đà Nẵng" },
+  { keys: ["cần thơ", "can tho"], name: "Cần Thơ" },
+  { keys: ["bình dương", "binh duong"], name: "Bình Dương" },
+  { keys: ["đồng nai", "dong nai"], name: "Đồng Nai" },
+  { keys: ["hải phòng", "hai phong"], name: "Hải Phòng" },
+  { keys: ["nha trang"], name: "Nha Trang" },
+  { keys: ["huế", "hue"], name: "Huế" },
+  { keys: ["remote", "từ xa", "tu xa", "làm việc từ xa", "lam viec tu xa"], name: "Remote" },
+];
+
+function parseCvDraft(text){
+  const raw = text || "";
+  const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const TITLE_LINE = /^(curriculum vitae|resume|cv|hồ sơ|hồ sơ xin việc|sơ yếu lý lịch)$/i;
+  const NOT_NAME = /(developer|engineer|lập trình|kỹ sư|profile|email|phone|điện thoại|http|www|\.com|hồ chí minh|ho chi minh|hà nội|ha noi|đà nẵng|da nang|remote)/i;
+  let name = "";
+  for (const ln of lines.slice(0, 5)){
+    if (TITLE_LINE.test(ln)) continue;
+    const cand = ln.split(/[|–—]/)[0].trim();
+    const words = cand.split(/\s+/);
+    if (words.length >= 2 && words.length <= 4 && !/@/.test(cand) && !/\d/.test(cand)
+      && !NOT_NAME.test(cand)
+      && words.every(w => { const c = w[0]; return c === c.toUpperCase() && c !== c.toLowerCase(); })){
+      name = cand; break;
+    }
+  }
+  const low = raw.toLowerCase();
+  const roles = CV_DRAFT_TITLES
+    .map(t => ({ t, i: low.indexOf(t.toLowerCase()) }))
+    .filter(x => x.i >= 0)
+    .sort((a, b) => a.i - b.i)
+    .slice(0, 3)
+    .map(x => x.t);
+  let years = null;
+  const ym = [...raw.matchAll(/(\d+(?:[.,]\d+)?)\s*(?:\+)?\s*(?:năm|years?)\b/gi)].map(m => parseFloat(m[1].replace(",", ".")));
+  if (ym.length) years = Math.max(...ym);
+  else {
+    const mm = [...raw.matchAll(/(\d+)\s*tháng\b/gi)].map(m => Number(m[1]));
+    if (mm.length) years = Math.max(...mm) / 12;
+  }
+  let level = "";
+  if (years !== null){
+    if (years < 1) level = "fresher";
+    else if (years < 2) level = "junior";
+    else if (years < 5) level = "middle";
+    else level = "senior";
+  }
+  const locations = [];
+  for (const c of CV_DRAFT_CITIES){
+    if (c.keys.some(k => low.includes(k)) && !locations.includes(c.name)) locations.push(c.name);
+    if (locations.length >= 3) break;
+  }
+  const skills = [];
+  for (const s of CV_DRAFT_SKILLS){
+    const pat = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (new RegExp("(?<!\\w)" + pat + "(?!\\w)", "i").test(raw)) skills.push({ skill: s, weight: 3 });
+  }
+  return { name, roles, level, years, locations, skills };
+}
+
+function fmtDraftYears(y){
+  if (y === null || y === undefined) return "";
+  if (y < 1) return Math.max(1, Math.round(y * 12)) + " tháng";
+  return (Math.round(y * 10) / 10) + " năm";
+}
+
+function markDraftField(el){
+  if (!el) return;
+  el.classList.add("draft-field");
+  const clear = () => el.classList.remove("draft-field");
+  el.addEventListener("input", clear, { once: true });
+  el.addEventListener("change", clear, { once: true });
+}
+
+function clearDraftMarks(){
+  $$(".draft-field").forEach(el => el.classList.remove("draft-field"));
+  const note = $("#cvDraftNote");
+  if (note) note.classList.add("hidden");
+}
+
+function fillDraftForm(d){
+  clearDraftMarks();
+  const got = [], missing = [];
+  if (d.name){ $("#pfName").value = d.name; markDraftField($("#pfName")); got.push("tên “" + d.name + "”"); }
+  else missing.push("tên");
+  if (d.roles.length){ $("#pfRoles").value = d.roles.join(", "); markDraftField($("#pfRoles")); got.push("vị trí “" + d.roles.join(", ") + "”"); }
+  else missing.push("vị trí");
+  const LV = { fresher: "Fresher", junior: "Junior", middle: "Middle", senior: "Senior" };
+  if (d.level){ $("#pfLevel").value = d.level; markDraftField($("#pfLevel")); got.push("cấp bậc " + (LV[d.level] || d.level) + (d.years !== null ? " (suy từ " + fmtDraftYears(d.years) + " kinh nghiệm)" : "")); }
+  else missing.push("cấp bậc");
+  if (d.locations.length){
+    const locs = d.locations.map(l => AREA_PRESETS.find(x => normArea(x) === normArea(l)) || l);
+    pfAreas = new Set(locs);
+    pfAreaOpts = [...new Set(AREA_PRESETS.concat(locs))];
+    renderAreaChips();
+    markDraftField($("#pfAreaChips"));
+    got.push("khu vực “" + locs.join(", ") + "”");
+  } else missing.push("khu vực");
+  missing.push("lương (không suy ra từ CV, bạn tự điền)");
+  const note = $("#cvDraftNote");
+  note.innerHTML = "<b>Đã điền nháp từ CV, chưa lưu gì cả.</b> " +
+    (got.length ? "Suy ra được: " + got.join("; ") + ". " : "") +
+    "Chưa suy ra được: " + missing.join("; ") + ". " +
+    (d.skills.length ? "Kỹ năng gợi ý ở bên dưới: tích chọn, rồi lưu sau khi đã lưu hồ sơ." : "Không tìm thấy kỹ năng nào trong danh sách nhận diện, bạn thêm tay ở khối Kỹ năng.") +
+    " Kiểm tra lại rồi bấm “Lưu hồ sơ”.";
+  note.classList.remove("hidden");
+}
+
+function weightOptions(selected){
+  let out = "";
+  for (let i = 1; i <= 5; i++) out += `<option value="${i}" ${i === Number(selected) ? "selected" : ""}>${i}</option>`;
+  return out;
+}
+
+function renderDraftSkills(){
+  const wrap = $("#cvDraftSkillsWrap"), list = $("#cvDraftList");
+  if (!state.cvDraftSkills.length){ wrap.classList.add("hidden"); return; }
+  wrap.classList.remove("hidden");
+  list.innerHTML = state.cvDraftSkills.map((s, i) =>
+    `<div class="skill-row">
+       <input type="checkbox" id="draft-sug-${i}" checked>
+       <label class="nm" for="draft-sug-${i}" style="margin:0;color:var(--text)">${esc(s.skill)}</label>
+       <select id="draft-sugw-${i}">${weightOptions(s.weight || 3)}</select>
+     </div>`).join("");
+}
+
+$("#cvDraftBtn").addEventListener("click", async () => {
+  const input = $("#cvDraftFile");
+  const file = input.files && input.files[0];
+  if (!file){ toast("Hãy chọn file CV trước đã.", "err"); return; }
+  const btn = $("#cvDraftBtn"); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang phân tích...';
+  $("#cvDraftStatus").textContent = "Đang trích xuất văn bản...";
+  try {
+    let text;
+    const fname = file.name.toLowerCase();
+    if (fname.endsWith(".pdf") || file.type === "application/pdf") text = await extractPdfText(file, $("#cvDraftStatus"));
+    else text = await file.text();
+    text = (text || "").trim();
+    if (!text) throw new Error("Không trích xuất được nội dung từ file này.");
+    $("#cvDraftStatus").textContent = "Đã đọc " + text.length.toLocaleString("vi-VN") + " ký tự. Đang suy ra hồ sơ...";
+    const d = parseCvDraft(text);
+    state.cvDraftSkills = d.skills;
+    fillDraftForm(d);
+    renderDraftSkills();
+    toast("Đã điền nháp hồ sơ từ CV, kiểm tra lại rồi bấm Lưu hồ sơ.", "ok");
+  } catch (e){
+    $("#cvDraftStatus").textContent = "";
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "Điền hồ sơ từ CV";
+  }
+});
+
+$("#cvDraftConfirmBtn").addEventListener("click", async () => {
+  const p = currentProfile();
+  if (!p){ toast("Chưa có hồ sơ, bấm Lưu hồ sơ trước, rồi quay lại bấm nút này.", "err"); return; }
+  const chosen = [];
+  (state.cvDraftSkills || []).forEach((s, i) => {
+    const cb = $("#draft-sug-" + i), w = $("#draft-sugw-" + i);
+    if (cb && cb.checked) chosen.push({ skill: s.skill, weight: w ? Number(w.value) : 3 });
+  });
+  if (!chosen.length){ toast("Chưa chọn kỹ năng nào.", "err"); return; }
+  const existing = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
+  const seen = new Set(existing.map(s => s.skill.toLowerCase()));
+  const merged = existing.slice();
+  let added = 0;
+  chosen.forEach(c => {
+    if (!seen.has(c.skill.toLowerCase())){ seen.add(c.skill.toLowerCase()); merged.push(c); added++; }
+  });
+  if (!added){ toast("Các kỹ năng đã chọn đều đã có trong hồ sơ.", "err"); return; }
+  const btn = $("#cvDraftConfirmBtn"); btn.disabled = true;
+  try {
+    await saveSkills(p, merged, "Đã lưu " + added + " kỹ năng mới vào hồ sơ.");
+    state.cvDraftSkills = [];
+    $("#cvDraftSkillsWrap").classList.add("hidden");
+    await loadJobs();
+  } catch (e){ toast(e.message, "err"); }
+  finally { btn.disabled = false; }
+});
+
+/* Khi user bấm Lưu hồ sơ, bản nháp đã được chốt, gỡ dấu nháp khỏi form. */
+$("#profileForm").addEventListener("submit", () => { clearDraftMarks(); });
+
+/* ---------------- Nhân bản hồ sơ ---------------- */
+$("#cloneProfileBtn").addEventListener("click", async () => {
+  const p = currentProfile();
+  if (!p){ toast("Chưa có hồ sơ để nhân bản.", "err"); return; }
+  const btn = $("#cloneProfileBtn"); btn.disabled = true;
+  try {
+    const created = await api("/api/profiles", { method: "POST", body: JSON.stringify({
+      name: p.name + " (bản sao)",
+      target_roles: p.target_roles || [],
+      level: p.level || null,
+      locations: p.locations || [],
+      salary_min: p.salary_min || null,
+    })});
+    let skillsNote = "";
+    const skills = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
+    if (skills.length){
+      try {
+        await api("/api/profiles/" + encodeURIComponent(created.id) + "/skills/confirm", { method: "POST", body: JSON.stringify({ skills }) });
+        skillsNote = " + " + skills.length + " kỹ năng";
+      } catch (e){ skillsNote = " (chưa copy được kỹ năng: " + e.message + ")"; }
+    }
+    state.profiles.push(created);
+    state.profileId = created.id;
+    localStorage.setItem("jp_profile", created.id);
+    clearDraftMarks();
+    await refreshProfiles();
+    await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+    toast("Đã nhân bản và chuyển sang hồ sơ: " + created.name + skillsNote, "ok");
+  } catch (e){
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------------- Chuyển hồ sơ (dùng chung cho topbar, toolbar Jobs, thẻ job) ---------------- */
+async function switchProfile(id){
+  if (!id || id === state.profileId) return;
+  state.profileId = id;
+  localStorage.setItem("jp_profile", id);
+  jobsFirstRender = true; kanbanFirstLoad = true;
+  clearDraftMarks();
+  state.cvDraftSkills = [];
+  const dw = $("#cvDraftSkillsWrap");
+  if (dw) dw.classList.add("hidden");
+  fillProfileForm();
+  renderCurrentSkills();
+  renderProfileSelect();
+  state.suggested = [];
+  $("#suggestedWrap").classList.add("hidden");
+  await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
+}
+
+function syncJobsProfileSelect(){
+  const sel = $("#jobsProfileSelect");
+  if (!sel) return;
+  if (!state.profiles.length){
+    sel.innerHTML = '<option value="">(Chưa có hồ sơ)</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = state.profiles.map(p =>
+    `<option value="${esc(p.id)}" ${p.id === state.profileId ? "selected" : ""}>${esc(p.name)}</option>`).join("");
+}
+
+$("#jobsProfileSelect").addEventListener("change", async (ev) => {
+  await switchProfile(ev.target.value);
 });
 
 /* ---------------- Command palette (Cmd+K) ---------------- */
