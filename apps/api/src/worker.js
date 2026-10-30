@@ -240,6 +240,8 @@ function stripTags(html) {
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16))) // &#x2F; (HN)
+    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
     .replace(/\s+/g, " ").trim();
 }
 const decodeUnicodeEscapes = (s) => s.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
@@ -400,8 +402,39 @@ async function fetchRemoteOK() {
     skills: filterTechTags(j.tags || []),
   }));
 }
-const REMOTE_FETCHERS = { wwr: fetchWWR, remotive: fetchRemotive, remoteok: fetchRemoteOK };
-const REMOTE_NAMES = { wwr: "We Work Remotely", remotive: "Remotive", remoteok: "Remote OK" };
+// HN "Ask HN: Who is hiring?" (thread tháng) qua Algolia API keyless. Mỗi comment gốc là 1 tin,
+// dòng đầu theo quy ước "Công ty | Vai trò | Nơi | ...". Chỉ lấy tin có vai trò dev và ghi REMOTE
+// (tin onsite ở Mỹ/EU vô nghĩa với dev Việt). Không có URL riêng → link tới comment.
+const HN_DEV = /(engineer|developer|backend|back-end|full.?stack|software|devops|\bsre\b|frontend|front-end|programmer|\bswe\b)/i;
+async function fetchHN() {
+  const s = await fetchJSON("https://hn.algolia.com/api/v1/search_by_date?query=%22Ask%20HN%3A%20Who%20is%20hiring%3F%22&tags=story,author_whoishiring&hitsPerPage=1");
+  const story = (s.hits || [])[0];
+  if (!story) throw new Error("no whoishiring thread");
+  const it = await fetchJSON(`https://hn.algolia.com/api/v1/items/${story.objectID}`, 30000);
+  const jobs = [];
+  for (const c of it.children || []) {
+    if (!c.text) continue;
+    const text = stripTags(String(c.text).replace(/<p>/g, "\n"));
+    const first = text.split("\n")[0];
+    const parts = first.split(/\s*\|\s*/).map((p) => p.replace(/https?:\/\/\S+/g, "").trim()).filter(Boolean);
+    if (parts.length < 2 || !/\bremote\b/i.test(first)) continue;
+    // vai trò: phần ngắn có từ khoá dev (phần dài là mô tả công ty lẫn vào dòng đầu)
+    const role = parts.slice(1).find((p) => p.length <= 90 && HN_DEV.test(p));
+    if (!role) continue;
+    const loc = parts.slice(1).find((p) => /\bremote\b/i.test(p)) || "Remote";
+    const skills = extractSkillsFromText(text);
+    if (!skills.length) continue; // không có tech nào trong catalog → không chấm được, bỏ
+    jobs.push({
+      title: role, company: parts[0].replace(/\s*\(.*?\)\s*/g, " ").trim().slice(0, 80),
+      location: /^remote/i.test(loc) ? loc.slice(0, 60) : `Remote (${loc.slice(0, 50)})`,
+      url: `https://news.ycombinator.com/item?id=${c.id}`, postedAt: toISODate(c.created_at), salaryText: null,
+      skills,
+    });
+  }
+  return jobs;
+}
+const REMOTE_FETCHERS = { wwr: fetchWWR, remotive: fetchRemotive, remoteok: fetchRemoteOK, hn: fetchHN };
+const REMOTE_NAMES = { wwr: "We Work Remotely", remotive: "Remotive", remoteok: "Remote OK", hn: "HN Who's Hiring" };
 
 // ---------------- jobs: insert + score ----------------
 async function upsertJob(env, sourceId, job) {
