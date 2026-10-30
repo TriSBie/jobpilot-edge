@@ -2272,7 +2272,7 @@ function renderJobs(){
   box.classList.toggle("no-anim", !firstJobs);
   const cnt = $("#jobsCount");
   const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
-  if (cnt) cnt.textContent = list.length ? `— ${list.length} job đang theo dõi` : "";
+  if (cnt) cnt.textContent = list.length ? `${list.length} tin` : "";
   if (!list.length) {
     box.innerHTML = '<div class="empty">Chưa có job nào khớp bộ lọc. ' + (state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     return;
