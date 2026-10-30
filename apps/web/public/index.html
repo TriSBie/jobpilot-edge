@@ -269,14 +269,6 @@ html[data-theme="dark"]{
   .card-p h3{margin:.1rem 0 1rem;font-size:1.05rem;font-weight:600;letter-spacing:-.01em}
   .card-p h3 .gray{color:var(--faint);font-weight:500}
   .field{margin-top:.95rem} .field:first-of-type{margin-top:0}
-  .skill-row{
-    display:flex;align-items:center;gap:.6rem;padding:.5rem .2rem;
-    border-top:1px solid rgba(var(--ov),.05);font-size:.92rem;
-  }
-  .skill-row:first-child{border-top:none}
-  .skill-row .nm{font-weight:500;flex:1}
-  .skill-row input[type=checkbox]{width:auto;accent-color:var(--accent);width:16px;height:16px}
-  .skill-row select{padding:.25rem 1.6rem .25rem .5rem;font-size:.85rem}
   .inline-row{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
   .inline-row .grow{flex:1;min-width:150px}
   #cvStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
@@ -687,7 +679,6 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #tab-profile .btn.ghost:hover{color:var(--ink)}}
   #tab-profile .btn:active{transform:translate(2px,2px)}
   #tab-profile button:focus-visible{outline:none;box-shadow:var(--focus)}
-  #cvFile{min-height:var(--tap)}
   .skill{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;padding:8px 0;border-bottom:var(--bw) dashed var(--line)}
   .skill b{font:700 15px var(--f-head);color:var(--ink);overflow-wrap:anywhere}
   .skill .wbar{grid-column:1/-1}
@@ -697,10 +688,19 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .wbar button i{display:block;width:34px;height:12px;border-radius:4px;background:var(--line)}
   .wbar button.on i{background:var(--brand)}
   .wbar button:disabled{cursor:wait;opacity:.6}
-  #suggestedList .skill-row{min-height:var(--tap)}
-  #suggestedList .skill-row label.nm{min-height:var(--tap);display:flex;align-items:center}
-  #suggestedList .skill-row select{min-height:var(--tap)}
-  #suggestedList .skill-row input[type=checkbox]{width:22px;height:22px}
+  .skill:last-child{border-bottom:0}
+  #manualWeight button,.sug .wbar button{width:28px}
+  #manualWeight button i,.sug .wbar button i{width:20px;height:10px}
+  #cvFile{display:block;width:100%;min-height:var(--tap);padding:4px 6px;border:var(--bw) solid var(--ink);border-radius:var(--r-md);background:var(--surface);color:var(--ink);font:600 14px var(--f-body)}
+  #cvFile:focus{border-color:var(--ink);background:var(--surface);box-shadow:none}
+  #cvFile:focus-visible,.sug input:focus-visible{box-shadow:var(--focus)}
+  #cvFile::file-selector-button{min-height:32px;margin-right:10px;padding:0 14px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:var(--surface);color:var(--ink);font:800 14px var(--f-body);cursor:pointer}
+  #suggestedList{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:0 20px}
+  .sug{display:flex;align-items:center;gap:8px;min-height:var(--tap);border-bottom:var(--bw) dashed var(--line)}
+  .sug input[type=checkbox]{flex:none;width:22px;height:22px;margin:0;accent-color:var(--brand)}
+  .sug label{flex:1;min-height:var(--tap);display:flex;align-items:center;margin:0;font:600 14px/1.2 var(--f-body);color:var(--ink);overflow-wrap:anywhere}
+  .sug:has(input:not(:checked)) label{color:var(--mute)}
+  .sug-foot{position:sticky;bottom:0;padding:10px 0 2px;background:var(--surface)}
 
   /* ===== SIGNAL BƯỚC 6B — bổ sung: benchmark tile ===== */
   #tab-profile .tile{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-md);padding:14px}
@@ -1491,8 +1491,8 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             <div id="currentSkills"></div>
             <div class="pf-sep">
               <label for="manualSkill">Thêm kỹ năng thủ công</label>
-              <div class="inline-row">
-                <div class="grow"><input id="manualSkill" class="input" type="text" placeholder="VD: Kafka"></div>
+              <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka">
+              <div class="inline-row" style="margin-top:8px">
                 <div id="manualWeight" class="wbar" role="group" aria-label="Trọng số kỹ năng mới" data-value="3"></div>
                 <button id="addSkillBtn" class="btn" type="button">Thêm</button>
               </div>
@@ -1503,9 +1503,9 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
               <button id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
               <div id="cvStatus"></div>
               <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
-                <label>Kỹ năng gợi ý — tích chọn &amp; đặt trọng số (1–5)</label>
+                <label>Kỹ năng gợi ý (tích chọn, đặt trọng số 1 đến 5)</label>
                 <div id="suggestedList"></div>
-                <button id="confirmSkillsBtn" class="btn p" type="button" style="margin-top:.9rem">Lưu kỹ năng đã chọn</button>
+                <div class="sug-foot"><button id="confirmSkillsBtn" class="btn p" type="button">Lưu kỹ năng đã chọn</button></div>
               </div>
             </div>
           </section>
@@ -2849,14 +2849,18 @@ $("#currentSkills").addEventListener("click", async (ev) => {
   }
 });
 
+// Chọn trọng số trên một .wbar có data-value (thêm thủ công + kỹ năng gợi ý).
+function pickWeight(ev){
+  const b = ev.target.closest("[data-w]"), bar = b && b.closest(".wbar");
+  if (!bar) return;
+  bar.dataset.value = b.dataset.w;
+  bar.innerHTML = weightBars(Number(b.dataset.w));
+  bar.querySelector(`[data-w="${b.dataset.w}"]`).focus();
+}
 $("#manualWeight").innerHTML = weightBars(3);
-$("#manualWeight").addEventListener("click", (ev) => {
-  const b = ev.target.closest("[data-w]");
-  if (!b) return;
-  $("#manualWeight").dataset.value = b.dataset.w;
-  $("#manualWeight").innerHTML = weightBars(Number(b.dataset.w));
-  $(`#manualWeight [data-w="${b.dataset.w}"]`).focus();
-});
+$("#manualWeight").addEventListener("click", pickWeight);
+$("#suggestedList").addEventListener("click", pickWeight);
+$("#suggestedList").addEventListener("change", updateSugCount);
 
 async function refreshProfiles(){
   try {
@@ -2889,10 +2893,8 @@ $("#addSkillBtn").addEventListener("click", async () => {
 });
 
 /* ---------------- CV upload ---------------- */
-function weightOptions(selected){
-  let out = "";
-  for (let i = 1; i <= 5; i++) out += `<option value="${i}" ${i === Number(selected) ? "selected" : ""}>${i}</option>`;
-  return out;
+function updateSugCount(){
+  $("#confirmSkillsBtn").textContent = "Lưu " + $$("#suggestedList input:checked").length + " kỹ năng đã chọn";
 }
 
 function renderSuggested(){
@@ -2900,11 +2902,12 @@ function renderSuggested(){
   if (!state.suggested.length) { wrap.classList.add("hidden"); return; }
   wrap.classList.remove("hidden");
   list.innerHTML = state.suggested.map((s, i) =>
-    `<div class="skill-row">
+    `<div class="sug">
        <input type="checkbox" id="sug-${i}" checked>
-       <label class="nm" for="sug-${i}" style="margin:0;color:var(--text)">${esc(s.skill)}</label>
-       <select id="sugw-${i}">${weightOptions(s.weight || 3)}</select>
+       <label for="sug-${i}">${esc(s.skill)}</label>
+       <div class="wbar" id="sugw-${i}" role="group" aria-label="Trọng số ${esc(s.skill)}" data-value="${s.weight || 3}">${weightBars(s.weight || 3)}</div>
      </div>`).join("");
+  updateSugCount();
 }
 
 async function extractPdfText(file){
@@ -2948,7 +2951,7 @@ $("#cvUploadBtn").addEventListener("click", async () => {
     });
     state.suggested = r.suggested_skills || [];
     renderSuggested();
-    $("#cvStatus").textContent = "Xong! Gợi ý " + state.suggested.length + " kỹ năng.";
+    $("#cvStatus").textContent = "Đã gợi ý " + state.suggested.length + " kỹ năng.";
     if (!state.suggested.length) toast("Máy chủ không gợi ý được kỹ năng nào từ CV này.", "err");
     else toast("Đã trích xuất kỹ năng từ CV.", "ok");
   } catch (e) {
@@ -2965,7 +2968,7 @@ $("#confirmSkillsBtn").addEventListener("click", async () => {
   const chosen = [];
   state.suggested.forEach((s, i) => {
     const cb = $("#sug-" + i), w = $("#sugw-" + i);
-    if (cb && cb.checked) chosen.push({ skill: s.skill, weight: w ? Number(w.value) : (s.weight || 3) });
+    if (cb && cb.checked) chosen.push({ skill: s.skill, weight: Number(w && w.dataset.value) || s.weight || 3 });
   });
   if (!chosen.length) { toast("Chưa chọn kỹ năng nào.", "err"); return; }
   const btn = $("#confirmSkillsBtn");
