@@ -269,6 +269,19 @@ html[data-theme="dark"]{
   .card-p h3{margin:.1rem 0 1rem;font-size:1.05rem;font-weight:600;letter-spacing:-.01em}
   .card-p h3 .gray{color:var(--faint);font-weight:500}
   .field{margin-top:.95rem} .field:first-of-type{margin-top:0}
+  /* Hồ sơ: 1 cột < 1024, 2 cột từ 1024 (Kỹ năng cao nhất chiếm cột phải, Benchmark xếp dưới Thông tin hồ sơ ở cột trái) */
+  #tab-profile .page-sub{max-width:60ch}
+  @media (min-width:1024px){
+    .pf-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr}
+    .pf-grid>:nth-child(2){grid-column:2;grid-row:1/span 2}
+    .pf-grid>:nth-child(3){grid-column:1;grid-row:2}
+  }
+  #tab-profile .field{margin-top:0} #tab-profile .field+.field{margin-top:16px}
+  #tab-profile .field label,#tab-profile .pf-sep>label{font:600 13px/1.3 var(--f-body);color:var(--mute);margin:0 0 6px}
+  #tab-profile .field small{display:block;margin-top:6px;font:500 12px/1.4 var(--f-body);color:var(--mute)}
+  #tab-profile .field .chips{margin:0 0 8px;gap:8px}
+  #tab-profile .input::placeholder{color:var(--mute);opacity:1}
+  .inline-row .grow:has(#newProfileName){flex:999 1 200px} #createProfileBtn{flex:1 0 auto}
   .inline-row{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
   .inline-row .grow{flex:1;min-width:150px}
   #cvStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
@@ -665,7 +678,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer button.chip[data-expand-for]{min-height:var(--tap);min-width:var(--tap);justify-content:center;cursor:pointer}
 
   /* ===== SIGNAL BƯỚC 6 — Hồ sơ & CV: 3 khối, chip khu vực, 5 vạch trọng số ===== */
-  .pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:22px;align-items:start}
+  .pf-grid{display:grid;grid-template-columns:1fr;gap:22px;align-items:start}
   #tab-profile .card-p{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-lg);box-shadow:none;min-width:0}
   #tab-profile .card-p h3{font:700 18px/1.3 var(--f-head);color:var(--ink)}
   #tab-profile .pf-sep{border-top:var(--bw) dashed var(--line);margin-top:1.2rem;padding-top:1rem}
@@ -1450,16 +1463,17 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             <form id="profileForm">
               <div class="field">
                 <label for="pfName">Tên hồ sơ</label>
-                <input id="pfName" class="input" type="text" placeholder="VD: Kriss Bui — Backend">
+                <input id="pfName" class="input" type="text" placeholder="Vd Kriss Bui, Backend">
               </div>
               <div class="field">
-                <label for="pfRoles">Vị trí mục tiêu (cách nhau bởi dấu phẩy)</label>
-                <input id="pfRoles" class="input" type="text" placeholder="Backend Developer, Backend Engineer">
+                <label for="pfRoles">Vị trí mục tiêu</label>
+                <input id="pfRoles" class="input" type="text" placeholder="Vd Backend Developer, Backend Engineer">
+                <small>Nhiều vị trí cách nhau bởi dấu phẩy</small>
               </div>
               <div class="field">
                 <label for="pfLevel">Cấp bậc</label>
                 <select id="pfLevel" class="input">
-                  <option value="">— Chưa đặt —</option>
+                  <option value="">Chưa đặt</option>
                   <option value="fresher">Fresher</option>
                   <option value="junior">Junior</option>
                   <option value="middle">Middle</option>
@@ -1469,13 +1483,15 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
               <div class="field">
                 <label id="pfAreaLbl">Khu vực</label>
                 <div id="pfAreaChips" class="chips" role="group" aria-labelledby="pfAreaLbl"></div>
-                <input id="pfAreaCustom" class="input" type="text" placeholder="Thêm khu vực khác (cách nhau bởi dấu phẩy)…">
+                <input id="pfAreaCustom" class="input" type="text" aria-label="Khu vực khác" placeholder="Vd Cần Thơ, Hải Phòng">
+                <small>Khu vực khác, cách nhau bởi dấu phẩy</small>
               </div>
               <div class="field">
-                <label for="pfSalary">Mức lương tối thiểu kỳ vọng (VNĐ/tháng)</label>
-                <input id="pfSalary" class="input" type="number" min="0" step="100000" placeholder="VD: 25000000">
+                <label for="pfSalary">Lương tối thiểu kỳ vọng</label>
+                <input id="pfSalary" class="input" type="number" inputmode="numeric" min="0" step="100000" placeholder="Vd 25000000" aria-describedby="pfSalaryHint">
+                <small id="pfSalaryHint" aria-live="polite"></small>
               </div>
-              <button id="pfSaveBtn" class="btn p" type="submit" style="margin-top:1.1rem">Lưu hồ sơ</button>
+              <button id="pfSaveBtn" class="btn p" type="submit" style="margin-top:20px">Lưu hồ sơ</button>
             </form>
             <div class="pf-sep">
               <label for="newProfileName">Tạo hồ sơ mới</label>
@@ -2679,7 +2695,14 @@ function fillProfileForm(){
   renderAreaChips();
   $("#pfAreaCustom").value = "";
   $("#pfSalary").value = p && p.salary_min ? p.salary_min : "";
+  renderSalaryHint();
 }
+// Gợi ý đọc số: "25.000.000 ₫/tháng"; giá trị gửi API vẫn là Number thô
+function renderSalaryHint(){
+  const n = Number($("#pfSalary").value);
+  $("#pfSalaryHint").textContent = n > 0 ? new Intl.NumberFormat("vi-VN").format(n) + " ₫/tháng" : "Chỉ nhập số, đơn vị ₫/tháng";
+}
+$("#pfSalary").addEventListener("input", renderSalaryHint);
 
 $("#profileForm").addEventListener("submit", async (ev) => {
   ev.preventDefault();
