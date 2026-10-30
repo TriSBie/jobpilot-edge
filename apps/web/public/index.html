@@ -71,6 +71,15 @@ html[data-theme="dark"]{
   a:hover{text-decoration:underline}}
   button{font:inherit;cursor:pointer;color:inherit}
   ::selection{background:rgba(45,75,255,.35)}
+  /* DE-SLOP 2026-10-30 (rebase): browser surfaces themed from palette */
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  ::-webkit-scrollbar-thumb{ background:var(--mute); border-radius:999px; }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--brand); }
+  html{ scrollbar-color:var(--mute) transparent; }
+  input, textarea{ caret-color:var(--brand); }
+  a{ text-underline-offset:3px; }
+  .brief .bignum, .score-pill{ font-variant-numeric:tabular-nums; }
   .hidden{display:none!important}
   .muted{color:var(--muted)} .small{font-size:.85rem}
   .spacer{flex:1}
@@ -106,7 +115,7 @@ html[data-theme="dark"]{
   }@media (hover:hover) and (pointer:fine){
   .btn:hover{background:rgba(var(--ov),.1);border-color:var(--line-strong)}}
   .btn:active{transform:scale(.97)}
-  .btn.primary{background:var(--grad);border-color:transparent;color:#1c1106}@media (hover:hover) and (pointer:fine){
+  .btn.primary{background:var(--grad);border-color:transparent;color:var(--brand-ink)}@media (hover:hover) and (pointer:fine){
   .btn.primary:hover{filter:brightness(1.07)}}
   .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}@media (hover:hover) and (pointer:fine){
   .btn.ghost:hover{color:var(--text);background:rgba(var(--ov),.05)}}
@@ -335,10 +344,6 @@ html[data-theme="dark"]{
 .lp-nav .sp{ flex:1; }
 .lp-sec{ max-width:1180px; margin:0 auto; padding:clamp(3.5rem,9vh,6.5rem) clamp(1rem,4vw,2.5rem) clamp(2rem,5vh,3.5rem);
   display:flex; flex-direction:column; align-items:center; text-align:center; }
-.lp-pill{ display:inline-flex; align-items:center; gap:.5rem; padding:.42rem 1.05rem; border-radius:999px;
-  border:1px solid var(--line); background:rgba(var(--ov),.04); backdrop-filter:blur(8px);
-  color:var(--muted); font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.6rem; }
-.lp-pill::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--brand); }
 .lp-sec h2{ font-family:var(--f-head); font-weight:400; font-size:clamp(1.9rem,4.4vw,3rem); line-height:1.15; margin:0 0 .9rem; }
 .lp-sec h2 em, .lp-hero h1 em{ font-style:italic; color:#9ba1a8; }
 .lp-sec .lede{ color:var(--muted); max-width:62ch; font-size:1.02rem; line-height:1.65; margin:0 auto; }
@@ -348,9 +353,6 @@ html[data-theme="dark"]{
 .lp-cta{ display:flex; gap:.8rem; margin-top:2rem; flex-wrap:wrap; justify-content:center; }
 .btn.ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
 .btn.big{ padding:.85rem 1.7rem; font-size:1rem; border-radius:999px; }
-.lp-stats{ display:flex; gap:clamp(1.6rem,5vw,3.6rem); margin-top:2.8rem; flex-wrap:wrap; justify-content:center; }
-.lp-stat b{ display:block; font-family:var(--f-head); font-weight:400; font-size:2.1rem; color:var(--text); }
-.lp-stat span{ color:var(--muted); font-size:.85rem; }
 .lp-shot{  margin-top:3rem; width:min(880px,100%); border-radius:var(--r-lg); padding:10px;
   background:linear-gradient(160deg, rgba(45,75,255,.35), rgba(var(--ov),.05) 40%, rgba(var(--ov),.02));
   box-shadow:0 30px 80px rgba(0,0,0,.55); }
@@ -422,9 +424,6 @@ html[data-theme="dark"]{
   @keyframes lp-rv-strong{ from{ opacity:0; transform:translateY(24px); }
     to{ opacity:1; transform:none; } }
 }
-/* 1.4 Count-up: tabular numerals + giữ sẵn chiều rộng để không lệch layout. */
-.lp-stat b{ font-variant-numeric:tabular-nums; }
-.lp-stat [data-count]{ display:inline-block; min-width:2ch; font-variant-numeric:tabular-nums; }
 /* Mở rộng prefers-reduced-motion cho toàn bộ motion mới của Đợt 1. */
 @media (prefers-reduced-motion: reduce){
   .lp-glow{ animation:none; opacity:.5; }
@@ -507,7 +506,6 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .lp-bento .lp-card{ display:flex; flex-direction:column; }
 .lp-bento img{ aspect-ratio:16/9; object-fit:cover; object-position:top; margin-top:auto; }
 .lp-bento .lp-card p{ margin-bottom:.9rem; }
-.lp-stats{ border-top:1px solid var(--line); padding-top:1.8rem; }
 .lp-shot{ position:relative; }
 .lp-chrome{ display:flex; align-items:center; gap:.45rem; padding:.15rem .3rem .65rem; }
 .lp-chrome i{ width:11px; height:11px; border-radius:50%; background:rgba(var(--ov),.16); flex:none; }
@@ -527,10 +525,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .lp-hero h1 em, .lp-sec h2 em, .login-in h1 em{ font-style:normal;
   background:var(--brand);
   -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
-.lp-stat b{ font-weight:700; letter-spacing:-.02em; font-size:2.3rem; }
 .lp-card .n{ font-style:normal; font-weight:700; }
 .lp-card h3, .lp-step h3{ font-family:var(--f-head); font-weight:600; letter-spacing:-.01em; }
-.lp-pill{ font-family:var(--f-head); font-weight:600; letter-spacing:.16em; }
 .lp-formula{ font-family:var(--f-head); }
 .lp-logo, .logo{ font-family:var(--f-head); letter-spacing:-.01em; }
 .lp-logo i, .logo i{ font-style:normal; }
@@ -558,7 +554,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .alert-item{ display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;padding:.6rem 0;border-top:1px solid var(--line); }
 .alert-item .t{ font-weight:600; }
 .alert-item .meta{ color:var(--muted);font-size:.85rem; }
-.alert-badge{ display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:.4rem;border-radius:999px;background:var(--accent);color:#1c1106;font-size:.72rem;font-weight:700; }
+.alert-badge{ display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:.4rem;border-radius:999px;background:var(--accent);color:var(--brand-ink);font-size:.72rem;font-weight:700; }
 .bench-grid{ display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:.8rem 0; }
 .bench-stat{ border:1px solid var(--line);border-radius:var(--r-md);padding:.8rem; }
 .bench-stat b{ display:block;font-family:var(--f-head);font-size:1.3rem; }
@@ -933,7 +929,6 @@ html{scroll-padding-top:96px}
     .lp-bento{grid-template-columns:1fr}
     .lp-bento .wide{grid-column:auto}
   }
-  .lp-hero .lp-pill{margin-bottom:.4rem}
   .lp-break{width:min(760px,100%);text-align:left;margin-top:1.8rem}
   .lp-break h3{margin:0 0 .6rem;font-size:1.05rem}
   .lp-break h3:not(:first-child){margin-top:1.2rem}
@@ -1251,16 +1246,16 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 
 <section class="lp-sec" id="lp-demo-kanban">
   <h2>Theo dõi từng đơn tới khi có kết quả</h2>
-  <p class="lede">Mỗi tin bạn quan tâm thành một thẻ. Đơn nào im lặng quá 7 ngày, JobPilot nhắc bạn nhắn lại. Thử chuyển thẻ bên dưới (máy tính kéo thả, điện thoại bấm ◀ ▶).</p>
+  <p class="lede">Mỗi tin bạn quan tâm thành một thẻ. Đơn nào im lặng quá 7 ngày, JobPilot nhắc bạn nhắn lại. Thử chuyển thẻ bên dưới (máy tính kéo thả, điện thoại bấm nút mũi tên).</p>
   <p class="demo-count" id="demoKanbanCount" aria-live="polite">Đã chuyển 0/3</p>
   <div class="demo-kanban">
     <div class="demo-kcol" data-demo-col="new"><h3>Mới</h3><div class="demo-kbody">
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-1" data-demo-start="new"><b>Backend Java</b><span>82đ · ITviec</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-1" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-1" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka</b><span>68đ · TopDev</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot</b><span>74đ · ITviec</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-1" data-demo-start="new"><b>Backend Java</b><span>82đ · ITviec</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-1" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-demo-move="demo-job-1" data-demo-dir="1" aria-label="Chuyển sang cột sau"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka</b><span>68đ · TopDev</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></article>
+      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot</b><span>74đ · ITviec</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></article>
     </div></div>
-    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
-    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
+    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"><div class="kph">Bấm nút mũi tên để đưa thẻ vào đây</div></div></div>
+    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"><div class="kph">Bấm nút mũi tên để đưa thẻ vào đây</div></div></div>
   </div>
   <p class="sg-mut sg-center sg-narrow">Trong app có đủ 7 cột: Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, Từ chối, Lưu trữ.</p>
 </section>
@@ -2012,7 +2007,6 @@ function initLandingFx(){
   if (!root || root.classList.contains("hidden")) return;
   if (!landingAnimated) {
     landingAnimated = true;
-    initLandingCounts(root);
     initLandingMagnet(root);
     const io = new IntersectionObserver((entries) => {
       entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
@@ -2023,32 +2017,6 @@ function initLandingFx(){
     initLpGlowParallax(root);
     initLpCompare(root);     initLpBeam(root);
   }
-}
-
-/* Đợt 1 (P0) — count-up landing: CHỈ số thật (30' quét, 2 nguồn, 7 giai đoạn,
-   4 bước), chạy bằng requestAnimationFrame khi strip vào viewport.
-   Hàm animateCountUps() dùng chung cho app (digest) được giữ nguyên, không đụng. */
-function initLandingCounts(root){
-  const stats = root.querySelector(".lp-stats");
-  if (!stats) return;
-  const els = Array.from(stats.querySelectorAll("[data-count]"));
-  const run = () => els.forEach(el => {
-    const target = Number(el.dataset.count) || 0;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = target; return; }
-    const t0 = performance.now(), dur = 700;
-    const step = (t) => {
-      const k = Math.min(1, (t - t0) / dur);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  });
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { run(); return; }
-  if (!("IntersectionObserver" in window)) { run(); return; }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(en => { if (en.isIntersecting) { run(); io.disconnect(); } });
-  }, { threshold: 0.4 });
-  io.observe(stats);
 }
 
 /* Đợt 1 (P0) — magnetic: nút .lp-magnet (hero chính + CTA cuối, cap theo data-magnet-cap), CHỈ desktop có
@@ -2506,8 +2474,8 @@ function renderKanban(){
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
         ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
         <div class="row">
-          <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước">◀</button>
-          <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau">▶</button>
+          <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="Chuyển sang cột trước"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="Chuyển sang cột sau"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <span class="spacer"></span>
           ${m ? `<span class="score-pill ${esc(m.tier)}">${Math.round(m.final_score || 0)}đ · ${esc(m.tier)}</span>` : ""}
         </div>
@@ -2521,7 +2489,7 @@ function renderKanban(){
 
   $$("[data-kmore]", box).forEach(b => b.addEventListener("click", () => { kanbanNewAll = true; renderKanban(); }));
   $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
-  // KANBAN DRAG & DROP: keo the sang cot khac (desktop). Nut ◀ ▶ giu nguyen.
+  // KANBAN DRAG & DROP: keo the sang cot khac (desktop). Nut chevron SVG.
   // Placeholder .kdrop chi mang tinh thi giac (vi tri tha) — thu tu trong cot khong luu xuong backend.
   $$(".kcard", box).forEach(card => {
     card.addEventListener("dragstart", (ev) => {
@@ -2640,7 +2608,7 @@ async function moveApplication(appId, dir, btn){
   }
 }
 
-// Keo-tha Kanban: chuyen thang toi cot dich (nut ◀ ▶ chi di 1 buoc nen khong dung lai duoc).
+// Keo-tha Kanban: chuyen thang toi cot dich (nut mui ten chi di 1 buoc nen khong dung lai duoc).
 async function moveApplicationTo(appId, targetStage){
   const app = state.applications.find(a => a.id === appId);
   if (!app || !targetStage || targetStage === app.stage) return;
@@ -3373,7 +3341,8 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
   fetch(API_BASE + "/api/public/sample").then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
     const jobs = d.jobs || [], st = d.stats || {};
     $("#sgLiveMeta").textContent = st.last_scan ? "cập nhật " + hhmm(st.last_scan) : "";
-    $("#sgStrip").innerHTML = "Đang theo dõi <b>" + (st.jobs || 0) + "</b> tin từ ITviec và TopDev, <b>" + (st.new_24h || 0) + "</b> tin mới trong 24 giờ. Quét gần nhất lúc <b>" + esc(hhmm(st.last_scan)) + "</b>.";
+    // Space quanh số nằm trong <b> để khoảng cách luôn hiển thị rõ.
+    $("#sgStrip").innerHTML = "Đang theo dõi<b> " + (st.jobs || 0) + " </b>tin từ ITviec và TopDev,<b> " + (st.new_24h || 0) + " </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> " + esc(hhmm(st.last_scan)) + "</b>.";
     if (!jobs.length) { box.innerHTML = '<li class="sg-mut">Chưa có tin nào, quay lại sau ít phút.</li>'; return; }
     box.innerHTML = jobs.map(j => `<li class="sg-job">
       <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
