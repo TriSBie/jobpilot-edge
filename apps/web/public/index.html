@@ -18,6 +18,7 @@
   --mint:#2EC8A6; --mint-ink:#0D2F27; --sun:#FFC83D; --sun-ink:#2A2200;
   --strong:var(--mint); --partial:var(--sun); --weak:#C9C7DB;
   --shadow:var(--ink);
+  --jp-ink:var(--ink); --jp-brand:var(--brand);
   --r-lg:16px; --r-md:12px; --r-sm:8px; --r-pill:999px;
   --bw:2px; --off:6px;
   --f-head:"Unbounded",system-ui,sans-serif;
@@ -1271,6 +1272,12 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
   <symbol id="chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M8 4l10 8-10 8"/>
   </symbol>
+  <symbol id="mark-journey" viewBox="0 0 64 64">
+    <path d="M12 48 H28 L40 20 H54" style="stroke:var(--jp-ink,#1B1B2F);stroke-width:8;fill:none;stroke-linecap:round;stroke-linejoin:round"/>
+    <circle cx="12" cy="48" r="8" style="fill:var(--jp-ink,#1B1B2F)"/>
+    <circle cx="34" cy="34" r="8" style="fill:var(--jp-ink,#1B1B2F)"/>
+    <circle cx="54" cy="20" r="10" style="fill:var(--jp-brand,#2D4BFF)"/>
+  </symbol>
 </svg>
 <div id="toasts"></div>
 
@@ -1278,7 +1285,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 <div id="landingView" class="hidden">
   <div id="lp-progress" aria-hidden="true"></div>
   <header class="lp-nav">
-    <div class="brand"><img class="mark-img" src="assets/logo-chrome-mark.png" alt="" width="30" height="30">JobPilot <span>Edge</span></div>
+    <div class="brand"><svg class="mark-img" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>JobPilot <span>Edge</span></div>
     <nav class="lp-links">
       <a href="#lp-live" data-en="Today's jobs">Tin sáng nay</a>
       <a href="#lp-scoring" data-en="How scoring works">Cách chấm điểm</a>
@@ -1294,7 +1301,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 
   
     <section class="lp-sec lp-hero">
-    <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
+    <svg class="medallion-img" width="74" height="74" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>
     <h1 data-en="Apply less. Land more.">Nộp ít hơn, đúng hơn.</h1>
     <p class="sub" data-en="JobPilot reads new postings on ITviec and TopDev every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới trên ITviec và TopDev mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
     <div class="lp-cta">
@@ -1444,7 +1451,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 <div id="authView" class="login-wrap hidden">
   <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" data-en-title="Switch light / dark theme" data-en-aria-label="Toggle light or dark theme"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
   <div class="login-in">
-    <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
+    <svg class="medallion-img" width="74" height="74" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>
     <h1 id="authTitle">Chào mừng <em>trở lại.</em></h1>
     <p class="sub" id="authSub">Đăng nhập để tiếp tục pipeline săn việc của bạn.</p>
     <div class="panel login-card">
