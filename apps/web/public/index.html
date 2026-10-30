@@ -67,8 +67,8 @@ html[data-theme="dark"]{
     color:var(--text); min-height:100vh;
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
   }
-  a{color:#9ecbff;text-decoration:none}
-  a:hover{text-decoration:underline}
+  a{color:#9ecbff;text-decoration:none}@media (hover:hover) and (pointer:fine){
+  a:hover{text-decoration:underline}}
   button{font:inherit;cursor:pointer;color:inherit}
   ::selection{background:rgba(45,75,255,.35)}
   .hidden{display:none!important}
@@ -88,7 +88,7 @@ html[data-theme="dark"]{
     font:inherit;color:var(--text);background:rgba(var(--ov),.04);
     border:1px solid var(--line);border-radius:var(--r-sm);
     padding:.55rem .75rem;outline:none;width:100%;
-    transition:border-color var(--m-fast) var(--e-out), box-shadow var(--m-fast) var(--e-out), background var(--m-fast) var(--e-out);
+    transition:border-color var(--m-fast) var(--e-out), background var(--m-fast) var(--e-out);
   }
   input:focus,select:focus,textarea:focus{
     border-color:rgba(45,75,255,.55); box-shadow:0 0 0 3px rgba(45,75,255,.18); background:rgba(var(--ov),.05);
@@ -103,13 +103,13 @@ html[data-theme="dark"]{
     border:1px solid var(--line);border-radius:999px;
     padding:.5rem 1.05rem;font-weight:600;font-size:.9rem;white-space:nowrap;
     transition:background var(--m-fast) var(--e-out),border-color var(--m-fast) var(--e-out),transform var(--m-fast) var(--e-out);
-  }
-  .btn:hover{background:rgba(var(--ov),.1);border-color:var(--line-strong)}
+  }@media (hover:hover) and (pointer:fine){
+  .btn:hover{background:rgba(var(--ov),.1);border-color:var(--line-strong)}}
   .btn:active{transform:scale(.97)}
-  .btn.primary{background:var(--grad);border-color:transparent;color:#1c1106}
-  .btn.primary:hover{filter:brightness(1.07)}
-  .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
-  .btn.ghost:hover{color:var(--text);background:rgba(var(--ov),.05)}
+  .btn.primary{background:var(--grad);border-color:transparent;color:#1c1106}@media (hover:hover) and (pointer:fine){
+  .btn.primary:hover{filter:brightness(1.07)}}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}@media (hover:hover) and (pointer:fine){
+  .btn.ghost:hover{color:var(--text);background:rgba(var(--ov),.05)}}
   .btn.small{padding:.34rem .75rem;font-size:.83rem}
   .btn:disabled{opacity:.55;cursor:wait}
   .spinner{display:inline-block;width:.85em;height:.85em;border:2px solid rgba(var(--ov),.25);
@@ -149,8 +149,8 @@ html[data-theme="dark"]{
     padding:.52rem .65rem;font-weight:500;font-size:.94rem;color:var(--muted);
     transition:background var(--m-fast) var(--e-out),color var(--m-fast) var(--e-out);
   }
-  .tab .ic{width:1.15rem;text-align:center;flex:none}
-  .tab:hover{color:var(--text);background:rgba(var(--ov),.04)}
+  .tab .ic{width:1.15rem;text-align:center;flex:none}@media (hover:hover) and (pointer:fine){
+  .tab:hover{color:var(--text);background:rgba(var(--ov),.04)}}
   .tab.active{color:var(--text);background:rgba(var(--ov),.06);border-color:var(--line)}
   .tab.active .ic{color:var(--accent-2)}
   .side .prof-block{padding:.4rem .35rem 0}
@@ -159,8 +159,8 @@ html[data-theme="dark"]{
     display:flex;align-items:center;gap:.5rem;width:100%;text-align:left;
     background:rgba(var(--ov),.03);border:1px solid var(--line);border-radius:10px;
     padding:.5rem .65rem;color:var(--faint);font-size:.86rem;
-  }
-  .cmdk-hint:hover{color:var(--muted);border-color:var(--line-strong)}
+  }@media (hover:hover) and (pointer:fine){
+  .cmdk-hint:hover{color:var(--muted);border-color:var(--line-strong)}}
   .sys{font-size:.78rem;color:var(--faint);padding:.55rem .6rem .2rem;display:flex;align-items:center;gap:.45rem;line-height:1.45}
   .sys .dot{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.8);flex:none}
   main{padding:30px 38px 70px;max-width:1240px;width:100%;margin:0 auto}
@@ -200,11 +200,10 @@ html[data-theme="dark"]{
     animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),12) * 45ms);
     transition:border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out), background var(--m-fast) var(--e-out);
   }
-  .job:hover{border-color:var(--line-strong);transform:translateY(-1px)}
   .job-head{display:flex;gap:1rem;align-items:flex-start}
   .job-title{font-weight:600;font-size:1.02rem;letter-spacing:-.01em}
-  .job-title a{color:var(--text)}
-  .job-title a:hover{color:var(--accent-2);text-decoration:none}
+  .job-title a{color:var(--text)}@media (hover:hover) and (pointer:fine){
+  .job-title a:hover{color:var(--accent-2);text-decoration:none}}
   .job-meta{display:flex;gap:.9rem;flex-wrap:wrap;color:var(--muted);font-size:.86rem;margin-top:.2rem}
   .badge{
     display:inline-flex;align-items:center;gap:.35rem;font-size:.74rem;font-weight:600;
@@ -239,13 +238,13 @@ html[data-theme="dark"]{
   .kcard{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-md);padding:12px;box-shadow:none;font-size:13px}
   .kcard.warn{border-color:var(--sun)}
   .kcard .t{font:700 14px/1.3 var(--f-head)}
-  .kcard .t a{color:var(--ink)} .kcard .t a:hover{color:var(--brand);text-decoration:none}
+  .kcard .t a{color:var(--ink)}@media (hover:hover) and (pointer:fine){ .kcard .t a:hover{color:var(--brand);text-decoration:none}}
   .kcard .c{color:var(--mute);font-size:13px;margin-top:4px}
   .kcard .c.due{color:#866000;font-weight:700}
   html[data-theme="dark"] .kcard .c.due{color:var(--sun)}
   .kcard .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
-  .mv{min-width:var(--tap);min-height:var(--tap);border-radius:50%;border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink);font-weight:800;font-size:13px;line-height:1;cursor:pointer}
-  .mv:hover:not(:disabled){border-color:var(--ink)}
+  .mv{min-width:var(--tap);min-height:var(--tap);border-radius:50%;border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink);font-weight:800;font-size:13px;line-height:1;cursor:pointer}@media (hover:hover) and (pointer:fine){
+  .mv:hover:not(:disabled){border-color:var(--ink)}}
   .mv:disabled{opacity:.35;cursor:default}
   .score-pill{white-space:nowrap;font-size:12px;font-weight:800;border-radius:var(--r-pill);padding:3px 9px;border:var(--bw) solid var(--line);background:transparent;color:var(--mute)}
   .score-pill.strong{background:var(--mint);color:var(--mint-ink);border-color:transparent}
@@ -333,7 +332,6 @@ html[data-theme="dark"]{
 .lp-nav .brand span{ color:var(--brand); }
 .lp-links{ display:flex; gap:1.4rem; margin-left:2rem; }
 .lp-links a{ color:var(--ink); text-decoration:none; font-family:var(--f-body); font-weight:600; font-size:15px; }
-.lp-links a:hover{ color:var(--brand); }
 .lp-nav .sp{ flex:1; }
 .lp-sec{ max-width:1180px; margin:0 auto; padding:clamp(3.5rem,9vh,6.5rem) clamp(1rem,4vw,2.5rem) clamp(2rem,5vh,3.5rem);
   display:flex; flex-direction:column; align-items:center; text-align:center; }
@@ -442,8 +440,8 @@ html[data-theme="dark"]{
 .pw-meter i{ display:block; height:100%; width:0; border-radius:99px; background:#e5534b; transition:width var(--m-base) var(--e-out), background var(--m-base) var(--e-out); }
 .pw-hint{ font-size:.8rem; color:var(--muted); margin-top:.35rem; min-height:1em; }
 .auth-note{ border:1px solid rgba(45,75,255,.45); background:rgba(45,75,255,.08); border-radius:12px; padding:.8rem 1rem; font-size:.9rem; line-height:1.55; margin-bottom:1.1rem; color:#f3e3cd; }
-.auth-back{ display:inline-block; margin-top:1.1rem; color:var(--muted); text-decoration:none; font-size:.9rem; }
-.auth-back:hover{ color:var(--text); }
+.auth-back{ display:inline-block; margin-top:1.1rem; color:var(--muted); text-decoration:none; font-size:.9rem; }@media (hover:hover) and (pointer:fine){
+.auth-back:hover{ color:var(--text); }}
 .ob-list{ text-align:left; display:flex; flex-direction:column; gap:.7rem; margin:1rem 0; }
 .ob-item{ display:flex; gap:.8rem; align-items:flex-start; }
 .ob-item .n{ flex:none; width:28px; height:28px; border-radius:50%; border:1px solid rgba(45,75,255,.55); color:var(--brand);
@@ -485,8 +483,8 @@ html[data-theme="light"] ::selection{ background:rgba(45,75,255,.28); }
 /* Nút gạt theme */
 .theme-toggle{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; flex:none;
   border-radius:50%; border:1px solid var(--line); background:rgba(var(--ov),.04); color:var(--text);
-  font-size:1rem; line-height:1; transition:background var(--m-fast) var(--e-out), border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out); }
-.theme-toggle:hover{ background:rgba(var(--ov),.09); border-color:var(--line-strong); transform:translateY(-1px); }
+  font-size:1rem; line-height:1; transition:background var(--m-fast) var(--e-out), border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out); }@media (hover:hover) and (pointer:fine){
+.theme-toggle:hover{ background:rgba(var(--ov),.09); border-color:var(--line-strong); transform:translateY(-1px); }}
 .theme-toggle .ic-sun{ display:none; }
 html[data-theme="light"] .theme-toggle .ic-sun{ display:inline; }
 html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
@@ -503,8 +501,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   background:radial-gradient(44rem 18rem at 50% 0%, rgba(45,75,255,.05), transparent 65%); }
 .lp-card{ transition:transform var(--m-base) var(--e-out), border-color var(--m-base) var(--e-out); }
 @media (hover:hover) and (pointer:fine){
-  .lp-card:hover{ transform:translateY(-8px); border-color:var(--line-strong); box-shadow:0 18px 40px rgba(0,0,0,.20); transition-delay:0s; }
-  html[data-theme="light"] .lp-card:hover{ box-shadow:0 18px 40px rgba(13,20,36,.14); }
+
 }
 .lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2){ transition-delay:.07s; }
 .lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3){ transition-delay:.14s; }
@@ -587,8 +584,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .chip.src{background:var(--bg);border-color:var(--line);color:var(--ink)}
   .card{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),12) * 45ms)}
   .card .ttl{font:700 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
-  .card .ttl a{color:inherit;text-decoration:none}
-  .card .ttl a:hover{text-decoration:underline}
+  .card .ttl a{color:inherit;text-decoration:none}@media (hover:hover) and (pointer:fine){
+  .card .ttl a:hover{text-decoration:underline}}
   .card .meta{color:var(--mute);font-size:14px;margin-bottom:12px}
   .card .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
   .card .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center}
@@ -670,8 +667,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .toast.ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint);flex:none}
   .toast.err{box-shadow:6px 6px 0 var(--pop)}
   .toast.err::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pop);flex:none}
-  .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;padding:0 0 0 4px}
-  .toast-x:hover{opacity:1}
+  .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;padding:0 0 0 4px}@media (hover:hover) and (pointer:fine){
+  .toast-x:hover{opacity:1}}
   .rescoring{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-pill);background:var(--surface);border:var(--bw) solid var(--brand);color:var(--brand);font-weight:700;font-size:13px}
   .rescoring i{width:12px;height:12px;border-radius:50%;border:3px solid var(--brand);border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
   @media (max-width:640px){
@@ -694,8 +691,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #tab-profile .chip.off{border-color:var(--line);color:var(--mute)}
   #tab-profile .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:800 14px var(--f-body);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink)}
   #tab-profile .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-  #tab-profile .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}
-  #tab-profile .btn.ghost:hover{color:var(--ink)}
+  #tab-profile .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}@media (hover:hover) and (pointer:fine){
+  #tab-profile .btn.ghost:hover{color:var(--ink)}}
   #tab-profile .btn:active{transform:translate(2px,2px)}
   #tab-profile button:focus-visible{outline:none;box-shadow:var(--focus)}
   #cvFile{min-height:var(--tap)}
@@ -749,9 +746,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   @keyframes count-bump{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
   .kcol-head .count.count-bump{animation:count-bump var(--m-slow) var(--e-out)}
   .kdrop{border:2px dashed var(--brand);border-radius:var(--r-md);background:rgba(45,75,255,.06)}
-  .card:hover{transform:translateY(-2px);box-shadow:8px 8px 0 var(--shadow)}
-  .card{transition:transform var(--m-fast) var(--e-out),box-shadow var(--m-fast) var(--e-out)}
-  .kcard{transition:transform var(--m-fast) var(--e-out),box-shadow var(--m-fast) var(--e-out)}
+  
+  
   #jobsContainer.no-anim .card,#jobsContainer.no-anim .job{animation:none}
   #jobsContainer.xfade .list,#kanbanContainer.xfade .kanban{animation:tab-in var(--m-base) var(--e-out) both}
   .why-in{overflow:hidden;min-height:0}
@@ -836,7 +832,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 @keyframes demo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .demo-hero button:focus-visible,.demo-kanban button:focus-visible,.demo-score input:focus-visible,.demo-score select:focus-visible,.demo-pal-item:focus-visible{outline:none;box-shadow:var(--focus)}
 @media (hover:hover) and (pointer:fine){
-  .demo-kcard:hover{transform:translateY(-2px)}
+
   .demo-marquee:hover .demo-marquee-track{animation-play-state:paused}
 }
 @media (max-width:640px){
@@ -953,6 +949,139 @@ html{scroll-padding-top:96px}
   .lp-faq{width:min(760px,100%);display:flex;flex-direction:column;gap:.8rem;text-align:left;margin-top:2.6rem}
   .lp-faq summary{cursor:pointer;font-weight:600}
   .lp-faq details p{margin-top:.6rem}
+
+/* ============================================================
+   MOTION-ALL (Q1-Q7, M1-M6, B1-B4) — tokens + layered hover +
+   spotlight + beam + view transitions. Không sửa logic app.
+   ============================================================ */
+:root{
+  --dur-fast:160ms; --dur-hover:240ms; --dur-card:320ms; --dur-view:280ms; --dur-press:120ms;
+  --ease-out:cubic-bezier(0.22,1,0.36,1); --ease-inout:cubic-bezier(0.65,0,0.35,1);
+  --ease-back:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1); --dur-spring:350ms;
+}
+@supports (animation-timing-function:linear(0,1)){
+  :root{ --ease-spring:linear(0,0.9 40%,1.08 60%,0.98 78%,1.01 90%,1); --dur-spring:500ms; }
+}
+@property --angle{ syntax:"<angle>"; initial-value:0deg; inherits:false; }
+@keyframes beam-spin{ to{ --angle:360deg; } }
+@keyframes demo-progress{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+@keyframes pal-in{ from{ opacity:0; transform:translateY(8px) scale(.98); } to{ opacity:1; transform:none; } }
+@keyframes vt-out{ to{ opacity:0; transform:translateY(-8px); } }
+@keyframes vt-in{ from{ opacity:0; transform:translateY(12px); } }
+::view-transition-old(root){ animation:vt-out 200ms ease-in both; }
+::view-transition-new(root){ animation:vt-in 260ms ease-out both; }
+::view-transition-group(brand-logo){ animation-duration:260ms; animation-timing-function:ease-out; }
+/* Q1 — base transitions dùng token (hover vào nhanh, ra chậm: duration chậm ở base, nhanh ở :hover) */
+.btn{ transition:background-color var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out), filter var(--dur-card) var(--ease-out), transform var(--dur-card) var(--ease-out); }
+.tab{ transition:background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
+.theme-toggle{ transition:background-color var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out), transform var(--dur-card) var(--ease-out); }
+.mv{ transition:border-color var(--dur-card) var(--ease-out), transform var(--dur-card) var(--ease-out); }
+.lp-links a{ position:relative; transition:color var(--dur-hover) var(--ease-out); }
+.demo-tabs button{ transition:color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out); }
+/* Q3 — base thẻ: position cho pseudo + transition token */
+.lp-card{ position:relative; transition:transform var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out); }
+.job{ position:relative; transition:border-color var(--dur-card) var(--ease-out), transform var(--dur-card) var(--ease-out), background-color var(--dur-card) var(--ease-out); }
+.card{ position:relative; box-shadow:none; transition:transform var(--m-fast) var(--e-out); }
+.kcard{ position:relative; transition:transform var(--m-fast) var(--e-out); }
+.tile{ position:relative; transition:transform var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out); }
+button.chip{ position:relative; transition:transform var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out), background-color var(--dur-card) var(--ease-out); }
+.demo-kcard{ position:relative; transition:transform var(--dur-card) var(--ease-out), opacity var(--dur-hover) var(--ease-out); }
+.demo-tab-ind{ transition:transform var(--dur-card) var(--ease-out), opacity var(--dur-hover) var(--ease-out); }
+/* Q3 — bóng qua ::after opacity-only (không transition box-shadow trực tiếp) */
+.lp-card::after, .job::after, .tile::after, button.chip::after, .demo-kcard::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  opacity:0; transition:opacity var(--dur-card) var(--ease-out);
+}
+.lp-card::after{ box-shadow:0 18px 40px rgba(0,0,0,.20); }
+html[data-theme="light"] .lp-card::after{ box-shadow:0 18px 40px rgba(13,20,36,.14); }
+.job::after{ box-shadow:0 14px 32px rgba(0,0,0,.18); }
+html[data-theme="light"] .job::after{ box-shadow:0 14px 32px rgba(13,20,36,.12); }
+.tile::after{ box-shadow:0 14px 30px rgba(0,0,0,.18); }
+button.chip::after{ box-shadow:0 8px 20px rgba(0,0,0,.16); }
+.demo-kcard::after{ box-shadow:0 12px 28px rgba(0,0,0,.16); }
+.card::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--off) var(--off) 0 var(--shadow); }
+.kcard::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 10px 24px rgba(0,0,0,.18); opacity:0; transition:opacity var(--dur-card) var(--ease-out); }
+html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12); }
+/* M1 — spotlight: glow + vòng sáng theo chuột, chỉ opacity (JS ghi --mx/--my, chỉ pointer:fine) */
+.lp-card::before, .job::before, .tile::before, button.chip::before, .demo-kcard::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:
+    radial-gradient(240px circle at var(--mx,50%) var(--my,50%), rgba(45,75,255,.14), transparent 70%),
+    radial-gradient(180px circle at var(--mx,50%) var(--my,50%), transparent 0 68%, rgba(45,75,255,.35) 69% 71%, transparent 72%);
+  opacity:0; transition:opacity var(--dur-card) var(--ease-out);
+}
+/* Q2+Q3+Q4 — mọi :hover mới đều nằm trong gate chuột thật */
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{ transition-duration:var(--dur-hover); }
+  .theme-toggle:hover{ transition-duration:var(--dur-hover); }
+  .mv:hover:not(:disabled){ transition-duration:var(--dur-hover); }
+  .lp-card:hover{ transform:translateY(-4px); border-color:var(--line-strong); transition-duration:var(--dur-hover); }
+  .lp-card:hover::after{ opacity:1; }
+  .lp-card:hover::before{ opacity:1; }
+  .job:hover{ transform:translateY(-4px); border-color:var(--line-strong); transition-duration:var(--dur-hover); }
+  .job:hover::after{ opacity:1; }
+  .job:hover::before{ opacity:1; }
+  .card:hover{ transform:translateY(-2px); }
+  .card:hover::after{ box-shadow:8px 8px 0 var(--shadow); }
+  .kcard:hover{ border-color:var(--brand); }
+  .kcard:hover::after{ opacity:1; }
+  .tile:hover{ transform:translateY(-4px); border-color:var(--brand); transition-duration:var(--dur-hover); }
+  .tile:hover::after{ opacity:1; }
+  .tile:hover::before{ opacity:1; }
+  button.chip:hover{ transform:translateY(-4px); border-color:var(--line-strong); transition-duration:var(--dur-hover); }
+  button.chip:hover::after{ opacity:1; }
+  button.chip:hover::before{ opacity:1; }
+  .demo-kcard:hover{ transform:translateY(-4px); border-color:var(--line-strong); transition-duration:var(--dur-hover); }
+  .demo-kcard:hover::after{ opacity:1; }
+  .demo-kcard:hover::before{ opacity:1; }
+  .lp-links a:hover{ color:var(--brand); }
+  .lp-links a:hover::after{ transform:scaleX(1); }
+  .demo-tabs button:hover{ color:var(--text); }
+}
+/* Q4 — underline trượt cho link nav (transform-only) */
+.lp-links a::after{ content:""; position:absolute; left:0; right:0; bottom:-4px; height:2px; background:var(--brand); border-radius:2px; transform:scaleX(0); transform-origin:left; transition:transform var(--dur-hover) var(--ease-out); }
+/* Q5 — glow tĩnh sau CTA + viền gradient tĩnh cho khung demo hero */
+.lp-cta{ position:relative; isolation:isolate; }
+.lp-cta::before{ content:""; position:absolute; inset:-40% -20%; z-index:-1; pointer-events:none; background:radial-gradient(closest-side, rgba(45,75,255,.35), transparent 70%); filter:blur(24px); }
+.lp-shot{ border:1px solid transparent; background:linear-gradient(160deg, rgba(45,75,255,.35), rgba(var(--ov),.05) 40%, rgba(var(--ov),.02)) padding-box, linear-gradient(135deg, #2D4BFF, #FF5C7A) border-box; }
+/* M3 — beam chỉ trên khung demo hero, fallback = viền gradient tĩnh Q5 khi không có registerProperty */
+.lp-shot.beam-on::before{ content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; pointer-events:none; background:conic-gradient(from var(--angle), transparent 0%, transparent 70%, #a5b4fc 85%, #fff 92%, transparent 100%); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; animation:beam-spin 6s linear infinite; }
+.lp-shot.beam-on.beam-paused::before{ animation-play-state:paused; }
+/* Q7 — tour: step không active dim, step active nổi + glow khung fade-in trễ 200ms */
+.lp-tour-step{ opacity:.45; }
+.lp-tour-step.is-active{ opacity:1; transform:scale(1.01); }
+.lp-tour-frame{ isolation:isolate; }
+.lp-tour-frame::before{ content:""; position:absolute; inset:0; border-radius:inherit; z-index:-1; pointer-events:none; background:radial-gradient(closest-side, rgba(45,75,255,.18), transparent 70%); opacity:0; transition:opacity 600ms var(--ease-out) 200ms; }
+.lp-tour-frame.glow-on::before{ opacity:1; }
+/* B2 — progress bar của khối demo kanban, chỉ hiện khi hỗ trợ view-timeline (cộng thêm, không thay reveal) */
+.demo-progress{ display:none; height:3px; border-radius:2px; background:var(--brand); transform-origin:0 50%; transform:scaleX(0); }
+@supports (view-timeline-name:--demo){
+  #lp-demo-kanban{ view-timeline-name:--demo; }
+  .demo-progress{ display:block; animation:demo-progress linear both; animation-timeline:--demo; animation-range:entry 0% exit 100%; }
+}
+/* M6 — entry cho view khi không có View Transitions (có VT thì VT lo, tránh double) */
+.no-vt #landingView, .no-vt #authView, .no-vt #appView{ transition:opacity var(--dur-view) var(--ease-out), transform var(--dur-view) var(--ease-out); }
+@starting-style{ .no-vt #landingView, .no-vt #authView, .no-vt #appView{ opacity:0; transform:translateY(12px); } }
+/* B4 — pop modal palette bằng spring token */
+.pal-box{ animation:pal-in var(--dur-spring) var(--ease-spring) both; }
+/* Q2 — phản hồi bấm trên touch + focus bàn phím (không nằm trong gate hover) */
+.btn:active{ transition-duration:var(--dur-press); }
+button.chip:active{ transform:scale(.98); transition-duration:var(--dur-press); }
+.mv:active{ transform:scale(.97); transition-duration:var(--dur-press); }
+.theme-toggle:active{ transform:scale(.95); transition-duration:var(--dur-press); }
+.tab:active{ background:rgba(var(--ov),.08); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
+/* Q6 — reduced-motion: tắt hẳn các hiệu ứng mới (block cũ + global duration .01ms vẫn giữ) */
+@media (prefers-reduced-motion: reduce){
+  .lp-tour-step, .demo-kcard, .demo-tab-ind{ transition:none !important; }
+  .lp-shot.beam-on::before{ animation:none !important; opacity:0 !important; }
+  .demo-progress{ display:none !important; }
+  .lp-card::before, .job::before, .tile::before, button.chip::before, .demo-kcard::before{ opacity:0 !important; }
+  .skel{ animation:none !important; }
+  .lp-tour-frame::before{ transition:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -1090,6 +1219,7 @@ html{scroll-padding-top:96px}
 </section>
 
 <section class="lp-sec" id="lp-demo-kanban">
+    <div class="demo-progress" aria-hidden="true"></div>
   <span class="lp-pill">Demo</span>
   <h2>Thử kéo <em>1 thẻ kanban</em></h2>
   <p class="lede">Bản demo — dữ liệu giả lập, không đụng pipeline thật của bạn. Máy tính thì kéo-thả, điện thoại thì bấm ◀ ▶ trên thẻ.</p>
@@ -1219,7 +1349,7 @@ html{scroll-padding-top:96px}
     <span class="lp-pill">Thử ngay</span>
     <h2 class="rv">Thử demo trước, <em>đăng ký sau cũng được.</em></h2>
     <p class="lede rv">Kéo một thẻ kanban, kéo slider tính điểm — thấy hợp thì đăng ký, chưa hợp thì cứ xem tiếp.</p>
-    <div class="lp-cta rv"><a class="btn primary big" href="#lp-demo-kanban" style="text-decoration:none">Thử demo ngay</a><button class="btn ghost big" data-auth="register">Đăng ký miễn phí</button></div>
+    <div class="lp-cta rv"><a class="btn primary big lp-magnet" data-magnet-cap="6" href="#lp-demo-kanban" style="text-decoration:none">Thử demo ngay</a><button class="btn ghost big" data-auth="register">Đăng ký miễn phí</button></div>
   </section>
 
   <footer class="lp-foot">
@@ -1637,24 +1767,78 @@ const AUTH_ERR = {
 function authErr(e){ return AUTH_ERR[e.message] || e.message; }
 
 let landingAnimated = false;
+/* MOTION-ALL B1/M6 — view transitions (fallback: swap thường + @starting-style khi không có VT) */
+if (!document.startViewTransition) document.documentElement.classList.add("no-vt");
+function focusEl(sel){
+  const el = document.querySelector(sel);
+  if (!el) return;
+  if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "-1");
+  try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+}
+function withViewTransition(update, opts){
+  opts = opts || {};
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const brandImg = document.querySelector("#landingView .brand .mark-img");
+  const authImg = document.querySelector("#authView .medallion-img");
+  const setBrand = (v) => {
+    if (brandImg) brandImg.style.setProperty("view-transition-name", v);
+    if (authImg) authImg.style.setProperty("view-transition-name", v);
+  };
+  if (opts.sharedBrand) setBrand("brand-logo");
+  const clear = () => setBrand("");
+  if (!reduced && document.startViewTransition) {
+    const tr = document.startViewTransition(() => { update(); });
+    if (tr && tr.finished) tr.finished.then(clear).catch(clear);
+    else setTimeout(clear, 1000);
+  } else { update(); clear(); }
+}
+/* MOTION-ALL M1 — spotlight: 1 listener delegated, rAF-throttle, chỉ pointer:fine, không reduced-motion, loại .kcard */
+(function initSpotlight(){
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  let raf = 0, lastEv = null;
+  document.addEventListener("pointermove", (e) => {
+    lastEv = e;
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const ev = lastEv; if (!ev) return;
+      const card = ev.target.closest(".lp-card, .job, .tile, button.chip, .demo-kcard");
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      card.style.setProperty("--mx", (ev.clientX - r.left) + "px");
+      card.style.setProperty("--my", (ev.clientY - r.top) + "px");
+    });
+  }, { passive: true });
+})();
 function showLanding(){
-  $("#authView").classList.add("hidden");
-  $("#appView").classList.add("hidden");
-  $("#landingView").classList.remove("hidden");
-  window.scrollTo(0, 0);
-  initLandingFx();
+  withViewTransition(() => {
+    $("#authView").classList.add("hidden");
+    $("#appView").classList.add("hidden");
+    $("#landingView").classList.remove("hidden");
+    window.scrollTo(0, 0);
+    focusEl("#landingView .lp-hero h1");
+    initLandingFx();
+  }, { sharedBrand: true });
 }
 function showAuth(mode){
-  $("#landingView").classList.add("hidden");
-  $("#appView").classList.add("hidden");
-  $("#authView").classList.remove("hidden");
-  window.scrollTo(0, 0);
-  setAuthMode(mode || "login");
+  withViewTransition(() => {
+    $("#landingView").classList.add("hidden");
+    $("#appView").classList.add("hidden");
+    $("#authView").classList.remove("hidden");
+    window.scrollTo(0, 0);
+    focusEl("#authTitle");
+    setAuthMode(mode || "login");
+  }, { sharedBrand: true });
 }
 function showApp(){
-  $("#landingView").classList.add("hidden");
-  $("#authView").classList.add("hidden");
-  $("#appView").classList.remove("hidden");
+  withViewTransition(() => {
+    $("#landingView").classList.add("hidden");
+    $("#authView").classList.add("hidden");
+    $("#appView").classList.remove("hidden");
+    window.scrollTo(0, 0);
+    focusEl("#appView section:not(.hidden) h2");
+  }, { sharedBrand: true });
 }
 function setAuthMode(mode){
   $$("#authTabs button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
@@ -1746,6 +1930,15 @@ function initLpTour(root){
   const tour = root.querySelector(".lp-tour");
   if (!tour || tour.dataset.bound) return;
   tour.dataset.bound = "1";
+  const frame = tour.querySelector(".lp-tour-frame");
+  if (frame) {
+    if ("IntersectionObserver" in window) {
+      const gio = new IntersectionObserver((entries) => {
+        entries.forEach((en) => { if (en.isIntersecting) { frame.classList.add("glow-on"); gio.disconnect(); } });
+      }, { threshold: 0.2 });
+      gio.observe(tour);
+    } else { frame.classList.add("glow-on"); }
+  }
   const steps = Array.from(tour.querySelectorAll(".lp-tour-step"));
   const states = Array.from(tour.querySelectorAll(".lp-tour-state"));
   if (!steps.length || !states.length) return;
@@ -1839,6 +2032,19 @@ function initLpCompare(root){
   });
 }
 
+function initLpBeam(root){
+  const shot = root.querySelector(".lp-shot");
+  if (!shot) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!window.CSS || !CSS.registerProperty) return; // fallback: viền gradient tĩnh Q5
+  shot.classList.add("beam-on");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => shot.classList.toggle("beam-paused", !en.isIntersecting));
+    });
+    io.observe(shot);
+  }
+}
 function initLandingFx(){
   const root = $("#landingView");
   if (!root || root.classList.contains("hidden")) return;
@@ -1853,7 +2059,7 @@ function initLandingFx(){
     initLpTour(root);
     initLpProgress();
     initLpGlowParallax(root);
-    initLpCompare(root);
+    initLpCompare(root);     initLpBeam(root);
   }
 }
 
@@ -1883,33 +2089,35 @@ function initLandingCounts(root){
   io.observe(stats);
 }
 
-/* Đợt 1 (P0) — magnetic: CHỈ nút hero chính (.lp-magnet), CHỈ desktop có
+/* Đợt 1 (P0) — magnetic: nút .lp-magnet (hero chính + CTA cuối, cap theo data-magnet-cap), CHỈ desktop có
    hover tinh, KHÔNG reduced-motion. Kéo nhẹ stickDelta 0.15, kẹp tối đa 8px,
    chạy bằng requestAnimationFrame, bật lại khi rời chuột (nhờ transition
    sẵn có của .btn). Các nút khác hover thường, không ảnh hưởng. */
 function initLandingMagnet(root){
-  const btn = root.querySelector(".lp-hero .lp-magnet");
-  if (!btn) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  let raf = 0, tx = 0, ty = 0;
-  const apply = () => { raf = 0; btn.style.transform = "translate(" + tx + "px," + ty + "px)"; };
-  btn.addEventListener("mouseenter", () => { btn.style.transition = "none"; });
-  btn.addEventListener("mousemove", (ev) => {
-    const r = btn.getBoundingClientRect();
-    const dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
-    tx = Math.max(-8, Math.min(8, dx * 0.15));
-    ty = Math.max(-8, Math.min(8, dy * 0.15));
-    if (!raf) raf = requestAnimationFrame(apply);
-  });
-  btn.addEventListener("mouseleave", () => {
-    if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    tx = 0; ty = 0;
-    btn.style.transition = "";
-    btn.style.transform = "";
+  const btns = root.querySelectorAll(".lp-magnet");
+  btns.forEach((btn) => {
+    const cap = Number(btn.dataset.magnetCap || 8);
+    let raf = 0, tx = 0, ty = 0;
+    const apply = () => { raf = 0; btn.style.transform = "translate(" + tx + "px," + ty + "px)"; };
+    btn.addEventListener("mouseenter", () => { btn.style.transition = "none"; });
+    btn.addEventListener("mousemove", (ev) => {
+      const r = btn.getBoundingClientRect();
+      const dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
+      tx = Math.max(-cap, Math.min(cap, dx * 0.15));
+      ty = Math.max(-cap, Math.min(cap, dy * 0.15));
+      if (!raf) raf = requestAnimationFrame(apply);
+    });
+    btn.addEventListener("mouseleave", () => {
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      tx = 0; ty = 0;
+      btn.style.transition = "transform var(--dur-spring) var(--ease-spring)";
+      btn.style.transform = "";
+      setTimeout(() => { btn.style.transition = ""; }, 550);
+    });
   });
 }
-
 /* ---------------- Boot / profiles ---------------- */
 async function boot(){
   const me = await api("/api/me");
@@ -1967,13 +2175,15 @@ async function loadSourceStatus(){
 
 /* ---------------- Tabs ---------------- */
 function switchTab(t){
-  $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
-  const panels = { jobs: $("#tab-jobs"), kanban: $("#tab-kanban"), profile: $("#tab-profile") };
-  const show = panels[t];
-  Object.keys(panels).forEach(k => { const p = panels[k]; if (p) p.classList.toggle("hidden", k !== t); });
-  if (show) {
-    show.classList.remove("tabview-in"); void show.offsetWidth; show.classList.add("tabview-in");
-  }
+  withViewTransition(() => {
+    $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+    const panels = { jobs: $("#tab-jobs"), kanban: $("#tab-kanban"), profile: $("#tab-profile") };
+    const show = panels[t];
+    Object.keys(panels).forEach(k => { const p = panels[k]; if (p) p.classList.toggle("hidden", k !== t); });
+    if (show) {
+      show.classList.remove("tabview-in"); void show.offsetWidth; show.classList.add("tabview-in");
+    }
+  });
   if (t === "kanban") loadApplications();
 }
 $$(".tab").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
@@ -1997,9 +2207,12 @@ async function loadDigest(){
   const strip = $("#digestStrip");
   const p = currentProfile();
   if (!p) { strip.innerHTML = ""; return; }
-  strip.innerHTML = `<div class="brief"><div class="brief-in"><div style="display:grid;gap:10px"><div class="skel" style="width:45%;height:14px"></div><div class="skel" style="width:70%;height:44px"></div><div class="skel" style="width:90%"></div></div><div style="display:grid;gap:10px"><div class="skel" style="width:45%;height:14px"></div><div class="skel" style="width:60%;height:44px"></div></div></div></div>`;
+  const digestSkelHTML = `<div class="brief"><div class="brief-in"><div style="display:grid;gap:10px"><div class="skel" style="width:45%;height:14px"></div><div class="skel" style="width:70%;height:44px"></div><div class="skel" style="width:90%"></div></div><div style="display:grid;gap:10px"><div class="skel" style="width:45%;height:14px"></div><div class="skel" style="width:60%;height:44px"></div></div></div></div>`;
+  let digestSkelShown = false;
+  const digestSkelTimer = setTimeout(() => { strip.innerHTML = digestSkelHTML; digestSkelShown = true; }, 300);
   try {
     const d = await api("/api/digest/today?profile_id=" + encodeURIComponent(p.id));
+    clearTimeout(digestSkelTimer);
     const strong = d.strong || [];
     const fus = d.follow_ups || [];
     const sc = Number(d.strong_count || strong.length || 0);
@@ -2022,7 +2235,9 @@ async function loadDigest(){
       </div>
     </div></div>`;
     animateCountUps(strip);
+    if (digestSkelShown && strip.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { strip.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
   } catch (e) {
+    clearTimeout(digestSkelTimer);
     strip.innerHTML = "";
   }
 }
@@ -2055,7 +2270,8 @@ async function loadJobs(){
   }
   const skelAt = Date.now();
   const firstJobsLoad = jobsFirstRender;
-  box.innerHTML = '<div class="list">' + [1,2,3].map(() => `<article class="card" aria-busy="true"><div class="score weak" style="background:var(--line)"></div><div style="display:grid;gap:10px"><div class="skel" style="width:70%;height:20px"></div><div class="skel" style="width:45%"></div><div class="skel" style="width:90%"></div></div></article>`).join("") + '</div>';
+  const jobsSkelHTML = '<div class="list">' + [1,2,3].map(() => `<article class="card" aria-busy="true"><div class="score weak" style="background:var(--line)"></div><div style="display:grid;gap:10px"><div class="skel" style="width:70%;height:20px"></div><div class="skel" style="width:45%"></div><div class="skel" style="width:90%"></div></div></article>`).join("") + '</div>';
+  const jobsSkelTimer = setTimeout(() => { box.innerHTML = jobsSkelHTML; }, 300);
   const qs = new URLSearchParams({ profile_id: p.id });
   if (state.filters.tier) qs.set("tier", state.filters.tier);
   if (state.filters.source) qs.set("source", state.filters.source);
@@ -2067,10 +2283,12 @@ async function loadJobs(){
       if (wait) await new Promise(r => setTimeout(r, wait));
     }
     state.jobsVisible = 20;
+    clearTimeout(jobsSkelTimer);
     box.classList.add("xfade");
     renderJobs();
     setTimeout(() => box.classList.remove("xfade"), 240);
   } catch (e) {
+    clearTimeout(jobsSkelTimer);
     box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
   }
 }
@@ -2625,13 +2843,16 @@ async function loadBenchmark(){
   const level = $("#benchLevel").value;
   const loc = $("#benchLoc").value.trim();
   const box = $("#benchResult");
-  box.innerHTML = '<div class="muted small">Đang tính…</div>';
+  const benchSkelHTML = '<div class="bench-grid"><div class="tile"><div class="skel" style="width:55%;height:24px"></div><div class="skel" style="width:80%;height:12px;margin-top:8px"></div></div><div class="tile"><div class="skel" style="width:55%;height:24px"></div><div class="skel" style="width:80%;height:12px;margin-top:8px"></div></div><div class="tile"><div class="skel" style="width:55%;height:24px"></div><div class="skel" style="width:80%;height:12px;margin-top:8px"></div></div></div>';
+  let benchSkelShown = false;
+  const benchSkelTimer = setTimeout(() => { box.innerHTML = benchSkelHTML; benchSkelShown = true; }, 300);
   try {
     const qs = new URLSearchParams();
     if (role) qs.set("role", role);
     if (level) qs.set("level", level);
     if (loc) qs.set("location", loc);
     const d = await api("/api/benchmark?" + qs.toString());
+    clearTimeout(benchSkelTimer);
     const fmt = (v) => v == null ? "—" : (v / 1e6).toFixed(1).replace(/\.0$/, "").replace(".", ",") + "tr";
     if (d.count >= 5) {
       box.innerHTML = `<div class="bench-grid">
@@ -2647,7 +2868,8 @@ async function loadBenchmark(){
       </div>
       <div class="bench-note">Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp — đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.</div>`;
     }
-  } catch (e) { box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
+    if (benchSkelShown && box.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
+  } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
 }
 $("#benchBtn").addEventListener("click", loadBenchmark);
 
