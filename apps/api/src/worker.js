@@ -373,7 +373,7 @@ function fitBreakdown(profile, job) {
   const ageDays = Math.floor((now() - refTs) / 86400);
   const freshness = ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : ageDays <= 14 ? 3 : 1;
   const titleAndJd = `${job.title || ""} ${(job.jd_text || "").slice(0, 500)}`.toLowerCase();
-  const seniorish = /(senior|sr\.|lead|principal|staff|manager|architect|trưởng|cao cấp)/.test(titleAndJd);
+  const seniorish = /(senior|\bsr\b|lead|principal|staff|manager|architect|expert|trưởng|cao cấp)/.test(titleAndJd);
   const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
   const lvl = (profile.level || "").toLowerCase();
   let level = 5, levelWhy = "Cấp bậc phù hợp";
@@ -398,10 +398,12 @@ function scoreJob(profile, profileSkills, job) {
     else missing.push(js);
   }
   const rule = jobSkills.length ? (matchedW / jobTotalW) * 50 : 10;
-  const fit = fitBreakdown(profile, job).total;
-  let finalScore = Math.round(((rule + fit) / 70) * 100);
+  const fb = fitBreakdown(profile, job);
+  let finalScore = Math.round(((rule + fb.total) / 70) * 100);
   // Bằng chứng mỏng (job khai < 3 skills) thì không cho lên strong.
   if (jobSkills.length < 3) finalScore = Math.min(finalScore, 69);
+  // Lệch cấp bậc hoặc khác khu vực thì không cho lên strong, dù kỹ năng khớp hết (T-46).
+  if (fb.level < 5 || fb.location === 0) finalScore = Math.min(finalScore, 74);
   const tier = finalScore >= 75 ? "strong" : finalScore >= 50 ? "partial" : "weak";
   return { rule, semantic: null, finalScore, tier, matched, missing, jobSkills };
 }
