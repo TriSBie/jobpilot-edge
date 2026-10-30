@@ -353,7 +353,7 @@ html[data-theme="dark"]{
 .lp-stats{ display:flex; gap:clamp(1.6rem,5vw,3.6rem); margin-top:2.8rem; flex-wrap:wrap; justify-content:center; }
 .lp-stat b{ display:block; font-family:var(--f-head); font-weight:400; font-size:2.1rem; color:var(--text); }
 .lp-stat span{ color:var(--muted); font-size:.85rem; }
-.lp-shot{ margin-top:3rem; width:min(880px,100%); border-radius:20px; padding:10px;
+.lp-shot{ will-change:transform,opacity; margin-top:3rem; width:min(880px,100%); border-radius:20px; padding:10px;
   background:linear-gradient(160deg, rgba(45,75,255,.35), rgba(var(--ov),.05) 40%, rgba(var(--ov),.02));
   box-shadow:0 30px 80px rgba(0,0,0,.55); }
 .lp-shot img{ display:block; width:100%; border-radius:12px; border:1px solid var(--line); }
@@ -387,27 +387,27 @@ html[data-theme="dark"]{
    không có animation thì hero vẫn đủ; animation chỉ thêm nhịp vào. */
 /* LƯU Ý: class entrance đặt lên wrapper .lp-shot (không đặt lên img bên
    trong) để Đợt 2 thay visual bên trong mà vẫn giữ entrance. */
-@keyframes lp-hero-in{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+@keyframes lp-hero-in{ from{ opacity:0; transform:translateY(28px); } to{ opacity:1; transform:translateY(0); } }
 .lp-hero .medallion-img{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 0ms backwards; }
-.lp-hero h1{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 60ms backwards; }
-.lp-hero .sub{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 120ms backwards; }
-.lp-hero .lp-cta{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 180ms backwards; }
-.lp-hero .lp-shot{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 240ms backwards; }
+.lp-hero h1{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 80ms backwards; }
+.lp-hero .sub{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 160ms backwards; }
+.lp-hero .lp-cta{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 240ms backwards; }
+.lp-hero .lp-shot{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 320ms backwards; }
 /* 1.2 Ambient glow: 1 lớp duy nhất sau hero, vòng 18s (trong 15–20s),
    bão hoà thấp, chỉ transform/opacity, không phủ toàn trang. */
 .lp-hero{ position:relative; overflow:hidden; }
 .lp-glow{ position:absolute; left:50%; top:-10rem; width:min(64rem,140vw); height:34rem;
   transform:translateX(-50%); pointer-events:none; z-index:0;
-  background:radial-gradient(closest-side, rgba(45,75,255,.16), rgba(45,75,255,.05) 55%, transparent 72%);
-  animation:lp-glow-drift 18s cubic-bezier(.4,0,.2,1) infinite alternate; }
-@keyframes lp-glow-drift{ from{ transform:translateX(-50%) translateY(0) scale(1); opacity:.85; }
-  to{ transform:translateX(-52%) translateY(1.5rem) scale(1.06); opacity:1; } }
+  background:radial-gradient(closest-side, rgba(45,75,255,.22), rgba(45,75,255,.08) 55%, transparent 72%);
+  animation:lp-glow-drift 18s cubic-bezier(.4,0,.2,1) infinite alternate; will-change:transform,opacity; }
+@keyframes lp-glow-drift{ from{ transform:translateX(-50%) translateY(var(--glow-py,0px)) scale(1); opacity:.90; }
+  to{ transform:translateX(-52%) translateY(calc(1.5rem + var(--glow-py,0px))) scale(1.06); opacity:1; } }
 .lp-hero > *:not(.lp-glow){ position:relative; z-index:1; }
 /* 1.3 Reveal upgrade: translateY 18px → 24px; khối nhấn mạnh (.rv-strong:
-   ảnh sản phẩm, công thức) thêm blur 6px → 0; stagger con 50ms. */
-.rv{ transform:translateY(24px); transition:opacity var(--m-enter) var(--e-out), transform var(--m-enter) var(--e-out), filter var(--m-enter) var(--e-out); }
-.rv-strong{ filter:blur(6px); }
-.rv-strong.in{ filter:blur(0); }
+   ảnh sản phẩm, công thức) không còn blur; stagger con 50ms. */
+.rv{ transform:translateY(24px); transition:opacity var(--m-enter) var(--e-out), transform var(--m-enter) var(--e-out); }
+
+
 .lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2), .lp-bento .rv:nth-child(2){ transition-delay:.05s; }
 .lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3), .lp-bento .rv:nth-child(3){ transition-delay:.10s; }
 .lp-steps .rv:nth-child(4), .lp-bento .rv:nth-child(4){ transition-delay:.15s; }
@@ -421,8 +421,8 @@ html[data-theme="dark"]{
     animation-timeline:view(); animation-range:entry 0% cover 40%; }
   .rv-strong{ animation-name:lp-rv-strong; }
   @keyframes lp-rv{ from{ opacity:0; transform:translateY(24px); } to{ opacity:1; transform:none; } }
-  @keyframes lp-rv-strong{ from{ opacity:0; transform:translateY(24px); filter:blur(6px); }
-    to{ opacity:1; transform:none; filter:blur(0); } }
+  @keyframes lp-rv-strong{ from{ opacity:0; transform:translateY(24px); }
+    to{ opacity:1; transform:none; } }
 }
 /* 1.4 Count-up: tabular numerals + giữ sẵn chiều rộng để không lệch layout. */
 .lp-stat b{ font-variant-numeric:tabular-nums; }
@@ -501,10 +501,10 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 #lp-how, #lp-scoring{ position:relative; }
 #lp-how::before, #lp-scoring::before{ content:""; position:absolute; inset:0; pointer-events:none;
   background:radial-gradient(44rem 18rem at 50% 0%, rgba(45,75,255,.05), transparent 65%); }
-.lp-card{ transition:transform var(--m-base) var(--e-out), border-color var(--m-base) var(--e-out), box-shadow var(--m-base) var(--e-out); }
+.lp-card{ transition:transform var(--m-base) var(--e-out), border-color var(--m-base) var(--e-out); }
 @media (hover:hover) and (pointer:fine){
-  .lp-card:hover{ transform:translateY(-6px); border-color:var(--line-strong); box-shadow:0 14px 32px rgba(0,0,0,.16); transition-delay:0s; }
-  html[data-theme="light"] .lp-card:hover{ box-shadow:0 14px 32px rgba(13,20,36,.1); }
+  .lp-card:hover{ transform:translateY(-8px); border-color:var(--line-strong); box-shadow:0 18px 40px rgba(0,0,0,.20); transition-delay:0s; }
+  html[data-theme="light"] .lp-card:hover{ box-shadow:0 18px 40px rgba(13,20,36,.14); }
 }
 .lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2){ transition-delay:.07s; }
 .lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3){ transition-delay:.14s; }
@@ -770,7 +770,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .demo-tabs{position:relative;display:flex;gap:.25rem;margin-top:.9rem;border-bottom:1px solid var(--line);padding:0 .25rem .25rem}
 .demo-tabs button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:.9rem;padding:.5rem .9rem;border-radius:10px;position:relative;z-index:1}
 .demo-tabs button.on{color:var(--text)}
-.demo-tab-ind{position:absolute;bottom:-1px;left:0;height:2px;background:var(--brand);border-radius:2px;opacity:0;transition:transform 300ms cubic-bezier(0.4,0,0.2,1),width 300ms cubic-bezier(0.4,0,0.2,1),opacity 200ms cubic-bezier(0.4,0,0.2,1)}
+.demo-tab-ind{position:absolute;bottom:-1px;left:0;width:100px;height:2px;background:var(--brand);border-radius:2px;opacity:0;transform-origin:0 50%;transition:transform 300ms cubic-bezier(0.4,0,0.2,1),opacity 200ms cubic-bezier(0.4,0,0.2,1)}
 .demo-frames{margin-top:1rem}
 .demo-frame{display:none}
 .demo-frame.on{display:grid;grid-template-columns:200px minmax(0,1fr);gap:1rem;animation:demo-frame-in 300ms cubic-bezier(0.4,0,0.2,1) both}
@@ -830,8 +830,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .demo-pal-foot{color:var(--faint);font-size:.8rem;text-align:center;margin:.4rem 0 .8rem}
 .demo-marquee{display:flex;align-items:center;gap:1rem;max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,2.5rem);color:var(--muted);font-weight:700}
 .demo-marquee-label{flex:none;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase}
-.demo-marquee-viewport{flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
-.demo-marquee-track{display:flex;width:max-content;animation:demo-marquee 30s linear infinite}
+.demo-marquee-viewport{flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
+.demo-marquee-track{display:flex;width:max-content;animation:demo-marquee 30s linear infinite;will-change:transform}
 .demo-marquee-group{white-space:nowrap;font-size:1rem;letter-spacing:.02em}
 @keyframes demo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .demo-hero button:focus-visible,.demo-kanban button:focus-visible,.demo-score input:focus-visible,.demo-score select:focus-visible,.demo-pal-item:focus-visible{outline:none;box-shadow:var(--focus)}
@@ -854,7 +854,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   /* 3.2 — thanh tiến trình đọc: cố định ở đỉnh viewport, chỉ transform scaleX.
      Header .lp-nav cao ~56px (padding .8rem + mark 30px) nên thanh 3px ở top:0
      chỉ phủ phần padding nền của header, không che chữ brand, link nav hay CTA. */
-  #lp-progress{ position:fixed; top:0; left:0; width:100%; height:3px; z-index:60;
+  #lp-progress{ position:fixed; top:0; left:0; width:100%; height:4px; z-index:60;
     background:var(--brand); transform-origin:0 50%; transform:scaleX(0); pointer-events:none; }
   @supports (animation-timeline: scroll()){
     #lp-progress{ animation:lp-progress linear both; animation-timeline:scroll(); }
@@ -866,9 +866,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .lp-tour-frame{ position:sticky; top:76px; border:1px solid var(--line); border-radius:20px; padding:1.4rem;
     background:linear-gradient(180deg, rgba(var(--ov),.045), rgba(var(--ov),.015)); }
   .lp-tour-frames{ display:grid; }
-  .lp-tour-state{ grid-area:1/1; opacity:0; transform:translateY(8px); pointer-events:none;
-    transition:opacity 300ms cubic-bezier(0.16,1,0.3,1), transform 300ms cubic-bezier(0.16,1,0.3,1); }
-  .lp-tour-state.active{ opacity:1; transform:none; pointer-events:auto; }
+  .lp-tour-state{ grid-area:1/1; opacity:0; pointer-events:none; transition:opacity 450ms var(--e-out); }
+  .lp-tour-state.active{ opacity:1; pointer-events:auto; }
   .lp-tour-state h3{ margin:0 0 .4rem; font-size:1rem; }
   .lp-tour-state p{ color:var(--muted); line-height:1.6; margin:0 0 1rem; font-size:.92rem; }
   .lp-tour-note{ color:var(--muted); font-size:.82rem; line-height:1.6; margin:1rem 0 0; }
@@ -913,6 +912,21 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
     .lp-tour-state, .lp-tour-step{ transition:none; }
     .lp-compare-panel.active{ animation:none; }
   }
+/* ===== WAVE 4 (Đợt 4): sửa lỗi + motion rõ + nội dung đậm ===== */
+html{scroll-padding-top:96px}
+.rv-scale{transform:scale(.97)}
+.rv-slide{transform:translateX(24px)}
+@keyframes lp-n-pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.lp-tour-step.is-active .n{animation:lp-n-pulse 300ms cubic-bezier(.16,1,.3,1)}
+.lp-mini-vis{margin-top:auto;padding-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.lp-mv-chip{border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;font-size:.82rem;color:var(--muted);background:rgba(var(--ov),.03)}
+.lp-mv-arrow{color:var(--muted)}
+.lp-mv-input{flex:1;min-width:12rem;border:1px solid var(--line);border-radius:10px;padding:.55rem .8rem;font-size:.88rem;color:var(--muted);background:rgba(var(--ov),.03)}
+.kph{border:1.5px dashed var(--line-strong);border-radius:12px;padding:.9rem;text-align:center;color:var(--muted);font-size:.88rem}.demo-kbody:has(.demo-kcard) .kph{display:none}
+#lp-scoring{background:linear-gradient(180deg, rgba(var(--ov),.04), rgba(var(--ov),.01))}
+#lp-compare h2{font-size:clamp(2.1rem,4.8vw,3.3rem)}
+@media (max-width:640px){ .rv-slide{transform:translateY(12px)} .lp-mini-vis{gap:.4rem} }
+@media (prefers-reduced-motion: reduce){ .rv-scale,.rv-slide{transform:none;transition:none} .lp-tour-step.is-active .n{animation:none} }
 </style>
 </head>
 <body>
@@ -965,7 +979,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
       <div class="demo-list">
         <div class="demo-job"><div><b>Backend Engineer (Java, Spring Boot)</b><span>Công ty Demo A · Hồ Chí Minh · 2 ngày trước</span></div><span class="score-pill strong">82đ</span></div>
         <div class="demo-job"><div><b>Backend Developer (Java, Kafka)</b><span>Công ty Demo B · Hồ Chí Minh · 5 ngày trước</span></div><span class="score-pill partial">68đ</span></div>
-        <div class="demo-job"><div><b>Java Developer (Fresher)</b><span>Công ty Demo C · Hà Nội · 12 ngày trước</span></div><span class="score-pill">41đ</span></div>
+        <div class="demo-job"><div><b>Java Developer (Fresher)</b><span>Công ty Demo C · Hà Nội · 12 ngày trước</span></div><span class="score-pill">41đ</span></div>         <div class="demo-job"><div><b>Backend Java (Spring, PostgreSQL)</b><span>Công ty Demo D · Remote · 8 ngày trước</span></div><span class="score-pill partial">57đ</span></div>
       </div>
     </div>
     <div class="demo-frame" role="tabpanel" data-demo-frame="kanban">
@@ -974,7 +988,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
       <div class="demo-minicol"><b>Đã apply</b><span>Backend Java — Demo E</span></div>
     </div>
     <div class="demo-frame" role="tabpanel" data-demo-frame="brief">
-      <div class="demo-brief"><b>☀ Morning brief — demo</b><p>2 job khớp mạnh mới · 1 việc cần follow-up hôm nay.</p><span>• Backend Java — Demo A: 82đ, khớp 6/8 kỹ năng</span><span>• Nhắn lại Demo D: đã 4 ngày chưa phản hồi</span></div>
+      <div class="demo-brief"><b>☀ Morning brief — demo</b><p>2 job khớp mạnh mới · 1 việc cần follow-up hôm nay.</p><span>• Backend Java — Demo A: 82đ, khớp 6/8 kỹ năng</span><span>• Nhắn lại Demo D: đã 4 ngày chưa phản hồi</span><span>• Java + Kafka — Demo B: 68đ, khớp một phần</span><span>• Demo A: lịch follow-up ngày mai</span></div>
     </div>
   </div>
   <p class="demo-note">Giao diện minh hoạ bằng dữ liệu demo — không phải tài khoản thật của bạn.</p>
@@ -983,7 +997,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 
 <div class="demo-marquee" aria-label="Nguồn job JobPilot đang dùng">
   <span class="demo-marquee-label">Nguồn job:</span>
-  <div class="demo-marquee-viewport"><div class="demo-marquee-track"><span class="demo-marquee-group">ITviec ✦ TopDev ✦&nbsp;</span><span class="demo-marquee-group" aria-hidden="true">ITviec ✦ TopDev ✦&nbsp;</span></div></div>
+  <div class="demo-marquee-viewport"><div class="demo-marquee-track"><span class="demo-marquee-group">ITviec ✦ TopDev ✦ Quét mỗi 30 phút ✦ Khử trùng tin ✦ 7 giai đoạn ✦ Morning brief 8:00 ✦&nbsp;</span><span class="demo-marquee-group" aria-hidden="true">ITviec ✦ TopDev ✦ Quét mỗi 30 phút ✦ Khử trùng tin ✦ 7 giai đoạn ✦ Morning brief 8:00 ✦&nbsp;</span></div></div>
 </div>
 
   <section class="lp-sec" id="lp-how">
@@ -1044,12 +1058,12 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
     <span class="lp-pill">Tính năng</span>
     <h2>Nhỏ gọn, <em>nhưng có võ</em></h2>
     <div class="lp-bento">
-      <div class="lp-card wide rv"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><button class="btn sm" id="demo-cmdk-btn" type="button">Thử palette demo ⌘K</button><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
-      <div class="lp-card rv"><h3>Morning brief</h3><p>8:00 mỗi sáng: số job khớp mạnh mới + những việc cần follow-up, gói trong một panel duy nhất.</p></div>
-      <div class="lp-card rv"><h3>Đa hồ sơ</h3><p>Theo dõi nhiều hướng cùng lúc — “Backend Java” và “Backend Node” chấm điểm độc lập theo từng bộ kỹ năng.</p></div>
-      <div class="lp-card wide rv rv-strong"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
-      <div class="lp-card rv"><h3>Thêm job thủ công</h3><p>Thấy job hay ở bất cứ đâu? Dán link — JobPilot tự lấy nội dung và chấm điểm như job được quét.</p></div>
-      <div class="lp-card rv"><h3>Chạy trên Edge</h3><p>Workers · D1 · Queues · Vectorize · Workers AI — không server, không container, gần như toàn bộ trong free tier.</p></div>
+      <div class="lp-card wide rv rv-scale"><h3>⌘K — ra lệnh cho cả app</h3><p>Tìm job, nhảy tab, quét job mới, đổi hồ sơ — tất cả từ một ô lệnh. Phím tắt 1/2/3 chuyển tab, / nhảy vào tìm kiếm.</p><button class="btn sm" id="demo-cmdk-btn" type="button">Thử palette demo ⌘K</button><img src="assets/feat-palette.png" alt="Command palette của JobPilot"></div>
+      <div class="lp-card rv rv-scale"><h3>Morning\ brief</h3><p>8:00\ mỗi\ sáng:\ số\ job\ khớp\ mạnh\ mới\ \+\ những\ việc\ cần\ follow\-up,\ gói\ trong\ một\ panel\ duy\ nhất\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">☀ 8:00</span><span class="lp-mv-arrow">→</span><span class="lp-mv-chip">1 panel duy nhất</span></div></div>
+      <div class="lp-card rv rv-scale"><h3>Đa\ hồ\ sơ</h3><p>Theo\ dõi\ nhiều\ hướng\ cùng\ lúc\ —\ “Backend\ Java”\ và\ “Backend\ Node”\ chấm\ điểm\ độc\ lập\ theo\ từng\ bộ\ kỹ\ năng\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">Backend Java</span><span class="lp-mv-chip">Backend Node</span></div></div>
+      <div class="lp-card wide rv rv-strong rv-scale"><h3>Kanban 7 giai đoạn</h3><p>Mới → Đã lưu → Đã apply → Phỏng vấn → Offer. Có ngày follow-up và lịch sử từng lần chuyển trạng thái.</p><img src="assets/feat-kanban.png" alt="Kanban pipeline ứng tuyển"></div>
+      <div class="lp-card rv rv-scale"><h3>Thêm\ job\ thủ\ công</h3><p>Thấy\ job\ hay\ ở\ bất\ cứ\ đâu\?\ Dán\ link\ —\ JobPilot\ tự\ lấy\ nội\ dung\ và\ chấm\ điểm\ như\ job\ được\ quét\.</p><div class="lp-mini-vis"><span class="lp-mv-input">Dán link job…</span></div></div>
+      <div class="lp-card rv rv-scale"><h3>Chạy\ trên\ Edge</h3><p>Workers\ ·\ D1\ ·\ Queues\ ·\ Vectorize\ ·\ Workers\ AI\ —\ không\ server,\ không\ container,\ gần\ như\ toàn\ bộ\ trong\ free\ tier\.</p><div class="lp-mini-vis"><span class="lp-mv-chip">Workers</span><span class="lp-mv-chip">D1</span><span class="lp-mv-chip">Queues</span><span class="lp-mv-chip">Vectorize</span></div></div>
     </div>
   </section>
 
@@ -1064,8 +1078,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
       <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka — Công ty Demo B</b><span>68đ · TopDev (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
       <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot — Công ty Demo D</b><span>74đ · ITviec (demo)</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước">◀</button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau">▶</button></div></article>
     </div></div>
-    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"></div></div>
-    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"></div></div>
+    <div class="demo-kcol" data-demo-col="watch"><h3>Đang theo</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
+    <div class="demo-kcol" data-demo-col="applied"><h3>Đã apply</h3><div class="demo-kbody"><div class="kph">Bấm ▶ để đưa thẻ vào đây</div></div></div>
   </div>
 </section>
 
@@ -1130,8 +1144,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 
 <section class="lp-sec" id="lp-compare">
     <span class="lp-pill">Trước / Sau</span>
-    <h2>Cùng một buổi săn việc, <em>hai cách làm khác nhau</em></h2>
-    <p class="lede">Chọn một tab để xem từng cách làm việc theo từng khía cạnh. Đây là so sánh định tính về cách làm việc, không phải kết quả đo được của JobPilot.</p>
+    <h2 class="rv rv-slide">Cùng một buổi săn việc, <em>hai cách làm khác nhau</em></h2>
+    <p class="lede rv rv-slide">Chọn một tab để xem từng cách làm việc theo từng khía cạnh. Đây là so sánh định tính về cách làm việc, không phải kết quả đo được của JobPilot.</p>
     <div class="lp-compare-tabs" role="tablist" aria-label="So sánh cách tìm việc">
       <button type="button" class="lp-compare-tab" role="tab" id="lp-tab-manual" aria-selected="true" aria-controls="lp-panel-manual">Tìm việc thủ công</button>
       <button type="button" class="lp-compare-tab" role="tab" id="lp-tab-jp" aria-selected="false" aria-controls="lp-panel-jp" tabindex="-1">Có JobPilot</button>
@@ -1685,8 +1699,27 @@ function initLpTour(root){
   if (!("IntersectionObserver" in window)) return; // không có observer thì frame mặc định (jobs) giữ nguyên
   const io = new IntersectionObserver((entries) => {
     entries.forEach(en => { if (en.isIntersecting) setActive(en.target.dataset.tour); });
-  }, { rootMargin: "-45% 0px -45% 0px" }); // chỉ đổi frame khi bước qua vùng giữa màn hình, không cướp nhịp cuộn
+  }, { rootMargin: "-40% 0px -40% 0px" }); // chỉ đổi frame khi bước qua vùng giữa màn hình, không cướp nhịp cuộn
   steps.forEach(s => io.observe(s));
+}
+function initLpGlowParallax(root){
+  const glow = root.querySelector(".lp-glow");
+  const hero = root.querySelector(".lp-hero");
+  if (!glow || !hero) return;
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!fine || reduced){ glow.style.removeProperty("--glow-py"); return; }
+    const h = hero.offsetHeight || 1;
+    const y = Math.min(Math.max(window.scrollY || 0, 0), h);
+    glow.style.setProperty("--glow-py", (y / h * 40).toFixed(1) + "px");
+  };
+  const kick = () => { if (!ticking){ ticking = true; requestAnimationFrame(update); } };
+  window.addEventListener("scroll", kick, { passive:true });
+  window.addEventListener("resize", kick);
+  update();
 }
 function initLpProgress(){
   const bar = document.getElementById("lp-progress");
@@ -1750,6 +1783,7 @@ function initLandingFx(){
     $$(".rv", root).forEach(el => io.observe(el));
     initLpTour(root);
     initLpProgress();
+    initLpGlowParallax(root);
     initLpCompare(root);
   }
 }
@@ -2872,8 +2906,7 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
     if (!on || !demoInd) return;
     var r = on.getBoundingClientRect(), lr = on.parentNode.getBoundingClientRect();
     if (!r.width) return;
-    demoInd.style.width = r.width + "px";
-    demoInd.style.transform = "translateX(" + (r.left - lr.left) + "px)";
+    demoInd.style.transform = "translateX(" + (r.left - lr.left) + "px) scaleX(" + (r.width / 100) + ")";
     demoInd.style.opacity = "1";
   }
   function demoSelectTab(name){
