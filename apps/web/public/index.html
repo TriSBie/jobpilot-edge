@@ -1984,6 +1984,25 @@ Object.assign(EN, { // chuỗi từ bản gộp Muse 30/10 (CV draft, nhân bả
   "Tải CV lên để điền sẵn dạng nháp, hoặc khai vị trí, cấp bậc và khu vực bằng tay.": "Upload a CV to pre-fill a draft, or enter role, level and location by hand.",
   "Chấm lại job này bằng hồ sơ khác": "Rescore this job with another profile",
   "Chấm bằng hồ sơ khác…": "Score with another profile…",
+  "%s tháng": "%s months", "%s năm": "%s years",
+  "tên “%s”": "name “%s”", "tên": "name", "vị trí “%s”": "role “%s”", "vị trí": "role", "cấp bậc": "level", "suy từ": "from", "khu vực “%s”": "location “%s”", "khu vực": "location",
+  "lương (không suy ra từ CV, bạn tự điền)": "salary (not inferred from the CV, enter it yourself)",
+  "Đã điền nháp từ CV, chưa lưu gì cả.": "Draft filled from your CV, nothing saved yet.",
+  "Suy ra được: ": "Found: ", "Chưa suy ra được: ": "Not found: ",
+  "Kỹ năng gợi ý ở bên dưới: tích chọn, rồi lưu sau khi đã lưu hồ sơ.": "Suggested skills are below: tick them, then save after saving the profile.",
+  "Không tìm thấy kỹ năng nào trong danh sách nhận diện, bạn thêm tay ở khối Kỹ năng.": "No catalogue skills found in the CV.",
+  "Kiểm tra lại rồi bấm “Lưu hồ sơ”.": "Check it, then press “Save profile”.",
+  "Hãy chọn file CV trước đã.": "Choose a CV file first.", "Đang phân tích...": "Analysing...", "Đang trích xuất văn bản...": "Extracting text...",
+  "Không trích xuất được nội dung từ file này.": "Could not extract text from this file.",
+  "Đã đọc %s ký tự. Đang suy ra hồ sơ...": "Read %s characters. Inferring profile...",
+  "Đã điền nháp hồ sơ từ CV, kiểm tra lại rồi bấm Lưu hồ sơ.": "Draft profile filled from your CV. Check it, then press Save profile.",
+  "Điền hồ sơ từ CV": "Fill profile from CV",
+  "Chưa có hồ sơ, bấm Lưu hồ sơ trước, rồi quay lại bấm nút này.": "No profile yet. Press Save profile first, then come back to this button.",
+  "Chưa chọn kỹ năng nào.": "No skills selected.", "Các kỹ năng đã chọn đều đã có trong hồ sơ.": "All selected skills are already in the profile.",
+  "Đã lưu %s kỹ năng mới vào hồ sơ.": "Saved %s new skills to the profile.",
+  "Chưa có hồ sơ để nhân bản.": "No profile to clone.", " (bản sao)": " (copy)", "%s kỹ năng": "%s skills",
+  "chưa copy được kỹ năng: %s": "could not copy skills: %s", "Đã nhân bản và chuyển sang hồ sơ: %s": "Cloned and switched to profile: %s",
+  "(Chưa có hồ sơ)": "(No profile yet)",
 });
 const AUTH_ERR = {
   invalid_credentials: "Email hoặc mật khẩu chưa đúng.",
@@ -3393,8 +3412,8 @@ function parseCvDraft(text){
 
 function fmtDraftYears(y){
   if (y === null || y === undefined) return "";
-  if (y < 1) return Math.max(1, Math.round(y * 12)) + " tháng";
-  return (Math.round(y * 10) / 10) + " năm";
+  if (y < 1) return t("%s tháng", Math.max(1, Math.round(y * 12)));
+  return t("%s năm", Math.round(y * 10) / 10);
 }
 
 function markDraftField(el){
@@ -3414,28 +3433,28 @@ function clearDraftMarks(){
 function fillDraftForm(d){
   clearDraftMarks();
   const got = [], missing = [];
-  if (d.name){ $("#pfName").value = d.name; markDraftField($("#pfName")); got.push("tên “" + d.name + "”"); }
-  else missing.push("tên");
-  if (d.roles.length){ $("#pfRoles").value = d.roles.join(", "); markDraftField($("#pfRoles")); got.push("vị trí “" + d.roles.join(", ") + "”"); }
-  else missing.push("vị trí");
+  if (d.name){ $("#pfName").value = d.name; markDraftField($("#pfName")); got.push(t("tên “%s”", d.name)); }
+  else missing.push(t("tên"));
+  if (d.roles.length){ $("#pfRoles").value = d.roles.join(", "); markDraftField($("#pfRoles")); got.push(t("vị trí “%s”", d.roles.join(", "))); }
+  else missing.push(t("vị trí"));
   const LV = { fresher: "Fresher", junior: "Junior", middle: "Middle", senior: "Senior" };
-  if (d.level){ $("#pfLevel").value = d.level; markDraftField($("#pfLevel")); got.push("cấp bậc " + (LV[d.level] || d.level) + (d.years !== null ? " (suy từ " + fmtDraftYears(d.years) + " kinh nghiệm)" : "")); }
-  else missing.push("cấp bậc");
+  if (d.level){ $("#pfLevel").value = d.level; markDraftField($("#pfLevel")); got.push(t("cấp bậc") + " " + (LV[d.level] || d.level) + (d.years !== null ? " (" + t("suy từ") + " " + fmtDraftYears(d.years) + " kinh nghiệm)" : "")); }
+  else missing.push(t("cấp bậc"));
   if (d.locations.length){
     const locs = d.locations.map(l => AREA_PRESETS.find(x => normArea(x) === normArea(l)) || l);
     pfAreas = new Set(locs);
     pfAreaOpts = [...new Set(AREA_PRESETS.concat(locs))];
     renderAreaChips();
     markDraftField($("#pfAreaChips"));
-    got.push("khu vực “" + locs.join(", ") + "”");
-  } else missing.push("khu vực");
-  missing.push("lương (không suy ra từ CV, bạn tự điền)");
+    got.push(t("khu vực “%s”", locs.join(", ")));
+  } else missing.push(t("khu vực"));
+  missing.push(t("lương (không suy ra từ CV, bạn tự điền)"));
   const note = $("#cvDraftNote");
-  note.innerHTML = "<b>Đã điền nháp từ CV, chưa lưu gì cả.</b> " +
-    (got.length ? "Suy ra được: " + got.join("; ") + ". " : "") +
-    "Chưa suy ra được: " + missing.join("; ") + ". " +
-    (d.skills.length ? "Kỹ năng gợi ý ở bên dưới: tích chọn, rồi lưu sau khi đã lưu hồ sơ." : "Không tìm thấy kỹ năng nào trong danh sách nhận diện, bạn thêm tay ở khối Kỹ năng.") +
-    " Kiểm tra lại rồi bấm “Lưu hồ sơ”.";
+  note.innerHTML = "<b>" + t("Đã điền nháp từ CV, chưa lưu gì cả.") + "</b> " +
+    (got.length ? t("Suy ra được: ") + got.join("; ") + ". " : "") +
+    t("Chưa suy ra được: ") + missing.join("; ") + ". " +
+    (d.skills.length ? t("Kỹ năng gợi ý ở bên dưới: tích chọn, rồi lưu sau khi đã lưu hồ sơ.") : t("Không tìm thấy kỹ năng nào trong danh sách nhận diện, bạn thêm tay ở khối Kỹ năng.")) +
+    " " + t("Kiểm tra lại rồi bấm “Lưu hồ sơ”.");
   note.classList.remove("hidden");
 }
 
@@ -3460,39 +3479,39 @@ function renderDraftSkills(){
 $("#cvDraftBtn").addEventListener("click", async () => {
   const input = $("#cvDraftFile");
   const file = input.files && input.files[0];
-  if (!file){ toast("Hãy chọn file CV trước đã.", "err"); return; }
-  const btn = $("#cvDraftBtn"); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang phân tích...';
-  $("#cvDraftStatus").textContent = "Đang trích xuất văn bản...";
+  if (!file){ toast(t("Hãy chọn file CV trước đã."), "err"); return; }
+  const btn = $("#cvDraftBtn"); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + esc(t("Đang phân tích..."));
+  $("#cvDraftStatus").textContent = t("Đang trích xuất văn bản...");
   try {
     let text;
     const fname = file.name.toLowerCase();
     if (fname.endsWith(".pdf") || file.type === "application/pdf") text = await extractPdfText(file, $("#cvDraftStatus"));
     else text = await file.text();
     text = (text || "").trim();
-    if (!text) throw new Error("Không trích xuất được nội dung từ file này.");
-    $("#cvDraftStatus").textContent = "Đã đọc " + text.length.toLocaleString("vi-VN") + " ký tự. Đang suy ra hồ sơ...";
+    if (!text) throw new Error(t("Không trích xuất được nội dung từ file này."));
+    $("#cvDraftStatus").textContent = t("Đã đọc %s ký tự. Đang suy ra hồ sơ...", text.length.toLocaleString(LANG === "en" ? "en-US" : "vi-VN"));
     const d = parseCvDraft(text);
     state.cvDraftSkills = d.skills;
     fillDraftForm(d);
     renderDraftSkills();
-    toast("Đã điền nháp hồ sơ từ CV, kiểm tra lại rồi bấm Lưu hồ sơ.", "ok");
+    toast(t("Đã điền nháp hồ sơ từ CV, kiểm tra lại rồi bấm Lưu hồ sơ."), "ok");
   } catch (e){
     $("#cvDraftStatus").textContent = "";
     toast(e.message, "err");
   } finally {
-    btn.disabled = false; btn.textContent = "Điền hồ sơ từ CV";
+    btn.disabled = false; btn.textContent = t("Điền hồ sơ từ CV");
   }
 });
 
 $("#cvDraftConfirmBtn").addEventListener("click", async () => {
   const p = currentProfile();
-  if (!p){ toast("Chưa có hồ sơ, bấm Lưu hồ sơ trước, rồi quay lại bấm nút này.", "err"); return; }
+  if (!p){ toast(t("Chưa có hồ sơ, bấm Lưu hồ sơ trước, rồi quay lại bấm nút này."), "err"); return; }
   const chosen = [];
   (state.cvDraftSkills || []).forEach((s, i) => {
     const cb = $("#draft-sug-" + i), w = $("#draft-sugw-" + i);
     if (cb && cb.checked) chosen.push({ skill: s.skill, weight: w ? Number(w.value) : 3 });
   });
-  if (!chosen.length){ toast("Chưa chọn kỹ năng nào.", "err"); return; }
+  if (!chosen.length){ toast(t("Chưa chọn kỹ năng nào."), "err"); return; }
   const existing = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
   const seen = new Set(existing.map(s => s.skill.toLowerCase()));
   const merged = existing.slice();
@@ -3500,10 +3519,10 @@ $("#cvDraftConfirmBtn").addEventListener("click", async () => {
   chosen.forEach(c => {
     if (!seen.has(c.skill.toLowerCase())){ seen.add(c.skill.toLowerCase()); merged.push(c); added++; }
   });
-  if (!added){ toast("Các kỹ năng đã chọn đều đã có trong hồ sơ.", "err"); return; }
+  if (!added){ toast(t("Các kỹ năng đã chọn đều đã có trong hồ sơ."), "err"); return; }
   const btn = $("#cvDraftConfirmBtn"); btn.disabled = true;
   try {
-    await saveSkills(p, merged, "Đã lưu " + added + " kỹ năng mới vào hồ sơ.");
+    await saveSkills(p, merged, t("Đã lưu %s kỹ năng mới vào hồ sơ.", added));
     state.cvDraftSkills = [];
     $("#cvDraftSkillsWrap").classList.add("hidden");
     await loadJobs();
@@ -3517,11 +3536,11 @@ $("#profileForm").addEventListener("submit", () => { clearDraftMarks(); });
 /* ---------------- Nhân bản hồ sơ ---------------- */
 $("#cloneProfileBtn").addEventListener("click", async () => {
   const p = currentProfile();
-  if (!p){ toast("Chưa có hồ sơ để nhân bản.", "err"); return; }
+  if (!p){ toast(t("Chưa có hồ sơ để nhân bản."), "err"); return; }
   const btn = $("#cloneProfileBtn"); btn.disabled = true;
   try {
     const created = await api("/api/profiles", { method: "POST", body: JSON.stringify({
-      name: p.name + " (bản sao)",
+      name: p.name + t(" (bản sao)"),
       target_roles: p.target_roles || [],
       level: p.level || null,
       locations: p.locations || [],
@@ -3532,8 +3551,8 @@ $("#cloneProfileBtn").addEventListener("click", async () => {
     if (skills.length){
       try {
         await api("/api/profiles/" + encodeURIComponent(created.id) + "/skills/confirm", { method: "POST", body: JSON.stringify({ skills }) });
-        skillsNote = " + " + skills.length + " kỹ năng";
-      } catch (e){ skillsNote = " (chưa copy được kỹ năng: " + e.message + ")"; }
+        skillsNote = " + " + t("%s kỹ năng", skills.length);
+      } catch (e){ skillsNote = " (" + t("chưa copy được kỹ năng: %s", e.message) + ")"; }
     }
     state.profiles.push(created);
     state.profileId = created.id;
@@ -3541,7 +3560,7 @@ $("#cloneProfileBtn").addEventListener("click", async () => {
     clearDraftMarks();
     await refreshProfiles();
     await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
-    toast("Đã nhân bản và chuyển sang hồ sơ: " + created.name + skillsNote, "ok");
+    toast(t("Đã nhân bản và chuyển sang hồ sơ: %s", created.name) + skillsNote, "ok");
   } catch (e){
     toast(e.message, "err");
   } finally {
@@ -3571,7 +3590,7 @@ function syncJobsProfileSelect(){
   const sel = $("#jobsProfileSelect");
   if (!sel) return;
   if (!state.profiles.length){
-    sel.innerHTML = '<option value="">(Chưa có hồ sơ)</option>';
+    sel.innerHTML = '<option value="">' + esc(t("(Chưa có hồ sơ)")) + '</option>';
     sel.disabled = true;
     return;
   }
