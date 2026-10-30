@@ -6,6 +6,8 @@
 
 *Nộp ít hơn, đúng hơn.* Scans ITviec and TopDev every 30 minutes, scores each posting against the skills in your CV, explains the score, and tracks your applications on a kanban board.
 
+**English** · [Tiếng Việt](README.vi.md)
+
 [![Live app](https://img.shields.io/badge/Live%20app-jobpilot--edge.pages.dev-2D4BFF)](https://jobpilot-edge.pages.dev)
 [![API health](https://img.shields.io/badge/API-%2Fapi%2Fhealth-2EC8A6)](https://jobpilot-api.tribui-it-work.workers.dev/api/health)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1B1B2F)](LICENSE)
