@@ -492,6 +492,7 @@ html[data-theme="light"] .lp-shot{ box-shadow:0 30px 80px rgba(13,20,36,.18); }
 html[data-theme="light"] ::selection{ background:rgba(45,75,255,.28); }
 
 /* Nút gạt theme */
+.lang-toggle{ width:auto; padding:0 10px; font:800 12px/1 var(--f-body); letter-spacing:.04em; }
 .theme-toggle{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; flex:none;
   border-radius:50%; border:1px solid var(--line); background:rgba(var(--ov),.04); color:var(--text);
   font-size:1rem; line-height:1; transition:background var(--m-fast) var(--e-out), border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out); }@media (hover:hover) and (pointer:fine){
@@ -1199,7 +1200,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <a href="#lp-faq">Hỏi đáp</a>
     </nav>
     <div class="sp"></div>
-    <button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+    <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
     <button class="btn ghost" data-auth="login">Đăng nhập</button>
     <button class="btn primary" data-auth="register">Đăng ký miễn phí</button>
   </header>
@@ -1354,7 +1355,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 
 <!-- ================= AUTH ================= -->
 <div id="authView" class="login-wrap hidden">
-  <button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+  <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
   <div class="login-in">
     <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
     <h1 id="authTitle">Chào mừng <em>trở lại.</em></h1>
@@ -1415,7 +1416,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <select id="profileSelect" class="input" style="width:170px" title="Chọn hồ sơ"></select>
       <span class="sp"></span>
       <button class="btn sm" id="paletteBtn" type="button">⌘K</button>
-      <button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+      <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
       <button id="logoutBtn" class="btn sm ghost" type="button">Đăng xuất</button>
     </div>
     <nav class="tabbar-row">
@@ -1614,6 +1615,37 @@ let jobsFirstRender = true, kanbanFirstLoad = true, palCloseTimer = null;
 const $ = (sel, el) => (el || document).querySelector(sel);
 const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
 
+/* ---------------- i18n: tiếng Việt là nguồn, EN tra từ điển; ?lang=en hoặc nút EN/VI ---------------- */
+// EN: { "câu tiếng Việt trong code": "English" }. %s = tham số theo thứ tự.
+const EN = {};
+let LANG = "vi";
+try { LANG = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jp_lang") || "vi"; } catch (e) { /* bỏ qua */ }
+if (LANG !== "en") LANG = "vi";
+function t(vi){
+  let s = LANG === "en" ? (EN[vi] ?? vi) : vi;
+  for (let i = 1; i < arguments.length; i++) s = s.replace("%s", arguments[i]);
+  return s;
+}
+// HTML tĩnh: data-en="..." (innerHTML) và data-en-placeholder / data-en-title / data-en-aria-label.
+function applyLang(){
+  document.documentElement.lang = LANG;
+  $$("[data-en]").forEach(el => {
+    if (el.dataset.vi === undefined) el.dataset.vi = el.innerHTML;
+    el.innerHTML = LANG === "en" ? el.dataset.en : el.dataset.vi;
+  });
+  ["placeholder", "title", "aria-label"].forEach(a => $$(`[data-en-${a}]`).forEach(el => {
+    if (!el.hasAttribute("data-vi-" + a)) el.setAttribute("data-vi-" + a, el.getAttribute(a) || "");
+    el.setAttribute(a, el.getAttribute(LANG === "en" ? "data-en-" + a : "data-vi-" + a));
+  }));
+  $$("[data-lang-toggle]").forEach(b => { b.textContent = LANG === "en" ? "VI" : "EN"; b.setAttribute("aria-label", LANG === "en" ? "Chuyển sang tiếng Việt" : "Switch to English"); });
+}
+function setLang(l){
+  try { localStorage.setItem("jp_lang", l); } catch (e) { /* bỏ qua */ }
+  const u = new URL(location.href); u.searchParams.delete("lang"); location.replace(u.href); // ponytail: reload thay vì re-render từng chỗ
+}
+applyLang();
+$$("[data-lang-toggle]").forEach(b => b.addEventListener("click", () => setLang(LANG === "en" ? "vi" : "en")));
+
 function esc(s){
   return String(s == null ? "" : s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -1713,7 +1745,7 @@ function startRescoringWatch(){
 
 async function api(path, opts){
   opts = opts || {};
-  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  const headers = Object.assign({ "Content-Type": "application/json", "Accept-Language": LANG }, opts.headers || {});
   if (state.token) headers["Authorization"] = "Bearer " + state.token;
   let res;
   try {
@@ -3379,7 +3411,7 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
   const ago = (d) => d == null ? "" : d <= 0 ? "hôm nay" : d + " ngày trước";
   const loc = (s) => [...new Set(String(s || "").split(",").map(x => x.trim()).filter(Boolean))].join(", ");
   const hhmm = (ts) => ts ? new Date(ts * 1000).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "";
-  fetch(API_BASE + "/api/public/sample").then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+  fetch(API_BASE + "/api/public/sample", { headers: { "Accept-Language": LANG } }).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
     const jobs = d.jobs || [], st = d.stats || {};
     $("#sgLiveMeta").textContent = st.last_scan ? "cập nhật " + hhmm(st.last_scan) : "";
     // Space quanh số nằm trong <b> để khoảng cách luôn hiển thị rõ.
