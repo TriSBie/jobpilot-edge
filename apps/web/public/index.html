@@ -1200,7 +1200,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <a href="#lp-faq">Hỏi đáp</a>
     </nav>
     <div class="sp"></div>
-    <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+    <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" data-en-title="Switch light / dark theme" data-en-aria-label="Toggle light or dark theme"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
     <button class="btn ghost" data-auth="login">Đăng nhập</button>
     <button class="btn primary" data-auth="register">Đăng ký miễn phí</button>
   </header>
@@ -1355,15 +1355,15 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 
 <!-- ================= AUTH ================= -->
 <div id="authView" class="login-wrap hidden">
-  <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+  <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" data-en-title="Switch light / dark theme" data-en-aria-label="Toggle light or dark theme"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
   <div class="login-in">
     <img class="medallion-img" src="assets/logo-chrome-mark.png" alt="" width="74" height="74">
     <h1 id="authTitle">Chào mừng <em>trở lại.</em></h1>
     <p class="sub" id="authSub">Đăng nhập để tiếp tục pipeline săn việc của bạn.</p>
     <div class="panel login-card">
       <div class="auth-tabs" id="authTabs">
-        <button type="button" data-mode="login" class="active">Đăng nhập</button>
-        <button type="button" data-mode="register">Đăng ký</button>
+        <button type="button" data-mode="login" class="active" data-en="Log in">Đăng nhập</button>
+        <button type="button" data-mode="register" data-en="Sign up">Đăng ký</button>
       </div>
 
       <form id="loginForm">
@@ -1372,39 +1372,39 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <input id="loginEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
         </div>
         <div class="field">
-          <label for="loginPassword">Mật khẩu</label>
-          <input id="loginPassword" type="password" required placeholder="Mật khẩu của bạn" autocomplete="current-password">
+          <label for="loginPassword" data-en="Password">Mật khẩu</label>
+          <input id="loginPassword" type="password" required placeholder="Mật khẩu của bạn" data-en-placeholder="Your password" autocomplete="current-password">
         </div>
-        <button id="loginBtn" class="btn primary" type="submit" style="width:100%">Đăng nhập</button>
+        <button id="loginBtn" class="btn primary" type="submit" style="width:100%" data-en="Log in">Đăng nhập</button>
         <div id="loginError"></div>
       </form>
 
       <form id="registerForm" class="hidden">
         <div class="field">
-          <label for="regName">Họ tên</label>
-          <input id="regName" type="text" required placeholder="Tên của bạn" autocomplete="name">
+          <label for="regName" data-en="Full name">Họ tên</label>
+          <input id="regName" type="text" required placeholder="Tên của bạn" data-en-placeholder="Your name" autocomplete="name">
         </div>
         <div class="field">
           <label for="regEmail">Email</label>
           <input id="regEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
         </div>
         <div class="field">
-          <label for="regPassword">Mật khẩu</label>
-          <input id="regPassword" type="password" required placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+          <label for="regPassword" data-en="Password">Mật khẩu</label>
+          <input id="regPassword" type="password" required placeholder="Tối thiểu 8 ký tự" data-en-placeholder="At least 8 characters" autocomplete="new-password">
           <div class="pw-meter"><i id="pwBar"></i></div>
           <div class="pw-hint" id="pwHint"></div>
         </div>
         <div class="field">
-          <label for="regPassword2">Nhập lại mật khẩu</label>
-          <input id="regPassword2" type="password" required placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+          <label for="regPassword2" data-en="Confirm password">Nhập lại mật khẩu</label>
+          <input id="regPassword2" type="password" required placeholder="Nhập lại mật khẩu" data-en-placeholder="Re-enter your password" autocomplete="new-password">
         </div>
-        <button id="registerBtn" class="btn primary" type="submit" style="width:100%">Tạo tài khoản</button>
+        <button id="registerBtn" class="btn primary" type="submit" style="width:100%" data-en="Create account">Tạo tài khoản</button>
         <div id="registerError"></div>
       </form>
 
     </div>
-    <a class="auth-back" href="#" id="authBack">← Về trang giới thiệu</a>
-    <p class="login-foot">Chạy trên Cloudflare Edge. Dữ liệu của bạn, ở máy chủ của bạn.</p>
+    <a class="auth-back" href="#" id="authBack" data-en="← Back to overview">← Về trang giới thiệu</a>
+    <p class="login-foot" data-en="Runs on Cloudflare Edge. Your data, on your server.">Chạy trên Cloudflare Edge. Dữ liệu của bạn, ở máy chủ của bạn.</p>
   </div>
 </div>
 
@@ -1413,50 +1413,50 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
   <div class="app">
     <div class="topbar">
       <span class="logo">JobPilot <em>Edge</em></span>
-      <select id="profileSelect" class="input" style="width:170px" title="Chọn hồ sơ"></select>
+      <select id="profileSelect" class="input" style="width:170px" title="Chọn hồ sơ" data-en-title="Choose profile"></select>
       <span class="sp"></span>
       <button class="btn sm" id="paletteBtn" type="button">⌘K</button>
-      <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
-      <button id="logoutBtn" class="btn sm ghost" type="button">Đăng xuất</button>
+      <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" data-en-title="Switch light / dark theme" data-en-aria-label="Toggle light or dark theme"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
+      <button id="logoutBtn" class="btn sm ghost" type="button" data-en="Log out">Đăng xuất</button>
     </div>
     <nav class="tabbar-row">
-      <button class="tab active" data-tab="jobs"><span class="ic">▤</span>Việc làm</button>
+      <button class="tab active" data-tab="jobs" data-en='<span class="ic">▤</span>Jobs'><span class="ic">▤</span>Việc làm</button>
       <button class="tab" data-tab="kanban"><span class="ic">▦</span>Kanban<span id="kanbanAlertBadge" class="alert-badge hidden">0</span></button>
-      <button class="tab" data-tab="profile"><span class="ic">◉</span>Hồ sơ &amp; CV</button>
+      <button class="tab" data-tab="profile" data-en='<span class="ic">◉</span>Profile &amp; CV'><span class="ic">◉</span>Hồ sơ &amp; CV</button>
     </nav>
 
     <main>
       <!-- ===== TAB: JOBS ===== -->
       <section id="tab-jobs">
-        <h2 class="page-title">Việc làm <span class="gray" id="jobsCount"></span></h2>
-        <p class="page-sub">Tin từ ITviec và TopDev, chấm theo hồ sơ của bạn. Điểm càng cao, càng gần với CV.</p>
+        <h2 class="page-title" data-en='Jobs <span class="gray" id="jobsCount"></span>'>Việc làm <span class="gray" id="jobsCount"></span></h2>
+        <p class="page-sub" data-en="Jobs from ITviec and TopDev, scored against your profile. The higher the score, the closer to your CV.">Tin từ ITviec và TopDev, chấm theo hồ sơ của bạn. Điểm càng cao, càng gần với CV.</p>
 
         <div id="digestStrip" class="digest"></div>
 
         <div class="toolbar filters">
-          <select class="input" style="width:auto;min-width:0;flex:1 1 140px;max-width:170px" id="filterTier" title="Lọc theo độ khớp">
-            <option value="">Mọi mức khớp</option>
-            <option value="strong">Khớp mạnh (strong)</option>
-            <option value="partial">Khớp một phần (partial)</option>
-            <option value="weak">Khớp yếu (weak)</option>
+          <select class="input" style="width:auto;min-width:0;flex:1 1 140px;max-width:170px" id="filterTier" title="Lọc theo độ khớp" data-en-title="Filter by match">
+            <option value="" data-en="Any match">Mọi mức khớp</option>
+            <option value="strong" data-en="Strong match">Khớp mạnh (strong)</option>
+            <option value="partial" data-en="Partial match">Khớp một phần (partial)</option>
+            <option value="weak" data-en="Weak match">Khớp yếu (weak)</option>
           </select>
-          <select class="input" style="width:auto;min-width:0;flex:1 1 140px;max-width:170px" id="filterSource" title="Lọc theo nguồn">
-            <option value="">Mọi nguồn</option>
+          <select class="input" style="width:auto;min-width:0;flex:1 1 140px;max-width:170px" id="filterSource" title="Lọc theo nguồn" data-en-title="Filter by source">
+            <option value="" data-en="Any source">Mọi nguồn</option>
             <option value="topdev">TopDev</option>
             <option value="itviec">ITviec</option>
           </select>
-          <label class="check"><input id="filterFlags" type="checkbox"> Ẩn tin có cờ</label>
-          <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )"></div>
-          <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText">Đang chấm lại…</span></span>
-          <button id="refreshJobsBtn" class="btn sm" type="button">Làm mới</button>
-          <button id="scanBtn" class="btn sm p" type="button">Quét job mới</button>
+          <label class="check"><input id="filterFlags" type="checkbox"> <span data-en="Hide flagged">Ẩn tin có cờ</span></label>
+          <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )" data-en-placeholder="Search title, company…  ( / )"></div>
+          <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText" data-en="Rescoring…">Đang chấm lại…</span></span>
+          <button id="refreshJobsBtn" class="btn sm" type="button" data-en="Refresh">Làm mới</button>
+          <button id="scanBtn" class="btn sm p" type="button" data-en="Scan new jobs">Quét job mới</button>
         </div>
 
         <div id="jobsAlertStrip"></div>
 
         <form id="submitForm" class="submit-row">
-          <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…"></div>
-          <button id="submitBtn" class="btn small" type="submit">Thêm job</button>
+          <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…" data-en-placeholder="Paste a job link from any site to add it manually…"></div>
+          <button id="submitBtn" class="btn small" type="submit" data-en="Add job">Thêm job</button>
         </form>
 
         <div id="jobsContainer"></div>
@@ -1569,14 +1569,14 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         </div>
       </section>
     </main>
-    <div class="src-status"><span class="dot"></span><span id="sourceStatus">Nguồn job: đang kiểm tra…</span></div>
+    <div class="src-status"><span class="dot"></span><span id="sourceStatus" data-en="Job sources: checking…">Nguồn job: đang kiểm tra…</span></div>
   </div>
 </div>
 
 <!-- ================= COMMAND PALETTE ================= -->
 <div id="palette" class="hidden">
   <div class="pal-box">
-    <input id="paletteInput" type="text" placeholder="Gõ để tìm job, chuyển tab, ra lệnh…" autocomplete="off">
+    <input id="paletteInput" type="text" placeholder="Gõ để tìm job, chuyển tab, ra lệnh…" data-en-placeholder="Type to find a job, switch tab or run a command…" autocomplete="off">
     <div id="paletteList"></div>
   </div>
 </div>
@@ -1656,14 +1656,14 @@ function fmtDate(ts){
   const n = Number(ts);
   const d = new Date(n < 1e12 ? n * 1000 : n);
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return d.toLocaleDateString(LANG === "en" ? "en-GB" : "vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 function fmtDateTime(ts){
   if (!ts) return "";
   const n = Number(ts);
   const d = new Date(n < 1e12 ? n * 1000 : n);
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString(LANG === "en" ? "en-GB" : "vi-VN", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 function debounce(fn, ms){
   let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
@@ -1672,7 +1672,7 @@ function srcLabel(src){
   if (!src) return "web";
   if (src.includes("topdev")) return "TopDev";
   if (src.includes("itviec")) return "ITviec";
-  if (src.includes("manual")) return "Thủ công";
+  if (src.includes("manual")) return t("Thủ công");
   return src;
 }
 
@@ -1681,7 +1681,7 @@ function toast(msg, kind){
   while (box.childElementCount >= 3) box.firstElementChild.remove();
   const el = document.createElement("div");
   el.className = "toast" + (kind ? " " + kind : "");
-  el.innerHTML = `<span>${esc(msg)}</span><button class="toast-x" type="button" aria-label="Đóng">×</button>`;
+  el.innerHTML = `<span>${esc(msg)}</span><button class="toast-x" type="button" aria-label="${t("Đóng")}">×</button>`;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const close = () => {
     if (el.classList.contains("out")) return;
@@ -1723,7 +1723,7 @@ function startRescoringWatch(){
   rescoreStarted = Date.now();
   const pill = $("#rescoringPill"), txt = $("#rescoringText");
   if (!pill || !txt) return;
-  const tick = () => { txt.textContent = `Đang chấm lại ${rescoreCount} job… ${Math.floor((Date.now() - rescoreStarted) / 1000)} giây`; };
+  const tick = () => { txt.textContent = t("Đang chấm lại %s job… %s giây", rescoreCount, Math.floor((Date.now() - rescoreStarted) / 1000)); };
   tick();
   pill.classList.remove("hidden");
   rescoreTimer = setInterval(tick, 1000);
@@ -1751,17 +1751,17 @@ async function api(path, opts){
   try {
     res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
   } catch (e) {
-    throw new Error("Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.");
+    throw new Error(t("Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại."));
   }
   if (res.status === 401 && state.token) {
     logout(false);
-    throw new Error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
+    throw new Error(t("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại."));
   }
   let data = null;
   const txt = await res.text();
   if (txt) { try { data = JSON.parse(txt); } catch (e) { data = null; } }
   if (!res.ok) {
-    const m = (data && (data.error || data.message)) || ("Lỗi " + res.status);
+    const m = (data && (data.error || data.message)) || t("Lỗi %s", res.status);
     throw new Error(typeof m === "string" ? m : JSON.stringify(m));
   }
   return data;
@@ -1772,6 +1772,111 @@ function currentProfile(){
 }
 
 /* ---------------- Auth + Landing ---------------- */
+/* i18n B: auth, app shell, jobs, palette. Khóa = câu tiếng Việt y hệt trong code. */
+Object.assign(EN, {
+  "JobPilot Edge — Săn việc, có hệ thống": "JobPilot Edge — Job hunting, systematically",
+  "Đóng": "Close",
+  "Thủ công": "Manual",
+  "Đang chấm lại %s job… %s giây": "Rescoring %s jobs… %ss",
+  "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.": "Could not reach the server. Check your connection and try again.",
+  "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.": "Your session has expired. Please log in again.",
+  "Lỗi %s": "Error %s",
+  // AUTH_ERR
+  "Email hoặc mật khẩu chưa đúng.": "Incorrect email or password.",
+  "Email này đã có tài khoản — hãy chuyển sang tab Đăng nhập.": "This email already has an account. Switch to the Log in tab.",
+  "Email chưa đúng định dạng.": "That email address is not valid.",
+  "Hãy nhập họ tên (tối thiểu 2 ký tự).": "Enter your full name (at least 2 characters).",
+  "Mật khẩu tối thiểu 8 ký tự.": "Password must be at least 8 characters.",
+  "Mật khẩu tối đa 128 ký tự.": "Password must be at most 128 characters.",
+  "Hãy nhập mật khẩu.": "Enter a password.",
+  "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.": "Too many failed attempts. Wait 10 minutes and try again.",
+  "Không tìm thấy tài khoản với email này.": "No account found with this email.",
+  "Tài khoản đã có mật khẩu — hãy đăng nhập.": "This account already has a password. Please log in.",
+  "Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.": "Contact the administrator to reset the password for this account.",
+  // Auth view
+  "Tạo tài khoản <em>miễn phí.</em>": "Create a <em>free account.</em>",
+  "2 phút để có pipeline săn việc của riêng bạn, không cần thẻ.": "Two minutes to your own job pipeline. No card needed.",
+  "Chào mừng <em>trở lại.</em>": "Welcome <em>back.</em>",
+  "Đăng nhập để tiếp tục pipeline săn việc của bạn.": "Log in to continue your job pipeline.",
+  "Đã đăng xuất.": "Logged out.",
+  "Tạo tài khoản thành công — chào %s!": "Account created. Welcome, %s!",
+  "Xin chào %s!": "Hello, %s!",
+  "Đang đăng nhập...": "Logging in...",
+  "Đăng nhập": "Log in",
+  "Hai mật khẩu chưa khớp nhau.": "Passwords do not match.",
+  "Đang tạo tài khoản...": "Creating account...",
+  "Tạo tài khoản": "Create account",
+  "Quá yếu": "Very weak", "Yếu": "Weak", "Trung bình": "Fair", "Khá": "Good", "Mạnh": "Strong", "Rất mạnh": "Very strong",
+  "Độ mạnh: %s": "Strength: %s",
+  " — cần tối thiểu 8 ký tự": ", needs at least 8 characters",
+  // App shell
+  "(Chưa có hồ sơ)": "(No profile yet)",
+  "Nguồn job ổn định": "Job sources healthy",
+  "Nguồn job có lỗi": "Job sources have errors",
+  // Stages (STAGES giữ tiếng Việt, dịch lúc render)
+  "Mới": "New", "Đã lưu": "Saved", "Đã apply": "Applied", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
+  // Brief
+  "Job khớp mạnh mới sáng nay": "New strong matches this morning",
+  "%sđ": "%s pts",
+  "Chưa có job khớp mạnh mới trong 24h.": "No new strong matches in the last 24h.",
+  "Cần follow-up": "Follow-ups due",
+  "hạn %s": "due %s",
+  "Không có việc nào tới hạn. Tuyệt.": "Nothing due. Nice.",
+  // Jobs
+  "Điểm khớp: %s/100": "Match score: %s/100",
+  "Chưa có gì để chấm. Bắt đầu bằng một hồ sơ.": "Nothing to score yet. Start with a profile.",
+  "Tài khoản mới không có dữ liệu mẫu. Ba việc dưới đây mất khoảng 5 phút.": "New accounts have no sample data. These three steps take about 5 minutes.",
+  "Tạo hồ sơ": "Create profile",
+  "Vị trí bạn nhắm tới, cấp bậc và nơi muốn làm.": "The role you want, your level and where you want to work.",
+  "Tải CV lên": "Upload your CV",
+  "JobPilot gợi ý kỹ năng kèm trọng số, bạn duyệt lại rồi mới lưu.": "JobPilot suggests weighted skills; you review them before saving.",
+  "Xem tin đã chấm": "See scored jobs",
+  "Tin từ ITviec và TopDev được chấm theo hồ sơ của bạn ngay sau đó.": "Jobs from ITviec and TopDev are scored against your profile right after.",
+  "Quy tắc": "Rules",
+  ", trên tổng %s job yêu cầu": ", out of %s the job requires",
+  "Chưa khớp kỹ năng nào": "No skills matched yet",
+  "Địa điểm": "Location",
+  "Độ tươi": "Freshness",
+  "Tin đăng %s ngày trước": "Posted %s days ago",
+  "Cấp bậc": "Level",
+  "Điểm cuối": "Final score",
+  "(quy tắc + fit) / 70 × 100": "(rules + fit) / 70 × 100",
+  ". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).": ". This job lists fewer than 3 skills, so the score is capped at 69 (thin evidence).",
+  "%s tin": "%s jobs",
+  "Chưa có job nào khớp bộ lọc.": "No jobs match these filters.",
+  "Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.": "Try <b>Scan new jobs</b> or loosen the filters.",
+  "Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.": "New jobs are scanned every 30 minutes. Try loosening the filters.",
+  "job": "jobs", "khớp mạnh": "strong", "một phần": "partial", "khớp yếu": "weak", "chưa chấm": "unscored",
+  "Mới nhất: %s": "Newest: %s",
+  "Thiếu nhiều nhất: %s": "Most missing: %s",
+  "Xem thêm (%s job còn lại)": "Show more (%s remaining)",
+  "Thu gọn": "Show less",
+  "Đổi giai đoạn ứng tuyển": "Change application stage",
+  "Vì sao điểm này?": "Why this score?",
+  "Ẩn giải thích": "Hide explanation",
+  "Đã chuyển sang giai đoạn: %s": "Moved to stage: %s",
+  "Hãy dán link job trước đã.": "Paste a job link first.",
+  "Đang thêm...": "Adding...",
+  "Đã thêm job, hệ thống sẽ chấm điểm ngay.": "Job added. It will be scored shortly.",
+  "Thêm job": "Add job",
+  "Đang xếp hàng...": "Queuing...",
+  "Đã xếp hàng quét %s lượt. Job mới sẽ hiện sau ~25 giây.": "Queued %s scan runs. New jobs will show in about 25 seconds.",
+  "Quét job mới": "Scan new jobs",
+  // Palette
+  "Đi tới: Việc làm": "Go to: Jobs",
+  "Đi tới: Kanban": "Go to: Kanban",
+  "Đi tới: Hồ sơ & CV": "Go to: Profile & CV",
+  "Quét job mới từ ITviec + TopDev": "Scan new jobs from ITviec + TopDev",
+  "hành động": "action",
+  "Làm mới dữ liệu": "Refresh data",
+  "Chuyển hồ sơ: %s": "Switch profile: %s",
+  "hồ sơ": "profile",
+  "Không tìm thấy lệnh hay job nào khớp.": "No matching command or job.",
+  // Theme
+  "Đã chuyển sang giao diện sáng.": "Switched to light theme.",
+  "Đã chuyển sang giao diện tối.": "Switched to dark theme.",
+});
+document.title = t("JobPilot Edge — Săn việc, có hệ thống");
 const AUTH_ERR = {
   invalid_credentials: "Email hoặc mật khẩu chưa đúng.",
   email_taken: "Email này đã có tài khoản — hãy chuyển sang tab Đăng nhập.",
@@ -1784,7 +1889,7 @@ const AUTH_ERR = {
   account_not_found: "Không tìm thấy tài khoản với email này.",
   password_already_set: "Tài khoản đã có mật khẩu — hãy đăng nhập.",
 };
-function authErr(e){ return AUTH_ERR[e.message] || e.message; }
+function authErr(e){ return t(AUTH_ERR[e.message] || e.message); }
 
 let landingAnimated = false;
 /* MOTION-ALL B1/M6 — view transitions (fallback: swap thường + @starting-style khi không có VT) */
@@ -1866,11 +1971,11 @@ function setAuthMode(mode){
   $("#registerForm").classList.toggle("hidden", mode !== "register");
   $("#authTabs").classList.remove("hidden");
   if (mode === "register") {
-    $("#authTitle").innerHTML = "Tạo tài khoản <em>miễn phí.</em>";
-    $("#authSub").textContent = "2 phút để có pipeline săn việc của riêng bạn, không cần thẻ.";
+    $("#authTitle").innerHTML = t("Tạo tài khoản <em>miễn phí.</em>");
+    $("#authSub").textContent = t("2 phút để có pipeline săn việc của riêng bạn, không cần thẻ.");
   } else {
-    $("#authTitle").innerHTML = "Chào mừng <em>trở lại.</em>";
-    $("#authSub").textContent = "Đăng nhập để tiếp tục pipeline săn việc của bạn.";
+    $("#authTitle").innerHTML = t("Chào mừng <em>trở lại.</em>");
+    $("#authSub").textContent = t("Đăng nhập để tiếp tục pipeline săn việc của bạn.");
   }
 }
 function logout(manual){
@@ -1878,14 +1983,14 @@ function logout(manual){
   localStorage.removeItem("jp_token");
   localStorage.removeItem("jp_profile");
   showLanding();
-  if (manual) toast("Đã đăng xuất.");
+  if (manual) toast(t("Đã đăng xuất."));
 }
 async function afterAuth(data, isNew){
   state.token = data.token;
   state.user = data.user;
   localStorage.setItem("jp_token", state.token);
   await boot();
-  toast(isNew ? "Tạo tài khoản thành công — chào " + (data.user.name || "") + "!" : "Xin chào " + (data.user && data.user.name ? data.user.name : "") + "!", "ok");
+  toast(isNew ? t("Tạo tài khoản thành công — chào %s!", data.user.name || "") : t("Xin chào %s!", data.user && data.user.name ? data.user.name : ""), "ok");
 }
 
 $$("#authTabs button").forEach(b => b.addEventListener("click", () => setAuthMode(b.dataset.mode)));
@@ -1898,15 +2003,15 @@ $("#loginForm").addEventListener("submit", async (ev) => {
   const password = $("#loginPassword").value;
   const btn = $("#loginBtn"), err = $("#loginError");
   err.textContent = "";
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang đăng nhập...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang đăng nhập...");
   try {
     const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
     await afterAuth(data, false);
   } catch (e) {
-    if (e.message === "password_setup_required") err.textContent = "Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.";
+    if (e.message === "password_setup_required") err.textContent = t("Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.");
     else err.textContent = authErr(e);
   } finally {
-    btn.disabled = false; btn.textContent = "Đăng nhập";
+    btn.disabled = false; btn.textContent = t("Đăng nhập");
   }
 });
 
@@ -1917,15 +2022,15 @@ $("#registerForm").addEventListener("submit", async (ev) => {
   const pw = $("#regPassword").value, pw2 = $("#regPassword2").value;
   const btn = $("#registerBtn"), err = $("#registerError");
   err.textContent = "";
-  if (pw !== pw2) { err.textContent = "Hai mật khẩu chưa khớp nhau."; return; }
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang tạo tài khoản...';
+  if (pw !== pw2) { err.textContent = t("Hai mật khẩu chưa khớp nhau."); return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang tạo tài khoản...");
   try {
     const data = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ name, email, password: pw }) });
     await afterAuth(data, true);
   } catch (e) {
     err.textContent = authErr(e);
   } finally {
-    btn.disabled = false; btn.textContent = "Tạo tài khoản";
+    btn.disabled = false; btn.textContent = t("Tạo tài khoản");
   }
 });
 
@@ -1940,10 +2045,10 @@ $("#regPassword").addEventListener("input", (e) => {
   const bar = $("#pwBar"), hint = $("#pwHint");
   const pct = [8, 30, 50, 70, 88, 100][s];
   const col = ["#e5534b", "#e5534b", "#e7c07a", "#e7c07a", "#3fb950", "#3fb950"][s];
-  const label = ["Quá yếu", "Yếu", "Trung bình", "Khá", "Mạnh", "Rất mạnh"][s];
+  const label = t(["Quá yếu", "Yếu", "Trung bình", "Khá", "Mạnh", "Rất mạnh"][s]);
   bar.style.width = v ? pct + "%" : "0";
   bar.style.background = col;
-  hint.textContent = v ? "Độ mạnh: " + label + (v.length < 8 ? " — cần tối thiểu 8 ký tự" : "") : "";
+  hint.textContent = v ? t("Độ mạnh: %s", label) + (v.length < 8 ? t(" — cần tối thiểu 8 ký tự") : "") : "";
 });
 
 function initLpTour(root){
@@ -2134,7 +2239,7 @@ async function boot(){
 function renderProfileSelect(){
   const sel = $("#profileSelect");
   if (!state.profiles.length) {
-    sel.innerHTML = '<option value="">(Chưa có hồ sơ)</option>';
+    sel.innerHTML = `<option value="">${t("(Chưa có hồ sơ)")}</option>`;
     sel.disabled = true;
     return;
   }
@@ -2160,7 +2265,7 @@ async function loadSourceStatus(){
     if (Array.isArray(rows) && rows.length) {
       const ok = rows.every(r => (r.last_status || "ok") === "ok");
       $("#sourceStatus").textContent =
-        (ok ? "Nguồn job ổn định" : "Nguồn job có lỗi") + " · " +
+        t(ok ? "Nguồn job ổn định" : "Nguồn job có lỗi") + " · " +
         rows.map(r => `${srcLabel(r.type)} ${fmtDateTime(r.last_run_at)}`).join(" · ");
     }
   } catch (e) { /* trạng thái nguồn là phụ */ }
@@ -2212,19 +2317,19 @@ async function loadDigest(){
     strip.innerHTML = `
     <div class="brief"><div class="brief-in">
       <div>
-        <span class="lbl">Job khớp mạnh mới sáng nay</span>
+        <span class="lbl">${t("Job khớp mạnh mới sáng nay")}</span>
         <div class="bignum"><em data-count="${sc}">0</em></div>
         ${strong.slice(0, 3).map(j =>
           `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
-           <span class="muted">${esc(j.company)}, ${Math.round(j.final_score || 0)}đ</span></div>`).join("") || '<div class="fu-item muted">Chưa có job khớp mạnh mới trong 24h.</div>'}
+           <span class="muted">${esc(j.company)}, ${t("%sđ", Math.round(j.final_score || 0))}</span></div>`).join("") || `<div class="fu-item muted">${t("Chưa có job khớp mạnh mới trong 24h.")}</div>`}
       </div>
       <div>
-        <span class="lbl">Cần follow-up</span>
+        <span class="lbl">${t("Cần follow-up")}</span>
         <div class="bignum" data-count="${fus.length}">0</div>
         ${fus.length ? fus.slice(0, 3).map(f =>
           `<div class="fu-item">${esc(f.title)} <span class="muted">${esc(f.company)},</span>
-           <span class="when">hạn ${fmtDate(f.next_follow_up_at)}</span></div>`).join("")
-          : '<div class="fu-item muted">Không có việc nào tới hạn. Tuyệt.</div>'}
+           <span class="when">${t("hạn %s", fmtDate(f.next_follow_up_at))}</span></div>`).join("")
+          : `<div class="fu-item muted">${t("Không có việc nào tới hạn. Tuyệt.")}</div>`}
       </div>
     </div></div>`;
     animateCountUps(strip);
@@ -2240,7 +2345,7 @@ function scoreDiv(score, tier){
   const s = Math.max(0, Math.min(100, Number(score) || 0));
   const cls = tier === "strong" ? "" : tier === "partial" ? " partial" : " weak";
   const lbl = tier ? `<small>${esc(tier)}</small>` : "";
-  return `<div class="score${cls}" title="Điểm khớp: ${Math.round(s)}/100">${Math.round(s)}${lbl}</div>`;
+  return `<div class="score${cls}" title="${t("Điểm khớp: %s/100", Math.round(s))}">${Math.round(s)}${lbl}</div>`;
 }
 
 async function loadJobs(){
@@ -2250,14 +2355,14 @@ async function loadJobs(){
   $("#tab-jobs").classList.toggle("no-profile", !p);
   if (!p) {
     box.innerHTML = `<div class="panel ob" style="padding:1.6rem">
-      <h3 style="margin:.1rem 0 .3rem;font-size:1.15rem">Chưa có gì để chấm. Bắt đầu bằng một hồ sơ.</h3>
-      <p class="muted" style="margin:0">Tài khoản mới không có dữ liệu mẫu. Ba việc dưới đây mất khoảng 5 phút.</p>
+      <h3 style="margin:.1rem 0 .3rem;font-size:1.15rem">${t("Chưa có gì để chấm. Bắt đầu bằng một hồ sơ.")}</h3>
+      <p class="muted" style="margin:0">${t("Tài khoản mới không có dữ liệu mẫu. Ba việc dưới đây mất khoảng 5 phút.")}</p>
       <div class="ob-list">
-        <div class="ob-item"><span class="n">1</span><div><b>Tạo hồ sơ</b><span>Vị trí bạn nhắm tới, cấp bậc và nơi muốn làm.</span></div></div>
-        <div class="ob-item"><span class="n">2</span><div><b>Tải CV lên</b><span>JobPilot gợi ý kỹ năng kèm trọng số, bạn duyệt lại rồi mới lưu.</span></div></div>
-        <div class="ob-item"><span class="n">3</span><div><b>Xem tin đã chấm</b><span>Tin từ ITviec và TopDev được chấm theo hồ sơ của bạn ngay sau đó.</span></div></div>
+        <div class="ob-item"><span class="n">1</span><div><b>${t("Tạo hồ sơ")}</b><span>${t("Vị trí bạn nhắm tới, cấp bậc và nơi muốn làm.")}</span></div></div>
+        <div class="ob-item"><span class="n">2</span><div><b>${t("Tải CV lên")}</b><span>${t("JobPilot gợi ý kỹ năng kèm trọng số, bạn duyệt lại rồi mới lưu.")}</span></div></div>
+        <div class="ob-item"><span class="n">3</span><div><b>${t("Xem tin đã chấm")}</b><span>${t("Tin từ ITviec và TopDev được chấm theo hồ sơ của bạn ngay sau đó.")}</span></div></div>
       </div>
-      <button class="btn primary" id="obStartBtn">Tạo hồ sơ</button>
+      <button class="btn primary" id="obStartBtn">${t("Tạo hồ sơ")}</button>
     </div>`;
     const ob = $("#obStartBtn");
     if (ob) ob.addEventListener("click", () => switchTab("profile"));
@@ -2288,11 +2393,11 @@ function explainBlock(job, m){
   const rd = m.rule_detail, fb = m.fit;
   const nCls = (v, max) => v >= max ? " g" : v > max / 2 ? " y" : "";
   const matchedTxt = rd ? rd.matched.map(x => `${esc(x.skill)} ${x.weight}`).join(" + ") : "";
-  const ruleRow = rd ? `<div class="row"><div><b>Quy tắc</b><br><span>${matchedTxt ? matchedTxt + `, trên tổng ${rd.total_weight} job yêu cầu` : "Chưa khớp kỹ năng nào"}</span></div><span class="n${nCls(rd.rule_score || 0, 50)}">${Math.round(rd.rule_score || 0)} / 50</span></div>` : "";
-  const fitRows = fb ? `<div class="row"><div><b>Địa điểm</b><br><span>${esc(fb.locationWhy)}</span></div><span class="n${nCls(fb.location, 8)}">${fb.location} / 8</span></div>
-  <div class="row"><div><b>Độ tươi</b><br><span>Tin đăng ${fb.ageDays} ngày trước</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
-  <div class="row"><div><b>Cấp bậc</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
-  const finalRow = `<div class="row"><div><b>Điểm cuối</b><br><span>(quy tắc + fit) / 70 × 100${rd && rd.capped ? ". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng)." : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
+  const ruleRow = rd ? `<div class="row"><div><b>${t("Quy tắc")}</b><br><span>${matchedTxt ? matchedTxt + t(", trên tổng %s job yêu cầu", rd.total_weight) : t("Chưa khớp kỹ năng nào")}</span></div><span class="n${nCls(rd.rule_score || 0, 50)}">${Math.round(rd.rule_score || 0)} / 50</span></div>` : "";
+  const fitRows = fb ? `<div class="row"><div><b>${t("Địa điểm")}</b><br><span>${esc(fb.locationWhy)}</span></div><span class="n${nCls(fb.location, 8)}">${fb.location} / 8</span></div>
+  <div class="row"><div><b>${t("Độ tươi")}</b><br><span>${t("Tin đăng %s ngày trước", fb.ageDays)}</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
+  <div class="row"><div><b>${t("Cấp bậc")}</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
+  const finalRow = `<div class="row"><div><b>${t("Điểm cuối")}</b><br><span>${t("(quy tắc + fit) / 70 × 100")}${rd && rd.capped ? t(". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).") : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
   return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${ruleRow}${fitRows}${finalRow}</div></div></div>`;
 }
 
@@ -2303,9 +2408,9 @@ function renderJobs(){
   box.classList.toggle("no-anim", !firstJobs);
   const cnt = $("#jobsCount");
   const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
-  if (cnt) cnt.textContent = list.length ? `${list.length} tin` : "";
+  if (cnt) cnt.textContent = list.length ? t("%s tin", list.length) : "";
   if (!list.length) {
-    box.innerHTML = '<div class="empty">Chưa có job nào khớp bộ lọc. ' + (state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
+    box.innerHTML = '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     return;
   }
   // P0 — strip tổng quan: tính từ danh sách đã lọc, không gọi API thêm
@@ -2323,11 +2428,11 @@ function renderJobs(){
     if (!isNaN(d) && d > newest) newest = d;
   });
   const topMiss = Object.entries(missCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const sumHTML = `<div class="jobsum"><div><span><b>${list.length}</b> job</span><span><b>${strong}</b> khớp mạnh</span><span><b>${partial}</b> một phần</span><span><b>${weak}</b> khớp yếu</span>${unscored ? `<span><b>${unscored}</b> chưa chấm</span>` : ""}${newest ? `<span>Mới nhất: ${fmtDate(newest)}</span>` : ""}</div>${topMiss.length ? `<div class="miss">Thiếu nhiều nhất: ${topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", ")}</div>` : ""}</div>`;
+  const sumHTML = `<div class="jobsum"><div><span><b>${list.length}</b> ${t("job")}</span><span><b>${strong}</b> ${t("khớp mạnh")}</span><span><b>${partial}</b> ${t("một phần")}</span><span><b>${weak}</b> ${t("khớp yếu")}</span>${unscored ? `<span><b>${unscored}</b> ${t("chưa chấm")}</span>` : ""}${newest ? `<span>${t("Mới nhất: %s", fmtDate(newest))}</span>` : ""}</div>${topMiss.length ? `<div class="miss">${t("Thiếu nhiều nhất: %s", topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", "))}</div>` : ""}</div>`;
   // P0 — phân trang "Xem thêm": hiện 20 job đầu, bấm để hiện thêm
   const visible = Math.min(state.jobsVisible || 20, list.length);
   const page = list.slice(0, visible);
-  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">Xem thêm (${list.length - visible} job còn lại)</button></div>` : "";
+  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s job còn lại)", list.length - visible)}</button></div>` : "";
   box.innerHTML = sumHTML + '<div class="list">' + page.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
@@ -2341,19 +2446,19 @@ function renderJobs(){
     const expanded = state.expandedChips.has(String(job.id));
     const shownSkills = (!expanded && skillChips.length > 5) ? skillChips.slice(0, 5) : skillChips;
     const moreChip = (!expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">+${skillChips.length - 5}</button>` : "";
-    const lessChip = (expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">Thu gọn</button>` : "";
+    const lessChip = (expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">${t("Thu gọn")}</button>` : "";
     const date = job.posted_at || job.first_seen_at;
     return `<article class="card" style="--i:${i}">
       ${m ? scoreDiv(m.final_score, m.tier) : scoreDiv(0, "")}
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
-        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">chưa chấm</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
-          <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="Đổi giai đoạn ứng tuyển">
-            ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${x.label}</option>`).join("")}
+          <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
+            ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
           </select>
-          ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">Vì sao điểm này?</button>` : ""}
+          ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">${t("Vì sao điểm này?")}</button>` : ""}
         </div>
       </div>
       ${m && (m.rule_detail || m.fit) ? explainBlock(job, m) : ""}
@@ -2369,7 +2474,7 @@ function renderJobs(){
       const el = document.getElementById("explain-" + btn.dataset.explainFor);
       if (!el) return;
       const open = el.classList.toggle("open");
-      btn.textContent = open ? "Ẩn giải thích" : "Vì sao điểm này?";
+      btn.textContent = t(open ? "Ẩn giải thích" : "Vì sao điểm này?");
       btn.setAttribute("aria-expanded", open ? "true" : "false");
     });
   });
@@ -2406,7 +2511,7 @@ async function changeJobStage(jobId, stage, selEl){
       });
       job.application = created && created.id ? created : { id: null, stage };
     }
-    toast("Đã chuyển sang giai đoạn: " + (STAGES.find(s => s.key === stage) || {}).label, "ok");
+    toast(t("Đã chuyển sang giai đoạn: %s", t((STAGES.find(s => s.key === stage) || {}).label)), "ok");
     flashJobCard(selEl);
     loadApplications();
   } catch (e) {
@@ -2426,34 +2531,34 @@ $("#refreshJobsBtn").addEventListener("click", () => { loadJobs(); loadDigest();
 $("#submitForm").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const url = $("#submitUrl").value.trim();
-  if (!url) { toast("Hãy dán link job trước đã.", "err"); return; }
+  if (!url) { toast(t("Hãy dán link job trước đã."), "err"); return; }
   const btn = $("#submitBtn");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang thêm...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang thêm...");
   try {
     await api("/api/jobs/submit", { method: "POST", body: JSON.stringify({ url }) });
     $("#submitUrl").value = "";
-    toast("Đã thêm job, hệ thống sẽ chấm điểm ngay.", "ok");
+    toast(t("Đã thêm job, hệ thống sẽ chấm điểm ngay."), "ok");
     setTimeout(loadJobs, 1500);
   } catch (e) {
     toast(e.message, "err");
   } finally {
-    btn.disabled = false; btn.textContent = "Thêm job";
+    btn.disabled = false; btn.textContent = t("Thêm job");
   }
 });
 
 $("#scanBtn").addEventListener("click", async () => {
   const btn = $("#scanBtn");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Đang xếp hàng...';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang xếp hàng...");
   try {
     const r = await api("/api/admin/ingest/run", {
       method: "POST", body: JSON.stringify({ sources: ["topdev", "itviec"] }),
     });
-    toast("Đã xếp hàng quét " + (r && r.queued ? r.queued : "") + " lượt. Job mới sẽ hiện sau ~25 giây.", "ok");
+    toast(t("Đã xếp hàng quét %s lượt. Job mới sẽ hiện sau ~25 giây.", r && r.queued ? r.queued : ""), "ok");
     setTimeout(async () => { await loadJobs(); await loadDigest(); await loadSourceStatus(); }, 25000);
   } catch (e) {
     toast(e.message, "err");
   } finally {
-    btn.disabled = false; btn.textContent = "Quét job mới";
+    btn.disabled = false; btn.textContent = t("Quét job mới");
   }
 });
 
@@ -3068,13 +3173,13 @@ function paletteCommands(q){
   const query = (q || "").trim().toLowerCase();
   const cmds = [];
   const push = (label, hint, run) => cmds.push({ label, hint, run });
-  push("Đi tới: Việc làm", "tab", () => switchTab("jobs"));
-  push("Đi tới: Kanban", "tab", () => switchTab("kanban"));
-  push("Đi tới: Hồ sơ & CV", "tab", () => switchTab("profile"));
-  if (state.user && state.user.is_owner) push("Quét job mới từ ITviec + TopDev", "hành động", () => $("#scanBtn").click());
-  push("Làm mới dữ liệu", "hành động", () => { loadJobs(); loadDigest(); loadApplications(); });
+  push(t("Đi tới: Việc làm"), "tab", () => switchTab("jobs"));
+  push(t("Đi tới: Kanban"), "tab", () => switchTab("kanban"));
+  push(t("Đi tới: Hồ sơ & CV"), "tab", () => switchTab("profile"));
+  if (state.user && state.user.is_owner) push(t("Quét job mới từ ITviec + TopDev"), t("hành động"), () => $("#scanBtn").click());
+  push(t("Làm mới dữ liệu"), t("hành động"), () => { loadJobs(); loadDigest(); loadApplications(); });
   state.profiles.forEach(p => {
-    if (p.id !== state.profileId) push("Chuyển hồ sơ: " + p.name, "hồ sơ", async () => {
+    if (p.id !== state.profileId) push(t("Chuyển hồ sơ: %s", p.name), t("hồ sơ"), async () => {
       state.profileId = p.id;
       localStorage.setItem("jp_profile", p.id);
       renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
@@ -3082,7 +3187,7 @@ function paletteCommands(q){
     });
   });
   state.jobs.slice(0, 60).forEach(j => {
-    push(j.title + (j.company ? ", " + j.company : ""), j.match ? Math.round(j.match.final_score || 0) + "đ" : "job",
+    push(j.title + (j.company ? ", " + j.company : ""), j.match ? t("%sđ", Math.round(j.match.final_score || 0)) : "job",
       () => window.open(j.source_url, "_blank", "noopener"));
   });
   if (!query) return cmds.slice(0, 14);
@@ -3094,7 +3199,7 @@ function renderPalette(){
   palette.items = paletteCommands($("#paletteInput").value);
   palette.sel = Math.min(palette.sel, Math.max(0, palette.items.length - 1));
   if (!palette.items.length) {
-    list.innerHTML = '<div class="pal-empty">Không tìm thấy lệnh hay job nào khớp.</div>';
+    list.innerHTML = `<div class="pal-empty">${t("Không tìm thấy lệnh hay job nào khớp.")}</div>`;
     return;
   }
   list.innerHTML = palette.items.map((c, i) =>
@@ -3161,7 +3266,7 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
   const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem("jp_theme", next); } catch (e) { /* bỏ qua */ }
-  toast(next === "light" ? "Đã chuyển sang giao diện sáng." : "Đã chuyển sang giao diện tối.", "ok");
+  toast(t(next === "light" ? "Đã chuyển sang giao diện sáng." : "Đã chuyển sang giao diện tối."), "ok");
 }));
 
 /* ---------------- Init ---------------- */
