@@ -353,7 +353,7 @@ html[data-theme="dark"]{
 .lp-stats{ display:flex; gap:clamp(1.6rem,5vw,3.6rem); margin-top:2.8rem; flex-wrap:wrap; justify-content:center; }
 .lp-stat b{ display:block; font-family:var(--f-head); font-weight:400; font-size:2.1rem; color:var(--text); }
 .lp-stat span{ color:var(--muted); font-size:.85rem; }
-.lp-shot{ will-change:transform,opacity; margin-top:3rem; width:min(880px,100%); border-radius:20px; padding:10px;
+.lp-shot{  margin-top:3rem; width:min(880px,100%); border-radius:20px; padding:10px;
   background:linear-gradient(160deg, rgba(45,75,255,.35), rgba(var(--ov),.05) 40%, rgba(var(--ov),.02));
   box-shadow:0 30px 80px rgba(0,0,0,.55); }
 .lp-shot img{ display:block; width:100%; border-radius:12px; border:1px solid var(--line); }
@@ -927,6 +927,13 @@ html{scroll-padding-top:96px}
 #lp-compare h2{font-size:clamp(2.1rem,4.8vw,3.3rem)}
 @media (max-width:640px){ .rv-slide{transform:translateY(12px)} .lp-mini-vis{gap:.4rem} }
 @media (prefers-reduced-motion: reduce){ .rv-scale,.rv-slide{transform:none;transition:none} .lp-tour-step.is-active .n{animation:none} }
+
+/* PASS SAU (review Opus T-52 + nav mobile): header 2 hàng ở mobile để không tràn ngang; nền đặc thay backdrop blur để giảm vẽ lại khi cuộn. */
+@media (max-width:640px){
+  .lp-nav{flex-wrap:wrap;row-gap:.6rem;padding:.7rem 1rem;background:var(--surface);backdrop-filter:none}
+  .lp-nav [data-auth]{flex:1 1 0}
+  html{scroll-padding-top:124px}
+}
 </style>
 </head>
 <body>
@@ -1697,9 +1704,17 @@ function initLpTour(root){
     steps.forEach(s => s.classList.toggle("is-active", s.dataset.tour === key));
   };
   if (!("IntersectionObserver" in window)) return; // không có observer thì frame mặc định (jobs) giữ nguyên
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(en => { if (en.isIntersecting) setActive(en.target.dataset.tour); });
-  }, { rootMargin: "-40% 0px -40% 0px" }); // chỉ đổi frame khi bước qua vùng giữa màn hình, không cướp nhịp cuộn
+  const pickNearest = () => {
+    const mid = window.innerHeight / 2;
+    let best = null, bestD = Infinity;
+    steps.forEach(s => {
+      const r = s.getBoundingClientRect();
+      const d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bestD) { bestD = d; best = s; }
+    });
+    if (best) setActive(best.dataset.tour);
+  };
+  const io = new IntersectionObserver(() => { pickNearest(); }, { rootMargin: "-40% 0px -40% 0px" }); // chọn bước gần tâm viewport nhất, không lấy entry cuối thắng
   steps.forEach(s => io.observe(s));
 }
 function initLpGlowParallax(root){
@@ -2907,6 +2922,7 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
     demoInd.style.transform = "translateX(" + (r.left - lr.left) + "px) scaleX(" + (r.width / 100) + ")";
     demoInd.style.opacity = "1";
   }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(demoPositionInd);
   function demoSelectTab(name){
     demoTabs.forEach(function(b){ var on = b.dataset.demoTab === name; b.classList.toggle("on", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
     demoFrames.forEach(function(f){ f.classList.toggle("on", f.dataset.demoFrame === name); });
