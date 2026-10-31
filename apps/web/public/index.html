@@ -524,6 +524,9 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .lp-bento img{ aspect-ratio:16/9; object-fit:cover; object-position:top; margin-top:auto; }
 .lp-bento .lp-card p{ margin-bottom:.9rem; }
 .lp-shot{ position:relative; }
+/* M3 — beam chỉ trên khung demo hero, fallback = viền gradient tĩnh khi không có registerProperty */
+.lp-shot.beam-on::before{ content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; pointer-events:none; background:conic-gradient(from var(--angle), transparent 0%, transparent 70%, #a5b4fc 85%, #fff 92%, transparent 100%); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; animation:beam-spin 6s linear infinite; }
+.lp-shot.beam-on.beam-paused::before{ animation-play-state:paused; }
 .lp-chrome{ display:flex; align-items:center; gap:.45rem; padding:.15rem .3rem .65rem; }
 .lp-chrome i{ width:11px; height:11px; border-radius:50%; background:rgba(var(--ov),.16); flex:none; }
 .lp-chrome i:first-child{ background:rgba(45,75,255,.55); }
@@ -1305,7 +1308,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
     <h1 data-en="Apply less. Land more.">Nộp ít hơn, đúng hơn.</h1>
     <p class="sub" data-en="JobPilot reads new postings on ITviec and TopDev every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới trên ITviec và TopDev mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
     <div class="lp-cta">
-      <a class="btn primary big" href="#lp-live" style="text-decoration:none" data-en="See today's jobs">Xem tin sáng nay</a>
+      <a class="btn primary big lp-magnet" href="#lp-live" style="text-decoration:none" data-en="See today's jobs">Xem tin sáng nay</a>
       <a class="btn ghost big" data-auth="register" href="#" style="text-decoration:none" data-en="Sign up free">Đăng ký miễn phí</a>
     </div>
     <div class="sg-live" id="lp-live" aria-live="polite">
@@ -1429,7 +1432,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 <section class="lp-sec" id="lp-final">
     <h2 data-en="Sign up, upload your CV, get matching jobs tomorrow morning">Đăng ký, tải CV, nhận tin hợp sáng mai</h2>
     <p class="lede" data-en="Sign up with your email. Upload your CV so JobPilot can suggest skills; review them and save. The latest scan is scored against your profile right away.">Đăng ký bằng email. Tải CV để JobPilot gợi ý kỹ năng, bạn duyệt lại rồi lưu. Lần quét gần nhất được chấm ngay theo hồ sơ của bạn.</p>
-    <div class="lp-cta"><button class="btn primary big" data-auth="register" data-en="Sign up free">Đăng ký miễn phí</button></div>
+    <div class="lp-cta"><button class="btn primary big lp-magnet" data-magnet-cap="6" data-auth="register" data-en="Sign up free">Đăng ký miễn phí</button></div>
   </section>
 
   <footer class="lp-foot">
@@ -3112,6 +3115,10 @@ $("#createProfileBtn").addEventListener("click", async () => {
     state.profileId = created.id;
     localStorage.setItem("jp_profile", created.id);
     $("#newProfileName").value = "";
+    clearDraftMarks(); clearCvDraftStatus();
+    state.cvDraftSkills = [];
+    const dw = $("#cvDraftSkillsWrap");
+    if (dw) dw.classList.add("hidden");
     renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
     toast(t("Đã tạo và chuyển sang hồ sơ: %s", name), "ok");
     await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
@@ -3443,7 +3450,16 @@ function markDraftField(el){
 function clearDraftMarks(){
   $$(".draft-field").forEach(el => el.classList.remove("draft-field"));
   const note = $("#cvDraftNote");
-  if (note) note.classList.add("hidden");
+  if (note){ note.innerHTML = ""; note.classList.add("hidden"); }
+}
+
+/* Dọn dòng trạng thái + ghi chú nháp khi nháp bị hủy (chuyển/tạo hồ sơ).
+   Không dùng trong luồng điền nháp: lúc đang trích xuất/suy ra, status vẫn hiện. */
+function clearCvDraftStatus(){
+  const st = $("#cvDraftStatus");
+  if (st) st.textContent = "";
+  const note = $("#cvDraftNote");
+  if (note){ note.innerHTML = ""; note.classList.add("hidden"); }
 }
 
 function fillDraftForm(d){
@@ -3591,6 +3607,7 @@ async function switchProfile(id){
   localStorage.setItem("jp_profile", id);
   jobsFirstRender = true; kanbanFirstLoad = true;
   clearDraftMarks();
+  clearCvDraftStatus();
   state.cvDraftSkills = [];
   const dw = $("#cvDraftSkillsWrap");
   if (dw) dw.classList.add("hidden");
@@ -3635,6 +3652,10 @@ function paletteCommands(q){
     if (p.id !== state.profileId) push(t("Chuyển hồ sơ: %s", p.name), t("hồ sơ"), async () => {
       state.profileId = p.id;
       localStorage.setItem("jp_profile", p.id);
+      clearDraftMarks(); clearCvDraftStatus();
+      state.cvDraftSkills = [];
+      const dw = $("#cvDraftSkillsWrap");
+      if (dw) dw.classList.add("hidden");
       renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
     });
