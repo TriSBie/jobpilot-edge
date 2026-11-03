@@ -7,9 +7,9 @@ main = "src/index.ts"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
-# Cron: quét nguồn job mỗi 30 phút + việc dọn dẹp lúc 01:00 UTC
+# Cron: quét nguồn job mỗi 30 phút + dọn dẹp 01:00 UTC + backup D1→R2 18:00 UTC (01:00 VN)
 [triggers]
-crons = ["*/30 * * * *", "0 1 * * *"]
+crons = ["*/30 * * * *", "0 1 * * *", "0 18 * * *"]
 
 [vars]
 APP_ENV = "production"
