@@ -485,7 +485,7 @@ function fitBreakdown(profile, job) {
   // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
   else if (/remote/.test(jobLoc) && /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/.test(jobLoc)) {
     location = 0; locationWhy = "Remote nhưng chỉ nhận ứng viên ở %s";
-    locationArg = (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1].trim();
+    locationArg = (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1].trim().slice(0, 40); // HN hay nhét cả câu vào ngoặc
   }
   else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
   else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
