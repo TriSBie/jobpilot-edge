@@ -192,6 +192,7 @@ async function profileWithSkills(env, profile) {
   };
 }
 
+const CV_MAX_BYTES = 5242880, CV_MAX_CHARS = 200000; // T-16a
 async function handleCvText(request, env, user, profileId) {
   const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?")
     .bind(profileId, user.id).first();
@@ -199,6 +200,7 @@ async function handleCvText(request, env, user, profileId) {
   const body = await readBody(request);
   const text = (body.text || "").trim();
   if (text.length < 100) return json({ error: "cv_text_too_short" }, 400);
+  if (text.length > CV_MAX_CHARS) return json({ error: "text_too_long" }, 413);
   const filename = body.filename || "cv.txt";
   const r2Key = `cv/${user.id}/${profileId}-${Date.now()}.txt`;
   await env.FILES.put(r2Key, text, { httpMetadata: { contentType: "text/plain" } });
@@ -747,6 +749,15 @@ async function verifyTurnstile(env, token, ip) {
     const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
     return !!(await r.json()).success;
   } catch (_) { return false; }
+// Giới hạn đăng ký theo IP, 5 lần/giờ (T-16b), cùng kiểu upsert nguyên tử; count dừng ở MAX+1. Cron */30 dọn dòng cũ.
+const REGISTER_MAX = 5;
+async function registerAttemptAllowed(env, ip, hour) {
+  const r = await env.DB.prepare(
+    `INSERT INTO register_attempts (ip, hour, count) VALUES (?1, ?2, 1)
+     ON CONFLICT(ip, hour) DO UPDATE SET count = CASE WHEN count > ?3 THEN count ELSE count + 1 END
+     RETURNING count`
+  ).bind(ip, hour, REGISTER_MAX).first();
+  return r.count <= REGISTER_MAX;
 }
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 function passwordError(pw) {
@@ -821,6 +832,8 @@ export default {
       if (name.length < 2 || name.length > 80) return json({ error: "invalid_name" }, 400);
       const pwErr = passwordError(body.password);
       if (pwErr) return json({ error: pwErr }, 400);
+      const ip = request.headers.get("cf-connecting-ip") || "unknown";
+      if (!(await registerAttemptAllowed(env, ip, Math.floor(now() / 3600)))) return json({ error: "too_many_registrations" }, 429); // trước khi băm
       const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
       if (existing) return json({ error: "email_taken" }, 409);
       const rec = await makePasswordRecord(body.password);
@@ -845,6 +858,12 @@ export default {
       if (!ok) return json({ error: "invalid_credentials" }, 401);
       await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id).run();
       return json(await issueSession(env, user));
+    }
+    if (path === "/api/auth/logout" && request.method === "POST") { // T-15: thu hồi session
+      const token = (request.headers.get("Authorization") || "").replace(/^Bearer /, "");
+      if (!token) return json({ error: "unauthorized" }, 401);
+      await env.KV.delete(`session:${token}`);
+      return json({ ok: true });
     }
     if (path === "/api/auth/set-password" && request.method === "POST") {
       return json({ error: "password_setup_disabled" }, 410);
@@ -911,9 +930,11 @@ export default {
     if (cvMatch && request.method === "POST") return handleCvText(request, env, user, cvMatch[1]);
     const cvFileMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-file$/);
     if (cvFileMatch && request.method === "POST") {
+      if (+request.headers.get("content-length") > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413);
       const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvFileMatch[1], user.id).first();
       if (!profile) return json({ error: "profile_not_found" }, 404);
       const buf = await request.arrayBuffer();
+      if (buf.byteLength > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413); // client có thể bỏ header
       const filename = request.headers.get("x-filename") || "cv.pdf";
       const r2Key = `cv/${user.id}/${profile.id}-original-${Date.now()}.pdf`;
       await env.FILES.put(r2Key, buf, { httpMetadata: { contentType: "application/pdf" } });
@@ -1197,6 +1218,7 @@ export default {
 
   async scheduled(event, env, ctx) {
     if (event.cron === "*/30 * * * *") {
+      await env.DB.prepare("DELETE FROM register_attempts WHERE hour < ?").bind(Math.floor(now() / 3600) - 2).run();
       await ensureSources(env);
       const { results } = await env.DB.prepare("SELECT * FROM sources WHERE is_enabled = 1").all();
       const keywords = await ingestKeywords(env);

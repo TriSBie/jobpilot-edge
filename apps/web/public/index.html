@@ -1920,6 +1920,9 @@ Object.assign(EN, {
   "Hãy nhập mật khẩu.": "Enter a password.",
   "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.": "Too many failed attempts. Wait 10 minutes and try again.",
   "Không tải được bước xác minh, tải lại trang.": "Could not load the verification step, reload the page.",
+  "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.": "Too many sign-ups from this network. Try again in an hour.",
+  "CV tối đa 5 MB.": "CV must be 5 MB or smaller.",
+  "Nội dung CV quá dài (tối đa 200.000 ký tự).": "CV text is too long (200,000 characters max).",
   "Không tìm thấy tài khoản với email này.": "No account found with this email.",
   "Tài khoản đã có mật khẩu — hãy đăng nhập.": "This account already has a password. Please log in.",
   "Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.": "Contact the administrator to reset the password for this account.",
@@ -2041,6 +2044,9 @@ const AUTH_ERR = {
   missing_password: "Hãy nhập mật khẩu.",
   too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
   turnstile_failed: "Không tải được bước xác minh, tải lại trang.",
+  too_many_registrations: "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.",
+  file_too_large: "CV tối đa 5 MB.",
+  text_too_long: "Nội dung CV quá dài (tối đa 200.000 ký tự).",
   account_not_found: "Không tìm thấy tài khoản với email này.",
   password_already_set: "Tài khoản đã có mật khẩu — hãy đăng nhập.",
 };
@@ -2151,6 +2157,7 @@ function setAuthMode(mode){
   }
 }
 function logout(manual){
+  if (manual && state.token) fetch(API_BASE + "/api/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + state.token } }).catch(() => {}); // best-effort thu hồi session
   state.token = ""; state.user = null; state.profiles = []; state.profileId = "";
   localStorage.removeItem("jp_token");
   localStorage.removeItem("jp_profile");
@@ -3338,6 +3345,7 @@ $("#cvUploadBtn").addEventListener("click", async () => {
   const input = $("#cvFile");
   const file = input.files && input.files[0];
   if (!file) { toast(t("Hãy chọn file CV trước đã."), "err"); return; }
+  if (file.size > 5242880) { toast(t("CV tối đa 5 MB."), "err"); return; }
   const btn = $("#cvUploadBtn");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang phân tích...");
   $("#cvStatus").textContent = t("Đang trích xuất văn bản...");
@@ -3362,7 +3370,7 @@ $("#cvUploadBtn").addEventListener("click", async () => {
     else toast(t("Đã trích xuất kỹ năng từ CV."), "ok");
   } catch (e) {
     $("#cvStatus").textContent = "";
-    toast(e.message, "err");
+    toast(authErr(e), "err");
   } finally {
     btn.disabled = false; btn.textContent = t("Phân tích CV");
   }
@@ -3543,6 +3551,7 @@ $("#cvDraftBtn").addEventListener("click", async () => {
   const input = $("#cvDraftFile");
   const file = input.files && input.files[0];
   if (!file){ toast(t("Hãy chọn file CV trước đã."), "err"); return; }
+  if (file.size > 5242880) { toast(t("CV tối đa 5 MB."), "err"); return; }
   const btn = $("#cvDraftBtn"); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + esc(t("Đang phân tích..."));
   $("#cvDraftStatus").textContent = t("Đang trích xuất văn bản...");
   try {
