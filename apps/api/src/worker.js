@@ -745,6 +745,92 @@ function passwordError(pw) {
   return null;
 }
 
+// ---------------- backup D1 → R2 + export theo user (T-25) ----------------
+// Mỗi bảng 1 file NDJSON gzip tại backups/YYYY-MM-DD/<bảng>.ndjson.gz; giữ BACKUP_KEEP ngày.
+const BACKUP_TABLES = ["users", "profiles", "profile_skills", "sources", "jobs", "job_matches", "applications", "application_events",
+  "interviews", "prep_sessions", "prep_items", "files", "digests", "notifications", "login_failures"];
+const BACKUP_KEEP = 14;
+const BACKUP_PAGE = 500;
+function toNdjson(rows) {
+  return rows.map((r) => JSON.stringify(r) + "\n").join("");
+}
+// prefixes: "backups/YYYY-MM-DD/" (kể cả hôm nay) → các thư mục ngày cũ hơn `keep` ngày gần nhất.
+function staleBackupDays(prefixes, keep) {
+  return prefixes.filter((p) => /^backups\/\d{4}-\d{2}-\d{2}\/$/.test(p)).sort().reverse().slice(keep);
+}
+const gzip = (text) => new Response(new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+async function backupToR2(env) {
+  const day = new Date().toISOString().slice(0, 10);
+  const m = { date: day, started_at: new Date().toISOString(), tables: {}, errors: {}, deleted: [], subrequests: 0 };
+  for (const t of BACKUP_TABLES) {
+    try {
+      const rows = [];
+      for (let off = 0; ; off += BACKUP_PAGE) {
+        m.subrequests++;
+        const { results } = await env.DB.prepare(`SELECT * FROM ${t} LIMIT ${BACKUP_PAGE} OFFSET ?`).bind(off).all();
+        rows.push(...results);
+        if (results.length < BACKUP_PAGE) break;
+      }
+      const body = await gzip(toNdjson(rows));
+      m.subrequests++;
+      await env.FILES.put(`backups/${day}/${t}.ndjson.gz`, body, {
+        httpMetadata: { contentType: "application/gzip" }, customMetadata: { rows: String(rows.length) },
+      });
+      m.tables[t] = { rows: rows.length, bytes: body.byteLength };
+    } catch (e) {
+      m.errors[t] = e.message;
+    }
+  }
+  try {
+    m.subrequests++;
+    const list = await env.FILES.list({ prefix: "backups/", delimiter: "/" });
+    for (const p of staleBackupDays(list.delimitedPrefixes, BACKUP_KEEP)) {
+      m.subrequests += 2;
+      const { objects } = await env.FILES.list({ prefix: p });
+      await env.FILES.delete(objects.map((o) => o.key));
+      m.deleted.push(p);
+    }
+  } catch (e) {
+    m.errors._cleanup = e.message;
+  }
+  m.finished_at = new Date().toISOString();
+  m.subrequests++;
+  await env.FILES.put(`backups/${day}/manifest.json`, JSON.stringify(m), { httpMetadata: { contentType: "application/json" } });
+  return m;
+}
+async function listBackupManifests(env) {
+  const list = await env.FILES.list({ prefix: "backups/", delimiter: "/" });
+  const days = list.delimitedPrefixes.sort().reverse().slice(0, BACKUP_KEEP);
+  const out = [];
+  for (const p of days) {
+    const obj = await env.FILES.get(`${p}manifest.json`);
+    out.push({ date: p.slice(8, 18), ...(obj ? await obj.json() : { error: "manifest_missing" }) });
+  }
+  return out;
+}
+async function exportUserData(env, user) {
+  const u = { ...user };
+  delete u.password_hash;
+  delete u.password_salt;
+  const byUser = (sql) => env.DB.prepare(sql).bind(user.id).all().then((r) => r.results);
+  const { results: profileRows } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
+  const profiles = [];
+  for (const p of profileRows) profiles.push(await profileWithSkills(env, p));
+  const applications = await byUser("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY a.created_at");
+  const events = await byUser("SELECT e.* FROM application_events e JOIN applications a ON a.id = e.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY e.created_at");
+  for (const a of applications) a.events = events.filter((e) => e.application_id === a.id);
+  return {
+    user: u,
+    profiles,
+    applications,
+    interviews: await byUser("SELECT i.* FROM interviews i JOIN applications a ON a.id = i.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY i.scheduled_at"),
+    files: await byUser("SELECT id, kind, filename, size_bytes, created_at FROM files WHERE user_id = ? ORDER BY created_at"),
+    digests: await byUser("SELECT * FROM digests WHERE user_id = ? ORDER BY date"),
+    notifications: await byUser("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at"),
+    exported_at: new Date().toISOString(),
+  };
+}
+
 // ---------------- router ----------------
 export default {
   async fetch(request, env, ctx) {
@@ -1111,6 +1197,20 @@ export default {
       const { results } = await env.DB.prepare("SELECT type, name, last_run_at, last_status, last_error FROM sources ORDER BY type").all();
       return json(results);
     }
+
+    // --- export theo user + backup admin (T-25) ---
+    if (path === "/api/me/export" && request.method === "GET") {
+      return new Response(JSON.stringify(await exportUserData(env, user)), {
+        headers: { ...CORS, "content-type": "application/json", "content-disposition": `attachment; filename="jobpilot-export-${new Date().toISOString().slice(0, 10)}.json"` },
+      });
+    }
+    if (path === "/api/admin/backups" && request.method === "GET") {
+      return json(await listBackupManifests(env));
+    }
+    if (path === "/api/admin/backups/run" && request.method === "POST") {
+      return json(await backupToR2(env));
+    }
+
     if (path === "/api/digest/today") {
       return json(await buildDigest(env, user, lang));
     }
@@ -1192,6 +1292,9 @@ export default {
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users").all();
       for (const u of users) await env.Q_NOTIFY.send({ kind: "digest", userId: u.id });
+    } else if (event.cron === "0 18 * * *") {
+      const m = await backupToR2(env);
+      console.log("backup", m.date, "subrequests", m.subrequests, "errors", JSON.stringify(m.errors));
     }
   },
 

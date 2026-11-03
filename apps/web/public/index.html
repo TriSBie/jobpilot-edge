@@ -1676,6 +1676,11 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           </div>
           <div id="benchResult" style="margin-top:.8rem"></div>
           <div class="pf-sep">
+            <label data-en="Your data" for="exportBtn">Dữ liệu của bạn</label>
+            <button data-en="Download my data" id="exportBtn" class="btn" type="button">Tải dữ liệu của tôi</button>
+            <p class="muted small" style="margin:.4rem 0 0" data-en="A JSON file with your profiles, applications, interviews and notifications.">File JSON gồm hồ sơ, đơn ứng tuyển, phỏng vấn và thông báo của bạn.</p>
+          </div>
+          <div class="pf-sep">
             <h3 data-en="Negotiation scripts" style="font-size:1rem">Kịch bản đàm phán</h3>
             <div class="neg-script"><b data-en="1. Asked for your expected salary first">1. Bị hỏi lương mong muốn trước</b><p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
             <div class="neg-script"><b data-en="2. Offer below expectations">2. Offer thấp hơn kỳ vọng</b><p data-en="&quot;I am very excited about this role. This figure is below the range I am considering based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
@@ -1903,6 +1908,7 @@ Object.assign(EN, {
   "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.": "Could not reach the server. Check your connection and try again.",
   "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.": "Your session has expired. Please log in again.",
   "Lỗi %s": "Error %s",
+  "Đã tải dữ liệu của bạn.": "Your data has been downloaded.",
   // AUTH_ERR
   "Email hoặc mật khẩu chưa đúng.": "Incorrect email or password.",
   "Email này đã có tài khoản — hãy chuyển sang tab Đăng nhập.": "This email already has an account. Switch to the Log in tab.",
@@ -3172,6 +3178,25 @@ async function loadBenchmark(){
   } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
 }
 $("#benchBtn").addEventListener("click", loadBenchmark);
+
+/* ---------------- Export dữ liệu của tôi (T-25) ---------------- */
+$("#exportBtn").addEventListener("click", async (ev) => {
+  const btn = ev.currentTarget;
+  btn.disabled = true;
+  try {
+    const data = await api("/api/me/export");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+    a.download = "jobpilot-export-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(t("Đã tải dữ liệu của bạn."), "ok");
+  } catch (e) {
+    toast(e.message, "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
 
 /* ---------------- Skills ---------------- */
 function weightBars(w){
