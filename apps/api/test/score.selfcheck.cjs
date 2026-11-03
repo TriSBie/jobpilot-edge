@@ -17,6 +17,7 @@ const code = [
   'const now = () => 1793346000;',
   catalog,
   block('function normLoc'),
+src.match(/const jdOf.*/)[0],
   block('function fitBreakdown'),
   block('function scoreJob'),
   'return { scoreJob };',
@@ -54,4 +55,10 @@ for (const [title, loc, skills, ok, why] of cases) {
 const noRemote = run('Backend Developer (Java)', 'Đà Nẵng', ALL, { level: 'middle', locations: ['Hồ Chí Minh'] });
 console.log(String(noRemote.finalScore).padStart(3), noRemote.tier.padEnd(8), '| khác khu vực, không remote → không strong');
 assert.ok(noRemote.finalScore <= 74);
+// T-JD: JD đòi nhiều năm kinh nghiệm → level 2 (middle ≥ 7, junior ≥ 4); '-' coi như rỗng.
+const lv = (jd, level = 'middle') => fitBreakdown({ level, locations: ['Remote'] }, { title: 'Backend Developer', location: 'Remote', jd_text: jd, posted_at: 1793346000 });
+assert.equal(lv('We need 8+ years of experience with Java').level, 2, 'middle + 8 năm → 2');
+assert.equal(lv('Yêu cầu từ 5 năm kinh nghiệm').level, 5, 'middle + 5 năm → giữ 5');
+assert.equal(lv('at least 4 years', 'junior').level, 2, 'junior + 4 năm → 2');
+assert.equal(lv('-', 'junior').level, 5, "'-' là rỗng");
 console.log('OK');

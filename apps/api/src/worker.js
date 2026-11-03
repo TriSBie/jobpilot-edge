@@ -47,6 +47,7 @@ const EN = {
   "Cấp bậc phù hợp": "Level fits",
   "Job này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
   "Job này thiên về junior hơn cấp bậc của bạn": "This job leans more junior than your level",
+  "JD yêu cầu %s năm kinh nghiệm": "JD requires %s years of experience",
   "Tin cũ %s ngày": "Posted %s days ago",
   "Đăng trùng / đăng lại": "Duplicate / reposted",
   "JD nhồi %s kỹ năng": "JD lists %s skills",
@@ -401,6 +402,8 @@ async function fetchJSON(url, timeoutMs = 20000) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
 }
+const JD_MAX = 8000;
+const jdOf = (row) => (row && row.jd_text && row.jd_text !== "-" ? row.jd_text : ""); // '-' = đã thử fetch, không có JD
 const xmlTag = (s, tag) => { const m = s.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`)); return m ? m[1].trim() : ""; };
 const toISODate = (s) => { const t = Date.parse(s || ""); return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10); };
 async function fetchWWR() {
@@ -420,7 +423,7 @@ async function fetchWWR() {
         title: i > 0 ? rawTitle.slice(i + 2) : rawTitle, company: i > 0 ? rawTitle.slice(0, i) : "",
         location: `Remote (${xmlTag(item, "region") || "Anywhere"})`, url: link,
         postedAt: toISODate(xmlTag(item, "pubDate")), salaryText: null,
-        skills: extractSkillsFromText(desc),
+        skills: extractSkillsFromText(desc), jdText: desc.slice(0, JD_MAX),
       });
     }
   }
@@ -432,6 +435,7 @@ async function fetchRemotive() {
     title: j.title, company: j.company_name, location: `Remote (${j.candidate_required_location || "Worldwide"})`,
     url: j.url, postedAt: toISODate(j.publication_date), salaryText: j.salary || null,
     skills: [...new Set([...filterTechTags(j.tags || []), ...extractSkillsFromText(stripTags(j.description || ""))])],
+    jdText: stripTags(j.description || "").slice(0, JD_MAX),
   }));
 }
 async function fetchRemoteOK() {
@@ -441,6 +445,7 @@ async function fetchRemoteOK() {
     url: j.url, postedAt: toISODate(j.date),
     salaryText: j.salary_min && j.salary_max ? `$${Math.round(j.salary_min / 1e3)}k - $${Math.round(j.salary_max / 1e3)}k/năm` : null,
     skills: filterTechTags(j.tags || []),
+    jdText: stripTags(j.description || "").slice(0, JD_MAX),
   }));
 }
 // HN "Ask HN: Who is hiring?" (thread tháng) qua Algolia API keyless. Mỗi comment gốc là 1 tin,
@@ -469,7 +474,7 @@ async function fetchHN() {
       title: role, company: parts[0].replace(/\s*\(.*?\)\s*/g, " ").trim().slice(0, 80),
       location: /^remote/i.test(loc) ? loc.slice(0, 60) : `Remote (${loc.slice(0, 50)})`,
       url: `https://news.ycombinator.com/item?id=${c.id}`, postedAt: toISODate(c.created_at), salaryText: null,
-      skills,
+      skills, jdText: text.slice(0, JD_MAX),
     });
   }
   return jobs;
@@ -488,7 +493,56 @@ async function upsertJob(env, sourceId, job) {
     job.salaryText || null, job.jdText || "", JSON.stringify(job.skills || []),
     hash, posted, now(), now()).run();
   const row = await env.DB.prepare("SELECT * FROM jobs WHERE content_hash = ?").bind(hash).first();
+  // Tin cũ chưa có JD mà feed giờ có → bù JD + skills rồi chấm lại.
+  if (row && !jdOf(row) && row.jd_text !== "-" && job.jdText) {
+    const skills = [...new Set([...JSON.parse(row.skills || "[]"), ...(job.skills || [])])];
+    await env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ? WHERE id = ?").bind(job.jdText, JSON.stringify(skills), row.id).run();
+    row.jd_text = job.jdText; row.skills = JSON.stringify(skills);
+    await env.Q_SCORE.send({ kind: "score", jobId: row.id });
+  }
   return row;
+}
+
+// Bóc JD từ trang chi tiết ITviec/TopDev. Fallback: toàn trang. ponytail: selector đoán theo markup hiện tại; lệch thì rơi về fallback.
+function extractJd(html, sourceId) {
+  let t = "";
+  if (sourceId === "src-topdev") {
+    const m = html.match(/\\?"description\\?":\\?"((?:[^"\\]|\\.)*?)\\?"[,}]/);
+    if (m) t = stripTags(stripTags(decodeUnicodeEscapes(m[1]).replace(/\\n/g, " ").replace(/\\"/g, '"').replace(/\\\//g, "/")));
+  }
+  if (t.length < 200) {
+    const m = html.match(/<(div|section)[^>]*(?:job-content|job-description|jd-content)[^>]*>([\s\S]*)/i);
+    if (m) t = stripTags(m[2]);
+  }
+  if (t.length < 200) { const i = html.search(/Mô tả công việc|Job description/i); if (i >= 0) t = stripTags(html.slice(i)); }
+  if (t.length < 200) t = stripTags(html);
+  return t.slice(0, JD_MAX);
+}
+async function enrichJd(env, limit) {
+  const { results } = await env.DB.prepare(
+    `SELECT j.id, j.source_id, j.source_url, j.skills FROM jobs j
+     WHERE j.jd_text = '' AND j.source_id IN ('src-itviec','src-topdev')
+     ORDER BY EXISTS (SELECT 1 FROM job_matches m WHERE m.job_id = j.id AND m.tier IN ('strong','partial')) DESC, j.first_seen_at DESC LIMIT ?`
+  ).bind(limit).all();
+  let done = 0, failed = 0;
+  for (const j of results) {
+    let jd = "";
+    for (let a = 0; a < 2 && !jd; a++) {
+      try { jd = extractJd(await fetchText(j.source_url), j.source_id); } catch (_) { /* thử lại 1 lần */ }
+    }
+    if (!jd) {
+      failed++;
+      await env.DB.prepare("UPDATE jobs SET jd_text = '-' WHERE id = ?").bind(j.id).run();
+      continue;
+    }
+    const skills = [...new Set([...JSON.parse(j.skills || "[]"), ...extractSkillsFromText(jd)])];
+    await env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ? WHERE id = ?").bind(jd, JSON.stringify(skills), j.id).run();
+    await env.Q_SCORE.send({ kind: "score", jobId: j.id });
+    done++;
+  }
+  const r = { done, failed, skipped: limit - results.length };
+  console.log("enrichJd", r);
+  return r;
 }
 
 // Parse lương VNĐ từ salary_text: "25 - 40 triệu" / "30 triệu" / "25 - 40k".
@@ -534,18 +588,27 @@ function fitBreakdown(profile, job) {
   // Tuổi dùng số ngày làm tròn xuống — cùng con số hiển thị "N ngày trước".
   const ageDays = Math.floor((now() - refTs) / 86400);
   const freshness = ageDays <= 3 ? 7 : ageDays <= 7 ? 5 : ageDays <= 14 ? 3 : 1;
-  const titleAndJd = `${job.title || ""} ${(job.jd_text || "").slice(0, 500)}`.toLowerCase();
+  const titleAndJd = `${job.title || ""} ${jdOf(job).slice(0, 500)}`.toLowerCase();
   const seniorish = /(senior|\bsr\b|lead|principal|staff|manager|architect|expert|trưởng|cao cấp)/.test(titleAndJd);
   const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
   const lvl = (profile.level || "").toLowerCase();
   let level = 5, levelWhy = "Cấp bậc phù hợp";
-  if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
+  // Số năm kinh nghiệm JD đòi (lấy cận dưới của khoảng; lấy max các lần nhắc).
+  let years = 0;
+  for (const re of [/(\d{1,2})\s*(?:[-–]\s*\d{1,2}\s*)?\+?\s*(?:years?|yrs?|năm)[^.\n]{0,25}?(?:experience|kinh nghiệm)/gi,
+    /(?:experience|kinh nghiệm)[^.\n]{0,20}?(\d{1,2})\s*(?:[-–]\s*\d{1,2}\s*)?\+?\s*(?:years?|yrs?|năm)/gi,
+    /(?:từ|at least|minimum|tối thiểu)\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?|năm)/gi])
+    for (const m of jdOf(job).slice(0, 2000).matchAll(re)) years = Math.max(years, Number(m[1]));
+  const tooJunior = years >= (/middle/.test(lvl) ? 7 : 4) && /junior|fresher|middle/.test(lvl);
+  let levelArg;
+  if (tooJunior) { level = 2; levelWhy = "JD yêu cầu %s năm kinh nghiệm"; levelArg = years; }
+  else if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
   else if (juniorish && /senior/.test(lvl)) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
-  return { location, locationWhy, locationArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
+  return { location, locationWhy, locationArg, levelArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
 function scoreJob(profile, profileSkills, job) {
-  const jobSkills = [...new Set([...(job.skills || []), ...extractSkillsFromText(job.jd_text || "")])];
+  const jobSkills = [...new Set([...(job.skills || []), ...extractSkillsFromText(jdOf(job))])];
   const profileByKey = new Map(profileSkills.map((ps) => [ps.skill.toLowerCase(), ps]));
   // Mẫu số = tổng trọng số các skill JOB yêu cầu (skill có trong profile lấy
   // trọng số của profile, skill lạ tính 3) — "bạn đáp ứng bao nhiêu % yêu cầu
@@ -1143,20 +1206,20 @@ export default {
         let fit = null, ruleDetail = null;
         const hasMatch = r.final_score !== null && r.final_score !== undefined;
         if (prof && hasMatch) {
-          fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: r.jd_text || "" });
-          fit.locationWhy = tr(lang, fit.locationWhy, fit.locationArg); fit.levelWhy = tr(lang, fit.levelWhy);
+          fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: jdOf(r) });
+          fit.locationWhy = tr(lang, fit.locationWhy, fit.locationArg); fit.levelWhy = tr(lang, fit.levelWhy, fit.levelArg);
           const matched = JSON.parse(r.matched_skills || "[]");
           const missing = JSON.parse(r.missing_skills || "[]");
           let totalW = 0;
           const matchedW = matched.map((s) => { const w = skillW.get(String(s).toLowerCase()) || 3; totalW += w; return { skill: s, weight: w }; });
           const missingW = missing.map((s) => { totalW += 3; return { skill: s, weight: 3 }; });
-          const jobSkillCount = new Set([...skillsArr.map((s) => String(s).toLowerCase()), ...extractSkillsFromText(r.jd_text || "").map((s) => s.toLowerCase())]).size;
+          const jobSkillCount = new Set([...skillsArr.map((s) => String(s).toLowerCase()), ...extractSkillsFromText(jdOf(r)).map((s) => s.toLowerCase())]).size;
           ruleDetail = { matched: matchedW, missing: missingW, total_weight: totalW, rule_score: r.rule_score, capped: jobSkillCount < 3 };
         }
         return {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
-          skills: skillsArr,
+          skills: skillsArr, jd_len: jdOf(r).length,
           posted_at: r.posted_at, first_seen_at: r.first_seen_at,
           flags,
           match: hasMatch ? {
@@ -1292,6 +1355,10 @@ export default {
     }
 
     // --- ingest admin + digest ---
+    if (path === "/api/admin/jd/enrich" && request.method === "POST") {
+      const b = await readBody(request);
+      return json(await enrichJd(env, Math.min(Math.max(Number(b.limit) || 8, 1), 20)));
+    }
     if (path === "/api/admin/ingest/run" && request.method === "POST") {
       await ensureSources(env);
       const b = await readBody(request);
@@ -1400,6 +1467,7 @@ export default {
       for (const src of results) {
         for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
+      try { await enrichJd(env, 8); } catch (e) { console.log("enrichJd error", e.message); }
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
     } else if (event.cron === "0 1 * * *") {
