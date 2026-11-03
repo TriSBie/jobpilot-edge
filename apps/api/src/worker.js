@@ -161,7 +161,7 @@ async function getUser(request, env) {
   if (!token) return null;
   const userId = await env.KV.get(`session:${token}`);
   if (!userId) return null;
-  return env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first();
+  return env.DB.prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL").bind(userId).first();
 }
 
 async function ownsProfile(env, user, profileId) {
@@ -210,10 +210,8 @@ async function handleCvText(request, env, user, profileId) {
   ).bind(fileId, user.id, r2Key, filename, text.length, now()).run();
   await env.DB.prepare("UPDATE profiles SET cv_file_id = ?, updated_at = ? WHERE id = ?")
     .bind(fileId, now(), profileId).run();
-  const [catalog, ai] = await Promise.all([
-    Promise.resolve(extractSkillsFromText(text)),
-    aiExtractSkills(env, text),
-  ]);
+  const catalog = extractSkillsFromText(text);
+  const ai = user.ai_opt_out ? [] : await aiExtractSkills(env, text); // T-62: người dùng tắt AI → không gửi CV cho Workers AI
   const merged = [...new Set([...catalog, ...ai])];
   const suggested = merged.map((skill) => ({
     skill,
@@ -223,6 +221,46 @@ async function handleCvText(request, env, user, profileId) {
   })).sort((a, b) => b.weight - a.weight || a.skill.localeCompare(b.skill));
   await env.KV.put(`cvskills:${profileId}`, JSON.stringify(suggested), { expirationTtl: 86400 });
   return json({ file_id: fileId, text_chars: text.length, suggested_skills: suggested });
+}
+
+// ---------------- privacy (T-62 + T-24) ----------------
+const DELETE_GRACE = 7 * 86400;
+// Xoá mọi file CV của hồ sơ (text đã trích + PDF gốc đều có key cv/<user>/<profile>-...), gợi ý KV và cv_file_id.
+async function deleteProfileCv(env, profile) {
+  // instr thay LIKE: mẫu dài hơn 50 ký tự vượt SQLITE_MAX_LIKE_PATTERN_LENGTH của D1
+  const prefix = `cv/${profile.user_id}/${profile.id}-`;
+  const { results: files } = await env.DB.prepare("SELECT id, r2_key FROM files WHERE user_id = ? AND instr(r2_key, ?) = 1")
+    .bind(profile.user_id, prefix).all();
+  for (const f of files) await env.FILES.delete(f.r2_key);
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM files WHERE user_id = ? AND instr(r2_key, ?) = 1").bind(profile.user_id, prefix),
+    env.DB.prepare("UPDATE profiles SET cv_file_id = NULL, updated_at = ? WHERE id = ?").bind(now(), profile.id),
+  ]);
+  await env.KV.delete(`cvskills:${profile.id}`);
+  return files.length;
+}
+// Xoá hẳn tài khoản sau thời gian ân hạn: R2 + KV trước, rồi D1 theo thứ tự FK (con trước cha).
+async function purgeUser(env, userId) {
+  const { results: files } = await env.DB.prepare("SELECT r2_key FROM files WHERE user_id = ?").bind(userId).all();
+  for (const f of files) await env.FILES.delete(f.r2_key);
+  const { results: profiles } = await env.DB.prepare("SELECT id FROM profiles WHERE user_id = ?").bind(userId).all();
+  for (const p of profiles) await env.KV.delete(`cvskills:${p.id}`);
+  const P = "SELECT id FROM profiles WHERE user_id = ?1", A = `SELECT id FROM applications WHERE profile_id IN (${P})`;
+  await env.DB.batch([
+    `DELETE FROM application_events WHERE application_id IN (${A})`,
+    `DELETE FROM interviews WHERE application_id IN (${A})`,
+    `DELETE FROM applications WHERE profile_id IN (${P})`,
+    `DELETE FROM job_matches WHERE profile_id IN (${P})`,
+    `DELETE FROM profile_skills WHERE profile_id IN (${P})`,
+    `DELETE FROM prep_items WHERE session_id IN (SELECT id FROM prep_sessions WHERE profile_id IN (${P}))`,
+    `DELETE FROM prep_sessions WHERE profile_id IN (${P})`,
+    "DELETE FROM profiles WHERE user_id = ?1",
+    "DELETE FROM files WHERE user_id = ?1",
+    "DELETE FROM digests WHERE user_id = ?1",
+    "DELETE FROM notifications WHERE user_id = ?1",
+    "DELETE FROM login_failures WHERE user_id = ?1",
+    "DELETE FROM users WHERE id = ?1",
+  ].map((sql) => env.DB.prepare(sql).bind(userId)));
 }
 
 // ---------------- fetchers (port từ Job Watcher đã kiểm chứng) ----------------
@@ -930,7 +968,7 @@ export default {
       const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
       return json(await issueSession(env, user), 201);
     }
-    if (path === "/api/auth/login" && request.method === "POST") {
+    if ((path === "/api/auth/login" || path === "/api/auth/restore") && request.method === "POST") {
       const body = await readBody(request);
       if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
       const email = (body.email || "").trim().toLowerCase();
@@ -943,6 +981,13 @@ export default {
       const ok = await verifyPassword(body.password, user.password_salt, user.password_hash);
       if (!ok) return json({ error: "invalid_credentials" }, 401);
       await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id).run();
+      if (path === "/api/auth/restore") { // T-24: khôi phục trong 7 ngày kể từ khi đánh dấu xoá
+        if (!user.deleted_at) return json({ error: "not_deleted" }, 400);
+        if (now() > user.deleted_at + DELETE_GRACE) return json({ error: "restore_expired" }, 410);
+        await env.DB.prepare("UPDATE users SET deleted_at = NULL WHERE id = ?").bind(user.id).run();
+      } else if (user.deleted_at) {
+        return json({ error: "account_deleted", restore_until: user.deleted_at + DELETE_GRACE }, 403);
+      }
       return json(await issueSession(env, user));
     }
     if (path === "/api/auth/logout" && request.method === "POST") { // T-15: thu hồi session
@@ -967,11 +1012,12 @@ export default {
       return json({ error: "forbidden" }, 403);
     }
 
-    if (path === "/api/me") {
+    if (path === "/api/me" && request.method === "GET") {
       const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
-      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL }, profiles });
+      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
+        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0 }, profiles });
     }
     if (path === "/api/admin/quota") {
       const out = {};
@@ -1216,6 +1262,34 @@ export default {
       return json(upd);
     }
 
+    // --- privacy (T-62 + T-24): đồng ý tải CV, tắt AI, xoá CV, xoá tài khoản ---
+    if (path === "/api/me/consent" && request.method === "POST") {
+      const b = await readBody(request);
+      if (b.kind !== "cv") return json({ error: "unknown_consent" }, 400);
+      const r = await env.DB.prepare("UPDATE users SET consent_cv_at = COALESCE(consent_cv_at, ?) WHERE id = ? RETURNING consent_cv_at")
+        .bind(now(), user.id).first();
+      return json({ consent_cv_at: r.consent_cv_at });
+    }
+    if (path === "/api/me" && request.method === "PATCH") {
+      const b = await readBody(request);
+      if (![0, 1, true, false].includes(b.ai_opt_out)) return json({ error: "invalid_ai_opt_out" }, 400);
+      await env.DB.prepare("UPDATE users SET ai_opt_out = ? WHERE id = ?").bind(b.ai_opt_out ? 1 : 0, user.id).run();
+      return json({ ai_opt_out: b.ai_opt_out ? 1 : 0 });
+    }
+    if (path === "/api/me" && request.method === "DELETE") {
+      const b = await readBody(request);
+      if (!b.password || !(await verifyPassword(b.password, user.password_salt, user.password_hash))) return json({ error: "invalid_credentials" }, 401);
+      await env.DB.prepare("UPDATE users SET deleted_at = ? WHERE id = ?").bind(now(), user.id).run();
+      await env.KV.delete(`session:${request.headers.get("Authorization").slice(7)}`);
+      return json({ ok: true, restore_until: now() + DELETE_GRACE });
+    }
+    const cvDelMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv$/);
+    if (cvDelMatch && request.method === "DELETE") {
+      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvDelMatch[1], user.id).first();
+      if (!profile) return json({ error: "profile_not_found" }, 404);
+      return json({ ok: true, deleted_files: await deleteProfileCv(env, profile) });
+    }
+
     // --- ingest admin + digest ---
     if (path === "/api/admin/ingest/run" && request.method === "POST") {
       await ensureSources(env);
@@ -1325,8 +1399,10 @@ export default {
       for (const src of results) {
         for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
+      const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
+      for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
     } else if (event.cron === "0 1 * * *") {
-      const { results: users } = await env.DB.prepare("SELECT id FROM users").all();
+      const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at IS NULL").all();
       for (const u of users) await env.Q_NOTIFY.send({ kind: "digest", userId: u.id });
     } else if (event.cron === "0 18 * * *") {
       const m = await backupToR2(env);

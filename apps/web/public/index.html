@@ -83,6 +83,9 @@ html[data-theme="dark"]{
   a{ text-underline-offset:3px; }
   .brief .bignum, .score-pill{ font-variant-numeric:tabular-nums; }
   .hidden{display:none!important}
+  dialog{max-width:min(520px,calc(100vw - 32px));border:var(--bw) solid var(--ink);border-radius:var(--r-lg);background:var(--surface);color:var(--text);padding:1.3rem;box-shadow:var(--off) var(--off) 0 var(--shadow)}
+  dialog::backdrop{background:rgba(4,5,6,.6)} dialog h3{margin:0 0 .4rem} dialog ul{padding-left:1.2rem;margin:.5rem 0} dialog li{margin:.3rem 0} dialog form{display:flex;gap:.55rem;justify-content:flex-end;margin-top:1rem}
+  #lp-privacy dl div{margin:.6rem 0} #lp-privacy dt{font-weight:700} #lp-privacy dd{margin:0;color:var(--muted)}
   .muted{color:var(--muted)} .small{font-size:.85rem}
   .spacer{flex:1}
 
@@ -1432,6 +1435,22 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
     </div>
   </section>
 
+<section class="lp-sec" id="lp-privacy">
+    <h2 data-en="Data policy">Chính sách dữ liệu</h2>
+    <div class="lp-faq">
+      <details class="lp-card" id="lp-privacy-body"><summary data-en="What JobPilot stores, where, for how long, and your rights">JobPilot lưu gì, ở đâu, bao lâu, và quyền của bạn</summary>
+        <dl>
+          <div><dt data-en="What we store">Dữ liệu lưu</dt><dd data-en="Email, name, a salted password hash (never the password itself); your profile (target roles, level, locations, minimum salary) and skills; the text extracted from your CV (and the original PDF if you upload one); application cards and notes; daily digests and notifications.">Email, họ tên, mật khẩu đã băm kèm salt (không bao giờ lưu mật khẩu gốc); hồ sơ (vị trí mục tiêu, cấp bậc, khu vực, lương tối thiểu) và kỹ năng; văn bản trích từ CV (và file PDF gốc nếu bạn tải lên); thẻ ứng tuyển và ghi chú; digest hằng ngày và thông báo.</dd></div>
+          <div><dt data-en="Where">Lưu ở đâu</dt><dd data-en="On Cloudflare: D1 (database), R2 (CV files), KV (login sessions and CV skill suggestions). These servers are outside Vietnam.">Trên Cloudflare: D1 (cơ sở dữ liệu), R2 (file CV), KV (phiên đăng nhập và gợi ý kỹ năng từ CV). Máy chủ đặt ngoài Việt Nam.</dd></div>
+          <div><dt data-en="What AI reads">AI đọc gì</dt><dd data-en="Only when you analyze a CV: Cloudflare Workers AI (Llama 3.1 8B) reads up to the first 6,000 characters of the CV text to suggest skills. Nothing else is sent to AI. Turn it off with &quot;Enter skills myself, do not use AI&quot; in the Profile tab; then only the built-in skill catalog is used.">Chỉ khi bạn bấm phân tích CV: Workers AI của Cloudflare (Llama 3.1 8B) đọc tối đa 6.000 ký tự đầu của văn bản CV để gợi ý kỹ năng. Không gửi gì khác cho AI. Tắt được bằng công tắc "Tự nhập kỹ năng, không dùng AI" trong tab Hồ sơ; khi đó chỉ dùng danh mục kỹ năng có sẵn.</dd></div>
+          <div><dt data-en="How long">Giữ bao lâu</dt><dd data-en="Login session: 30 days. CV skill suggestions: 24 hours. CV files and your account: until you delete them. After you delete your account, you have 7 days to restore it; then everything is permanently erased.">Phiên đăng nhập: 30 ngày. Gợi ý kỹ năng từ CV: 24 giờ. File CV và tài khoản: đến khi bạn xoá. Sau khi xoá tài khoản, bạn có 7 ngày để khôi phục; sau đó mọi dữ liệu bị xoá hẳn.</dd></div>
+          <div><dt data-en="Sharing">Chia sẻ</dt><dd data-en="Nothing is shared with employers or any third party. Job postings shown to you are public data from the job boards.">Không chia sẻ với nhà tuyển dụng hay bất kỳ bên thứ ba nào. Tin tuyển dụng hiện cho bạn là dữ liệu công khai từ các bảng việc.</dd></div>
+          <div><dt data-en="Your rights">Quyền của bạn</dt><dd data-en="View and export your data (export coming soon); delete your CV (Skills card); turn AI off; delete your account (bottom of the Profile tab). Questions or requests: <a href=&quot;mailto:tribui.it.work@gmail.com&quot;>tribui.it.work@gmail.com</a>.">Xem và xuất dữ liệu (xuất: sắp có); xoá CV (thẻ Kỹ năng); tắt AI; xoá tài khoản (cuối tab Hồ sơ). Thắc mắc hoặc yêu cầu: <a href="mailto:tribui.it.work@gmail.com">tribui.it.work@gmail.com</a>.</dd></div>
+        </dl>
+      </details>
+    </div>
+</section>
+
 <section class="lp-sec" id="lp-final">
     <h2 data-en="Sign up, upload your CV, get matching jobs tomorrow morning">Đăng ký, tải CV, nhận tin hợp sáng mai</h2>
     <p class="lede" data-en="Sign up with your email. Upload your CV so JobPilot can suggest skills; review them and save. The latest scan is scored against your profile right away.">Đăng ký bằng email. Tải CV để JobPilot gợi ý kỹ năng, bạn duyệt lại rồi lưu. Lần quét gần nhất được chấm ngay theo hồ sơ của bạn.</p>
@@ -1441,6 +1460,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
   <footer class="lp-foot">
     <span data-en="<b style=&quot;color:var(--text)&quot;>JobPilot Edge</b>, built by Kriss Bui for developers in Vietnam."><b style="color:var(--text)">JobPilot Edge</b>, làm bởi Kriss Bui cho dev Việt Nam.</span>
     <span class="spacer"></span>
+    <a href="#lp-privacy" data-privacy data-en="Data policy">Chính sách dữ liệu</a>
     <span data-en="Runs on Cloudflare · © 2026">Chạy trên Cloudflare · © 2026</span>
   </footer>
 </div>
@@ -1478,6 +1498,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         <div id="loginTurnstile" class="turnstile"></div>
         <button id="loginBtn" class="btn primary" type="submit" style="width:100%" data-en="Log in">Đăng nhập</button>
         <div id="loginError"></div>
+        <button id="restoreBtn" class="btn ghost hidden" type="button" style="width:100%;margin-top:.5rem" data-en="Restore account">Khôi phục tài khoản</button>
       </form>
 
       <form id="registerForm" class="hidden">
@@ -1502,6 +1523,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         <div id="registerTurnstile" class="turnstile"></div>
         <button id="registerBtn" class="btn primary" type="submit" style="width:100%" data-en="Create account">Tạo tài khoản</button>
         <div id="registerError"></div>
+        <p class="muted small" style="margin-top:.7rem" data-en="By creating an account you accept the <a href=&quot;#lp-privacy&quot; data-privacy>data policy</a>.">Tạo tài khoản là bạn chấp nhận <a href="#lp-privacy" data-privacy>chính sách dữ liệu</a>.</p>
       </form>
 
     </div>
@@ -1645,6 +1667,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <section class="card-p">
             <h3 data-en="Skills">Kỹ năng</h3>
             <div id="currentSkills"></div>
+            <button id="cvDeleteBtn" class="btn ghost hidden" type="button" style="margin-top:.6rem" data-en="Delete uploaded CV">Xoá CV đã tải lên</button>
             <div class="pf-sep">
               <label data-en="Add a skill manually" for="manualSkill">Thêm kỹ năng thủ công</label>
               <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka" data-en-placeholder="e.g. Kafka">
@@ -1654,6 +1677,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
               </div>
             </div>
             <div class="pf-sep">
+              <label class="check" style="margin-bottom:.8rem"><input id="aiOptOut" type="checkbox"> <span data-en="Enter skills myself, do not use AI">Tự nhập kỹ năng, không dùng AI</span></label>
               <label data-en="Or upload a CV for AI extraction (PDF, TXT or MD)" for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
               <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
               <button data-en="Analyze CV" id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
@@ -1695,11 +1719,43 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           </div>
         </section>
         </div>
+        <section class="card-p" style="margin-top:1.2rem">
+          <h3 data-en="Delete account">Xoá tài khoản</h3>
+          <p class="muted small" style="margin:.2rem 0 .8rem" data-en="Your account is marked for deletion right away and you are logged out. Within 7 days you can restore it by logging in again; after that your profiles, CV, skills, application cards and account are permanently erased.">Tài khoản được đánh dấu xoá ngay và bạn bị đăng xuất. Trong 7 ngày bạn có thể khôi phục bằng cách đăng nhập lại; sau đó hồ sơ, CV, kỹ năng, thẻ ứng tuyển và tài khoản bị xoá hẳn.</p>
+          <div class="field">
+            <label for="delAccountPw" data-en="Enter your password to confirm">Nhập mật khẩu để xác nhận</label>
+            <input id="delAccountPw" class="input" type="password" autocomplete="current-password">
+          </div>
+          <button id="delAccountBtn" class="btn" type="button" style="margin-top:.9rem" data-en="Delete account">Xoá tài khoản</button>
+        </section>
       </section>
     </main>
     <div class="src-status"><span class="dot"></span><span id="sourceStatus" data-en="Job sources: checking…">Nguồn job: đang kiểm tra…</span></div>
   </div>
 </div>
+
+<dialog id="consentDlg" aria-labelledby="consentTitle">
+  <h3 id="consentTitle" data-en="Before JobPilot reads your CV">Trước khi JobPilot đọc CV của bạn</h3>
+  <ul class="small">
+    <li data-en="The text is extracted right in your browser.">Văn bản được trích ngay trên trình duyệt của bạn.</li>
+    <li data-en="That text is sent and stored on Cloudflare R2 (servers outside Vietnam).">Văn bản đó được gửi lên và lưu ở Cloudflare R2 (máy chủ ngoài Việt Nam).</li>
+    <li data-en="Cloudflare Workers AI reads it to suggest skills. You can turn this off in the Profile tab.">Workers AI của Cloudflare đọc để gợi ý kỹ năng. Tắt được trong tab Hồ sơ.</li>
+    <li data-en="It is never shared with employers.">Không chia sẻ với nhà tuyển dụng.</li>
+    <li data-en="You can delete it at any time from the Skills card.">Bạn xoá được bất cứ lúc nào trong thẻ Kỹ năng.</li>
+  </ul>
+  <p class="muted small"><a href="#lp-privacy" data-privacy data-en="Read the full data policy">Đọc đầy đủ chính sách dữ liệu</a></p>
+  <form method="dialog">
+    <button class="btn ghost" value="cancel" type="submit" data-en="Cancel">Huỷ</button>
+    <button class="btn primary" value="ok" type="submit" data-en="Agree and continue">Đồng ý và tiếp tục</button>
+  </form>
+</dialog>
+<dialog id="confirmDlg" aria-labelledby="confirmMsg">
+  <p id="confirmMsg"></p>
+  <form method="dialog">
+    <button class="btn ghost" value="cancel" type="submit" data-en="Cancel">Huỷ</button>
+    <button class="btn primary" value="ok" type="submit" data-en="Confirm">Xác nhận</button>
+  </form>
+</dialog>
 
 <!-- ================= COMMAND PALETTE ================= -->
 <div id="palette" class="hidden">
@@ -1887,7 +1943,7 @@ async function api(path, opts){
   } catch (e) {
     throw new Error(t("Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại."));
   }
-  if (res.status === 401 && state.token) {
+  if (res.status === 401 && state.token && !opts.keepSession) {
     logout(false);
     throw new Error(t("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại."));
   }
@@ -2187,13 +2243,14 @@ $("#loginForm").addEventListener("submit", async (ev) => {
   const email = $("#loginEmail").value.trim();
   const password = $("#loginPassword").value;
   const btn = $("#loginBtn"), err = $("#loginError");
-  err.textContent = "";
+  err.textContent = ""; $("#restoreBtn").classList.add("hidden");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang đăng nhập...");
   try {
     const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password, turnstile_token: turnstileToken("loginTurnstile") }) });
     await afterAuth(data, false);
   } catch (e) {
     if (e.message === "password_setup_required") err.textContent = t("Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.");
+    else if (e.message === "account_deleted") { err.textContent = t("Tài khoản này đang chờ xoá. Bạn có thể khôi phục trong 7 ngày."); $("#restoreBtn").classList.remove("hidden"); }
     else err.textContent = authErr(e);
   } finally {
     turnstileReset("loginTurnstile");
@@ -2407,6 +2464,7 @@ function initLandingMagnet(root){
 async function boot(){
   const me = await api("/api/me");
   state.user = me.user;
+  $("#aiOptOut").checked = !!me.user.ai_opt_out;
   { const owner = !!(me.user && me.user.is_owner); $("#scanBtn").classList.toggle("hidden", !owner); $(".src-status").classList.toggle("hidden", !owner); }
   state.profiles = me.profiles || [];
   if (!state.profiles.length) {
@@ -3243,6 +3301,7 @@ function weightBars(w){
 function renderCurrentSkills(){
   const box = $("#currentSkills");
   const p = currentProfile();
+  $("#cvDeleteBtn").classList.toggle("hidden", !(p && p.cv_file_id));
   if (!p) { box.innerHTML = '<p class="muted small">' + t("Chưa có hồ sơ.") + '</p>'; return; }
   const skills = p.skills || [];
   if (!skills.length) {
@@ -3371,6 +3430,7 @@ $("#cvUploadBtn").addEventListener("click", async () => {
   const file = input.files && input.files[0];
   if (!file) { toast(t("Hãy chọn file CV trước đã."), "err"); return; }
   if (file.size > 5242880) { toast(t("CV tối đa 5 MB."), "err"); return; }
+  if (!(await ensureCvConsent())) return;
   const btn = $("#cvUploadBtn");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang phân tích...");
   $("#cvStatus").textContent = t("Đang trích xuất văn bản...");
@@ -3389,6 +3449,7 @@ $("#cvUploadBtn").addEventListener("click", async () => {
       method: "POST", body: JSON.stringify({ text, filename: file.name }),
     });
     state.suggested = r.suggested_skills || [];
+    p.cv_file_id = r.file_id; renderCurrentSkills();
     renderSuggested();
     $("#cvStatus").textContent = t("Đã gợi ý %s kỹ năng.", state.suggested.length);
     if (!state.suggested.length) toast(t("Máy chủ không gợi ý được kỹ năng nào từ CV này."), "err");
@@ -3577,6 +3638,7 @@ $("#cvDraftBtn").addEventListener("click", async () => {
   const file = input.files && input.files[0];
   if (!file){ toast(t("Hãy chọn file CV trước đã."), "err"); return; }
   if (file.size > 5242880) { toast(t("CV tối đa 5 MB."), "err"); return; }
+  if (!(await ensureCvConsent())) return;
   const btn = $("#cvDraftBtn"); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + esc(t("Đang phân tích..."));
   $("#cvDraftStatus").textContent = t("Đang trích xuất văn bản...");
   try {
@@ -3810,6 +3872,81 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
 }));
 
 /* ---------------- Init ---------------- */
+/* ---------------- Quyền riêng tư (T-62 + T-24) ---------------- */
+Object.assign(EN, {
+  "Hãy nhập mật khẩu để xác nhận.": "Enter your password to confirm.",
+  "Xoá tài khoản %s? Bạn có 7 ngày để khôi phục bằng cách đăng nhập lại, sau đó mọi dữ liệu bị xoá hẳn.": "Delete account %s? You have 7 days to restore it by logging in again; after that all data is permanently erased.",
+  "Đã xoá tài khoản. Bạn có 7 ngày để khôi phục bằng cách đăng nhập lại.": "Account deleted. You have 7 days to restore it by logging in again.",
+  "Tài khoản này đang chờ xoá. Bạn có thể khôi phục trong 7 ngày.": "This account is pending deletion. You can restore it within 7 days.",
+  "Đã khôi phục tài khoản.": "Account restored.",
+  "Xoá CV đã tải lên và gợi ý kỹ năng của hồ sơ này? Kỹ năng đã lưu vẫn giữ nguyên.": "Delete the uploaded CV and its skill suggestions for this profile? Saved skills are kept.",
+  "Đã xoá CV.": "CV deleted.",
+  "Đã tắt AI: chỉ dùng danh mục kỹ năng có sẵn.": "AI off: only the built-in skill catalog is used.",
+  "Đã bật lại gợi ý kỹ năng bằng AI.": "AI skill suggestions back on.",
+  "Đang khôi phục...": "Restoring...",
+});
+// Hộp thoại native: resolve true khi bấm nút value="ok", false khi Huỷ/Esc.
+function askDialog(d){
+  d.returnValue = "";
+  return new Promise(res => { d.onclose = () => res(d.returnValue === "ok"); d.showModal(); });
+}
+const confirmBox = (msg) => { $("#confirmMsg").textContent = msg; return askDialog($("#confirmDlg")); };
+async function ensureCvConsent(){
+  if (state.user && state.user.consent_cv_at) return true;
+  if (!(await askDialog($("#consentDlg")))) return false;
+  const r = await api("/api/me/consent", { method: "POST", body: JSON.stringify({ kind: "cv" }) });
+  state.user.consent_cv_at = r.consent_cv_at;
+  return true;
+}
+function openPrivacy(){
+  $$("dialog[open]").forEach(d => d.close());
+  showLanding();
+  $("#lp-privacy-body").open = true;
+  setTimeout(() => $("#lp-privacy").scrollIntoView({ block: "start" }), 400); // sau view transition + scrollTo(0,0)
+}
+$$("[data-privacy]").forEach(a => a.addEventListener("click", (e) => { e.preventDefault(); openPrivacy(); }));
+if (location.hash === "#lp-privacy") $("#lp-privacy-body").open = true;
+
+$("#aiOptOut").addEventListener("change", async (e) => {
+  try {
+    const r = await api("/api/me", { method: "PATCH", body: JSON.stringify({ ai_opt_out: e.target.checked ? 1 : 0 }) });
+    state.user.ai_opt_out = r.ai_opt_out;
+    toast(t(r.ai_opt_out ? "Đã tắt AI: chỉ dùng danh mục kỹ năng có sẵn." : "Đã bật lại gợi ý kỹ năng bằng AI."), "ok");
+  } catch (err) { e.target.checked = !e.target.checked; toast(err.message, "err"); }
+});
+$("#cvDeleteBtn").addEventListener("click", async () => {
+  const p = currentProfile();
+  if (!p || !(await confirmBox(t("Xoá CV đã tải lên và gợi ý kỹ năng của hồ sơ này? Kỹ năng đã lưu vẫn giữ nguyên.")))) return;
+  try {
+    await api("/api/profiles/" + encodeURIComponent(p.id) + "/cv", { method: "DELETE" });
+    p.cv_file_id = null; state.suggested = []; $("#suggestedWrap").classList.add("hidden"); $("#cvStatus").textContent = "";
+    renderCurrentSkills();
+    toast(t("Đã xoá CV."), "ok");
+  } catch (e) { toast(e.message, "err"); }
+});
+$("#delAccountBtn").addEventListener("click", async () => {
+  const password = $("#delAccountPw").value;
+  if (!password) { toast(t("Hãy nhập mật khẩu để xác nhận."), "err"); return; }
+  if (!(await confirmBox(t("Xoá tài khoản %s? Bạn có 7 ngày để khôi phục bằng cách đăng nhập lại, sau đó mọi dữ liệu bị xoá hẳn.", state.user.email)))) return;
+  try {
+    await api("/api/me", { method: "DELETE", body: JSON.stringify({ password }), keepSession: true });
+    $("#delAccountPw").value = "";
+    logout(false);
+    toast(t("Đã xoá tài khoản. Bạn có 7 ngày để khôi phục bằng cách đăng nhập lại."), "ok");
+  } catch (e) { toast(authErr(e), "err"); }
+});
+$("#restoreBtn").addEventListener("click", async () => {
+  const btn = $("#restoreBtn"), err = $("#loginError");
+  btn.disabled = true; btn.textContent = t("Đang khôi phục...");
+  try {
+    const data = await api("/api/auth/restore", { method: "POST", body: JSON.stringify({ email: $("#loginEmail").value.trim(), password: $("#loginPassword").value }) });
+    btn.classList.add("hidden"); err.textContent = "";
+    await afterAuth(data, false);
+    toast(t("Đã khôi phục tài khoản."), "ok");
+  } catch (e) { err.textContent = authErr(e); }
+  finally { btn.disabled = false; btn.textContent = t("Khôi phục tài khoản"); }
+});
+
 (async function init(){
   if (!state.token) { showLanding(); return; }
   try {
