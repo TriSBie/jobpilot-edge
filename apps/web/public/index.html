@@ -601,6 +601,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .chip.flag{background:var(--pop);color:var(--pop-ink)}
   .vd{display:inline-block;margin:6px 0 2px;padding:2px 10px;border:2px solid transparent;border-radius:var(--r-pill);font-size:13px;font-weight:700}
   .vd.apply{background:var(--mint);color:var(--mint-ink)} .vd.apply_if{background:var(--sun);color:var(--sun-ink)} .vd.skip{background:transparent;border-color:var(--mute);color:var(--mute)}
+  #jobsContainer .chip.flag.sun{background:var(--sun);color:var(--sun-ink)}
+  #jobsContainer .chip.flag.mute{background:transparent;border-color:var(--line);color:var(--mute)}
   #jobsContainer .chip.src{background:var(--bg);border-color:var(--line);color:var(--ink)}
   .card{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),12) * 45ms)}
   .card .ttl{font:700 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
@@ -1406,6 +1408,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
     <div class="sg-split-text">
       <h2 data-en="Know the salary range before you talk">Biết mức lương trước khi nói chuyện</h2>
       <p class="lede" data-en="Many postings say &quot;negotiable&quot;. JobPilot works out a salary range from the live postings that do list pay, then suggests what to say in the two hardest moments.">Nhiều tin ghi "thỏa thuận". JobPilot tính khoảng lương từ chính các tin đang tuyển có ghi lương, rồi gợi ý câu nói cho hai tình huống khó mở lời nhất.</p>
+      <p data-en="Computed from postings that list a salary once there are enough samples; otherwise we show the ITviec/TopDev reports as a reference.">Tính từ tin có ghi lương khi đủ mẫu; chưa đủ thì tham khảo báo cáo ITviec/TopDev.</p>
     </div>
   <div class="sg-pair">
     <div class="sg-box">
@@ -2642,7 +2645,22 @@ async function loadJobs(){
   }
 }
 
+const FLAG_CLS = { reposted: "", stale: "", duplicate: "", long_open: " sun", salary_hidden: " sun", bloated: " mute" };
+const FLAG_WHY = {
+  stale: "Lần cuối hệ thống thấy tin này đã lâu, hoặc tin đăng đã quá 30 ngày. Có thể đã tuyển xong.",
+  duplicate: "Cùng công ty và tiêu đề đã xuất hiện trước đó.",
+  reposted: "Board làm mới ngày đăng nhiều lần. Thường là tin tuyển liên tục hoặc tin treo để thu CV.",
+  long_open: "Tin còn mở từ 3 tuần trở lên. Vị trí khó tuyển hoặc chưa thật sự gấp.",
+  salary_hidden: "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.",
+  bloated: "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật."
+};
+function flagChips(flags){
+  const fl = flags || [], show = fl.slice(0, 3);
+  const more = fl.length > 3 ? `<span class="chip off">+${fl.length - 3}</span>` : "";
+  return show.map(f => `<span class="chip flag${FLAG_CLS[f.type] || ""}">${esc(f.label)}</span>`).join("") + more;
+}
 function explainBlock(job, m){
+  const sigRow = (job.flags && job.flags.length) ? `<div class="row"><div><b>${t("Tín hiệu tin")}</b>${job.flags.map(f => `<br><span>${esc(f.label)}: ${esc(t(FLAG_WHY[f.type] || ""))}</span>`).join("")}</div></div>` : "";
   const rd = m.rule_detail, fb = m.fit;
   const nCls = (v, max) => v >= max ? " g" : v > max / 2 ? " y" : "";
   const matchedTxt = rd ? rd.matched.map(x => `${esc(x.skill)} ${x.weight}`).join(" + ") : "";
@@ -2652,7 +2670,7 @@ function explainBlock(job, m){
   <div class="row"><div><b>${t("Cấp bậc")}</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
   const jdRow = `<div class="row"><div><span>${job.jd_len > 0 ? t("Đã đọc mô tả công việc (%s ký tự)", job.jd_len) : t("Chấm theo tag kỹ năng của nguồn, chưa có mô tả")}</span></div></div>`;
   const finalRow = `<div class="row"><div><b>${t("Điểm cuối")}</b><br><span>${t("(quy tắc + fit) / 70 × 100")}${rd && rd.capped ? t(". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).") : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
-  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${jdRow}${ruleRow}${fitRows}${finalRow}${job.verdict_why ? `<div class="row"><div><b>${t("Kết luận")}</b><br><span>${esc(job.verdict_why)}</span></div></div>` : ""}</div></div></div>`;
+  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${sigRow}${jdRow}${ruleRow}${fitRows}${finalRow}${job.verdict_why ? `<div class="row"><div><b>${t("Kết luận")}</b><br><span>${esc(job.verdict_why)}</span></div></div>` : ""}</div></div></div>`;
 }
 
 function renderJobs(){
@@ -2846,6 +2864,15 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   " và %s đơn khác": " and %s more", "Mở Kanban": "Open Kanban",
   "Follow-up: %s": "Follow-up: %s", "(job đã xoá)": "(job deleted)",
   "Chuyển sang cột trước": "Move to previous stage", "Chuyển sang cột sau": "Move to next stage",
+  "Tín hiệu tin": "Posting signals",
+  "Lần cuối hệ thống thấy tin này đã lâu, hoặc tin đăng đã quá 30 ngày. Có thể đã tuyển xong.": "We have not seen this post in a while, or it was posted over 30 days ago. It may already be filled.",
+  "Cùng công ty và tiêu đề đã xuất hiện trước đó.": "The same company and title appeared earlier.",
+  "Board làm mới ngày đăng nhiều lần. Thường là tin tuyển liên tục hoặc tin treo để thu CV.": "The board keeps refreshing the posting date. Often an always-hiring role or a post kept up to collect CVs.",
+  "Tin còn mở từ 3 tuần trở lên. Vị trí khó tuyển hoặc chưa thật sự gấp.": "Open for 3 weeks or more. A hard role to fill, or not truly urgent.",
+  "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.": "No clear salary is listed, so it is hard to compare with the market.",
+  "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật.": "The JD lists too many skills; usually a wish list, not real requirements.",
+  "Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s": "From %s posts with a listed salary (%s VND, %s USD converted at %s), sources: %s",
+  "Chưa đủ tin ghi lương cho vị trí này (%s/5), dưới đây là tham khảo": "Not enough posts with a salary for this role (%s/5), below is a reference",
   "%sđ": "%s pts", "Xem thêm %s": "Show %s more", "Trống": "Empty",
   "Đã chuyển sang: %s": "Moved to: %s",
   "Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.": "Follow-up recorded. Next reminder in 7 days.",
@@ -3288,9 +3315,9 @@ async function loadBenchmark(){
         <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>${t("Trung vị điểm giữa")}</span></div>
         <div class="tile"><div class="num">${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</div><span>${t("Khoảng P25–P75")}</span></div>
       </div>
-      <p class="muted small" style="margin:0">${t("Dựa trên %s tin tuyển có ghi lương trong hệ thống.", d.count)} ${esc(d.note || "")}</p>`;
+      <p class="muted small" style="margin:0">${esc(t("Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s", d.count, d.samples_vnd, d.samples_usd, (d.usd_vnd || 25500).toLocaleString(LANG === "en" ? "en-US" : "vi-VN"), Object.keys(d.sources || {}).join(", ")))}</p>`;
     } else {
-      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">${t("Chưa đủ dữ liệu lương trong hệ thống (mới %s tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.", d.count)}</p>
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">${t("Chưa đủ tin ghi lương cho vị trí này (%s/5), dưới đây là tham khảo", d.count)}</p>
       <div class="bench-grid">
         ${BENCH_REF.map(r => `<div class="tile"><div class="num">${mil(String(r.median))}</div><span>${esc(t(r.role))}</span><small>${esc(t(r.note))}</small></div>`).join("")}
       </div>
