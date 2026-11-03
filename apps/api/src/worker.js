@@ -787,6 +787,7 @@ async function verifyTurnstile(env, token, ip) {
     const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
     return !!(await r.json()).success;
   } catch (_) { return false; }
+}
 // Giới hạn đăng ký theo IP, 5 lần/giờ (T-16b), cùng kiểu upsert nguyên tử; count dừng ở MAX+1. Cron */30 dọn dòng cũ.
 const REGISTER_MAX = 5;
 async function registerAttemptAllowed(env, ip, hour) {
