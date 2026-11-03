@@ -54,11 +54,32 @@ const EN = {
   "%s strong match mới, %s việc cần follow-up": "%s new strong matches, %s items to follow up",
   "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính.":
     "Computed from salaries stated in collected job posts; 'Negotiable' posts are excluded. Filtered by job title only, so this is an estimate.",
+  "Bỏ qua: %s": "Skip: %s",
+  "địa điểm không khớp": "location mismatch",
+  "cấp bậc lệch": "level mismatch",
+  "tin rủi ro cao": "high-risk post",
+  "tin đã cũ": "stale post",
+  "Khớp đủ để nộp": "Good enough to apply",
+  "Nộp nếu bổ sung %s": "Apply if you add %s",
+  "Nộp nếu chấp nhận onsite": "Apply if you accept onsite",
 };
 function tr(lang, vi, ...args) {
   let s = (lang === "en" && EN[vi]) || vi;
   for (const a of args) s = s.replace("%s", () => a);
   return s;
+}
+// T-65: nhãn khuyến nghị. ponytail: ngưỡng cứng (level<=2, risk>=3, thiếu nặng >=3: weight thiếu hiện cố định 3); chỉnh khi có dữ liệu nộp thật.
+function verdictFor(match, fit, flags, risk, lang) {
+  const miss = ((match.rule_detail && match.rule_detail.missing) || []).slice().sort((x, y) => y.weight - x.weight);
+  let why = null;
+  if (fit && fit.location === 0) why = "địa điểm không khớp";
+  else if (fit && fit.level <= 2 && match.tier !== "strong") why = "cấp bậc lệch";
+  else if (risk >= 3) why = "tin rủi ro cao";
+  else if ((flags || []).some((f) => f.type === "stale")) why = "tin đã cũ";
+  if (why) return { verdict: "skip", why: tr(lang, "Bỏ qua: %s", tr(lang, why)) };
+  if (match.tier === "strong" || miss.filter((m) => m.weight >= 3).length <= 1) return { verdict: "apply", why: tr(lang, "Khớp đủ để nộp") };
+  if (fit && fit.location === 6) return { verdict: "apply_if", why: tr(lang, "Nộp nếu chấp nhận onsite") };
+  return { verdict: "apply_if", why: tr(lang, "Nộp nếu bổ sung %s", miss.slice(0, 2).map((m) => m.skill).join(", ")) };
 }
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -67,6 +88,8 @@ function json(data, status = 200) {
   });
 }
 const now = () => Math.floor(Date.now() / 1000);
+// ponytail: 14 ngày cố định cho mọi người dùng; thành cài đặt theo hồ sơ khi có người xin.
+const AUTO_CLOSE_DAYS = 14;
 const OWNER_EMAIL = "tribui.it.work@gmail.com";
 const uid = () => crypto.randomUUID();
 async function sha256hex(text) {
@@ -1153,6 +1176,7 @@ export default {
           const jobSkillCount = new Set([...skillsArr.map((s) => String(s).toLowerCase()), ...extractSkillsFromText(r.jd_text || "").map((s) => s.toLowerCase())]).size;
           ruleDetail = { matched: matchedW, missing: missingW, total_weight: totalW, rule_score: r.rule_score, capped: jobSkillCount < 3 };
         }
+        const vd = hasMatch ? verdictFor({ tier: r.tier, rule_detail: ruleDetail }, fit, flags, undefined, lang) : null;
         return {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
@@ -1166,6 +1190,7 @@ export default {
             fit, rule_detail: ruleDetail,
           } : null,
           application: r.app_id ? { id: r.app_id, stage: r.app_stage } : null,
+          verdict: vd ? vd.verdict : null, verdict_why: vd ? vd.why : null,
         };
       });
       if (tier) out = out.filter((j) => j.match && j.match.tier === tier);
@@ -1230,13 +1255,24 @@ export default {
            LEFT JOIN job_matches m ON m.job_id = a.job_id AND m.profile_id = a.profile_id
            ORDER BY a.updated_at DESC LIMIT 500`;
       const { results } = profileId ? await env.DB.prepare(sql).bind(profileId).all() : await env.DB.prepare(sql).all();
-      return json(results.map((r) => ({
+      const t = now(), W = 7 * 86400;
+      const cnt = (st, a, b) => `SUM(CASE WHEN stage = '${st}' AND updated_at >= ${a} AND updated_at < ${b} THEN 1 ELSE 0 END)`;
+      const range = (a, b) => `SELECT ${cnt("applied", a, b)} AS applied, ${cnt("interview", a, b)} AS interview, ${cnt("offer", a, b)} AS offer, ${cnt("rejected", a, b)} AS rejected FROM applications WHERE profile_id = ?`;
+      const [cur, prev, sil] = await Promise.all([
+        env.DB.prepare(range(t - W, t + 1)).bind(profileId).first(),
+        env.DB.prepare(range(t - 2 * W, t - W)).bind(profileId).first(),
+        env.DB.prepare("SELECT COUNT(*) AS n FROM applications WHERE profile_id = ? AND stage IN ('applied','interview') AND updated_at < ?").bind(profileId, t - AUTO_CLOSE_DAYS * 86400).first(),
+      ]);
+      const z = (o) => ({ applied: o?.applied || 0, interview: o?.interview || 0, offer: o?.offer || 0, rejected: o?.rejected || 0 });
+      const stats = { ...z(cur), silent_14d: sil?.n || 0, prev: z(prev) };
+      const items = results.map((r) => ({
         id: r.id, profile_id: r.profile_id, job_id: r.job_id, stage: r.stage,
         note: r.note, applied_at: r.applied_at, next_follow_up_at: r.next_follow_up_at,
         updated_at: r.updated_at,
         job: { id: r.job_id, title: r.title, company: r.company, location: r.location, source_url: r.source_url },
         match: r.final_score !== null && r.final_score !== undefined ? { final_score: r.final_score, tier: r.tier } : null,
-      })));
+      }));
+      return json({ items, stats });
     }
     if (path === "/api/applications" && request.method === "POST") {
       const b = await readBody(request);
@@ -1400,6 +1436,13 @@ export default {
       for (const src of results) {
         for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
+      // Đóng mềm: đơn im lặng quá AUTO_CLOSE_DAYS. Event chèn trước UPDATE vì UPDATE đổi stage.
+      const cutoff = now() - AUTO_CLOSE_DAYS * 86400, tn = now();
+      const silent = "stage IN ('applied','interview') AND updated_at < ?";
+      await env.DB.batch([
+        env.DB.prepare(`INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT lower(hex(randomblob(16))), id, 'stage_changed', json_object('from', stage, 'to', 'archived', 'auto', 1), ? FROM applications WHERE ${silent}`).bind(tn, cutoff),
+        env.DB.prepare(`UPDATE applications SET stage = 'archived', note = COALESCE(note, '') || ' [tự đóng: im lặng 14 ngày]', updated_at = ? WHERE ${silent}`).bind(tn, cutoff),
+      ]);
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
     } else if (event.cron === "0 1 * * *") {

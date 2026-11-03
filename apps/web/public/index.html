@@ -599,6 +599,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .chip.on{background:var(--mint);color:var(--mint-ink)}
   #jobsContainer .chip.off{border-color:var(--line);color:var(--mute)}
   #jobsContainer .chip.flag{background:var(--pop);color:var(--pop-ink)}
+  .vd{display:inline-block;margin:6px 0 2px;padding:2px 10px;border:2px solid transparent;border-radius:var(--r-pill);font-size:13px;font-weight:700}
+  .vd.apply{background:var(--mint);color:var(--mint-ink)} .vd.apply_if{background:var(--sun);color:var(--sun-ink)} .vd.skip{background:transparent;border-color:var(--mute);color:var(--mute)}
   #jobsContainer .chip.src{background:var(--bg);border-color:var(--line);color:var(--ink)}
   .card{background:var(--surface);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),12) * 45ms)}
   .card .ttl{font:700 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
@@ -1168,6 +1170,8 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .sg-chip.ok{ background:var(--mint); color:var(--mint-ink); border-color:transparent; }
 .sg-skel{ height:64px; background:var(--line); border:none; opacity:.5; }
 .sg-live-foot{ margin:.9rem 0 0; color:var(--mute); font-size:.85rem; }
+.lp-trust{ list-style:none; margin:1.2rem 0 0; padding:.9rem 1.1rem; display:grid; gap:.45rem; background:var(--surface); border:2px solid var(--ink); border-radius:var(--r-md); font-weight:700; font-size:.95rem; }
+.lp-trust li::before{ content:"¹3"; color:var(--mint-ink); background:var(--mint); border-radius:var(--r-pill); display:inline-block; width:1.4em; height:1.4em; line-height:1.4em; text-align:center; margin-right:.6rem; font-size:.85em; }
 .sg-strip{ text-align:center; color:var(--mute); font-weight:700; font-size:.92rem; margin:1.2rem auto 0; padding:0 1rem; }
 .sg-strip b{ color:var(--ink); }
 .sg-why{ margin-top:1.6rem; width:min(760px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:1.1rem 1.2rem; }
@@ -1312,11 +1316,16 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
     <section class="lp-sec lp-hero">
     <svg class="medallion-img" width="74" height="74" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>
     <h1 data-en="Apply less. Land more.">Nộp ít hơn, đúng hơn.</h1>
-    <p class="sub" data-en="JobPilot reads new postings on ITviec and TopDev every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới trên ITviec và TopDev mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
+    <p class="sub" data-en="JobPilot reads new postings from 6 sources (ITviec, TopDev, We Work Remotely, Remotive, Remote OK and HN Who's Hiring) every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới từ 6 nguồn (ITviec, TopDev, We Work Remotely, Remotive, Remote OK và HN Who's Hiring) mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
     <div class="lp-cta">
       <a class="btn primary big lp-magnet" href="#lp-live" style="text-decoration:none" data-en="See today's jobs">Xem tin sáng nay</a>
       <a class="btn ghost big" data-auth="register" href="#" style="text-decoration:none" data-en="Sign up free">Đăng ký miễn phí</a>
     </div>
+    <ul class="lp-trust">
+      <li data-en="Your CV is never shared with employers">Không chia sẻ CV với nhà tuyển dụng</li>
+      <li data-en="Delete all your data with one button">Xoá mọi dữ liệu bằng một nút</li>
+      <li data-en="Never applies for you, never invents CV content">Không tự nộp đơn thay bạn, không bịa CV</li>
+    </ul>
     <div class="sg-live" id="lp-live" aria-live="polite">
       <div class="sg-live-head">
         <span class="sg-dot" aria-hidden="true"></span>
@@ -1329,7 +1338,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
     </div>
   </section>
 
-<p class="sg-strip" id="sgStrip" data-en="Sources: ITviec and TopDev, rescanned every 30 minutes.">Nguồn ITviec và TopDev, quét lại mỗi 30 phút.</p>
+<p class="sg-strip" id="sgStrip" data-en="6 sources, rescanned every 30 minutes.">6 nguồn, quét lại mỗi 30 phút.</p>
 
   <section class="lp-sec" id="lp-scoring">
     <h2 data-en="Every score has a reason">Mỗi điểm đều có lý do</h2>
@@ -1431,6 +1440,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <details class="lp-card"><summary data-en="Where do the jobs come from?">Job lấy từ đâu?</summary><p data-en="From ITviec and TopDev for Vietnam, plus public remote boards (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), rescanned every 30 minutes. Duplicates and non-tech postings are filtered out before they reach you. You can also paste a link from any other site.">Từ ITviec và TopDev cho thị trường Việt Nam, cộng các bảng việc remote công khai (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), quét lại mỗi 30 phút. Tin trùng và tin không thuộc ngành tech bị lọc trước khi tới bạn. Bạn cũng dán được link từ trang khác.</p></details>
       <details class="lp-card"><summary data-en="Where is my CV stored, and who can see it?">CV của tôi được lưu ở đâu, ai xem được?</summary><p data-en="Your CV is only used to extract skills for your profile and is stored on Cloudflare infrastructure. JobPilot never sends it to any employer.">CV chỉ dùng để trích kỹ năng cho hồ sơ của bạn, lưu trên hạ tầng Cloudflare. JobPilot không gửi CV cho nhà tuyển dụng nào.</p></details>
       <details class="lp-card"><summary data-en="Does it cost anything?">Có mất phí không?</summary><p data-en="No. JobPilot runs almost entirely on Cloudflare's free tier. Legitimate employers never charge candidates either.">Không. JobPilot chạy gần như hoàn toàn trên gói miễn phí của Cloudflare. Nhà tuyển dụng thật cũng không bao giờ thu phí ứng viên.</p></details>
+      <details class="lp-card"><summary data-en="How is JobPilot different from the AI on ITviec or TopCV?">JobPilot khác gì AI của ITviec, TopCV?</summary><p data-en="A job board's AI scores candidates for employers. JobPilot scores postings for you, tells you plainly which to skip, and never applies on your behalf.">AI của trang tuyển dụng chấm ứng viên cho nhà tuyển dụng. JobPilot chấm tin cho bạn, nói thẳng tin nào nên bỏ qua, và không bao giờ nộp đơn thay bạn.</p></details>
       <details class="lp-card"><summary data-en="Will JobPilot apply on my behalf?">JobPilot có tự nộp đơn giúp tôi không?</summary><p data-en="No, and it never will. Mass applying gets you treated as spam by employers. JobPilot helps you pick the right postings; you apply yourself.">Không, và sẽ không. Nộp hàng loạt làm nhà tuyển dụng coi là spam. JobPilot giúp bạn chọn đúng tin rồi tự nộp.</p></details>
     </div>
   </section>
@@ -1445,7 +1455,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <div><dt data-en="What AI reads">AI đọc gì</dt><dd data-en="Only when you analyze a CV: Cloudflare Workers AI (Llama 3.1 8B) reads up to the first 6,000 characters of the CV text to suggest skills. Nothing else is sent to AI. Turn it off with &quot;Enter skills myself, do not use AI&quot; in the Profile tab; then only the built-in skill catalog is used.">Chỉ khi bạn bấm phân tích CV: Workers AI của Cloudflare (Llama 3.1 8B) đọc tối đa 6.000 ký tự đầu của văn bản CV để gợi ý kỹ năng. Không gửi gì khác cho AI. Tắt được bằng công tắc "Tự nhập kỹ năng, không dùng AI" trong tab Hồ sơ; khi đó chỉ dùng danh mục kỹ năng có sẵn.</dd></div>
           <div><dt data-en="How long">Giữ bao lâu</dt><dd data-en="Login session: 30 days. CV skill suggestions: 24 hours. CV files and your account: until you delete them. After you delete your account, you have 7 days to restore it; then everything is permanently erased.">Phiên đăng nhập: 30 ngày. Gợi ý kỹ năng từ CV: 24 giờ. File CV và tài khoản: đến khi bạn xoá. Sau khi xoá tài khoản, bạn có 7 ngày để khôi phục; sau đó mọi dữ liệu bị xoá hẳn.</dd></div>
           <div><dt data-en="Sharing">Chia sẻ</dt><dd data-en="Nothing is shared with employers or any third party. Job postings shown to you are public data from the job boards.">Không chia sẻ với nhà tuyển dụng hay bất kỳ bên thứ ba nào. Tin tuyển dụng hiện cho bạn là dữ liệu công khai từ các bảng việc.</dd></div>
-          <div><dt data-en="Your rights">Quyền của bạn</dt><dd data-en="View and export your data (export coming soon); delete your CV (Skills card); turn AI off; delete your account (bottom of the Profile tab). Questions or requests: <a href=&quot;mailto:tribui.it.work@gmail.com&quot;>tribui.it.work@gmail.com</a>.">Xem và xuất dữ liệu (xuất: sắp có); xoá CV (thẻ Kỹ năng); tắt AI; xoá tài khoản (cuối tab Hồ sơ). Thắc mắc hoặc yêu cầu: <a href="mailto:tribui.it.work@gmail.com">tribui.it.work@gmail.com</a>.</dd></div>
+          <div><dt data-en="Your rights">Quyền của bạn</dt><dd data-en="View and export your data; delete your CV (Skills card); turn AI off; delete your account (bottom of the Profile tab). Questions or requests: <a href=&quot;mailto:tribui.it.work@gmail.com&quot;>tribui.it.work@gmail.com</a>.">Xem và xuất dữ liệu; xoá CV (thẻ Kỹ năng); tắt AI; xoá tài khoản (cuối tab Hồ sơ). Thắc mắc hoặc yêu cầu: <a href="mailto:tribui.it.work@gmail.com">tribui.it.work@gmail.com</a>.</dd></div>
         </dl>
       </details>
     </div>
@@ -1575,6 +1585,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             <option value="hn">HN Who's Hiring</option>
           </select>
           <label class="check"><input id="filterFlags" type="checkbox"> <span data-en="Hide flagged">Ẩn tin có cờ</span></label>
+          <label class="check"><input id="filterApply" type="checkbox"> <span data-en="Only jobs worth applying to">Chỉ tin nên nộp</span></label>
           <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )" data-en-placeholder="Search title, company…  ( / )"></div>
           <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText" data-en="Rescoring…">Đang chấm lại…</span></span>
           <button id="refreshJobsBtn" class="btn sm" type="button" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Refresh'><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Làm mới</button>
@@ -1793,7 +1804,7 @@ const state = {
   applications: [],
   suggested: [],
   cvDraftSkills: [],
-  filters: { tier: "", source: "", q: "", hideFlagged: false },
+  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false },
 };
 
 let jobsFirstRender = true, kanbanFirstLoad = true, palCloseTimer = null;
@@ -2633,12 +2644,12 @@ function explainBlock(job, m){
   const rd = m.rule_detail, fb = m.fit;
   const nCls = (v, max) => v >= max ? " g" : v > max / 2 ? " y" : "";
   const matchedTxt = rd ? rd.matched.map(x => `${esc(x.skill)} ${x.weight}`).join(" + ") : "";
-  const ruleRow = rd ? `<div class="row"><div><b>${t("Quy tắc")}</b><br><span>${matchedTxt ? matchedTxt + t(", trên tổng %s job yêu cầu", rd.total_weight) : t("Chưa khớp kỹ năng nào")}</span></div><span class="n${nCls(rd.rule_score || 0, 50)}">${Math.round(rd.rule_score || 0)} / 50</span></div>` : "";
+  const ruleRow = rd ? `<div class="row"><div><b>${t("Quy tắc")}</b><br><span>${matchedTxt ? t("Kỹ năng khớp: %s/%s điểm, tính theo trọng số kỹ năng tin yêu cầu", rd.matched.reduce((a, x) => a + x.weight, 0), rd.total_weight) + " (" + matchedTxt + ")" : t("Chưa khớp kỹ năng nào")}</span></div><span class="n${nCls(rd.rule_score || 0, 50)}">${Math.round(rd.rule_score || 0)} / 50</span></div>` : "";
   const fitRows = fb ? `<div class="row"><div><b>${t("Địa điểm")}</b><br><span>${esc(fb.locationWhy)}</span></div><span class="n${nCls(fb.location, 8)}">${fb.location} / 8</span></div>
   <div class="row"><div><b>${t("Độ tươi")}</b><br><span>${t("Tin đăng %s ngày trước", fb.ageDays)}</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
   <div class="row"><div><b>${t("Cấp bậc")}</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
   const finalRow = `<div class="row"><div><b>${t("Điểm cuối")}</b><br><span>${t("(quy tắc + fit) / 70 × 100")}${rd && rd.capped ? t(". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).") : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
-  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${ruleRow}${fitRows}${finalRow}</div></div></div>`;
+  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${ruleRow}${fitRows}${finalRow}${job.verdict_why ? `<div class="row"><div><b>${t("Kết luận")}</b><br><span>${esc(job.verdict_why)}</span></div></div>` : ""}</div></div></div>`;
 }
 
 function renderJobs(){
@@ -2647,7 +2658,8 @@ function renderJobs(){
   jobsFirstRender = false;
   box.classList.toggle("no-anim", !firstJobs);
   const cnt = $("#jobsCount");
-  const list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
+  let list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
+  if (state.filters.onlyApply) list = list.filter(j => j.verdict === "apply");
   if (cnt) cnt.textContent = list.length ? t("%s tin", list.length) : "";
   if (!list.length) {
     box.innerHTML = '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
@@ -2693,6 +2705,7 @@ function renderJobs(){
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
+        ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
         <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
@@ -2770,6 +2783,7 @@ async function changeJobStage(jobId, stage, selEl){
 }
 
 $("#filterTier").addEventListener("change", (e) => { state.filters.tier = e.target.value; loadJobs(); });
+$("#filterApply").addEventListener("change", (e) => { state.filters.onlyApply = e.target.checked; state.jobsVisible = 20; renderJobs(); });
 $("#filterFlags").addEventListener("change", (e) => { state.filters.hideFlagged = e.target.checked; state.jobsVisible = 20; renderJobs(); });
 $("#filterSource").addEventListener("change", (e) => { state.filters.source = e.target.value; loadJobs(); });
 $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
@@ -2811,6 +2825,12 @@ $("#scanBtn").addEventListener("click", async () => {
 });
 
 /* ---------------- Kanban ---------------- */
+Object.assign(EN, {
+  "tự đóng: im lặng 14 ngày": "auto-closed: silent for 14 days",
+  "Nên nộp": "Worth applying", "Bỏ qua": "Skip", "Kết luận": "Verdict", "Tuần này": "This week",
+  "nộp": "applied", "phỏng vấn": "interviews", "offer": "offers", "bị từ chối": "rejected", "im lặng": "silent",
+  "Kỹ năng khớp: %s/%s điểm, tính theo trọng số kỹ năng tin yêu cầu": "Matched skills: %s/%s points, weighted by the skills the posting asks for",
+});
 Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Mới": "New", "Đã lưu": "Saved", "Đã apply": "Applied", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
   "Chưa có hồ sơ nào.": "No profile yet.",
@@ -2866,7 +2886,8 @@ async function loadApplications(){
   const firstKbLoad = kanbanFirstLoad;
   box.innerHTML = '<div class="kanban">' + STAGES.map(s => `<div class="kcol"><div class="kcol-head"><span>${esc(t(s.label))}</span><span class="count">–</span></div><div class="kcol-body"><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:48px"></div></div></div>`).join("") + "</div>";
   try {
-    state.applications = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
+    const ar = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
+    state.applications = ar.items; state.weekStats = ar.stats;
     kanbanFirstLoad = false;
     box.classList.add("xfade");
     renderKanban();
@@ -2925,7 +2946,11 @@ function renderKanban(){
   const byStage = {};
   STAGE_KEYS.forEach(k => byStage[k] = []);
   state.applications.forEach(a => { if (byStage[a.stage]) byStage[a.stage].push(a); });
-  box.innerHTML = '<div class="kanban">' + STAGES.map((s, idx) => {
+  const ws = state.weekStats, wd = (k) => ws[k] - ws.prev[k] ? ` (${ws[k] - ws.prev[k] > 0 ? "+" : ""}${ws[k] - ws.prev[k]})` : "";
+  const wparts = ws ? [["applied", "nộp"], ["interview", "phỏng vấn"], ["offer", "offer"], ["rejected", "bị từ chối"]].filter(([k]) => ws[k] || ws.prev[k] && k === "applied").map(([k, l]) => t(l) + " " + ws[k] + wd(k)) : [];
+  if (ws && ws.silent_14d) wparts.push(t("im lặng") + " " + ws.silent_14d);
+  const weekHTML = ws && (ws.applied + ws.interview + ws.offer + ws.rejected + ws.silent_14d) ? `<div class="jobsum" id="weekStats">${esc(t("Tuần này")) }: ${wparts.join(", ")}</div>` : "";
+  box.innerHTML = weekHTML + '<div class="kanban">' + STAGES.map((s, idx) => {
     const list = byStage[s.key];
     const shown = s.key === "new" && !kanbanNewAll ? list.slice(0, 20) : list;
     const cards = shown.map(a => {
@@ -2936,7 +2961,7 @@ function renderKanban(){
         <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : t("(job đã xoá)"))}</a></div>
         <div class="c">${a.job ? `<span>${esc(a.job.company)}</span>${a.job.location ? `<span>${esc(a.job.location)}</span>` : ""}` : ""}</div>
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
-        ${a.note ? `<div class="c">${esc(a.note)}</div>` : ""}
+        ${a.note ? `<div class="c">${esc(a.note.replace("[tự đóng: im lặng 14 ngày]", "[" + t("tự đóng: im lặng 14 ngày") + "]"))}</div>` : ""}
         <div class="row">
           <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="${t("Chuyển sang cột trước")}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="${t("Chuyển sang cột sau")}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -3979,7 +4004,7 @@ Object.assign(EN, {
   "1 ngày trước": "1 day ago",
   "%s ngày trước": "%s days ago",
   "cập nhật %s": "updated %s",
-  "Đang theo dõi<b> %s </b>tin từ ITviec và TopDev,<b> %s </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> %s</b>.": "Tracking<b> %s </b>postings from ITviec and TopDev,<b> %s </b>new in the last 24 hours. Last scan at<b> %s</b>.",
+  "Đang theo dõi<b> %s </b>tin từ 6 nguồn,<b> %s </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> %s</b>.": "Tracking<b> %s </b>postings from 6 sources,<b> %s </b>new in the last 24 hours. Last scan at<b> %s</b>.",
   "Chưa có tin nào, quay lại sau ít phút.": "No postings yet. Check back in a few minutes.",
   "%sđ": "%s pts",
   "thiếu %s": "missing %s",
@@ -4235,7 +4260,7 @@ if (LANG === "en") {
     $("#sgLiveMeta").textContent = st.last_scan ? t("cập nhật %s", hhmm(st.last_scan)) : "";
     if (LANG === "en" && d.profile && d.profile.label) $("#sgLiveProfile").textContent = d.profile.label; // VI giữ câu tĩnh; EN lấy nhãn Worker trả theo Accept-Language
     // Space quanh số nằm trong <b> để khoảng cách luôn hiển thị rõ.
-    $("#sgStrip").innerHTML = t("Đang theo dõi<b> %s </b>tin từ ITviec và TopDev,<b> %s </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> %s</b>.", st.jobs || 0, st.new_24h || 0, esc(hhmm(st.last_scan)));
+    $("#sgStrip").innerHTML = t("Đang theo dõi<b> %s </b>tin từ 6 nguồn,<b> %s </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> %s</b>.", st.jobs || 0, st.new_24h || 0, esc(hhmm(st.last_scan)));
     if (!jobs.length) { box.innerHTML = '<li class="sg-mut">' + t("Chưa có tin nào, quay lại sau ít phút.") + '</li>'; return; }
     box.innerHTML = jobs.map(j => `<li class="sg-job">
       <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
