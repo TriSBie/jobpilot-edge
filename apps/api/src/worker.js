@@ -42,6 +42,7 @@ const EN = {
   "Job không ghi địa điểm": "Job has no location",
   "Địa điểm khớp với hồ sơ": "Location matches your profile",
   "Bạn chấp nhận Remote, job này làm onsite": "You accept Remote; this job is onsite",
+  "Remote nhưng chỉ nhận ứng viên ở %s": "Remote but only hires in %s",
   "Địa điểm không khớp với hồ sơ": "Location does not match your profile",
   "Cấp bậc phù hợp": "Level fits",
   "Job này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
@@ -478,8 +479,14 @@ function normLoc(s) {
 function fitBreakdown(profile, job) {
   const locs = (profile.locations || []).map(normLoc);
   const jobLoc = normLoc(job.location);
-  let location = 0, locationWhy = "";
+  let location = 0, locationWhy = "", locationArg;
   if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
+  // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
+  // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
+  else if (/remote/.test(jobLoc) && /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/.test(jobLoc)) {
+    location = 0; locationWhy = "Remote nhưng chỉ nhận ứng viên ở %s";
+    locationArg = (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1].trim().slice(0, 40); // HN hay nhét cả câu vào ngoặc
+  }
   else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
   else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
   else { location = 0; locationWhy = "Địa điểm không khớp với hồ sơ"; }
@@ -494,7 +501,7 @@ function fitBreakdown(profile, job) {
   let level = 5, levelWhy = "Cấp bậc phù hợp";
   if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
   else if (juniorish && /senior/.test(lvl)) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
-  return { location, locationWhy, freshness, ageDays, level, levelWhy, total: location + freshness + level };
+  return { location, locationWhy, locationArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
 function scoreJob(profile, profileSkills, job) {
@@ -535,9 +542,6 @@ async function scoreJobForAllProfiles(env, job) {
        VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
        ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`
     ).bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()).run();
-    await env.DB.prepare(
-      "INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)"
-    ).bind(uid(), p.id, job.id, now(), now()).run();
     if (s.tier === "strong") {
       await env.DB.prepare(
         "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)"
@@ -565,8 +569,6 @@ async function rescoreProfile(env, profileId) {
       stmts.push(env.DB.prepare(`INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
         VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`)
         .bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
-      stmts.push(env.DB.prepare("INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)")
-        .bind(uid(), p.id, job.id, now(), now()));
       if (s.tier === "strong") {
         stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)")
           .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id));
@@ -585,6 +587,27 @@ async function rescoreProfile(env, profileId) {
 
 // ---------------- ingest ----------------
 const DEFAULT_KEYWORDS = ["Java", "Node.js", "Backend", "Spring Boot"];
+// Kỹ năng quá chung, quét ra toàn tin nhiễu.
+const GENERIC_KEYWORDS = new Set(["git", "rest apis", "rest api", "english", "agile", "scrum", "sql", "linux", "jira", "oop", "html", "css"]);
+// Từ khoá quét ITviec/TopDev: DEFAULT_KEYWORDS làm nền + target_roles + 2 kỹ năng nặng nhất
+// của mỗi hồ sơ đang hoạt động; tối đa 12. DB lỗi → chỉ DEFAULT_KEYWORDS.
+async function ingestKeywords(env) {
+  const out = [...DEFAULT_KEYWORDS], seen = new Set(out.map((k) => k.toLowerCase()));
+  try {
+    const { results } = await env.DB.prepare(
+      "SELECT p.target_roles, (SELECT json_group_array(skill) FROM (SELECT skill FROM profile_skills WHERE profile_id = p.id ORDER BY weight DESC, skill LIMIT 2)) AS top FROM profiles p WHERE p.is_active = 1"
+    ).all();
+    for (const r of results) {
+      for (const kw of [...JSON.parse(r.target_roles || "[]"), ...JSON.parse(r.top || "[]")]) {
+        const k = String(kw).trim(), low = k.toLowerCase();
+        if (k.length <= 2 || seen.has(low) || GENERIC_KEYWORDS.has(low)) continue;
+        seen.add(low); out.push(k);
+        if (out.length >= 12) return out;
+      }
+    }
+  } catch (e) { console.log("ingestKeywords fallback:", e.message); }
+  return out;
+}
 async function ensureSources(env) {
   for (const type of ["topdev", "itviec"]) {
     await env.DB.prepare(
@@ -617,7 +640,8 @@ async function runIngestSource(env, sourceType, keyword) {
     jobs = REMOTE_FETCHERS[sourceType] ? await REMOTE_FETCHERS[sourceType]()
       : sourceType === "topdev" ? await fetchTopDev(keyword) : await fetchITviec(keyword);
   } catch (e) {
-    status = "error"; error = e.message;
+    // ITviec trả 404 cho slug không có tin: coi là 0 tin, không phải lỗi nguồn (T-49 một phần).
+    if (e.message !== "HTTP 404" || REMOTE_FETCHERS[sourceType]) { status = "error"; error = e.message; }
   }
   const rawCount = jobs.length;
   jobs = jobs.filter((j) => titleGate(j.title));
@@ -953,7 +977,7 @@ export default {
         const hasMatch = r.final_score !== null && r.final_score !== undefined;
         if (prof && hasMatch) {
           fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: r.jd_text || "" });
-          fit.locationWhy = tr(lang, fit.locationWhy); fit.levelWhy = tr(lang, fit.levelWhy);
+          fit.locationWhy = tr(lang, fit.locationWhy, fit.locationArg); fit.levelWhy = tr(lang, fit.levelWhy);
           const matched = JSON.parse(r.matched_skills || "[]");
           const missing = JSON.parse(r.missing_skills || "[]");
           let totalW = 0;
@@ -1077,10 +1101,9 @@ export default {
       const b = await readBody(request);
       const types = Array.isArray(b.sources) && b.sources.length ? b.sources : ["topdev", "itviec", ...Object.keys(REMOTE_FETCHERS)];
       let queued = 0;
+      const keywords = await ingestKeywords(env);
       for (const t of types) {
-        const src = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(t).first();
-        const keywords = (src && JSON.parse(src.config || "{}").keywords) || DEFAULT_KEYWORDS;
-        for (const kw of keywords) { await env.Q_INGEST.send({ kind: "ingest", sourceType: t, keyword: kw }); queued++; }
+        for (const kw of REMOTE_FETCHERS[t] ? ["*"] : keywords) { await env.Q_INGEST.send({ kind: "ingest", sourceType: t, keyword: kw }); queued++; }
       }
       return json({ queued });
     }
@@ -1162,9 +1185,9 @@ export default {
     if (event.cron === "*/30 * * * *") {
       await ensureSources(env);
       const { results } = await env.DB.prepare("SELECT * FROM sources WHERE is_enabled = 1").all();
+      const keywords = await ingestKeywords(env);
       for (const src of results) {
-        const keywords = JSON.parse(src.config || "{}").keywords || DEFAULT_KEYWORDS;
-        for (const kw of keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
+        for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users").all();

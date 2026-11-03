@@ -37,6 +37,14 @@ const cases = [
   ['Java Developer (Fresher)', 'Ho Chi Minh', ALL, (r) => r.tier === 'strong', 'middle nhận tin fresher: không phạt'],
   ['Backend Developer', 'Ho Chi Minh', ['Java'], (r) => r.finalScore <= 69, 'ít kỹ năng → tối đa 69'],
 ];
+// T-60: remote khoá vùng → location 0, trần 74; remote mở / đúng thành phố → 8.
+const fitBreakdown = new Function(code.replace('return { scoreJob };', 'return fitBreakdown;'))();
+const loc = (location) => fitBreakdown(P, { title: 'Backend Developer', location, jd_text: '', posted_at: 1793346000 }).location;
+for (const [location, want] of [['Remote (US only)', 0], ['Remote (Europe / US Eastern)', 0], ['Remote (Anywhere in the World)', 8], ['Remote', 8], ['Ho Chi Minh', 8], ['Remote (APAC)', 8], ['Remote (Australia)', 8]]) {
+  console.log(String(loc(location)).padStart(3), '/ 8     |', location);
+  assert.equal(loc(location), want, location);
+}
+assert.ok(run('Backend Developer (Java)', 'Remote (US only)').finalScore <= 74, 'remote US only → không strong');
 for (const [title, loc, skills, ok, why] of cases) {
   const r = run(title, loc, skills);
   console.log(String(r.finalScore).padStart(3), r.tier.padEnd(8), '|', why);
