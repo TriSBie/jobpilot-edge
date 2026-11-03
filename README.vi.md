@@ -34,7 +34,7 @@ MVP đã chạy thật và được dùng hằng ngày. Ngày 3/11/2026, product
 |---|---|
 | **Đã có** | Tài khoản email + mật khẩu, nhiều hồ sơ, tải CV và gợi ý kỹ năng, điền nháp hồ sơ từ CV, sáu nguồn job, chấm điểm có giải thích và có trần, cờ cảnh báo tin, kanban 7 cột kèm follow-up và cảnh báo im lặng, tóm tắt sáng trong app, benchmark lương, command palette, giao diện sáng/tối, giao diện tiếng Việt và tiếng Anh |
 | **Mới có ở backend** | Hub realtime (Durable Object) và `/api/notifications` đã có nhưng web app chưa dùng. Vectorize đã gắn nhưng chưa ghi embedding nào. Tóm tắt sáng được dựng mỗi ngày nhưng chỉ hiện trong app; gửi email cần domain riêng |
-| **Lỗ hổng đã biết** | Thêm job bằng link tải được URL bất kỳ và tin hiện cho mọi user (bản sửa ở nhánh `task/T-05`, chưa merge). Mỗi tin được chấm tự sinh một thẻ kanban. Đăng xuất không thu hồi session ở server. Upload CV không giới hạn kích thước, đăng ký không giới hạn số lần |
+| **Lỗ hổng đã biết** | Thêm job bằng link tải được URL bất kỳ và tin hiện cho mọi user (bản sửa ở nhánh `task/T-05`, chưa merge). Chấm điểm chưa có nội dung JD, chỉ dựa trên tag kỹ năng mỗi board công bố, nên nhiều tin remote dừng ở 69. Benchmark lương rơi về bảng tham khảo vì ít tin ghi lương. Tóm tắt sáng chỉ xem được trong app. Turnstile đang chạy test key của Cloudflare cho tới khi cấu hình widget thật |
 | **Chưa làm** | Giải thích bằng AI và prep phỏng vấn, khớp ngữ nghĩa, AI Gateway, Browser Rendering cho trang job cần JS, Email Routing, Turnstile, trang hồ sơ công khai, backup D1, quên mật khẩu |
 
 Kế hoạch đầy đủ, chia phase kèm tiêu chí nghiệm thu, nằm ở [`PLAN.md`](PLAN.md).
@@ -205,7 +205,8 @@ Mọi route nằm dưới `/api`. Route cần đăng nhập nhận `Authorizatio
 
 - **Đang chạy:** production hoạt động từ tháng 10/2026 trên gói Workers Free. Thay đổi gần nhất: giao diện và chuỗi API tiếng Anh (30/10), bốn nguồn job remote (30/10), hiệu ứng hero landing và dọn trạng thái nháp CV (31/10).
 - **Bảo mật:** bản vá tháng 10/2026 gỡ luồng nhận mật khẩu cũ (`/api/auth/set-password` trả 410), giới hạn hồ sơ và đơn theo chủ sở hữu, và chỉ cho tài khoản chủ hệ thống gọi route admin. Các mục còn mở nằm ở bảng Lỗ hổng đã biết phía trên.
-- **Tiếp theo:** merge bản sửa thêm job bằng link, bỏ tự sinh thẻ kanban, thu hồi phiên khi đăng xuất, giới hạn kích thước upload và số lần đăng ký, sau đó Turnstile, dead-letter queue và quên mật khẩu.
+- **3/11/2026:** không còn tự sinh thẻ kanban (migration 0004 xoá 1.386 thẻ), từ khoá quét theo hồ sơ thật, tin remote khoá vùng không còn tính khớp khu vực; đăng xuất thu hồi phiên, CV tối đa 5 MB, giới hạn đăng ký theo IP, đồng ý trước khi tải CV, xoá tài khoản có 7 ngày khôi phục, xuất dữ liệu, backup D1 → R2 hằng ngày, Turnstile (test key).
+- **Tiếp theo:** merge bản sửa thêm job bằng link, lấy JD cho tin từ mức "một phần" trở lên, hiện lịch sử đăng lại và số ngày treo của từng tin, bản tin Telegram hằng ngày, dead-letter queue, quên mật khẩu. Xem [`ROADMAP.md`](ROADMAP.md).
 
 ## Giấy phép
 

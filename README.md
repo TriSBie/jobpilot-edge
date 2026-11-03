@@ -34,7 +34,7 @@ The MVP is live and used daily. As of 3 Nov 2026 production holds 330 postings f
 |---|---|
 | **Shipped** | Email and password accounts, multiple profiles, CV upload with skill suggestions, draft profile filled from a CV, six job sources, explainable scoring with caps, job flags, seven-stage kanban with follow-ups and silence alerts, morning brief in the app, salary benchmark, command palette, light and dark themes, Vietnamese and English UI |
 | **Backend only** | Durable Object realtime hub and `/api/notifications` exist but the web app does not use them yet. Vectorize is bound but nothing writes embeddings. The morning brief is built every day but only shown in the app; email delivery needs a custom domain |
-| **Known gaps** | Manual job submission fetches any URL and shows the job to every user (fix ready on branch `task/T-05`, not merged). Every scored job creates a kanban card automatically. Logging out does not revoke the session on the server. CV upload has no size limit and sign-up has no rate limit |
+| **Known gaps** | Manual job submission fetches any URL and shows the job to every user (fix ready on branch `task/T-05`, not merged). Scoring has no job description text yet, only the skill tags each board exposes, so many remote postings stop at 69. The salary benchmark falls back to a reference table because few postings state a salary. The morning brief is only visible in the app. Turnstile runs with Cloudflare test keys until a real widget is configured |
 | **Not started** | AI explanations and interview prep, semantic matching, AI Gateway, Browser Rendering fallback for JS-only job pages, email routing, Turnstile, public profile pages, D1 backups, password reset |
 
 The full plan, with phases and acceptance criteria, is in [`PLAN.md`](PLAN.md) (Vietnamese).
@@ -205,7 +205,8 @@ All routes are under `/api`. Authenticated routes take `Authorization: Bearer <t
 
 - **Live:** running since October 2026 on Workers Free. Latest changes: English UI and API strings (30 Oct), four remote job sources (30 Oct), landing hero motion and CV draft clean-up (31 Oct).
 - **Security:** the October 2026 fix removed the password-claim flow (`/api/auth/set-password` now returns 410), scoped profiles and applications to their owner, and limited admin routes to the owner account. Open items are listed under Known gaps above.
-- **Next:** merge the manual-submission fix, stop auto-creating kanban cards, revoke sessions on logout, limit upload size and sign-ups, then Turnstile, a dead-letter queue and password reset.
+- **3 Nov 2026:** kanban cards are no longer auto-created (migration 0004 removed 1,386 of them), scan keywords follow real profiles, region-locked remote postings no longer count as a location match; logout revokes the session, CV upload is capped at 5 MB, sign-ups are rate-limited per IP, consent before CV upload, account deletion with a 7-day restore window, data export, daily D1 backup to R2, Turnstile (test keys).
+- **Next:** merge the manual-submission fix, fetch job descriptions for partial-or-better matches, show repost and days-open history per posting, Telegram daily brief, dead-letter queue, password reset. See [`ROADMAP.md`](ROADMAP.md).
 
 ## License
 

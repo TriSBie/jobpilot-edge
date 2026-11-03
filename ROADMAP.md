@@ -53,7 +53,9 @@ Nguyên tắc: mỗi đợt có tiêu chí nghiệm thu đo được trên produ
 | 1.5 | Backup D1 → R2 hằng ngày; export dữ liệu theo user (phục vụ 1.1) | T-25 | Có file backup sau 1 chu kỳ |
 | 1.6 | Dead-letter queue; `PATCH /applications` validate `stage`; `digest/today` không ghi DB mỗi lần gọi | T-19, T-17, T-47 | Message lỗi rơi vào DLQ |
 
-### Đợt 2 — Lý do quay lại mỗi ngày (2 tuần)
+> **Cập nhật 03/11/2026 theo nghiên cứu thị trường** (`worklog/research/2026-11-03_TONG-HOP-thi-truong-va-feature.md`): "AI quét + chấm khớp + sửa CV" đã có ≥ 5 đối thủ VN (JoFi, UpNow, Luminpath, TalentFlux, VibeApply) và ~10 sản phẩm Product Hunt; TopCV bán lẻ match score. Khác biệt còn mở của JobPilot: lịch sử quét (tin đăng lại, treo lâu, làm mới giả), tỉ lệ phản hồi theo công ty, không auto-apply / không bịa CV, benchmark lương thật, alert Telegram. Vì vậy **đợt 2 đổi thứ tự: 2.3 → 2.2 → 2.1 → 2.4 → 2.5**, thêm 2.7 sửa benchmark và 2.8 landing. Kiểm kê code: 22 feature đầy đủ, 6 nửa vời, 10 chỉ backend; 3 "feature giả" phải lấp trước khi nói chuyện HR: chấm không JD, benchmark 14/167 tin có lương, brief sáng chỉ ghi DB.
+
+### Đợt 2 — Lý do quay lại mỗi ngày (2 tuần) — thứ tự mới: 2.3, 2.2, 2.1, 2.4, 2.5, 2.6, 2.7, 2.8
 
 | # | Việc | Backlog | Nghiệm thu |
 |---|---|---|---|
@@ -63,6 +65,8 @@ Nguyên tắc: mỗi đợt có tiêu chí nghiệm thu đo được trên produ
 | 2.4 | **Khuyến nghị kèm điểm**: "Nên nộp" / "Nộp nếu bổ sung X" / "Bỏ qua" + 1 dòng lý do; sửa câu "trên tổng trọng số" | mới: T-65, T-13 | Mỗi thẻ có 1 trong 3 nhãn |
 | 2.5 | **Thống kê tuần** trên kanban ("nộp 5, qua 1 vòng, 2 im lặng"); tự chuyển đơn im lặng > 14 ngày sang "đóng mềm" | mới: T-66 | Dữ liệu kanban sẵn có |
 | 2.6 | Morning brief theo hồ sơ đang chọn | T-09 | Đổi hồ sơ → số brief đổi |
+| 2.7 | **Sửa benchmark cho thật**: parse lương USD từ Remote OK/Remotive/HN, quy đổi, hiện "n mẫu, nguồn", ẩn số khi n < 5; landing không hứa "từ tin đang tuyển" khi n nhỏ | mới: T-72 | Benchmark hiện số thật với ≥ 5 mẫu cho backend/frontend; không còn bảng tĩnh khi đủ mẫu |
+| 2.8 | **Landing nói đúng**: 6 nguồn, bỏ "xuất: sắp có", thêm 3 cam kết niềm tin (không chia sẻ CV, xoá 1 nút, nhà tuyển dụng thật không thu phí), nói rõ "không auto-apply, không bịa CV" | mới: T-73 | Mọi câu trên landing kiểm được trên app (T-38) |
 
 ### Đợt 3 — Tạo khác biệt (sau khi đợt 2 có số liệu)
 
@@ -74,7 +78,9 @@ Nguyên tắc: mỗi đợt có tiêu chí nghiệm thu đo được trên produ
 | 3.4 | Kanban theo vòng phỏng vấn (sàng lọc, test, technical, offer) + checklist; lịch phỏng vấn | T-37 |
 | 3.5 | Cờ lừa đảo cho link dán tay (đòi phí, chỉ liên hệ Zalo/Telegram) + câu "Nhà tuyển dụng thật không thu phí" | mới: T-69 |
 | 3.6 | Thêm kịch bản đàm phán "giữ thể diện": nhắc lại sau khi chờ lâu, từ chối offer | mới: T-70 |
-| 3.7 | Nguồn hợp lệ thêm: Greenhouse/Lever theo danh sách công ty anh đưa; VietnamDevs nếu anh duyệt scrape; bookmarklet "lưu job 1 click" | từ research nguồn |
+| 3.7 | Nguồn hợp lệ thêm: Greenhouse/Lever theo danh sách công ty anh đưa; VietnamDevs nếu anh duyệt scrape; bookmarklet "lưu job 1 click" (không extension, lấy LinkedIn hợp lệ) | từ research nguồn |
+| 3.8 | **"JD lint" miễn phí cho HR**: dán JD → % hồ sơ mẫu junior/middle/senior khớp, kỹ năng đòi quá nhiều, lương dưới trung vị. Dùng `scoreJob()` thuần, không đụng dữ liệu user, không bán gì → không chạm giấy phép dịch vụ việc làm. Cửa vào HR và lead cho đợt 4 | mới: T-74 |
+| 3.9 | **Chuẩn bị cohort mode** (đường B2B thử trước, R3): bảng `orgs`, `org_members`, role coach/học viên; consent "cho [trung tâm] xem tiến độ"; chỉ làm khi có 1 trung tâm đồng ý pilot | mới: T-75 |
 
 ### Đợt 4 — Khi có người dùng ổn định (≥ 30 tài khoản hoạt động)
 
@@ -84,7 +90,12 @@ Nguyên tắc: mỗi đợt có tiêu chí nghiệm thu đo được trên produ
 - Nối hoặc gỡ: realtime hub, notifications, Vectorize (T-11); AI Gateway (T-27); trang hồ sơ public (T-33).
 
 ### Không làm
-- Tự nộp đơn (auto-apply). Scrape LinkedIn, Facebook, Wellfound, aggregator. Review công ty dạng tự do. AI viết lại CV bịa kinh nghiệm. Thông báo dày hơn 1 bản tin/ngày.
+- Tự nộp đơn (auto-apply) — lời chê số 1 trên Product Hunt (25–40% đơn fail im lặng, recruiter coi là spam). Scrape LinkedIn, Facebook, Wellfound, aggregator. Review công ty dạng tự do. AI viết lại CV bịa kinh nghiệm. Thông báo dày hơn 1 bản tin/ngày. Cover letter AI (dev VN ít dùng, rủi ro bịa). **Đăng tin / CV search / bán hồ sơ cho HR** (cần giấy phép + ký quỹ 300tr theo Luật Việc làm 2025 + NĐ 352; mâu thuẫn "không chia sẻ CV với nhà tuyển dụng" trên landing; JoFi/UpNow đã chiếm). Gói trả phí tự gia hạn theo tuần (nguồn khiếu nại số 1 trên PH).
+
+### Hướng B2B (khi đến đợt 4), theo rủi ro tăng dần
+1. **Cohort mode cho bootcamp/trung tâm có cam kết việc làm** (CoderSchool, MindX, Rikkei, FUNiX…): 150–300k/học viên/khoá hoặc 3–5tr/cohort; tận dụng kanban + chấm điểm; không chuyển dữ liệu ra ngoài. KPI 3 tháng: 2 pilot free + 1 trả tiền, ≥ 30 học viên active.
+2. **Báo cáo tổng hợp ẩn danh thị trường dev VN** (kỹ năng thiếu, lương, tin treo theo công ty; k ≥ 10/ô): 2–5tr/bản quý, chủ yếu tạo uy tín.
+3. **Reverse marketplace nhẹ** ("mời phỏng vấn có lương trước"): chỉ khi ≥ 2.000 dev active, ≥ 300 opt-in, đã có tư vấn luật.
 
 ## 4. Việc kỹ thuật nền (làm xen kẽ, không chặn đợt)
 
