@@ -161,7 +161,7 @@ async function getUser(request, env) {
   if (!token) return null;
   const userId = await env.KV.get(`session:${token}`);
   if (!userId) return null;
-  return env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first();
+  return env.DB.prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL").bind(userId).first();
 }
 
 async function ownsProfile(env, user, profileId) {
@@ -192,6 +192,7 @@ async function profileWithSkills(env, profile) {
   };
 }
 
+const CV_MAX_BYTES = 5242880, CV_MAX_CHARS = 200000; // T-16a
 async function handleCvText(request, env, user, profileId) {
   const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?")
     .bind(profileId, user.id).first();
@@ -199,6 +200,7 @@ async function handleCvText(request, env, user, profileId) {
   const body = await readBody(request);
   const text = (body.text || "").trim();
   if (text.length < 100) return json({ error: "cv_text_too_short" }, 400);
+  if (text.length > CV_MAX_CHARS) return json({ error: "text_too_long" }, 413);
   const filename = body.filename || "cv.txt";
   const r2Key = `cv/${user.id}/${profileId}-${Date.now()}.txt`;
   await env.FILES.put(r2Key, text, { httpMetadata: { contentType: "text/plain" } });
@@ -208,10 +210,8 @@ async function handleCvText(request, env, user, profileId) {
   ).bind(fileId, user.id, r2Key, filename, text.length, now()).run();
   await env.DB.prepare("UPDATE profiles SET cv_file_id = ?, updated_at = ? WHERE id = ?")
     .bind(fileId, now(), profileId).run();
-  const [catalog, ai] = await Promise.all([
-    Promise.resolve(extractSkillsFromText(text)),
-    aiExtractSkills(env, text),
-  ]);
+  const catalog = extractSkillsFromText(text);
+  const ai = user.ai_opt_out ? [] : await aiExtractSkills(env, text); // T-62: người dùng tắt AI → không gửi CV cho Workers AI
   const merged = [...new Set([...catalog, ...ai])];
   const suggested = merged.map((skill) => ({
     skill,
@@ -221,6 +221,46 @@ async function handleCvText(request, env, user, profileId) {
   })).sort((a, b) => b.weight - a.weight || a.skill.localeCompare(b.skill));
   await env.KV.put(`cvskills:${profileId}`, JSON.stringify(suggested), { expirationTtl: 86400 });
   return json({ file_id: fileId, text_chars: text.length, suggested_skills: suggested });
+}
+
+// ---------------- privacy (T-62 + T-24) ----------------
+const DELETE_GRACE = 7 * 86400;
+// Xoá mọi file CV của hồ sơ (text đã trích + PDF gốc đều có key cv/<user>/<profile>-...), gợi ý KV và cv_file_id.
+async function deleteProfileCv(env, profile) {
+  // instr thay LIKE: mẫu dài hơn 50 ký tự vượt SQLITE_MAX_LIKE_PATTERN_LENGTH của D1
+  const prefix = `cv/${profile.user_id}/${profile.id}-`;
+  const { results: files } = await env.DB.prepare("SELECT id, r2_key FROM files WHERE user_id = ? AND instr(r2_key, ?) = 1")
+    .bind(profile.user_id, prefix).all();
+  for (const f of files) await env.FILES.delete(f.r2_key);
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM files WHERE user_id = ? AND instr(r2_key, ?) = 1").bind(profile.user_id, prefix),
+    env.DB.prepare("UPDATE profiles SET cv_file_id = NULL, updated_at = ? WHERE id = ?").bind(now(), profile.id),
+  ]);
+  await env.KV.delete(`cvskills:${profile.id}`);
+  return files.length;
+}
+// Xoá hẳn tài khoản sau thời gian ân hạn: R2 + KV trước, rồi D1 theo thứ tự FK (con trước cha).
+async function purgeUser(env, userId) {
+  const { results: files } = await env.DB.prepare("SELECT r2_key FROM files WHERE user_id = ?").bind(userId).all();
+  for (const f of files) await env.FILES.delete(f.r2_key);
+  const { results: profiles } = await env.DB.prepare("SELECT id FROM profiles WHERE user_id = ?").bind(userId).all();
+  for (const p of profiles) await env.KV.delete(`cvskills:${p.id}`);
+  const P = "SELECT id FROM profiles WHERE user_id = ?1", A = `SELECT id FROM applications WHERE profile_id IN (${P})`;
+  await env.DB.batch([
+    `DELETE FROM application_events WHERE application_id IN (${A})`,
+    `DELETE FROM interviews WHERE application_id IN (${A})`,
+    `DELETE FROM applications WHERE profile_id IN (${P})`,
+    `DELETE FROM job_matches WHERE profile_id IN (${P})`,
+    `DELETE FROM profile_skills WHERE profile_id IN (${P})`,
+    `DELETE FROM prep_items WHERE session_id IN (SELECT id FROM prep_sessions WHERE profile_id IN (${P}))`,
+    `DELETE FROM prep_sessions WHERE profile_id IN (${P})`,
+    "DELETE FROM profiles WHERE user_id = ?1",
+    "DELETE FROM files WHERE user_id = ?1",
+    "DELETE FROM digests WHERE user_id = ?1",
+    "DELETE FROM notifications WHERE user_id = ?1",
+    "DELETE FROM login_failures WHERE user_id = ?1",
+    "DELETE FROM users WHERE id = ?1",
+  ].map((sql) => env.DB.prepare(sql).bind(userId)));
 }
 
 // ---------------- fetchers (port từ Job Watcher đã kiểm chứng) ----------------
@@ -737,12 +777,119 @@ async function loginAttemptAllowed(env, userId) {
   ).bind(userId, now(), LOGIN_FAIL_WINDOW, LOGIN_FAIL_MAX).first();
   return r.fail_count <= LOGIN_FAIL_MAX;
 }
+// Cloudflare Turnstile. Không có TURNSTILE_SECRET (lab/dev, hoặc chưa `wrangler secret put`) thì bỏ qua và cảnh báo.
+async function verifyTurnstile(env, token, ip) {
+  if (!env.TURNSTILE_SECRET) { console.log("WARN turnstile: thiếu env.TURNSTILE_SECRET, bỏ qua kiểm tra"); return true; }
+  if (!token || typeof token !== "string") return false;
+  const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token });
+  if (ip) form.set("remoteip", ip);
+  try {
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+    return !!(await r.json()).success;
+  } catch (_) { return false; }
+}
+// Giới hạn đăng ký theo IP, 5 lần/giờ (T-16b), cùng kiểu upsert nguyên tử; count dừng ở MAX+1. Cron */30 dọn dòng cũ.
+const REGISTER_MAX = 5;
+async function registerAttemptAllowed(env, ip, hour) {
+  const r = await env.DB.prepare(
+    `INSERT INTO register_attempts (ip, hour, count) VALUES (?1, ?2, 1)
+     ON CONFLICT(ip, hour) DO UPDATE SET count = CASE WHEN count > ?3 THEN count ELSE count + 1 END
+     RETURNING count`
+  ).bind(ip, hour, REGISTER_MAX).first();
+  return r.count <= REGISTER_MAX;
+}
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 function passwordError(pw) {
   if (!pw || typeof pw !== "string") return "missing_password";
   if (pw.length < 8) return "password_too_short";
   if (pw.length > 128) return "password_too_long";
   return null;
+}
+
+// ---------------- backup D1 → R2 + export theo user (T-25) ----------------
+// Mỗi bảng 1 file NDJSON gzip tại backups/YYYY-MM-DD/<bảng>.ndjson.gz; giữ BACKUP_KEEP ngày.
+const BACKUP_TABLES = ["users", "profiles", "profile_skills", "sources", "jobs", "job_matches", "applications", "application_events",
+  "interviews", "prep_sessions", "prep_items", "files", "digests", "notifications", "login_failures"];
+const BACKUP_KEEP = 14;
+const BACKUP_PAGE = 500;
+function toNdjson(rows) {
+  return rows.map((r) => JSON.stringify(r) + "\n").join("");
+}
+// prefixes: "backups/YYYY-MM-DD/" (kể cả hôm nay) → các thư mục ngày cũ hơn `keep` ngày gần nhất.
+function staleBackupDays(prefixes, keep) {
+  return prefixes.filter((p) => /^backups\/\d{4}-\d{2}-\d{2}\/$/.test(p)).sort().reverse().slice(keep);
+}
+const gzip = (text) => new Response(new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+async function backupToR2(env) {
+  const day = new Date().toISOString().slice(0, 10);
+  const m = { date: day, started_at: new Date().toISOString(), tables: {}, errors: {}, deleted: [], subrequests: 0 };
+  for (const t of BACKUP_TABLES) {
+    try {
+      const rows = [];
+      for (let off = 0; ; off += BACKUP_PAGE) {
+        m.subrequests++;
+        const { results } = await env.DB.prepare(`SELECT * FROM ${t} LIMIT ${BACKUP_PAGE} OFFSET ?`).bind(off).all();
+        rows.push(...results);
+        if (results.length < BACKUP_PAGE) break;
+      }
+      const body = await gzip(toNdjson(rows));
+      m.subrequests++;
+      await env.FILES.put(`backups/${day}/${t}.ndjson.gz`, body, {
+        httpMetadata: { contentType: "application/gzip" }, customMetadata: { rows: String(rows.length) },
+      });
+      m.tables[t] = { rows: rows.length, bytes: body.byteLength };
+    } catch (e) {
+      m.errors[t] = e.message;
+    }
+  }
+  try {
+    m.subrequests++;
+    const list = await env.FILES.list({ prefix: "backups/", delimiter: "/" });
+    for (const p of staleBackupDays(list.delimitedPrefixes, BACKUP_KEEP)) {
+      m.subrequests += 2;
+      const { objects } = await env.FILES.list({ prefix: p });
+      await env.FILES.delete(objects.map((o) => o.key));
+      m.deleted.push(p);
+    }
+  } catch (e) {
+    m.errors._cleanup = e.message;
+  }
+  m.finished_at = new Date().toISOString();
+  m.subrequests++;
+  await env.FILES.put(`backups/${day}/manifest.json`, JSON.stringify(m), { httpMetadata: { contentType: "application/json" } });
+  return m;
+}
+async function listBackupManifests(env) {
+  const list = await env.FILES.list({ prefix: "backups/", delimiter: "/" });
+  const days = list.delimitedPrefixes.sort().reverse().slice(0, BACKUP_KEEP);
+  const out = [];
+  for (const p of days) {
+    const obj = await env.FILES.get(`${p}manifest.json`);
+    out.push({ date: p.slice(8, 18), ...(obj ? await obj.json() : { error: "manifest_missing" }) });
+  }
+  return out;
+}
+async function exportUserData(env, user) {
+  const u = { ...user };
+  delete u.password_hash;
+  delete u.password_salt;
+  const byUser = (sql) => env.DB.prepare(sql).bind(user.id).all().then((r) => r.results);
+  const { results: profileRows } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
+  const profiles = [];
+  for (const p of profileRows) profiles.push(await profileWithSkills(env, p));
+  const applications = await byUser("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY a.created_at");
+  const events = await byUser("SELECT e.* FROM application_events e JOIN applications a ON a.id = e.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY e.created_at");
+  for (const a of applications) a.events = events.filter((e) => e.application_id === a.id);
+  return {
+    user: u,
+    profiles,
+    applications,
+    interviews: await byUser("SELECT i.* FROM interviews i JOIN applications a ON a.id = i.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY i.scheduled_at"),
+    files: await byUser("SELECT id, kind, filename, size_bytes, created_at FROM files WHERE user_id = ? ORDER BY created_at"),
+    digests: await byUser("SELECT * FROM digests WHERE user_id = ? ORDER BY date"),
+    notifications: await byUser("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at"),
+    exported_at: new Date().toISOString(),
+  };
 }
 
 // ---------------- router ----------------
@@ -803,12 +950,15 @@ export default {
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
     if (path === "/api/auth/register" && request.method === "POST") {
       const body = await readBody(request);
+      if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
       const email = (body.email || "").trim().toLowerCase();
       const name = (body.name || "").trim();
       if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
       if (name.length < 2 || name.length > 80) return json({ error: "invalid_name" }, 400);
       const pwErr = passwordError(body.password);
       if (pwErr) return json({ error: pwErr }, 400);
+      const ip = request.headers.get("cf-connecting-ip") || "unknown";
+      if (!(await registerAttemptAllowed(env, ip, Math.floor(now() / 3600)))) return json({ error: "too_many_registrations" }, 429); // trước khi băm
       const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
       if (existing) return json({ error: "email_taken" }, 409);
       const rec = await makePasswordRecord(body.password);
@@ -819,8 +969,9 @@ export default {
       const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
       return json(await issueSession(env, user), 201);
     }
-    if (path === "/api/auth/login" && request.method === "POST") {
+    if ((path === "/api/auth/login" || path === "/api/auth/restore") && request.method === "POST") {
       const body = await readBody(request);
+      if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
       const email = (body.email || "").trim().toLowerCase();
       if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
       if (!body.password) return json({ error: "missing_password" }, 400);
@@ -831,7 +982,20 @@ export default {
       const ok = await verifyPassword(body.password, user.password_salt, user.password_hash);
       if (!ok) return json({ error: "invalid_credentials" }, 401);
       await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id).run();
+      if (path === "/api/auth/restore") { // T-24: khôi phục trong 7 ngày kể từ khi đánh dấu xoá
+        if (!user.deleted_at) return json({ error: "not_deleted" }, 400);
+        if (now() > user.deleted_at + DELETE_GRACE) return json({ error: "restore_expired" }, 410);
+        await env.DB.prepare("UPDATE users SET deleted_at = NULL WHERE id = ?").bind(user.id).run();
+      } else if (user.deleted_at) {
+        return json({ error: "account_deleted", restore_until: user.deleted_at + DELETE_GRACE }, 403);
+      }
       return json(await issueSession(env, user));
+    }
+    if (path === "/api/auth/logout" && request.method === "POST") { // T-15: thu hồi session
+      const token = (request.headers.get("Authorization") || "").replace(/^Bearer /, "");
+      if (!token) return json({ error: "unauthorized" }, 401);
+      await env.KV.delete(`session:${token}`);
+      return json({ ok: true });
     }
     if (path === "/api/auth/set-password" && request.method === "POST") {
       return json({ error: "password_setup_disabled" }, 410);
@@ -849,11 +1013,12 @@ export default {
       return json({ error: "forbidden" }, 403);
     }
 
-    if (path === "/api/me") {
+    if (path === "/api/me" && request.method === "GET") {
       const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
-      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL }, profiles });
+      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
+        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0 }, profiles });
     }
     if (path === "/api/admin/quota") {
       const out = {};
@@ -898,9 +1063,11 @@ export default {
     if (cvMatch && request.method === "POST") return handleCvText(request, env, user, cvMatch[1]);
     const cvFileMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-file$/);
     if (cvFileMatch && request.method === "POST") {
+      if (+request.headers.get("content-length") > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413);
       const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvFileMatch[1], user.id).first();
       if (!profile) return json({ error: "profile_not_found" }, 404);
       const buf = await request.arrayBuffer();
+      if (buf.byteLength > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413); // client có thể bỏ header
       const filename = request.headers.get("x-filename") || "cv.pdf";
       const r2Key = `cv/${user.id}/${profile.id}-original-${Date.now()}.pdf`;
       await env.FILES.put(r2Key, buf, { httpMetadata: { contentType: "application/pdf" } });
@@ -1007,8 +1174,9 @@ export default {
       return json(out);
     }
     if (path === "/api/jobs/submit" && request.method === "POST") {
-      await ensureSources(env);
       const b = await readBody(request);
+      if (!(await verifyTurnstile(env, b.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
+      await ensureSources(env);
       let job = null;
       if (b.url) {
         const sourceType = /topdev/.test(b.url) ? "topdev" : /itviec/.test(b.url) ? "itviec" : "manual";
@@ -1095,6 +1263,34 @@ export default {
       return json(upd);
     }
 
+    // --- privacy (T-62 + T-24): đồng ý tải CV, tắt AI, xoá CV, xoá tài khoản ---
+    if (path === "/api/me/consent" && request.method === "POST") {
+      const b = await readBody(request);
+      if (b.kind !== "cv") return json({ error: "unknown_consent" }, 400);
+      const r = await env.DB.prepare("UPDATE users SET consent_cv_at = COALESCE(consent_cv_at, ?) WHERE id = ? RETURNING consent_cv_at")
+        .bind(now(), user.id).first();
+      return json({ consent_cv_at: r.consent_cv_at });
+    }
+    if (path === "/api/me" && request.method === "PATCH") {
+      const b = await readBody(request);
+      if (![0, 1, true, false].includes(b.ai_opt_out)) return json({ error: "invalid_ai_opt_out" }, 400);
+      await env.DB.prepare("UPDATE users SET ai_opt_out = ? WHERE id = ?").bind(b.ai_opt_out ? 1 : 0, user.id).run();
+      return json({ ai_opt_out: b.ai_opt_out ? 1 : 0 });
+    }
+    if (path === "/api/me" && request.method === "DELETE") {
+      const b = await readBody(request);
+      if (!b.password || !(await verifyPassword(b.password, user.password_salt, user.password_hash))) return json({ error: "invalid_credentials" }, 401);
+      await env.DB.prepare("UPDATE users SET deleted_at = ? WHERE id = ?").bind(now(), user.id).run();
+      await env.KV.delete(`session:${request.headers.get("Authorization").slice(7)}`);
+      return json({ ok: true, restore_until: now() + DELETE_GRACE });
+    }
+    const cvDelMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv$/);
+    if (cvDelMatch && request.method === "DELETE") {
+      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvDelMatch[1], user.id).first();
+      if (!profile) return json({ error: "profile_not_found" }, 404);
+      return json({ ok: true, deleted_files: await deleteProfileCv(env, profile) });
+    }
+
     // --- ingest admin + digest ---
     if (path === "/api/admin/ingest/run" && request.method === "POST") {
       await ensureSources(env);
@@ -1111,6 +1307,20 @@ export default {
       const { results } = await env.DB.prepare("SELECT type, name, last_run_at, last_status, last_error FROM sources ORDER BY type").all();
       return json(results);
     }
+
+    // --- export theo user + backup admin (T-25) ---
+    if (path === "/api/me/export" && request.method === "GET") {
+      return new Response(JSON.stringify(await exportUserData(env, user)), {
+        headers: { ...CORS, "content-type": "application/json", "content-disposition": `attachment; filename="jobpilot-export-${new Date().toISOString().slice(0, 10)}.json"` },
+      });
+    }
+    if (path === "/api/admin/backups" && request.method === "GET") {
+      return json(await listBackupManifests(env));
+    }
+    if (path === "/api/admin/backups/run" && request.method === "POST") {
+      return json(await backupToR2(env));
+    }
+
     if (path === "/api/digest/today") {
       return json(await buildDigest(env, user, lang));
     }
@@ -1183,15 +1393,21 @@ export default {
 
   async scheduled(event, env, ctx) {
     if (event.cron === "*/30 * * * *") {
+      await env.DB.prepare("DELETE FROM register_attempts WHERE hour < ?").bind(Math.floor(now() / 3600) - 2).run();
       await ensureSources(env);
       const { results } = await env.DB.prepare("SELECT * FROM sources WHERE is_enabled = 1").all();
       const keywords = await ingestKeywords(env);
       for (const src of results) {
         for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
+      const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
+      for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
     } else if (event.cron === "0 1 * * *") {
-      const { results: users } = await env.DB.prepare("SELECT id FROM users").all();
+      const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at IS NULL").all();
       for (const u of users) await env.Q_NOTIFY.send({ kind: "digest", userId: u.id });
+    } else if (event.cron === "0 18 * * *") {
+      const m = await backupToR2(env);
+      console.log("backup", m.date, "subrequests", m.subrequests, "errors", JSON.stringify(m.errors));
     }
   },
 
