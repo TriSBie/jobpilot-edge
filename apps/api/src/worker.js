@@ -535,9 +535,6 @@ async function scoreJobForAllProfiles(env, job) {
        VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
        ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`
     ).bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()).run();
-    await env.DB.prepare(
-      "INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)"
-    ).bind(uid(), p.id, job.id, now(), now()).run();
     if (s.tier === "strong") {
       await env.DB.prepare(
         "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)"
@@ -565,8 +562,6 @@ async function rescoreProfile(env, profileId) {
       stmts.push(env.DB.prepare(`INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
         VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`)
         .bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
-      stmts.push(env.DB.prepare("INSERT OR IGNORE INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, 'new', ?, ?)")
-        .bind(uid(), p.id, job.id, now(), now()));
       if (s.tier === "strong") {
         stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)")
           .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id));
