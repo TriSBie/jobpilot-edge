@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
 <style>
 /* ===== SIGNAL TOKENS (bước 1) — dán nguyên khối 1 từ spec ===== */
 :root{
@@ -204,6 +205,8 @@ html[data-theme="dark"]{
   .toolbar .grow{flex:1;min-width:180px}
   .submit-row{display:flex;gap:.55rem;flex-wrap:wrap;margin-bottom:1.1rem}
   .submit-row .grow{flex:1;min-width:220px}
+  .turnstile{margin-top:.9rem;min-height:65px;display:flex;justify-content:center} /* widget thật 300px cố định; card hẹp (360px) thì tràn vào padding card, không tràn trang */
+  .submit-row .turnstile{margin-top:0;flex-basis:100%}
 
   /* ---------- job rows ---------- */
   .jobs-list{display:flex;flex-direction:column;gap:10px}
@@ -1472,6 +1475,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <label for="loginPassword" data-en="Password">Mật khẩu</label>
           <input id="loginPassword" type="password" required placeholder="Mật khẩu của bạn" data-en-placeholder="Your password" autocomplete="current-password">
         </div>
+        <div id="loginTurnstile" class="turnstile"></div>
         <button id="loginBtn" class="btn primary" type="submit" style="width:100%" data-en="Log in">Đăng nhập</button>
         <div id="loginError"></div>
       </form>
@@ -1495,6 +1499,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <label for="regPassword2" data-en="Confirm password">Nhập lại mật khẩu</label>
           <input id="regPassword2" type="password" required placeholder="Nhập lại mật khẩu" data-en-placeholder="Re-enter your password" autocomplete="new-password">
         </div>
+        <div id="registerTurnstile" class="turnstile"></div>
         <button id="registerBtn" class="btn primary" type="submit" style="width:100%" data-en="Create account">Tạo tài khoản</button>
         <div id="registerError"></div>
       </form>
@@ -1559,6 +1564,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         <form id="submitForm" class="submit-row">
           <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…" data-en-placeholder="Paste a job link from any site to add it manually…"></div>
           <button id="submitBtn" class="btn small" type="submit" data-en="Add job">Thêm job</button>
+          <div id="submitTurnstile" class="turnstile"></div>
         </form>
 
         <div id="jobsContainer"></div>
@@ -1703,6 +1709,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
    JobPilot Edge — frontend SPA v2 (vanilla JS, không build step)
    ============================================================ */
 const API_BASE = "https://jobpilot-api.tribui-it-work.workers.dev";
+const TURNSTILE_SITE_KEY = "1x00000000000000000000AA"; // test key của Cloudflare (luôn pass); đổi sang site key thật khi deploy
 const STAGES = [
   { key: "new",       label: "Mới" },
   { key: "saved",     label: "Đã lưu" },
@@ -1912,6 +1919,7 @@ Object.assign(EN, {
   "Mật khẩu tối đa 128 ký tự.": "Password must be at most 128 characters.",
   "Hãy nhập mật khẩu.": "Enter a password.",
   "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.": "Too many failed attempts. Wait 10 minutes and try again.",
+  "Không tải được bước xác minh, tải lại trang.": "Could not load the verification step, reload the page.",
   "Không tìm thấy tài khoản với email này.": "No account found with this email.",
   "Tài khoản đã có mật khẩu — hãy đăng nhập.": "This account already has a password. Please log in.",
   "Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.": "Contact the administrator to reset the password for this account.",
@@ -2032,10 +2040,26 @@ const AUTH_ERR = {
   password_too_long: "Mật khẩu tối đa 128 ký tự.",
   missing_password: "Hãy nhập mật khẩu.",
   too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
+  turnstile_failed: "Không tải được bước xác minh, tải lại trang.",
   account_not_found: "Không tìm thấy tài khoản với email này.",
   password_already_set: "Tài khoản đã có mật khẩu — hãy đăng nhập.",
 };
 function authErr(e){ return t(AUTH_ERR[e.message] || e.message); }
+
+/* ---------------- Cloudflare Turnstile: render lười theo #id, lấy token rồi reset sau mỗi lần gửi ---------------- */
+const tsWidgets = {}, tsWanted = new Set(); // tsWanted: form đã mở nhưng api.js (defer) có thể chưa tải
+function turnstileRender(id){
+  tsWanted.add(id);
+  if (tsWidgets[id] !== undefined || !window.turnstile) return;
+  tsWidgets[id] = turnstile.render("#" + id, { sitekey: TURNSTILE_SITE_KEY, theme: document.documentElement.dataset.theme === "light" ? "light" : "dark", language: LANG });
+}
+window.onloadTurnstileCallback = () => tsWanted.forEach(turnstileRender);
+function turnstileToken(id){ return window.turnstile && tsWidgets[id] !== undefined ? turnstile.getResponse(tsWidgets[id]) : undefined; }
+function turnstileReset(id){ if (window.turnstile && tsWidgets[id] !== undefined) turnstile.reset(tsWidgets[id]); }
+function turnstileRerender(){ // đổi theme: widget không đổi theme tại chỗ nên gỡ rồi render lại
+  Object.keys(tsWidgets).forEach(id => { turnstile.remove(tsWidgets[id]); delete tsWidgets[id]; });
+  tsWanted.forEach(turnstileRender);
+}
 
 let landingAnimated = false;
 /* MOTION-ALL B1/M6 — view transitions (fallback: swap thường + @starting-style khi không có VT) */
@@ -2109,6 +2133,7 @@ function showApp(){
     $("#appView").classList.remove("hidden");
     window.scrollTo(0, 0);
     focusEl("#appView section:not(.hidden) h2");
+    turnstileRender("submitTurnstile");
   }, { sharedBrand: true });
 }
 function setAuthMode(mode){
@@ -2116,6 +2141,7 @@ function setAuthMode(mode){
   $("#loginForm").classList.toggle("hidden", mode !== "login");
   $("#registerForm").classList.toggle("hidden", mode !== "register");
   $("#authTabs").classList.remove("hidden");
+  turnstileRender(mode === "register" ? "registerTurnstile" : "loginTurnstile"); // render khi form hiện: widget trong display:none đo sai kích thước
   if (mode === "register") {
     $("#authTitle").innerHTML = t("Tạo tài khoản <em>miễn phí.</em>");
     $("#authSub").textContent = t("2 phút để có pipeline săn việc của riêng bạn, không cần thẻ.");
@@ -2151,12 +2177,13 @@ $("#loginForm").addEventListener("submit", async (ev) => {
   err.textContent = "";
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang đăng nhập...");
   try {
-    const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+    const data = await api("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password, turnstile_token: turnstileToken("loginTurnstile") }) });
     await afterAuth(data, false);
   } catch (e) {
     if (e.message === "password_setup_required") err.textContent = t("Tài khoản này cần liên hệ quản trị để đặt lại mật khẩu.");
     else err.textContent = authErr(e);
   } finally {
+    turnstileReset("loginTurnstile");
     btn.disabled = false; btn.textContent = t("Đăng nhập");
   }
 });
@@ -2171,11 +2198,12 @@ $("#registerForm").addEventListener("submit", async (ev) => {
   if (pw !== pw2) { err.textContent = t("Hai mật khẩu chưa khớp nhau."); return; }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang tạo tài khoản...");
   try {
-    const data = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ name, email, password: pw }) });
+    const data = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ name, email, password: pw, turnstile_token: turnstileToken("registerTurnstile") }) });
     await afterAuth(data, true);
   } catch (e) {
     err.textContent = authErr(e);
   } finally {
+    turnstileReset("registerTurnstile");
     btn.disabled = false; btn.textContent = t("Tạo tài khoản");
   }
 });
@@ -2683,13 +2711,14 @@ $("#submitForm").addEventListener("submit", async (ev) => {
   const btn = $("#submitBtn");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang thêm...");
   try {
-    await api("/api/jobs/submit", { method: "POST", body: JSON.stringify({ url }) });
+    await api("/api/jobs/submit", { method: "POST", body: JSON.stringify({ url, turnstile_token: turnstileToken("submitTurnstile") }) });
     $("#submitUrl").value = "";
     toast(t("Đã thêm job, hệ thống sẽ chấm điểm ngay."), "ok");
     setTimeout(loadJobs, 1500);
   } catch (e) {
-    toast(e.message, "err");
+    toast(t(AUTH_ERR[e.message] || e.message), "err");
   } finally {
+    turnstileReset("submitTurnstile");
     btn.disabled = false; btn.textContent = t("Thêm job");
   }
 });
@@ -3742,6 +3771,7 @@ $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
   const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem("jp_theme", next); } catch (e) { /* bỏ qua */ }
+  turnstileRerender();
   toast(t(next === "light" ? "Đã chuyển sang giao diện sáng." : "Đã chuyển sang giao diện tối."), "ok");
 }));
 

@@ -737,6 +737,17 @@ async function loginAttemptAllowed(env, userId) {
   ).bind(userId, now(), LOGIN_FAIL_WINDOW, LOGIN_FAIL_MAX).first();
   return r.fail_count <= LOGIN_FAIL_MAX;
 }
+// Cloudflare Turnstile. Không có TURNSTILE_SECRET (lab/dev, hoặc chưa `wrangler secret put`) thì bỏ qua và cảnh báo.
+async function verifyTurnstile(env, token, ip) {
+  if (!env.TURNSTILE_SECRET) { console.log("WARN turnstile: thiếu env.TURNSTILE_SECRET, bỏ qua kiểm tra"); return true; }
+  if (!token || typeof token !== "string") return false;
+  const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token });
+  if (ip) form.set("remoteip", ip);
+  try {
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+    return !!(await r.json()).success;
+  } catch (_) { return false; }
+}
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 function passwordError(pw) {
   if (!pw || typeof pw !== "string") return "missing_password";
@@ -803,6 +814,7 @@ export default {
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
     if (path === "/api/auth/register" && request.method === "POST") {
       const body = await readBody(request);
+      if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
       const email = (body.email || "").trim().toLowerCase();
       const name = (body.name || "").trim();
       if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
@@ -821,6 +833,7 @@ export default {
     }
     if (path === "/api/auth/login" && request.method === "POST") {
       const body = await readBody(request);
+      if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
       const email = (body.email || "").trim().toLowerCase();
       if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
       if (!body.password) return json({ error: "missing_password" }, 400);
@@ -1007,8 +1020,9 @@ export default {
       return json(out);
     }
     if (path === "/api/jobs/submit" && request.method === "POST") {
-      await ensureSources(env);
       const b = await readBody(request);
+      if (!(await verifyTurnstile(env, b.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
+      await ensureSources(env);
       let job = null;
       if (b.url) {
         const sourceType = /topdev/.test(b.url) ? "topdev" : /itviec/.test(b.url) ? "itviec" : "manual";
