@@ -2044,6 +2044,8 @@ Object.assign(EN, {
   "Địa điểm": "Location",
   "Độ tươi": "Freshness",
   "Tin đăng %s ngày trước": "Posted %s days ago",
+  "Đã đọc mô tả công việc (%s ký tự)": "Read the job description (%s chars)",
+  "Chấm theo tag kỹ năng của nguồn, chưa có mô tả": "Scored from the source's skill tags; no description yet",
   "Cấp bậc": "Level",
   "Điểm cuối": "Final score",
   "(quy tắc + fit) / 70 × 100": "(rules + fit) / 70 × 100",
@@ -2648,8 +2650,9 @@ function explainBlock(job, m){
   const fitRows = fb ? `<div class="row"><div><b>${t("Địa điểm")}</b><br><span>${esc(fb.locationWhy)}</span></div><span class="n${nCls(fb.location, 8)}">${fb.location} / 8</span></div>
   <div class="row"><div><b>${t("Độ tươi")}</b><br><span>${t("Tin đăng %s ngày trước", fb.ageDays)}</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
   <div class="row"><div><b>${t("Cấp bậc")}</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
+  const jdRow = `<div class="row"><div><span>${job.jd_len > 0 ? t("Đã đọc mô tả công việc (%s ký tự)", job.jd_len) : t("Chấm theo tag kỹ năng của nguồn, chưa có mô tả")}</span></div></div>`;
   const finalRow = `<div class="row"><div><b>${t("Điểm cuối")}</b><br><span>${t("(quy tắc + fit) / 70 × 100")}${rd && rd.capped ? t(". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).") : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
-  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${ruleRow}${fitRows}${finalRow}${job.verdict_why ? `<div class="row"><div><b>${t("Kết luận")}</b><br><span>${esc(job.verdict_why)}</span></div></div>` : ""}</div></div></div>`;
+  return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${jdRow}${ruleRow}${fitRows}${finalRow}${job.verdict_why ? `<div class="row"><div><b>${t("Kết luận")}</b><br><span>${esc(job.verdict_why)}</span></div></div>` : ""}</div></div></div>`;
 }
 
 function renderJobs(){
