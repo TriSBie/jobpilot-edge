@@ -50,6 +50,10 @@ const EN = {
   "Tin cũ %s ngày": "Posted %s days ago",
   "Đăng trùng / đăng lại": "Duplicate / reposted",
   "JD nhồi %s kỹ năng": "JD lists %s skills",
+  "Có thể đã gỡ": "May be taken down",
+  "Đăng lại %s lần": "Reposted (%s)",
+  "Treo %s ngày": "Open for %s days",
+  "Không ghi lương": "No salary listed",
   "Backend Java · 3 năm · Hồ Chí Minh / Remote": "Backend Java · 3 yrs · Ho Chi Minh City / Remote",
   "%s strong match mới, %s việc cần follow-up": "%s new strong matches, %s items to follow up",
   "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính.":
@@ -481,29 +485,73 @@ const REMOTE_NAMES = { wwr: "We Work Remotely", remotive: "Remotive", remoteok: 
 async function upsertJob(env, sourceId, job) {
   const hash = await sha256hex(`${job.title}|${job.company}|${job.url}`.toLowerCase());
   const posted = job.postedAt ? Math.floor(new Date(job.postedAt).getTime() / 1000) : null;
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  const t = now();
+  const existing = await env.DB.prepare("SELECT id FROM jobs WHERE content_hash = ?").bind(hash).first();
+  if (existing) {
+    // board "làm mới" ngày đăng = đăng lại
+    await env.DB.prepare(
+      `UPDATE jobs SET last_seen_at = ?, seen_count = seen_count + 1,
+         repost_count = repost_count + (CASE WHEN ? > COALESCE(posted_at,0) THEN 1 ELSE 0 END),
+         posted_at = MAX(COALESCE(posted_at,0), ?) WHERE content_hash = ?`
+    ).bind(t, posted || 0, posted || 0, hash).run();
+  } else await env.DB.prepare(
+    `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(uid(), sourceId, job.url, job.title, job.company || "", job.location || "",
     job.salaryText || null, job.jdText || "", JSON.stringify(job.skills || []),
-    hash, posted, now(), now()).run();
+    hash, posted, t, t, t).run();
   const row = await env.DB.prepare("SELECT * FROM jobs WHERE content_hash = ?").bind(hash).first();
   return row;
 }
 
-// Parse lương VNĐ từ salary_text: "25 - 40 triệu" / "30 triệu" / "25 - 40k".
-// "Thương lượng", USD và các dạng khác → null (không đoán mò).
-function parseSalaryVND(text) {
+const USD_VND = 25500; // 03/11/2026
+// Parse lương → {min, max, currency, period} | null. "Thương lượng" và dạng lạ → null (không đoán mò).
+function parseSalary(text) {
   if (!text) return null;
   const t = String(text);
-  if (/thương lượng|negotiable|competitive|thỏa thuận/i.test(t)) return null;
+  if (/thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|per task|per hour|\/h\b/i.test(t)) return null;
+  if (/\$|usd/i.test(t)) {
+    const nums = [...t.matchAll(/(\d+(?:,\d{3})*(?:\.\d+)?)\s*(k)?\b/gi)]
+      .map((m) => Number(m[1].replace(/,/g, "")) * (m[2] ? 1e3 : 1)).slice(0, 2);
+    if (!nums.length || !nums[0]) return null;
+    const max = nums[1] || nums[0];
+    const period = /năm|year|yr|annual|\/y\b/i.test(t) ? "year" : /month|tháng|\/mo\b/i.test(t) ? "month" : max >= 30000 ? "year" : "month";
+    return { min: nums[0], max, currency: "USD", period };
+  }
   let m = t.match(/(\d{1,3})\s*[-–]\s*(\d{1,3})\s*(triệu|tr)\b/i);
-  if (m) return { min: Number(m[1]) * 1e6, max: Number(m[2]) * 1e6 };
+  if (m) return { min: Number(m[1]) * 1e6, max: Number(m[2]) * 1e6, currency: "VND", period: "month" };
   m = t.match(/(\d{1,3})\s*(triệu|tr)\b/i);
-  if (m) return { min: Number(m[1]) * 1e6, max: Number(m[1]) * 1e6 };
+  if (m) return { min: Number(m[1]) * 1e6, max: Number(m[1]) * 1e6, currency: "VND", period: "month" };
   m = t.match(/(\d{2,3})\s*[-–]\s*(\d{2,3})\s*k\b/i);
-  if (m) return { min: Number(m[1]) * 1e3, max: Number(m[2]) * 1e3 };
+  if (m) return { min: Number(m[1]) * 1e3, max: Number(m[2]) * 1e3, currency: "VND", period: "month" };
   return null;
+}
+function parseSalaryVND(text) {
+  const p = parseSalary(text);
+  return p && p.currency === "VND" ? { min: p.min, max: p.max } : null;
+}
+// Quy về VNĐ/tháng.
+function monthlyVND(p) {
+  const f = (p.currency === "USD" ? USD_VND : 1) / (p.period === "year" ? 12 : 1);
+  return { min: p.min * f, max: p.max * f };
+}
+// Cờ rủi ro tin ảo từ lịch sử quét. row: posted_at, first_seen_at, last_seen_at, repost_count, salary_text, skillCount, dup.
+function postingFlags(row, nowTs, lang) {
+  const flags = [];
+  const lastSeen = row.last_seen_at || row.first_seen_at || nowTs;
+  const gone = lastSeen < nowTs - 48 * 3600;
+  const refTs = row.posted_at || row.first_seen_at;
+  const ageDays = refTs ? Math.floor((nowTs - refTs) / 86400) : null;
+  if (gone) flags.push({ type: "stale", label: tr(lang, "Có thể đã gỡ") });
+  else if (ageDays !== null && ageDays > 30) flags.push({ type: "stale", label: tr(lang, "Tin cũ %s ngày", ageDays) });
+  if (row.dup) flags.push({ type: "duplicate", label: tr(lang, "Đăng trùng / đăng lại") });
+  if ((row.repost_count || 0) >= 1) flags.push({ type: "reposted", label: tr(lang, "Đăng lại %s lần", row.repost_count) });
+  const open = row.first_seen_at ? Math.floor((nowTs - row.first_seen_at) / 86400) : 0;
+  if (open >= 21 && !gone) flags.push({ type: "long_open", label: tr(lang, "Treo %s ngày", open) });
+  const sal = String(row.salary_text || "").normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").toLowerCase();
+  if (!sal.trim() || /thoa thuan|thuong luong|negotiable/.test(sal)) flags.push({ type: "salary_hidden", label: tr(lang, "Không ghi lương") });
+  if ((row.skillCount || 0) > 12) flags.push({ type: "bloated", label: tr(lang, "JD nhồi %s kỹ năng", row.skillCount) });
+  return flags;
 }
 function pct(sorted, p) {
   if (!sorted.length) return null;
@@ -1134,12 +1182,8 @@ export default {
       }
       let out = rows.map((r) => {
         const skillsArr = JSON.parse(r.skills || "[]");
-        const flags = [];
-        const refTs = r.posted_at || r.first_seen_at;
-        const ageDays = refTs ? Math.floor((now() - refTs) / 86400) : null;
-        if (ageDays !== null && ageDays > 30) flags.push({ type: "stale", label: tr(lang, "Tin cũ %s ngày", ageDays) });
-        if ((keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r))) flags.push({ type: "duplicate", label: tr(lang, "Đăng trùng / đăng lại") });
-        if (skillsArr.length > 12) flags.push({ type: "bloated", label: tr(lang, "JD nhồi %s kỹ năng", skillsArr.length) });
+        const flags = postingFlags({ ...r, skillCount: skillsArr.length, dup: (keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r)) }, now(), lang);
+        const risk = flags.filter((f) => f.type !== "duplicate").length;
         let fit = null, ruleDetail = null;
         const hasMatch = r.final_score !== null && r.final_score !== undefined;
         if (prof && hasMatch) {
@@ -1158,7 +1202,7 @@ export default {
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
           skills: skillsArr,
           posted_at: r.posted_at, first_seen_at: r.first_seen_at,
-          flags,
+          flags, risk,
           match: hasMatch ? {
             final_score: r.final_score, tier: r.tier, rule_score: r.rule_score,
             matched_skills: JSON.parse(r.matched_skills || "[]"),
@@ -1334,21 +1378,25 @@ export default {
       const role = (url.searchParams.get("role") || "").toLowerCase().trim();
       const level = (url.searchParams.get("level") || "").toLowerCase().trim();
       const loc = (url.searchParams.get("location") || "").toLowerCase().trim();
-      const { results } = await env.DB.prepare("SELECT title, location, salary_text FROM jobs WHERE salary_text IS NOT NULL AND salary_text != '' LIMIT 1000").all();
-      const vals = [];
+      const { results } = await env.DB.prepare("SELECT j.title, j.location, j.salary_text, s.type AS src FROM jobs j LEFT JOIN sources s ON s.id = j.source_id WHERE j.salary_text IS NOT NULL AND j.salary_text != '' LIMIT 1000").all();
+      const vals = [], sources = {}; let vnd = 0, usd = 0;
       for (const j of results) {
         const title = (j.title || "").toLowerCase();
         if (role && !title.includes(role)) continue;
         if (level && !title.includes(level)) continue;
         if (loc && !(j.location || "").toLowerCase().includes(loc)) continue;
-        const p = parseSalaryVND(j.salary_text);
-        if (p) vals.push(p);
+        const p = parseSalary(j.salary_text);
+        if (!p) continue;
+        vals.push(monthlyVND(p));
+        p.currency === "USD" ? usd++ : vnd++;
+        sources[j.src || "other"] = (sources[j.src || "other"] || 0) + 1;
       }
       const mins = vals.map((v) => v.min).sort((a, b) => a - b);
       const maxs = vals.map((v) => v.max).sort((a, b) => a - b);
       const mids = vals.map((v) => (v.min + v.max) / 2).sort((a, b) => a - b);
       return json({
-        count: vals.length, currency: "VND",
+        count: vals.length, currency: "VND", period: "month", usd_vnd: USD_VND,
+        samples_vnd: vnd, samples_usd: usd, sources,
         median_min: pct(mins, 0.5), median_max: pct(maxs, 0.5),
         p25_mid: pct(mids, 0.25), median_mid: pct(mids, 0.5), p75_mid: pct(mids, 0.75),
         filters: { role: role || null, level: level || null, location: loc || null },
