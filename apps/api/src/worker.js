@@ -585,6 +585,27 @@ async function rescoreProfile(env, profileId) {
 
 // ---------------- ingest ----------------
 const DEFAULT_KEYWORDS = ["Java", "Node.js", "Backend", "Spring Boot"];
+// Kỹ năng quá chung, quét ra toàn tin nhiễu.
+const GENERIC_KEYWORDS = new Set(["git", "rest apis", "rest api", "english", "agile", "scrum", "sql", "linux", "jira", "oop", "html", "css"]);
+// Từ khoá quét ITviec/TopDev: DEFAULT_KEYWORDS làm nền + target_roles + 2 kỹ năng nặng nhất
+// của mỗi hồ sơ đang hoạt động; tối đa 12. DB lỗi → chỉ DEFAULT_KEYWORDS.
+async function ingestKeywords(env) {
+  const out = [...DEFAULT_KEYWORDS], seen = new Set(out.map((k) => k.toLowerCase()));
+  try {
+    const { results } = await env.DB.prepare(
+      "SELECT p.target_roles, (SELECT json_group_array(skill) FROM (SELECT skill FROM profile_skills WHERE profile_id = p.id ORDER BY weight DESC, skill LIMIT 2)) AS top FROM profiles p WHERE p.is_active = 1"
+    ).all();
+    for (const r of results) {
+      for (const kw of [...JSON.parse(r.target_roles || "[]"), ...JSON.parse(r.top || "[]")]) {
+        const k = String(kw).trim(), low = k.toLowerCase();
+        if (k.length <= 2 || seen.has(low) || GENERIC_KEYWORDS.has(low)) continue;
+        seen.add(low); out.push(k);
+        if (out.length >= 12) return out;
+      }
+    }
+  } catch (e) { console.log("ingestKeywords fallback:", e.message); }
+  return out;
+}
 async function ensureSources(env) {
   for (const type of ["topdev", "itviec"]) {
     await env.DB.prepare(
@@ -617,7 +638,8 @@ async function runIngestSource(env, sourceType, keyword) {
     jobs = REMOTE_FETCHERS[sourceType] ? await REMOTE_FETCHERS[sourceType]()
       : sourceType === "topdev" ? await fetchTopDev(keyword) : await fetchITviec(keyword);
   } catch (e) {
-    status = "error"; error = e.message;
+    // ITviec trả 404 cho slug không có tin: coi là 0 tin, không phải lỗi nguồn (T-49 một phần).
+    if (e.message !== "HTTP 404" || REMOTE_FETCHERS[sourceType]) { status = "error"; error = e.message; }
   }
   const rawCount = jobs.length;
   jobs = jobs.filter((j) => titleGate(j.title));
@@ -1077,10 +1099,9 @@ export default {
       const b = await readBody(request);
       const types = Array.isArray(b.sources) && b.sources.length ? b.sources : ["topdev", "itviec", ...Object.keys(REMOTE_FETCHERS)];
       let queued = 0;
+      const keywords = await ingestKeywords(env);
       for (const t of types) {
-        const src = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(t).first();
-        const keywords = (src && JSON.parse(src.config || "{}").keywords) || DEFAULT_KEYWORDS;
-        for (const kw of keywords) { await env.Q_INGEST.send({ kind: "ingest", sourceType: t, keyword: kw }); queued++; }
+        for (const kw of REMOTE_FETCHERS[t] ? ["*"] : keywords) { await env.Q_INGEST.send({ kind: "ingest", sourceType: t, keyword: kw }); queued++; }
       }
       return json({ queued });
     }
@@ -1162,9 +1183,9 @@ export default {
     if (event.cron === "*/30 * * * *") {
       await ensureSources(env);
       const { results } = await env.DB.prepare("SELECT * FROM sources WHERE is_enabled = 1").all();
+      const keywords = await ingestKeywords(env);
       for (const src of results) {
-        const keywords = JSON.parse(src.config || "{}").keywords || DEFAULT_KEYWORDS;
-        for (const kw of keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
+        for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users").all();
