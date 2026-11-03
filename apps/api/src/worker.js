@@ -42,6 +42,7 @@ const EN = {
   "Job không ghi địa điểm": "Job has no location",
   "Địa điểm khớp với hồ sơ": "Location matches your profile",
   "Bạn chấp nhận Remote, job này làm onsite": "You accept Remote; this job is onsite",
+  "Remote nhưng chỉ nhận ứng viên ở %s": "Remote but only hires in %s",
   "Địa điểm không khớp với hồ sơ": "Location does not match your profile",
   "Cấp bậc phù hợp": "Level fits",
   "Job này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
@@ -478,8 +479,14 @@ function normLoc(s) {
 function fitBreakdown(profile, job) {
   const locs = (profile.locations || []).map(normLoc);
   const jobLoc = normLoc(job.location);
-  let location = 0, locationWhy = "";
+  let location = 0, locationWhy = "", locationArg;
   if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
+  // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
+  // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
+  else if (/remote/.test(jobLoc) && /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/.test(jobLoc)) {
+    location = 0; locationWhy = "Remote nhưng chỉ nhận ứng viên ở %s";
+    locationArg = (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1].trim();
+  }
   else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
   else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
   else { location = 0; locationWhy = "Địa điểm không khớp với hồ sơ"; }
@@ -494,7 +501,7 @@ function fitBreakdown(profile, job) {
   let level = 5, levelWhy = "Cấp bậc phù hợp";
   if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
   else if (juniorish && /senior/.test(lvl)) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
-  return { location, locationWhy, freshness, ageDays, level, levelWhy, total: location + freshness + level };
+  return { location, locationWhy, locationArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
 function scoreJob(profile, profileSkills, job) {
@@ -953,7 +960,7 @@ export default {
         const hasMatch = r.final_score !== null && r.final_score !== undefined;
         if (prof && hasMatch) {
           fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: r.jd_text || "" });
-          fit.locationWhy = tr(lang, fit.locationWhy); fit.levelWhy = tr(lang, fit.levelWhy);
+          fit.locationWhy = tr(lang, fit.locationWhy, fit.locationArg); fit.levelWhy = tr(lang, fit.levelWhy);
           const matched = JSON.parse(r.matched_skills || "[]");
           const missing = JSON.parse(r.missing_skills || "[]");
           let totalW = 0;
