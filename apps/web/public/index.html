@@ -1170,6 +1170,8 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .sg-job .score-pill{ grid-row:1 / span 2; grid-column:2; align-self:start; font-size:.95rem; padding:.3rem .7rem; border-color:var(--ink); }
 .sg-chip{ font-size:.78rem; font-weight:700; border-radius:var(--r-pill); padding:.15rem .55rem; border:var(--bw) solid var(--line); color:var(--mute); }
 .sg-chip.ok{ background:var(--mint); color:var(--mint-ink); border-color:transparent; }
+.sg-chip.warn{ border-color:var(--sun); color:var(--sun-ink); background:var(--sun); }
+.sg-chips .vd{ margin:0; }
 .sg-skel{ height:64px; background:var(--line); border:none; opacity:.5; }
 .sg-live-foot{ margin:.9rem 0 0; color:var(--mute); font-size:.85rem; }
 .lp-trust{ list-style:none; margin:1.2rem 0 0; padding:.9rem 1.1rem; display:grid; gap:.45rem; background:var(--surface); border:2px solid var(--ink); border-radius:var(--r-md); font-weight:700; font-size:.95rem; }
@@ -2725,8 +2727,8 @@ function renderJobs(){
       ${m ? scoreDiv(m.final_score, m.tier) : scoreDiv(0, "")}
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
-        <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
         ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
+        <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
         <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
@@ -4296,7 +4298,7 @@ if (LANG === "en") {
       <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
       <span class="score-pill ${esc(j.tier)}">${t("%sđ", Math.round(j.score))}</span>
       <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}, ${esc(ago(j.age_days))}${j.salary ? ", " + esc(j.salary) : ""}</span>
-      <span class="sg-chips">${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}${(j.missing || []).slice(0, 3).map(x => `<span class="sg-chip">${t("thiếu %s", esc(x))}</span>`).join("")}</span>
+      <span class="sg-chips">${j.verdict ? `<span class="vd ${esc(j.verdict)}">${j.verdict === "apply" ? t("Nên nộp") : j.verdict === "skip" ? t("Bỏ qua") : esc(j.verdict_why)}</span>` : ""}${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}${(j.missing || []).slice(0, 3).map(x => `<span class="sg-chip">${t("thiếu %s", esc(x))}</span>`).join("")}${(j.flags || []).filter(f => f.type !== "duplicate").slice(0, 1).map(f => `<span class="sg-chip warn">${esc(f.label)}</span>`).join("")}</span>
     </li>`).join("");
     const top = jobs[0], f = top.fit || {};
     $("#sgWhy").innerHTML = `<h3><a href="${esc(top.url)}" target="_blank" rel="noopener">${esc(top.title)}</a></h3>

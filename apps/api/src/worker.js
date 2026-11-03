@@ -1045,7 +1045,7 @@ export default {
     if (path === "/api/public/sample" && request.method === "GET") {
       const SCRAPED = "(source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%') AND jd_text = ''";
       const { results } = await env.DB.prepare(
-        `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at
+        `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at, last_seen_at, repost_count
          FROM jobs WHERE ${SCRAPED} ORDER BY first_seen_at DESC LIMIT 60`
       ).all();
       const sampleProfile = { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
@@ -1059,11 +1059,16 @@ export default {
         const job = { ...j, skills: JSON.parse(j.skills || "[]"), jd_text: "" };
         const s = scoreJob(sampleProfile, sampleSkills, job);
         const f = fitBreakdown(sampleProfile, job);
+        // Landing thấy đúng thứ app thấy: cờ tín hiệu + nhãn khuyến nghị (dùng cùng hàm, không tính riêng).
+        const flags = postingFlags(j, now(), lang);
+        const risk = flags.filter((x) => x.type !== "duplicate").length;
+        const v = verdictFor({ tier: s.tier, rule_detail: { missing: s.missing.map((m) => (typeof m === "string" ? { skill: m, weight: 3 } : m)) } }, f, flags, risk, lang);
         return {
           title: j.title, company: j.company, location: j.location, source: j.source_id, url: j.source_url,
           salary: j.salary_text, age_days: f.ageDays, score: s.finalScore, tier: s.tier,
           rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level },
           matched: s.matched, missing: s.missing.slice(0, 6), capped: s.jobSkills.length < 3,
+          flags, verdict: v.verdict, verdict_why: v.why,
         };
       }).filter((x) => x.matched.length > 0 && DEV_TITLE.test(x.title))
         // Ưu tiên tin đúng cấp bậc hồ sơ mẫu, rồi mới tới điểm (chỉ là thứ tự hiển thị).
