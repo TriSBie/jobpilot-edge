@@ -1567,7 +1567,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <!-- ===== TAB: KANBAN ===== -->
       <section id="tab-kanban" class="hidden">
         <h2 data-en="Application pipeline" class="page-title">Pipeline ứng tuyển</h2>
-        <p data-en="Every scored job lands in the New column. Use the arrows on a card to move it between stages." class="page-sub">Mỗi job có điểm khớp đều tự vào cột Mới. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
+        <p data-en="Only jobs you move here from the Jobs tab appear in this board. Use the arrows on a card to move it between stages." class="page-sub">Chỉ những tin bạn chủ động đổi giai đoạn ở tab Việc làm mới vào bảng này. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
         <div id="alertsStrip"></div>
         <div id="kanbanContainer"></div>
       </section>
@@ -2714,6 +2714,7 @@ $("#scanBtn").addEventListener("click", async () => {
 Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Mới": "New", "Đã lưu": "Saved", "Đã apply": "Applied", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
   "Chưa có hồ sơ nào.": "No profile yet.",
+  "Chưa có đơn nào. Ở tab Việc làm, đổi giai đoạn của một tin để đưa vào đây.": "No applications yet. In the Jobs tab, change a posting's stage to add it here.",
   "Quá hạn follow-up (%s)": "Follow-up overdue (%s)",
   "Im lặng %s ngày": "Silent for %s days",
   "Cần chú ý: %s đơn": "Needs attention: %s applications",
@@ -2820,6 +2821,7 @@ function renderKanban(){
   const badge = $("#kanbanAlertBadge");
   if (badge) { badge.textContent = alerts.length; badge.classList.toggle("hidden", !alerts.length); }
   const warnById = new Map(alerts.map(a => [a.id, a.label]));
+  if (!state.applications.length) { box.innerHTML = '<div class="panel empty">' + t("Chưa có đơn nào. Ở tab Việc làm, đổi giai đoạn của một tin để đưa vào đây.") + "</div>"; return; }
   const byStage = {};
   STAGE_KEYS.forEach(k => byStage[k] = []);
   state.applications.forEach(a => { if (byStage[a.stage]) byStage[a.stage].push(a); });
