@@ -95,6 +95,7 @@ function json(data, status = 200) {
 const now = () => Math.floor(Date.now() / 1000);
 // ponytail: 14 ngày cố định cho mọi người dùng; thành cài đặt theo hồ sơ khi có người xin.
 const AUTO_CLOSE_DAYS = 14;
+const APP_STAGES = ["new", "saved", "applied", "interview", "offer", "rejected", "archived"]; // khớp STAGES của kanban (index.html)
 const OWNER_EMAIL = "tribui.it.work@gmail.com";
 const uid = () => crypto.randomUUID();
 async function sha256hex(text) {
@@ -727,14 +728,18 @@ function tgQuiet(env, ms = Date.now()) {
 }
 // Hàm thuần: bản tin ngày → HTML Telegram; null nếu không có gì để báo.
 function formatDigestTg(d) {
-  const strong = d.strong || [], fu = d.follow_ups || [];
-  if (!strong.length && !fu.length) return null;
+  const strong = d.strong || [], fu = d.follow_ups || [], fresh = d.fresh || [];
+  if (!strong.length && !fu.length && !fresh.length) return null;
   const [, mm, dd] = String(d.date).split("-");
   const out = [`<b>JobPilot, ${dd}/${mm}</b>`];
   if (strong.length) {
     out.push("", `${strong.length} tin khớp mạnh mới`);
     for (const r of strong.slice(0, 5)) out.push(`• ${tgLink(r.source_url, r.title)} — ${tgEsc(r.company)} (${Math.round(r.final_score)})`);
   }
+  if (fresh.length) {
+    out.push("", `${fresh.length} tin mới phù hợp`);
+    for (const r of fresh) out.push(`• ${tgLink(r.source_url, r.title)} — ${tgEsc(r.company)} (${Math.round(r.final_score)})`);
+  } else if (!strong.length) out.push("", "Hôm nay không có tin mới phù hợp");
   if (fu.length) {
     out.push("", `${fu.length} việc cần follow-up`);
     for (const r of fu.slice(0, 3)) out.push(`• ${tgEsc(r.title)} — ${tgEsc(r.company)}`);
@@ -878,16 +883,33 @@ async function runIngestSource(env, sourceType, keyword) {
 }
 
 // ---------------- digest ----------------
-async function buildDigest(env, user, lang = "vi") {
+// persist=true chỉ từ cron/consumer; GET không ghi DB (T-47). profileId=null: gộp mọi hồ sơ.
+async function buildDigest(env, user, lang = "vi", profileId = null, persist = false) {
   const since = now() - 86400;
-  const { results: profiles } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1").bind(user.id).all();
-  const strong = [], followUps = [];
+  const { results: profiles } = profileId
+    ? await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1 AND id = ?").bind(user.id, profileId).all()
+    : await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1").bind(user.id).all();
+  const strong = [], followUps = [], fresh = [];
   for (const p of profiles) {
     const { results: sm } = await env.DB.prepare(
       `SELECT j.title, j.company, j.source_url, m.final_score FROM job_matches m JOIN jobs j ON j.id = m.job_id
        WHERE m.profile_id = ? AND m.tier = 'strong' AND j.first_seen_at >= ? ORDER BY m.final_score DESC LIMIT 20`
     ).bind(p.id, since).all();
     strong.push(...sm.map((r) => ({ ...r, profile: p.name })));
+    // B6: tin mới còn phù hợp (verdict != skip, không khoá vùng/stale), dùng đúng verdictFor/postingFlags/fitBreakdown như /api/jobs.
+    const { results: cand } = await env.DB.prepare(
+      `SELECT j.*, m.final_score, m.tier, m.missing_skills FROM job_matches m JOIN jobs j ON j.id = m.job_id
+       WHERE m.profile_id = ? AND m.tier != 'strong' AND j.first_seen_at >= ? ORDER BY m.final_score DESC LIMIT 30`
+    ).bind(p.id, since).all();
+    const prof = { ...p, locations: JSON.parse(p.locations || "[]") };
+    for (const r of cand) {
+      const fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: jdOf(r) });
+      const flags = postingFlags(r, now(), lang);
+      const missing = JSON.parse(r.missing_skills || "[]").map((s) => ({ skill: s, weight: 3 }));
+      const v = verdictFor({ tier: r.tier, rule_detail: { missing } }, fit, flags, undefined, lang);
+      if (v.verdict === "skip" || fit.location === 0 || flags.some((f) => f.type === "stale")) continue;
+      fresh.push({ title: r.title, company: r.company, source_url: r.source_url, final_score: r.final_score, verdict: v.verdict, profile: p.name });
+    }
     const { results: fu } = await env.DB.prepare(
       `SELECT a.id, a.stage, a.next_follow_up_at, j.title, j.company FROM applications a JOIN jobs j ON j.id = a.job_id
        WHERE a.profile_id = ? AND a.next_follow_up_at IS NOT NULL AND a.next_follow_up_at <= ? AND a.stage IN ('applied','interview') ORDER BY a.next_follow_up_at LIMIT 20`
@@ -896,12 +918,14 @@ async function buildDigest(env, user, lang = "vi") {
   }
   const dateStr = new Date().toISOString().slice(0, 10);
   const summary = `${strong.length} strong match mới, ${followUps.length} việc cần follow-up`;
-  await env.DB.prepare(
+  if (persist) await env.DB.prepare(
     `INSERT INTO digests (id, user_id, date, summary, status, sent_at) VALUES (?, ?, ?, ?, 'in_app', ?)
      ON CONFLICT(user_id, date) DO UPDATE SET summary = excluded.summary`
   ).bind(uid(), user.id, dateStr, summary, now()).run();
+  fresh.sort((a, b) => b.final_score - a.final_score);
+  fresh.length = Math.min(fresh.length, 3);
   // DB luôn lưu vi; chỉ bản trả về theo Accept-Language.
-  return { date: dateStr, strong_count: strong.length, strong, follow_ups: followUps,
+  return { date: dateStr, strong_count: strong.length, strong, follow_ups: followUps, fresh,
     summary: tr(lang, "%s strong match mới, %s việc cần follow-up", strong.length, followUps.length) };
 }
 
@@ -1471,6 +1495,7 @@ export default {
       const b = await readBody(request);
       const app = await env.DB.prepare("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE a.id = ? AND p.user_id = ?").bind(appMatch[1], user.id).first();
       if (!app) return json({ error: "application_not_found" }, 404);
+      if (b.stage !== undefined && !APP_STAGES.includes(b.stage)) return json({ error: "invalid_stage" }, 400);
       const stage = b.stage ?? app.stage;
       const appliedAt = stage === "applied" && !app.applied_at ? now() : app.applied_at;
       await env.DB.prepare("UPDATE applications SET stage = ?, note = ?, next_follow_up_at = ?, applied_at = ?, updated_at = ? WHERE id = ?")
@@ -1555,7 +1580,9 @@ export default {
     }
 
     if (path === "/api/digest/today") {
-      return json(await buildDigest(env, user, lang));
+      const pid = url.searchParams.get("profile_id");
+      if (pid && !(await ownsProfile(env, user, pid))) return json({ error: "profile_not_found" }, 404);
+      return json(await buildDigest(env, user, lang, pid || null));
     }
     if (path === "/api/notifications") {
       const { results } = await env.DB.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").bind(user.id).all();
@@ -1619,7 +1646,7 @@ export default {
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
           const u = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(body.userId).first();
           if (u) {
-            const digest = await buildDigest(env, u);
+            const digest = await buildDigest(env, u, "vi", null, true);
             const msg = u.telegram_chat_id && formatDigestTg(digest);
             if (msg) await tgSend(env, u.telegram_chat_id, msg);
           }
