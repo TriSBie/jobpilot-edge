@@ -704,6 +704,46 @@ function scoreJob(profile, profileSkills, job) {
   return { rule, semantic: null, finalScore, tier, matched, missing, jobSkills };
 }
 
+// ---------------- Telegram (T-63) ----------------
+const APP_URL = "https://jobpilot-edge.pages.dev";
+const tgEsc = (x) => String(x ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const tgLink = (url, text) => url ? `<a href="${tgEsc(url).replace(/"/g, "&quot;")}">${tgEsc(text)}</a>` : tgEsc(text);
+async function tgSend(env, chatId, html) {
+  if (!env.TELEGRAM_BOT_TOKEN) { console.log("telegram: thiếu TELEGRAM_BOT_TOKEN, bỏ qua"); return false; }
+  try {
+    const r = await fetch((env.TELEGRAM_API_BASE || "https://api.telegram.org") + "/bot" + env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: html, parse_mode: "HTML", disable_web_page_preview: true }),
+    });
+    if (!r.ok) console.log("telegram: sendMessage", r.status);
+    return r.ok;
+  } catch (e) { console.log("telegram: sendMessage lỗi", e.message); return false; }
+}
+// Giờ yên lặng 22:00-07:00 VN (UTC+7); TELEGRAM_QUIET_OVERRIDE=1 bỏ qua (lab).
+function tgQuiet(env, ms = Date.now()) {
+  if (env.TELEGRAM_QUIET_OVERRIDE === "1") return false;
+  const h = new Date(ms + 7 * 3600 * 1000).getUTCHours();
+  return h >= 22 || h < 7;
+}
+// Hàm thuần: bản tin ngày → HTML Telegram; null nếu không có gì để báo.
+function formatDigestTg(d) {
+  const strong = d.strong || [], fu = d.follow_ups || [];
+  if (!strong.length && !fu.length) return null;
+  const [, mm, dd] = String(d.date).split("-");
+  const out = [`<b>JobPilot, ${dd}/${mm}</b>`];
+  if (strong.length) {
+    out.push("", `${strong.length} tin khớp mạnh mới`);
+    for (const r of strong.slice(0, 5)) out.push(`• ${tgLink(r.source_url, r.title)} — ${tgEsc(r.company)} (${Math.round(r.final_score)})`);
+  }
+  if (fu.length) {
+    out.push("", `${fu.length} việc cần follow-up`);
+    for (const r of fu.slice(0, 3)) out.push(`• ${tgEsc(r.title)} — ${tgEsc(r.company)}`);
+  }
+  out.push("", `Mở JobPilot: ${APP_URL}`);
+  return out.join("\n");
+}
+const maskEmail = (e) => e.replace(/^(.).*(@.*)$/, "$1***$2");
+
 async function scoreJobForAllProfiles(env, job) {
   const { results: profiles } = await env.DB.prepare("SELECT * FROM profiles WHERE is_active = 1").all();
   for (const p of profiles) {
@@ -724,6 +764,13 @@ async function scoreJobForAllProfiles(env, job) {
         const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
         await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore }) });
       } catch (_) { /* realtime là best-effort */ }
+      try { // báo ngay qua Telegram: tối đa 1 tin/giờ/người, không gửi giờ yên lặng
+        const u = await env.DB.prepare("SELECT telegram_chat_id FROM users WHERE id = ?").bind(p.user_id).first();
+        if (u && u.telegram_chat_id && !tgQuiet(env) && !(await env.KV.get("tgburst:" + p.user_id))) {
+          await env.KV.put("tgburst:" + p.user_id, "1", { expirationTtl: 3600 });
+          await tgSend(env, u.telegram_chat_id, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`);
+        }
+      } catch (e) { console.log("telegram burst lỗi", e.message); }
     }
   }
 }
@@ -1140,6 +1187,29 @@ export default {
       return json({ error: "password_setup_disabled" }, 410);
     }
 
+    // Webhook Telegram: không Bearer, xác thực bằng secret header; luôn 200 sau khi qua kiểm tra.
+    if (path === "/api/telegram/webhook" && request.method === "POST") {
+      if (!env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
+      if (request.headers.get("x-telegram-bot-api-secret-token") !== env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "forbidden" }, 403);
+      try {
+        const m = (await readBody(request)).message || {};
+        const chatId = m.chat && m.chat.id != null ? String(m.chat.id) : "";
+        const text = String(m.text || "").trim();
+        const start = text.match(/^\/start(?:@\w+)?\s+([A-Za-z0-9]{8})$/);
+        if (chatId && start) {
+          const u = await env.DB.prepare("SELECT id, email FROM users WHERE telegram_link_code = ? AND deleted_at IS NULL").bind(start[1]).first();
+          if (u) {
+            await env.DB.prepare("UPDATE users SET telegram_chat_id = ?, telegram_linked_at = ?, telegram_link_code = NULL WHERE id = ?").bind(chatId, now(), u.id).run();
+            await tgSend(env, chatId, `Đã gắn JobPilot với tài khoản ${tgEsc(maskEmail(u.email))}. Bạn sẽ nhận 1 bản tin mỗi sáng và báo ngay khi có tin khớp mạnh. / Linked: one digest each morning plus instant strong matches.`);
+          } else await tgSend(env, chatId, "Mã không đúng hoặc đã dùng. / Invalid or used code.");
+        } else if (chatId && /^\/stop(?:@\w+)?$/.test(text)) {
+          await env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE telegram_chat_id = ?").bind(chatId).run();
+          await tgSend(env, chatId, "Đã tắt thông báo JobPilot. / JobPilot notifications turned off.");
+        }
+      } catch (e) { console.log("telegram webhook lỗi", e.message); }
+      return json({ ok: true });
+    }
+
     const user = await getUser(request, env);
     if (!user) return json({ error: "unauthorized" }, 401);
 
@@ -1157,7 +1227,7 @@ export default {
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
-        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0 }, profiles });
+        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id }, profiles });
     }
     if (path === "/api/admin/quota") {
       const out = {};
@@ -1419,6 +1489,17 @@ export default {
         .bind(now(), user.id).first();
       return json({ consent_cv_at: r.consent_cv_at });
     }
+    if (path === "/api/me/telegram/link" && request.method === "POST") {
+      const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", rnd = crypto.getRandomValues(new Uint8Array(8));
+      const code = [...rnd].map((b) => a[b % a.length]).join("");
+      await env.DB.prepare("UPDATE users SET telegram_link_code = ? WHERE id = ?").bind(code, user.id).run();
+      const bot = env.TELEGRAM_BOT_USERNAME || "";
+      return json({ code, bot, deeplink: `https://t.me/${bot}?start=${code}` });
+    }
+    if (path === "/api/me/telegram" && request.method === "DELETE") {
+      await env.DB.prepare("UPDATE users SET telegram_chat_id = NULL, telegram_link_code = NULL WHERE id = ?").bind(user.id).run();
+      return json({ ok: true });
+    }
     if (path === "/api/me" && request.method === "PATCH") {
       const b = await readBody(request);
       if (![0, 1, true, false].includes(b.ai_opt_out)) return json({ error: "invalid_ai_opt_out" }, 400);
@@ -1537,7 +1618,11 @@ export default {
           await rescoreProfile(env, body.profileId);
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
           const u = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(body.userId).first();
-          if (u) await buildDigest(env, u);
+          if (u) {
+            const digest = await buildDigest(env, u);
+            const msg = u.telegram_chat_id && formatDigestTg(digest);
+            if (msg) await tgSend(env, u.telegram_chat_id, msg);
+          }
         }
         msg.ack();
       } catch (e) {
