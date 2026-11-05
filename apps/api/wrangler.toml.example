@@ -15,6 +15,8 @@ crons = ["*/30 * * * *", "0 1 * * *", "0 18 * * *"]
 APP_ENV = "production"
 DIGEST_HOUR_LOCAL = "7"
 TELEGRAM_BOT_USERNAME = "your_bot"
+# "1" mới bật cron tự đóng đơn im lặng 14 ngày (ghi lên dữ liệu người dùng); mặc định tắt
+AUTO_CLOSE_ENABLED = "0"
 # Secret (wrangler secret put), KHÔNG ghi ở đây: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
 
 # --- D1 (database chính) ---

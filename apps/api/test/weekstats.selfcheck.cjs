@@ -16,3 +16,6 @@ console.log('weekstats selfcheck OK');
 assert(/AND \(next_follow_up_at IS NULL OR next_follow_up_at < \?\)/.test(src), 'soft-close respects future follow-up');
 assert(/\.bind\(tn, cutoff, tn\)/.test(src), 'soft-close binds 3 params');
 console.log('weekstats S1 OK');
+// Đóng mềm phải nằm sau công tắc AUTO_CLOSE_ENABLED (mặc định tắt trên prod).
+assert(/if \(env\.AUTO_CLOSE_ENABLED === "1"\) \{[\s\S]{0,900}stage = 'archived'/.test(src), 'soft-close behind AUTO_CLOSE_ENABLED');
+console.log('weekstats kill-switch OK');

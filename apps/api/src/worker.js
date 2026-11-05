@@ -916,7 +916,7 @@ async function buildDigest(env, user, lang = "vi", profileId = null, persist = f
       const fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: jdOf(r) });
       const flags = postingFlags(r, now(), lang);
       const missing = JSON.parse(r.missing_skills || "[]").map((s) => ({ skill: s, weight: 3 }));
-      const v = verdictFor({ tier: r.tier, rule_detail: { missing } }, fit, flags, undefined, lang);
+      const v = verdictFor({ tier: r.tier, rule_detail: { missing } }, fit, flags, flags.filter((f) => f.type !== "duplicate").length, lang);
       if (v.verdict === "skip" || fit.location === 0 || flags.some((f) => f.type === "stale")) continue;
       fresh.push({ title: r.title, company: r.company, source_url: r.source_url, final_score: r.final_score, verdict: v.verdict, profile: p.name });
     }
@@ -1681,13 +1681,16 @@ export default {
         for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
       }
       // Đóng mềm: đơn im lặng quá AUTO_CLOSE_DAYS. Event chèn trước UPDATE vì UPDATE đổi stage.
-      const cutoff = now() - AUTO_CLOSE_DAYS * 86400, tn = now();
-      // Không đóng đơn người dùng còn hẹn follow-up trong tương lai (S1 review 05/11).
-      const silent = "stage IN ('applied','interview') AND updated_at < ? AND (next_follow_up_at IS NULL OR next_follow_up_at < ?)";
-      await env.DB.batch([
-        env.DB.prepare(`INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT lower(hex(randomblob(16))), id, 'stage_changed', json_object('from', stage, 'to', 'archived', 'auto', 1), ? FROM applications WHERE ${silent}`).bind(tn, cutoff, tn),
-        env.DB.prepare(`UPDATE applications SET stage = 'archived', note = COALESCE(note, '') || ' [tự đóng: im lặng 14 ngày]', updated_at = ? WHERE ${silent}`).bind(tn, cutoff, tn),
-      ]);
+      // Mặc định TẮT trên prod (ghi tự động lên dữ liệu người dùng); owner bật bằng var AUTO_CLOSE_ENABLED="1" sau khi xem số đếm.
+      if (env.AUTO_CLOSE_ENABLED === "1") {
+        const cutoff = now() - AUTO_CLOSE_DAYS * 86400, tn = now();
+        // Không đóng đơn người dùng còn hẹn follow-up trong tương lai (S1 review 05/11).
+        const silent = "stage IN ('applied','interview') AND updated_at < ? AND (next_follow_up_at IS NULL OR next_follow_up_at < ?)";
+        await env.DB.batch([
+          env.DB.prepare(`INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT lower(hex(randomblob(16))), id, 'stage_changed', json_object('from', stage, 'to', 'archived', 'auto', 1), ? FROM applications WHERE ${silent}`).bind(tn, cutoff, tn),
+          env.DB.prepare(`UPDATE applications SET stage = 'archived', note = COALESCE(note, '') || ' [tự đóng: im lặng 14 ngày]', updated_at = ? WHERE ${silent}`).bind(tn, cutoff, tn),
+        ]);
+      }
       // Purge (nghĩa vụ xoá dữ liệu) trước enrichJd (tốn subrequest, có thể chạm trần) — S2 review 05/11.
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
