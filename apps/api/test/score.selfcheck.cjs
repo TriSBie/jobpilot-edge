@@ -18,6 +18,7 @@ const code = [
   catalog,
   block('function normLoc'),
 src.match(/const jdOf.*/)[0],
+  src.match(/const REGION_LOCK.*/)[0],
   block('function fitBreakdown'),
   block('function scoreJob'),
   'return { scoreJob };',
@@ -31,8 +32,9 @@ const run = (title, location, skills = ALL, profile = P) =>
   scoreJob(profile, S, { title, location, skills, jd_text: '', posted_at: 1793346000 - 2 * 86400 });
 
 const cases = [
-  ['Expert/Senior/Middle Software Engineer (Java)', 'Hà Nội', ALL, (r) => r.finalScore <= 74, 'senior + khác khu vực → không strong'],
-  ['Mid/Sr Backend Engineer', 'Ho Chi Minh', ALL, (r) => r.finalScore <= 74, '"Sr" không dấu chấm vẫn nhận ra'],
+  ['Senior Software Engineer (Java)', 'Hà Nội', ALL, (r) => r.finalScore <= 74, 'senior thuần + khác khu vực → không strong'],
+  ['Sr Backend Engineer', 'Ho Chi Minh', ALL, (r) => r.finalScore <= 74, '"Sr" không dấu chấm vẫn nhận ra'],
+  ['Mid/Sr Backend Engineer', 'Ho Chi Minh', ALL, (r) => r.tier === 'strong', 'nhiều cấp có Mid → không lệch (T-76)'],
   ['Backend Developer (Java)', 'Ho Chi Minh', ALL, (r) => r.tier === 'strong', 'đúng hết → strong'],
   ['Backend Developer (Java)', 'Remote', ALL, (r) => r.tier === 'strong', 'remote → strong'],
   ['Java Developer (Fresher)', 'Ho Chi Minh', ALL, (r) => r.tier === 'strong', 'middle nhận tin fresher: không phạt'],
@@ -61,4 +63,20 @@ assert.equal(lv('We need 8+ years of experience with Java').level, 2, 'middle + 
 assert.equal(lv('Yêu cầu từ 5 năm kinh nghiệm').level, 5, 'middle + 5 năm → giữ 5');
 assert.equal(lv('at least 4 years', 'junior').level, 2, 'junior + 4 năm → 2');
 assert.equal(lv('-', 'junior').level, 5, "'-' là rỗng");
+// T-76: tin ghi nhiều cấp mà có cấp của hồ sơ → không lệch; chỉ lệch khi rõ ràng một phía.
+const lvT = (title, level = 'middle') => fitBreakdown({ level, locations: ['Remote'] }, { title, location: 'Remote', jd_text: '', posted_at: 1793346000 }).level;
+for (const t of ['Expert/Senior/Middle Software Engineer', 'Mid/Sr Java Engineer', 'Mid - Senior Software Engineer', 'Middle/Senior Backend Developer', 'Senior/Middle Node.js Developer', 'Mid to Senior Java Engineer'])
+  assert.equal(lvT(t), 5, t);
+assert.equal(lvT('Junior/Senior Developer', 'junior'), 5, 'junior trong nhiều cấp');
+for (const [t, l] of [['Senior Java Engineer', 'middle'], ['Lead Backend Developer', 'middle'], ['Principal Software Engineer', 'junior'], ['Staff Engineer', 'middle'], ['Software Engineer Intern', 'senior']])
+  assert.equal(lvT(t, l), 2, t);
+// T-77: khoá vùng ghi trong tiêu đề.
+const locT = (title, location = 'Remote') => fitBreakdown(P, { title, location, jd_text: '', posted_at: 1793346000 }).location;
+for (const t of ['U.S. Based Remote Contractor', 'Remote (US only) Backend Engineer', 'Backend Engineer - EU timezone Remote']) assert.equal(locT(t), 0, t);
+assert.equal(locT('Backend Engineer', 'Remote'), 8, 'tiêu đề thường vẫn khớp');
+// T-07: bảng titleGate.
+const { titleGate } = new Function(src.slice(src.indexOf('const TITLE_TECH'), src.indexOf('async function runIngestSource')) + 'return { titleGate };')();
+for (const [t, want] of [['Backend Developer', 1], ['Java Engineer', 1], ['Software Engineer', 1], ['Node.js Developer', 1], ['QA Engineer', 1], ['Senior DevOps Engineer', 1], ['Fullstack Developer (React/Node)', 1], ['Mobile Developer (Android)', 1], ['Data Engineer', 1],
+  ['Sales Engineer', 0], ['Pre-sales Engineer', 0], ['Presales Engineer', 0], ['Customer Support Engineer', 0], ['Content Engineer', 0], ['Engineering Manager', 0], ['Data Entry Clerk', 0], ['HR Recruiter', 0], ['Kế toán', 0]])
+  assert.equal(titleGate(t), !!want, t);
 console.log('OK');

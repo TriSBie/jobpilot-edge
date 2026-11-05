@@ -337,6 +337,7 @@ function relativePostedToISO(text) {
   const unit = { minute: 6e4, hour: 36e5, day: 864e5, week: 6048e5, month: 2592e6 }[m[2].toLowerCase()];
   return new Date(Date.now() - parseInt(m[1], 10) * unit).toISOString().slice(0, 10);
 }
+const NON_TECH_TAG = /^(?:english|japanese|korean|chinese|german|french|vietnamese|teamwork|communication|team ?work|problem[- ]solving|leadership|time management|creativity|critical thinking|presentation|negotiation|self[- ]motivated|english speaking)$/i;
 async function fetchITviec(keyword, location = "Ho Chi Minh") {
   const locSlug = /hà nội|ha noi/i.test(location) ? "ha-noi" : /đà nẵng|da nang/i.test(location) ? "da-nang" : "ho-chi-minh-hcm";
   const url = `https://itviec.com/it-jobs/${slugifyKeyword(keyword)}/${locSlug}`;
@@ -355,7 +356,8 @@ async function fetchITviec(keyword, location = "Ho Chi Minh") {
       if (t) { company = t; break; }
     }
     const postedM = card.match(/Posted\s*([^<]+)/i);
-    const skills = [...card.matchAll(/class="[^"]*itag[^"]*"[^>]*>([\s\S]*?)<\/a>/g)].map((mm) => canonSkill(stripTags(mm[1])));
+    // T-08: blocklist (không whitelist: whitelist làm job <3 skill, bị chặn trần 69).
+    const skills = [...card.matchAll(/class="[^"]*itag[^"]*"[^>]*>([\s\S]*?)<\/a>/g)].map((mm) => canonSkill(stripTags(mm[1]))).filter((s) => !NON_TECH_TAG.test(s));
     const cityM = card.match(/(Ho Chi Minh|Ha Noi|Da Nang|Can Tho|Binh Duong|Dong Nai|Hai Phong|Remote)/i);
     const salM = card.match(/(\d{1,3})\s*[-–]\s*(\d{1,3})\s*triệu/i);
     jobs.push({
@@ -641,16 +643,19 @@ function pct(sorted, p) {
 function normLoc(s) {
   return String(s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d");
 }
+const REGION_LOCK = /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/;
 function fitBreakdown(profile, job) {
   const locs = (profile.locations || []).map(normLoc);
   const jobLoc = normLoc(job.location);
+  const jobLocTitle = `${jobLoc} ${normLoc(job.title)}`;
   let location = 0, locationWhy = "", locationArg;
   if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
   // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
   // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
-  else if (/remote/.test(jobLoc) && /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/.test(jobLoc)) {
+  // T-77: tiêu đề cũng có thể ghi khoá vùng ("U.S. Based Remote Contractor"), xét chung với địa điểm.
+  else if (/remote/.test(jobLocTitle) && REGION_LOCK.test(jobLocTitle)) {
     location = 0; locationWhy = "Remote nhưng chỉ nhận ứng viên ở %s";
-    locationArg = (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1].trim().slice(0, 40); // HN hay nhét cả câu vào ngoặc
+    locationArg = (REGION_LOCK.test(jobLoc) ? (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1] : jobLocTitle.match(REGION_LOCK)[0]).trim().slice(0, 40); // HN hay nhét cả câu vào ngoặc
   }
   else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
   else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
@@ -663,6 +668,10 @@ function fitBreakdown(profile, job) {
   const seniorish = /(senior|\bsr\b|lead|principal|staff|manager|architect|expert|trưởng|cao cấp)/.test(titleAndJd);
   const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
   const lvl = (profile.level || "").toLowerCase();
+  // T-76: tin ghi nhiều cấp ("Mid/Sr", "Expert/Senior/Middle") mà có cấp của hồ sơ thì không lệch.
+  const mentionsMine = /middle/.test(lvl) ? /\b(?:middle|mid|intermediate)\b/.test(titleAndJd)
+    : /junior|fresher/.test(lvl) ? /\b(?:junior|jr|fresher|intern)\b|thực tập/.test(titleAndJd)
+    : /senior/.test(lvl) ? seniorish : false;
   let level = 5, levelWhy = "Cấp bậc phù hợp";
   // Số năm kinh nghiệm JD đòi (lấy cận dưới của khoảng; lấy max các lần nhắc).
   let years = 0;
@@ -673,8 +682,8 @@ function fitBreakdown(profile, job) {
   const tooJunior = years >= (/middle/.test(lvl) ? 7 : 4) && /junior|fresher|middle/.test(lvl);
   let levelArg;
   if (tooJunior) { level = 2; levelWhy = "JD yêu cầu %s năm kinh nghiệm"; levelArg = years; }
-  else if (seniorish && /middle|junior|fresher/.test(lvl)) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
-  else if (juniorish && /senior/.test(lvl)) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
+  else if (seniorish && /middle|junior|fresher/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
+  else if (juniorish && /senior/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
   return { location, locationWhy, locationArg, levelArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
@@ -847,9 +856,11 @@ async function ensureSources(env) {
 // mà tìm kiếm từ khoá của TopDev hay trả lẫn vào.
 const TITLE_TECH = /(developer|engineer|backend|back-end|fullstack|full-stack|software|java|node|devops|\bqa\b|tester|data|mobile|android|ios|frontend|front-end|programmer|lập trình|kỹ sư|công nghệ)/i;
 const TITLE_BLOCK = /(human resource|\bhr\b|recruit|talent acquisition|sales|marketing|accountant|kế toán|nhân sự|tuyển dụng|business development|customer service|support|administrator|designer|content|seo|admin\b)/i;
+// T-07: nhóm này chặn kể cả khi có "engineer" (Sales Engineer, Engineering Manager, Data Entry...).
+const TITLE_HARD_BLOCK = /(\bsales\b|pre-?sales|\bsupport\b|\bcontent\b|\bmanager\b|data entry)/i;
 function titleGate(title) {
-  if (!TITLE_TECH.test(title || "")) return false;
-  if (TITLE_BLOCK.test(title || "") && !/(developer|engineer|programmer)/i.test(title)) return false;
+  if (!TITLE_TECH.test(title || "") || TITLE_HARD_BLOCK.test(title || "")) return false;
+  if (TITLE_BLOCK.test(title || "") && !/\b(?:developer|engineer|programmer)\b/i.test(title)) return false;
   return true;
 }
 
