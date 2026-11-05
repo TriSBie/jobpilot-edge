@@ -513,7 +513,7 @@ html[data-theme="light"] ::selection{ background:rgba(45,75,255,.28); }
 .theme-toggle{ display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; flex:none;
   border-radius:50%; border:1px solid var(--line); background:rgba(var(--ov),.04); color:var(--text);
   font-size:1rem; line-height:1; transition:background var(--m-fast) var(--e-out), border-color var(--m-fast) var(--e-out), transform var(--m-fast) var(--e-out); }@media (hover:hover) and (pointer:fine){
-.theme-toggle:hover{ background:rgba(var(--ov),.09); border-color:var(--line-strong); transform:translateY(-1px); }}
+.theme-toggle:hover{ background:rgba(var(--ov),.09); border-color:var(--line-strong); }}
 .theme-toggle .ic-sun{ display:none; }
 html[data-theme="light"] .theme-toggle .ic-sun{ display:inline; }
 html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
@@ -1074,9 +1074,7 @@ html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12
   .kcard:hover{ border-color:var(--brand); }
   .tile:hover{ border-color:var(--brand); transition-duration:var(--dur-hover); }
   button.chip:hover{ border-color:var(--ink); transition-duration:var(--dur-hover); }
-  .demo-kcard:hover{ transform:translateY(-4px); border-color:var(--line-strong); transition-duration:var(--dur-hover); }
-  .demo-kcard:hover::after{ opacity:1; }
-  .demo-kcard:hover::before{ opacity:1; }
+  .demo-kcard:hover{ border-color:var(--line-strong); transition-duration:var(--dur-hover); }
   .lp-links a:hover{ color:var(--brand); }
   .lp-links a:hover::after{ transform:scaleX(1); }
   .demo-tabs button:hover{ color:var(--text); }
