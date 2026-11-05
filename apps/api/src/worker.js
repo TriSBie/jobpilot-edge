@@ -1090,10 +1090,10 @@ export default {
     // Landing: job THẬT vừa quét chấm cho một hồ sơ mẫu cố định. Chỉ lấy link quét chuẩn của
     // ITviec/TopDev (không bao giờ là job dán tay), chỉ đọc, chỉ trả trường công khai; cache 5 phút.
     if (path === "/api/public/sample" && request.method === "GET") {
-      const SCRAPED = "(source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%') AND jd_text = ''";
+      const SCRAPED = "(source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%')";
       const { results } = await env.DB.prepare(
         `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at, last_seen_at, repost_count
-         FROM jobs WHERE ${SCRAPED} ORDER BY first_seen_at DESC LIMIT 60`
+         FROM jobs WHERE ${SCRAPED} ORDER BY COALESCE(last_seen_at, first_seen_at) DESC LIMIT 60`
       ).all();
       const sampleProfile = { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
       const sampleSkills = [
@@ -1119,7 +1119,7 @@ export default {
         };
       }).filter((x) => x.matched.length > 0 && DEV_TITLE.test(x.title))
         // Ưu tiên tin đúng cấp bậc hồ sơ mẫu, rồi mới tới điểm (chỉ là thứ tự hiển thị).
-        .sort((a, b) => (b.fit.level - a.fit.level) || (b.score - a.score));
+        .sort((a, b) => ((a.verdict === "skip") - (b.verdict === "skip")) || (b.fit.level - a.fit.level) || (b.score - a.score));
       const stats = await env.DB.prepare(
         `SELECT (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED}) AS jobs,
                 (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED} AND first_seen_at > ?) AS new_24h,
