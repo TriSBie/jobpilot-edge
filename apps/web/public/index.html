@@ -671,7 +671,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
     .tabbar-row .tab .ic{display:none}
     .tabbar-row .tab.active{background:var(--brand);color:var(--brand-ink);border-color:transparent}
     .tabbar-row .alert-badge{position:absolute;top:-2px;right:0;background:var(--pop);color:var(--pop-ink);font-size:10px;padding:1px 6px;border-radius:var(--r-pill);margin-left:0;min-width:0;height:auto}
-    .app{padding-bottom:calc(96px + env(safe-area-inset-bottom))}   /* tab bar cố định không che nội dung cuối */
+    .app{padding-bottom:calc(120px + env(safe-area-inset-bottom))}   /* tab bar cố định (cao ~75 + cách đáy 12) không che nội dung cuối, chừa thêm ~30 */
   }
 
   /* ===== ICON SYSTEM: SVG sprite, layout B (nút) + layout C (tab bar mobile) ===== */
@@ -704,7 +704,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .rescoring{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-pill);background:var(--surface);border:var(--bw) solid var(--brand);color:var(--brand);font-weight:700;font-size:13px}
   .rescoring i{width:12px;height:12px;border-radius:50%;border:3px solid var(--brand);border-right-color:transparent;animation:spin .8s linear infinite;flex:none}
   @media (max-width:640px){
-    #toasts{right:12px;bottom:76px}
+    #toasts{right:12px;bottom:calc(100px + env(safe-area-inset-bottom))}   /* nằm trên tab bar */
   }
   /* Signal: mọi vùng chạm ≥ 44px (spec mục 8) */
   .topbar .btn.sm,.toolbar .btn.sm,#jobsContainer .btn.sm,.theme-toggle,.tabbar-row .tab,#submitUrl,.alert .btn{min-height:var(--tap)}
@@ -1623,7 +1623,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         <p data-en="Skills in your profile drive how jobs are scored. Upload a CV for AI extraction, or add skills by hand." class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
           <section class="card-p">
             <h3 data-en="Create a profile from your CV">Tạo hồ sơ từ CV</h3>
-            <p class="muted small" style="margin:.2rem 0 .8rem" data-en="No profile yet? Upload your CV and we pre-fill the form below as a draft for you to check before saving. Parsing runs in your browser; the CV is not sent anywhere. Salary is not inferred, enter it yourself.">Chưa có hồ sơ? Tải CV lên, hệ thống điền sẵn form bên dưới dạng nháp để bạn kiểm tra rồi mới lưu. Phân tích ngay trên trình duyệt, không gửi CV đi đâu. Lương không suy ra từ CV, bạn tự điền.</p>
+            <p class="muted small" style="margin:.2rem 0 .8rem" data-en="No profile yet? Upload your CV and we pre-fill the form below as a draft for you to check before saving. This button reads the CV in your browser and does not upload it; only what you save in the profile goes to the server. (The Analyze CV button in the Skills card does upload the CV text to Cloudflare R2.) Salary is not inferred, enter it yourself.">Chưa có hồ sơ? Tải CV lên, hệ thống điền sẵn form bên dưới dạng nháp để bạn kiểm tra rồi mới lưu. Nút này đọc CV ngay trên trình duyệt và không tải CV lên; chỉ phần bạn bấm Lưu hồ sơ mới gửi lên máy chủ. (Nút Phân tích CV ở thẻ Kỹ năng thì có gửi văn bản CV lên Cloudflare R2.) Lương không suy ra từ CV, bạn tự điền.</p>
             <label for="cvDraftFile" data-en="Upload CV (PDF, TXT or MD)">Tải CV (PDF, TXT hoặc MD)</label>
             <input id="cvDraftFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
             <button id="cvDraftBtn" class="btn" type="button" style="margin-top:.9rem" data-en="Fill profile from CV">Điền hồ sơ từ CV</button>
@@ -1948,7 +1948,9 @@ function startRescoringWatch(){
     let done = false;
     try {
       const jobs = await api("/api/jobs?profile_id=" + encodeURIComponent(p.id));
-      jobs.forEach(j => {
+      // Danh sách đang có tin chưa chấm: chờ tới khi hết hẳn, không dừng ở tin đầu tiên đổi điểm.
+      if (Object.values(rescoreBase).some(v => v === null)) done = jobs.length > 0 && jobs.every(j => j.match);
+      else jobs.forEach(j => {
         const id = String(j.id);
         if (Object.prototype.hasOwnProperty.call(rescoreBase, id) && (j.match ? j.match.final_score : null) !== rescoreBase[id]) done = true;
       });
@@ -1957,7 +1959,7 @@ function startRescoringWatch(){
     }
     if (done || Date.now() - rescoreStarted >= 120000) { stopRescoringWatch(); await loadJobs(); }
   };
-  rescorePoll = setInterval(check, 10000);
+  rescorePoll = setInterval(check, 5000);
 }
 
 async function api(path, opts){
@@ -2685,6 +2687,8 @@ const FLAG_WHY = {
   salary_hidden: "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.",
   bloated: "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật."
 };
+// Cờ hiện trên thẻ + dùng cho "Ẩn tin có cờ": bỏ "Không ghi lương" (vẫn ở khối Vì sao) và "Tin cũ N ngày" (nhãn có số); chỉ giữ "Có thể đã gỡ".
+const cardFlags = (job) => (job.flags || []).filter(f => f.type !== "salary_hidden" && !(f.type === "stale" && /\d/.test(f.label)));
 function flagChips(flags){
   const fl = flags || [], show = fl.slice(0, 3);
   const more = fl.length > 3 ? `<span class="chip off">+${fl.length - 3}</span>` : "";
@@ -2710,7 +2714,7 @@ function renderJobs(){
   jobsFirstRender = false;
   box.classList.toggle("no-anim", !firstJobs);
   const cnt = $("#jobsCount");
-  let list = state.filters.hideFlagged ? state.jobs.filter(j => !(j.flags && j.flags.length)) : state.jobs;
+  let list = state.filters.hideFlagged ? state.jobs.filter(j => !cardFlags(j).length) : state.jobs;
   if (state.filters.onlyApply) list = list.filter(j => j.verdict === "apply");
   if (cnt) cnt.textContent = list.length ? t("%s tin", list.length) : "";
   if (!list.length) {
@@ -2758,7 +2762,7 @@ function renderJobs(){
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
         <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
-        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${(job.flags || []).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
@@ -3280,8 +3284,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       localStorage.setItem("jp_profile", created.id);
       renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
       toast(t("Đã tạo hồ sơ mới."), "ok");
-      await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
-    }
+      await Promise.all([loadDigest(), loadJobs(), loadApplications()]);    }
   } catch (e) {
     toast(e.message, "err");
   } finally {
@@ -3559,9 +3562,13 @@ $("#confirmSkillsBtn").addEventListener("click", async () => {
   if (!chosen.length) { toast(t("Chưa chọn kỹ năng nào."), "err"); return; }
   const btn = $("#confirmSkillsBtn");
   btn.disabled = true;
+  // API thay toàn bộ kỹ năng: gộp với kỹ năng đã có (giữ bản cũ nếu trùng tên) để không xoá mất.
+  const merged = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
+  const have = new Set(merged.map(s => s.skill.toLowerCase()));
+  chosen.forEach(c => { if (!have.has(c.skill.toLowerCase())) { have.add(c.skill.toLowerCase()); merged.push(c); } });
   try {
     const updated = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", {
-      method: "POST", body: JSON.stringify({ skills: chosen }),
+      method: "POST", body: JSON.stringify({ skills: merged }),
     });
     if (updated.rescore_queued === false) toast(t("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
     else { toast(t("Đã lưu %s kỹ năng vào hồ sơ.", chosen.length), "ok"); startRescoringWatch(); }
