@@ -1444,6 +1444,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           <div><dt data-en="Where">Lưu ở đâu</dt><dd data-en="On Cloudflare: D1 (database), R2 (CV files), KV (login sessions and CV skill suggestions). These servers are outside Vietnam.">Trên Cloudflare: D1 (cơ sở dữ liệu), R2 (file CV), KV (phiên đăng nhập và gợi ý kỹ năng từ CV). Máy chủ đặt ngoài Việt Nam.</dd></div>
           <div><dt data-en="What AI reads">AI đọc gì</dt><dd data-en="Only when you analyze a CV: Cloudflare Workers AI (Llama 3.1 8B) reads up to the first 6,000 characters of the CV text to suggest skills. Nothing else is sent to AI. Turn it off with &quot;Enter skills myself, do not use AI&quot; in the Profile tab; then only the built-in skill catalog is used.">Chỉ khi bạn bấm phân tích CV: Workers AI của Cloudflare (Llama 3.1 8B) đọc tối đa 6.000 ký tự đầu của văn bản CV để gợi ý kỹ năng. Không gửi gì khác cho AI. Tắt được bằng công tắc "Tự nhập kỹ năng, không dùng AI" trong tab Hồ sơ; khi đó chỉ dùng danh mục kỹ năng có sẵn.</dd></div>
           <div><dt data-en="How long">Giữ bao lâu</dt><dd data-en="Login session: 30 days. CV skill suggestions: 24 hours. CV files and your account: until you delete them. After you delete your account, you have 7 days to restore it; then everything is permanently erased.">Phiên đăng nhập: 30 ngày. Gợi ý kỹ năng từ CV: 24 giờ. File CV và tài khoản: đến khi bạn xoá. Sau khi xoá tài khoản, bạn có 7 ngày để khôi phục; sau đó mọi dữ liệu bị xoá hẳn.</dd></div>
+          <div><dt data-en="Telegram">Telegram</dt><dd data-en="Telegram only receives job titles and links, never your CV.">Telegram chỉ nhận tiêu đề tin và link, không nhận CV.</dd></div>
           <div><dt data-en="Sharing">Chia sẻ</dt><dd data-en="Nothing is shared with employers or any third party. Job postings shown to you are public data from the job boards.">Không chia sẻ với nhà tuyển dụng hay bất kỳ bên thứ ba nào. Tin tuyển dụng hiện cho bạn là dữ liệu công khai từ các bảng việc.</dd></div>
           <div><dt data-en="Your rights">Quyền của bạn</dt><dd data-en="View and export your data (export coming soon); delete your CV (Skills card); turn AI off; delete your account (bottom of the Profile tab). Questions or requests: <a href=&quot;mailto:tribui.it.work@gmail.com&quot;>tribui.it.work@gmail.com</a>.">Xem và xuất dữ liệu (xuất: sắp có); xoá CV (thẻ Kỹ năng); tắt AI; xoá tài khoản (cuối tab Hồ sơ). Thắc mắc hoặc yêu cầu: <a href="mailto:tribui.it.work@gmail.com">tribui.it.work@gmail.com</a>.</dd></div>
         </dl>
@@ -1690,6 +1691,16 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             </div>
           </section>
 
+          <div class="pf-sep" id="tgBox">
+            <label data-en="Telegram">Telegram</label>
+            <div id="tgIdle"><button id="tgLinkBtn" class="btn p" type="button" data-en="Get updates on Telegram">Nhận tin qua Telegram</button></div>
+            <div id="tgPending" class="hidden">
+              <p><span data-en="Code:">Mã:</span> <b id="tgCode"></b></p>
+              <a id="tgOpen" class="btn p" target="_blank" rel="noopener" href="#" data-en="Open Telegram">Mở Telegram</a>
+              <p class="muted small" style="margin:.4rem 0 0" data-en="Press Start in Telegram, then come back here">Bấm Start trong Telegram, rồi quay lại đây</p>
+            </div>
+            <div id="tgDone" class="hidden"><span data-en="Telegram linked">Đã gắn Telegram</span> <button id="tgUnlinkBtn" class="btn" type="button" data-en="Unlink">Gỡ</button></div>
+          </div>
           <section class="card-p bench-card">
           <h3 data-en="Salary benchmark">Benchmark lương</h3>
           <p data-en="Computed from salaries listed in the jobs we have collected. When data is thin, a market reference table is shown instead." class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
@@ -2460,11 +2471,29 @@ function initLandingMagnet(root){
     });
   });
 }
+/* ---------------- Telegram ---------------- */
+let tgTimer = 0;
+function tgShow(id){ clearInterval(tgTimer); ["tgIdle","tgPending","tgDone"].forEach(x => $("#" + x).classList.toggle("hidden", x !== id)); }
+$("#tgLinkBtn").addEventListener("click", async () => {
+  try {
+    const r = await api("/api/me/telegram/link", { method: "POST" });
+    $("#tgCode").textContent = r.code; $("#tgOpen").href = r.deeplink; tgShow("tgPending");
+    let n = 0;
+    tgTimer = setInterval(async () => {
+      try { if ((await api("/api/me")).user.telegram_linked) { tgShow("tgDone"); return; } } catch (e) { /* thử lại */ }
+      if (++n >= 20) tgShow("tgIdle");
+    }, 3000);
+  } catch (e) { toast(e.message, "err"); }
+});
+$("#tgUnlinkBtn").addEventListener("click", async () => {
+  try { await api("/api/me/telegram", { method: "DELETE" }); tgShow("tgIdle"); } catch (e) { toast(e.message, "err"); }
+});
 /* ---------------- Boot / profiles ---------------- */
 async function boot(){
   const me = await api("/api/me");
   state.user = me.user;
   $("#aiOptOut").checked = !!me.user.ai_opt_out;
+  tgShow(me.user.telegram_linked ? "tgDone" : "tgIdle");
   { const owner = !!(me.user && me.user.is_owner); $("#scanBtn").classList.toggle("hidden", !owner); $(".src-status").classList.toggle("hidden", !owner); }
   state.profiles = me.profiles || [];
   if (!state.profiles.length) {
