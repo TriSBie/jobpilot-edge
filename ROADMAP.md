@@ -178,6 +178,8 @@ Kiểm tra fixture/snapshot trước sử dụng; không nối DB production. Te
 | C7 | Badge "tin mới từ lần xem trước" — T-92 | UX | M |
 
 ### Để sau
+Từ review Gate 3 ngày 05/11 (`worklog/review/2026-11-05_d2-worker-review.md`): T-93 `POST /api/applications` validate stage · T-94 tin dán tay không bị "có thể đã gỡ" (gắn với T-05) · T-95 `REGION_LOCK` bỏ thêm "help us" / "Remote (US, Vietnam)" · T-96 regex năm kinh nghiệm chỉ bắt câu yêu cầu · T-97 `parseSalary`: /hr, /day, bonus %, EUR/GBP · T-98 `enrichJd` chỉ đánh `-` khi 404/410, lỗi tạm thì thử lại · T-99 mã link Telegram hết hạn 15 phút, không vào export/backup.
+
 0.4 thêm job bằng link (T-05, migration đổi thành `0009`, chờ review độc lập) · 1.4 đổi mật khẩu (T-22) · làm sạch location HN · đợt 3 (3.1–3.9), đợt 4, mục 4 ở trên · tên miền riêng (niềm tin + email digest T-31) · trang SEO theo ngách sau C4 · trang ngắn cho HR · tự host font · xoá 3 PNG thừa `public/assets/`.
 
 ### Mốc thời gian (ước đoán)
