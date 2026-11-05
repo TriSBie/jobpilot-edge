@@ -22,3 +22,8 @@ console.log('posting-risk selfcheck OK');
 assert.ok(/repost_count \+ \(CASE WHEN \? >= COALESCE\(posted_at,0\) \+ 172800 THEN 1 ELSE 0 END\)/.test(src), 'repost threshold 2 days');
 assert.ok(/const trust = sourceId === "src-itviec" \? 0 : posted \|\| 0;/.test(src), 'itviec posted_at not trusted');
 console.log('posting-risk B1 OK');
+// T-94: tin dán tay (source_id null / manual://) không bị "Có thể đã gỡ".
+assert.ok(!types({ source_id: null, last_seen_at: N - 3 * D }).includes('stale'), 'dán tay không gone');
+assert.ok(!types({ source_url: 'manual://abc', source_id: 'x', last_seen_at: N - 3 * D }).includes('stale'), 'manual:// không gone');
+assert.deepEqual(types({ source_id: 'src-itviec', last_seen_at: N - 3 * D }), ['stale'], 'tin quét vẫn gone');
+console.log('posting-risk T-94 OK');
