@@ -13,3 +13,8 @@ eq('$4k/month', { min: 4000, max: 4000, currency: 'USD', period: 'month' });
 eq('Thỏa thuận', null); eq('', null);
 assert.equal(monthlyVND(parseSalary('$120k/year')).min, 10000 * USD_VND);
 console.log('salary selfcheck OK');
+// T-97: giờ/ngày/EUR/GBP → null; bỏ phần thưởng/equity trước khi bắt số.
+for (const s of ['$50/hr', '$50 per hour', '$40/hour', '$300/day', '€60k', '£50k - £70k', '60k EUR']) eq(s, null);
+eq('$100k + 20% bonus', { min: 100e3, max: 100e3, currency: 'USD', period: 'year' });
+eq('$120k + equity', { min: 120e3, max: 120e3, currency: 'USD', period: 'year' });
+console.log('salary T-97 OK');

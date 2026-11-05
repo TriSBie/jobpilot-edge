@@ -567,13 +567,14 @@ async function enrichJd(env, limit) {
   ).bind(limit).all();
   let done = 0, failed = 0;
   for (const j of results) {
-    let jd = "";
-    for (let a = 0; a < 2 && !jd; a++) {
-      try { jd = extractJd(await fetchText(j.source_url), j.source_id); } catch (_) { /* thử lại 1 lần */ }
+    let jd = "", gone = false;
+    for (let a = 0; a < 2 && !jd && !gone; a++) {
+      try { jd = extractJd(await fetchText(j.source_url), j.source_id); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
     }
     if (!jd) {
       failed++;
-      await env.DB.prepare("UPDATE jobs SET jd_text = '-' WHERE id = ?").bind(j.id).run();
+      // Chỉ 404/410 mới đánh '-' (tin đã gỡ); lỗi tạm (5xx, timeout, parse rỗng) để '' thử lại lần sau, LIMIT chặn đốt subrequest.
+      if (gone) await env.DB.prepare("UPDATE jobs SET jd_text = '-' WHERE id = ?").bind(j.id).run();
       continue;
     }
     const skills = [...new Set([...JSON.parse(j.skills || "[]"), ...extractSkillsFromText(jd)])];
@@ -590,8 +591,9 @@ const USD_VND = 25500; // 03/11/2026
 // Parse lương → {min, max, currency, period} | null. "Thương lượng" và dạng lạ → null (không đoán mò).
 function parseSalary(text) {
   if (!text) return null;
-  const t = String(text);
-  if (/thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|per task|per hour|\/h\b/i.test(t)) return null;
+  let t = String(text);
+  if (/thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|per task|per hour|per day|\/h\b|\/hr\b|\/hour\b|\/day\b|€|£|\beur\b|\bgbp\b/i.test(t)) return null;
+  t = t.replace(/\+\s*(?:\d+\s*%|equity|bonus)[^\n]*/gi, ""); // bỏ "+ 20% bonus", "+ equity" trước khi bắt số
   if (/\$|usd/i.test(t)) {
     const nums = [...t.matchAll(/(\d+(?:,\d{3})*(?:\.\d+)?)\s*(k)?\b/gi)]
       .map((m) => Number(m[1].replace(/,/g, "")) * (m[2] ? 1e3 : 1)).slice(0, 2);
@@ -617,7 +619,8 @@ function monthlyVND(p) {
 function postingFlags(row, nowTs, lang) {
   const flags = [];
   const lastSeen = row.last_seen_at || row.first_seen_at || nowTs;
-  const gone = lastSeen < nowTs - 48 * 3600;
+  const manual = row.source_id === null || String(row.source_url || "").startsWith("manual://"); // tin dán tay không được quét lại
+  const gone = !manual && lastSeen < nowTs - 48 * 3600;
   const refTs = row.posted_at || row.first_seen_at;
   const ageDays = refTs ? Math.floor((nowTs - refTs) / 86400) : null;
   if (gone) flags.push({ type: "stale", label: tr(lang, "Có thể đã gỡ") });
@@ -642,18 +645,18 @@ function pct(sorted, p) {
 function normLoc(s) {
   return String(s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d");
 }
-const REGION_LOCK = /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/;
+const REGION_LOCK = /(?<!\b(?:help|let|ask|tell|give|show|join|contact|about|with|email|follow|call|text|trust) )\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/;
 function fitBreakdown(profile, job) {
   const locs = (profile.locations || []).map(normLoc);
   const jobLoc = normLoc(job.location);
   // ponytail: chỉ gỡ "join/contact/about us"; tiêu đề có "us" là đại từ kiểu khác vẫn có thể khớp nhầm khoá vùng.
-  const jobLocTitle = `${jobLoc} ${normLoc(job.title).replace(/\b(?:join|contact|about|with) us\b/g, "")}`;
+  const jobLocTitle = `${jobLoc} ${normLoc(job.title)}`;
   let location = 0, locationWhy = "", locationArg;
   if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
   // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
   // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
   // T-77: tiêu đề cũng có thể ghi khoá vùng ("U.S. Based Remote Contractor"), xét chung với địa điểm.
-  else if (/remote/.test(jobLocTitle) && REGION_LOCK.test(jobLocTitle)) {
+  else if (/remote/.test(jobLocTitle) && REGION_LOCK.test(jobLocTitle) && !/\b(?:vietnam|viet nam|apac|asia|anywhere|worldwide|global)\b/.test(jobLocTitle)) {
     location = 0; locationWhy = "Remote nhưng chỉ nhận ứng viên ở %s";
     locationArg = (REGION_LOCK.test(jobLoc) ? (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1] : jobLocTitle.match(REGION_LOCK)[0]).trim().slice(0, 40); // HN hay nhét cả câu vào ngoặc
   }
@@ -678,7 +681,11 @@ function fitBreakdown(profile, job) {
   for (const re of [/(\d{1,2})\s*(?:[-–]\s*\d{1,2}\s*)?\+?\s*(?:years?|yrs?|năm)[^.\n]{0,25}?(?:experience|kinh nghiệm)/gi,
     /(?:experience|kinh nghiệm)[^.\n]{0,20}?(\d{1,2})\s*(?:[-–]\s*\d{1,2}\s*)?\+?\s*(?:years?|yrs?|năm)/gi,
     /(?:từ|at least|minimum|tối thiểu)\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?|năm)/gi])
-    for (const m of jdOf(job).slice(0, 2000).matchAll(re)) years = Math.max(years, Number(m[1]));
+    for (const m of jdOf(job).slice(0, 2000).matchAll(re)) {
+      const ctx = jdOf(job).slice(Math.max(0, m.index - 40), m.index + m[0].length + 40);
+      // ponytail: ngữ cảnh ±40 ký tự + trần 15 năm; "20 years" giới thiệu công ty bị loại.
+      if (Number(m[1]) <= 15 && /experience|kinh nghiệm|yêu cầu|required|minimum|at least|tối thiểu|ít nhất/i.test(ctx)) years = Math.max(years, Number(m[1]));
+    }
   const tooJunior = years >= (/middle/.test(lvl) ? 7 : 4) && /junior|fresher|middle/.test(lvl);
   let levelArg;
   if (tooJunior) { level = 2; levelWhy = "JD yêu cầu %s năm kinh nghiệm"; levelArg = years; }
@@ -1044,6 +1051,7 @@ async function backupToR2(env) {
       for (let off = 0; ; off += BACKUP_PAGE) {
         m.subrequests++;
         const { results } = await env.DB.prepare(`SELECT * FROM ${t} LIMIT ${BACKUP_PAGE} OFFSET ?`).bind(off).all();
+        if (t === "users") results.forEach((r) => { delete r.telegram_link_code; });
         rows.push(...results);
         if (results.length < BACKUP_PAGE) break;
       }
@@ -1088,6 +1096,7 @@ async function exportUserData(env, user) {
   const u = { ...user };
   delete u.password_hash;
   delete u.password_salt;
+  delete u.telegram_link_code;
   const byUser = (sql) => env.DB.prepare(sql).bind(user.id).all().then((r) => r.results);
   const { results: profileRows } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
   const profiles = [];
@@ -1231,8 +1240,10 @@ export default {
         const text = String(m.text || "").trim();
         const start = text.match(/^\/start(?:@\w+)?\s+([A-Za-z0-9]{8})$/);
         if (chatId && start) {
-          const u = await env.DB.prepare("SELECT id, email FROM users WHERE telegram_link_code = ? AND deleted_at IS NULL").bind(start[1]).first();
+          const uidLinked = await env.KV.get(`tglink:${start[1]}`); // mã sống 900s trong KV (T-99), hết hạn là null
+          const u = uidLinked ? await env.DB.prepare("SELECT id, email FROM users WHERE id = ? AND deleted_at IS NULL").bind(uidLinked).first() : null;
           if (u) {
+            await env.KV.delete(`tglink:${start[1]}`);
             await env.DB.prepare("UPDATE users SET telegram_chat_id = ?, telegram_linked_at = ?, telegram_link_code = NULL WHERE id = ?").bind(chatId, now(), u.id).run();
             await tgSend(env, chatId, `Đã gắn JobPilot với tài khoản ${tgEsc(maskEmail(u.email))}. Bạn sẽ nhận 1 bản tin mỗi sáng và báo ngay khi có tin khớp mạnh. / Linked: one digest each morning plus instant strong matches.`);
           } else await tgSend(env, chatId, "Mã không đúng hoặc đã dùng. / Invalid or used code.");
@@ -1431,7 +1442,7 @@ export default {
             if (!title && tm) title = tm[1].split("|")[0].split(" - ")[0].trim();
           } catch (e) { /* giữ jd rỗng nếu fetch lỗi */ }
         }
-        job = await upsertJob(env, src?.id || null, {
+        job = await upsertJob(env, sourceType === "manual" ? null : src?.id || null, {
           title: title || "Job không tiêu đề", company, location: b.location || "",
           url: b.url, jdText, skills: extractSkillsFromText(jdText),
           postedAt: null, salaryText: b.salary_text || null,
@@ -1494,6 +1505,7 @@ export default {
     if (path === "/api/applications" && request.method === "POST") {
       const b = await readBody(request);
       if (!(await ownsProfile(env, user, b.profile_id))) return json({ error: "profile_not_found" }, 404);
+      if (b.stage !== undefined && !APP_STAGES.includes(b.stage)) return json({ error: "invalid_stage" }, 400);
       const id = uid();
       await env.DB.prepare(
         "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
@@ -1529,7 +1541,8 @@ export default {
       if (!env.TELEGRAM_BOT_USERNAME || !env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
       const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", rnd = crypto.getRandomValues(new Uint8Array(8));
       const code = [...rnd].map((b) => a[b % a.length]).join("");
-      await env.DB.prepare("UPDATE users SET telegram_link_code = ? WHERE id = ?").bind(code, user.id).run();
+      await env.KV.put(`tglink:${code}`, user.id, { expirationTtl: 900 });
+      await env.DB.prepare("UPDATE users SET telegram_link_code = NULL WHERE id = ?").bind(user.id).run(); // dọn mã cũ còn sót trong cột
       const bot = env.TELEGRAM_BOT_USERNAME || "";
       return json({ code, bot, deeplink: `https://t.me/${bot}?start=${code}` });
     }

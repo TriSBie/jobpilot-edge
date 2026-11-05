@@ -80,3 +80,12 @@ for (const [t, want] of [['Backend Developer', 1], ['Java Engineer', 1], ['Softw
   ['Sales Engineer', 0], ['Pre-sales Engineer', 0], ['Presales Engineer', 0], ['Customer Support Engineer', 0], ['Content Engineer', 0], ['Engineering Manager', 0], ['Data Entry Clerk', 0], ['HR Recruiter', 0], ['Kế toán', 0]])
   assert.equal(titleGate(t), !!want, t);
 console.log('OK');
+// T-95: đại từ "us" không phải khoá vùng; Remote có Vietnam/APAC không khoá.
+for (const t of ['Help us build Backend', 'Let us hire a Backend Engineer', 'Join us as Backend Dev']) assert.equal(locT(t), 8, t);
+for (const l of ['Remote (US, Vietnam)', 'Vietnam or US Remote', 'Remote (US / APAC)']) assert.equal(loc(l), 8, l);
+assert.equal(locT('Backend Engineer - US Remote'), 0, 'vẫn khoá US');
+// T-96: năm kinh nghiệm chỉ khi câu có ngữ cảnh yêu cầu, ≤ 15.
+assert.equal(lv('We have been in business for 20 years and love Java').level, 5, '20 years giới thiệu công ty');
+assert.equal(lv('Founded 10 years ago, great culture').level, 5, 'giới thiệu 10 years');
+assert.equal(lv('Requirements: 8 years of experience in Java').level, 2, 'vẫn bắt yêu cầu');
+console.log('score T-95/T-96 OK');
