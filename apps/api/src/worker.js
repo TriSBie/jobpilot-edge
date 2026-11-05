@@ -907,7 +907,7 @@ async function buildDigest(env, user, lang = "vi", profileId = null, persist = f
     // B6: tin mới còn phù hợp (verdict != skip, không khoá vùng/stale), dùng đúng verdictFor/postingFlags/fitBreakdown như /api/jobs.
     const { results: cand } = await env.DB.prepare(
       `SELECT j.*, m.final_score, m.tier, m.missing_skills FROM job_matches m JOIN jobs j ON j.id = m.job_id
-       WHERE m.profile_id = ? AND m.tier != 'strong' AND j.first_seen_at >= ? ORDER BY m.final_score DESC LIMIT 30`
+       WHERE m.profile_id = ? AND m.tier = 'partial' AND j.first_seen_at >= ? ORDER BY m.final_score DESC LIMIT 30`
     ).bind(p.id, since).all();
     const prof = { ...p, locations: JSON.parse(p.locations || "[]") };
     for (const r of cand) {

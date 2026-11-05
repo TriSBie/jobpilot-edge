@@ -29,3 +29,6 @@ const W = new Function(src.replace(/^export default /m, 'const __w = ').replace(
   assert(/ownsProfile\(env, user, pid\)/.test(src), 'digest ownership');
   console.log('digest selfcheck OK');
 })().catch((e) => { console.error(e); process.exit(1); });
+// Tin "phù hợp" trong bản tin chỉ lấy tier partial (không nhồi tin weak cho đủ 3).
+assert.ok(/m\.tier = 'partial' AND j\.first_seen_at >= \?/.test(src), 'fresh query must be partial-only');
+console.log('digest partial-only OK');
