@@ -1,6 +1,6 @@
 # JobPilot Edge — Roadmap (nguồn kế hoạch duy nhất)
 
-> Cập nhật: 03/11/2026. File này gộp: kế hoạch gốc `PLAN.md` (mục 10), backlog `worklog/BACKLOG.md`, research người tìm việc 2026–2030 (`worklog/research/2026-10-30_nguoi-tim-viec-2026-2030.md`), rà nguồn job (`worklog/research/2026-10-30_nguon-job-tang-2-3.md`) và lượt nhập vai đánh giá sản phẩm ngày 03/11.
+> Cập nhật: 05/11/2026 (mục 6 = backlog tổng hợp + thứ tự làm). File này gộp: kế hoạch gốc `PLAN.md` (mục 10), backlog `worklog/BACKLOG.md`, research người tìm việc 2026–2030 (`worklog/research/2026-10-30_nguoi-tim-viec-2026-2030.md`), rà nguồn job (`worklog/research/2026-10-30_nguon-job-tang-2-3.md`) và lượt nhập vai đánh giá sản phẩm ngày 03/11.
 > Trạng thái từng task vẫn theo `worklog/task_states.md`. Khi hai nơi lệch nhau, task_states là đúng.
 
 ## 1. Định vị
@@ -116,9 +116,69 @@ Nguyên tắc: mỗi đợt có tiêu chí nghiệm thu đo được trên produ
 4. **Kênh tiếp cận**: Voz, nhóm IT Facebook, Viblo, kênh Telegram tin đã chấm (vừa là sản phẩm vừa là kênh).
 5. **Số liệu phải đo từ bây giờ**: tỉ lệ kích hoạt (hồ sơ ≥ 3 kỹ năng, hiện 3/9), người quay lại hằng tuần, đơn nộp từ JobPilot, tỉ lệ được phản hồi.
 
-## 6. Thứ tự làm ngay (đề xuất)
+## 6. Backlog tổng hợp (05/11/2026) — thứ tự release
 
-1. Đợt 0.1 → 0.3 (3 việc làm mất tin điểm nhanh nhất): ~2 buổi, deploy 1 lần.
-2. Đợt 0.4 (T-05) sau khi có review độc lập.
-3. Đợt 1.1 + 1.2 trước khi mời thêm người lạ.
-4. Đợt 2.1 (Telegram) là tính năng đầu tiên tạo thói quen quay lại; làm ngay sau đợt 1.
+Gộp ROADMAP + 3 audit ngày 05/11 (`worklog/research/2026-11-05_ux-activation-audit.md`, `2026-11-05_growth-thu-hut-nguoi-dung.md`, `2026-11-05_tech-seo-perf-share-audit.md`) + review của Codex cùng ngày. Cỡ: S ≤ nửa buổi, M 1–2 buổi, L ≥ 3 buổi. 🔒 = cần anh duyệt (deploy, DB, auth, secret, cấu hình queue).
+
+**Trạng thái theo bằng chứng:** 0.1–0.3 và 1.1/1.2/1.3/1.5 đã live 03/11 (Turnstile dùng test key; cron backup `0 18` chưa đăng ký). 2.1/2.2/2.3/2.4/2.5/2.7/2.8 là **code xong trên `fix/d2-all`, chưa phải sẵn sàng deploy**. `worklog/task_states.md` còn ở 29/10 nên lệch: bước 0 sửa việc này.
+
+Nguyên tắc: làm theo đúng 5 bước dưới đây, bước sau chỉ bắt đầu khi bước trước đạt nghiệm thu. Không duyệt deploy (bước 3) trước khi bước 2 PASS.
+
+### Bước 0 — Đồng bộ trạng thái + chuẩn bị release
+| # | Việc | Nghiệm thu |
+|---|---|---|
+| 0a | Cập nhật `task_states.md` theo bằng chứng (commit, version Worker/Pages live, kết quả kiểm); task mới T-76 → T-92 ghi `proposed` | Mỗi task đã live có version/commit; không còn task live mà ghi `proposed/blocked` |
+| 0b | Cấu hình deploy khớp source: binding trong `wrangler.prod.toml` = binding code dùng (DB, KV, R2, 3 queue, DO, AI, Vectorize, vars Telegram/Turnstile); danh sách migration còn thiếu trên D1 prod (dự kiến 0007, 0008) đối chiếu lịch sử migration đã áp dụng, nội dung từng migration và schema/index thực tế; `PRAGMA table_info` riêng lẻ không đủ chứng minh migration đã chạy. Mọi truy vấn D1 production cần anh duyệt riêng; trước đó chỉ đối chiếu file local | Bảng binding/migration đối chiếu trong `worklog/release/d2.md` (T-20) |
+
+### Bước 1 — Gói sửa đúng đắn (B + D đúng đắn), trên `fix/d2-all`
+Đúng đắn của dữ liệu/kết quả, đứng trước gói tăng trưởng.
+
+| # | Việc | Nguồn | Cỡ | Nghiệm thu |
+|---|---|---|---|---|
+| B1 | Nhận diện cấp bậc: tiêu đề nhiều cấp ("Middle/Senior", "Mid/Sr", "Mid - Senior") có cấp của hồ sơ thì **không** lệch; chỉ "lệch cấp" khi tiêu đề/JD rõ ràng chỉ senior/lead/principal mà hồ sơ junior/middle . Hồ sơ senior với job middle không mặc định Bỏ qua. Title/JD mâu thuẫn hoặc không rõ thì ghi chưa đủ bằng chứng, không tự kết luận lệch cấp. Không nới theo ngưỡng điểm. Bỏ qua xếp cuối ở tab Jobs — T-76 | UX #1, Codex; lab: 11/133 tin "lệch cấp" có ghi Middle/Mid | S | Selfcheck: ≥ 6 tiêu đề nhiều cấp → khớp, ≥ 4 tiêu đề lệch thật → Bỏ qua; có case title/JD mâu thuẫn và senior ứng tuyển middle |
+| B2 | Khoá vùng ghi trong **tiêu đề** ("U.S. Based…") cũng không khớp khu vực — T-77 | UX #2, `worker.js:651` | S | Selfcheck có case tiêu đề |
+| B3 | Chip "Không ghi lương" bỏ khỏi thẻ (chỉ trong giải thích); chip "cũ" chỉ khi "có thể đã gỡ" — T-78 | UX #3 | S | Thẻ không còn chip ở > 50% tin |
+| B4 | Sửa câu "CV không gửi đi đâu" (`index.html:1626`) cho khớp hộp đồng ý (`:1768`, CV lưu R2) — T-79 | UX #4 | S | Hai câu cùng nghĩa, vi + en |
+| B5 | Lưu kỹ năng xong tự hiện điểm, không phải tải lại — T-80 | UX TTV | S | Playwright: tài khoản mới thấy tin có điểm không reload |
+| B6 | Bản tin sáng thêm tối đa 3 tin mới **còn phù hợp** (không khoá vùng, không Bỏ qua, ứng tuyển được); không có thì ghi rõ "Hôm nay không có tin mới phù hợp", không nhồi cho đủ số — T-81 | UX #5, Codex | S | Selfcheck: 0 tin phù hợp → câu "không có"; tin khoá vùng không vào bản tin |
+| B7 | OG/Twitter + canonical + hreflang + `og.png`; `robots.txt`, `sitemap.xml` thật; bỏ `hidden` mặc định `#landingView` (`index.html:1302`) — T-82 | Tech #1,2,4 | S | Kiểm lại sau deploy: 2 file trả đúng content-type; HTML không JS có nội dung |
+| B8 | Lazy-load pdf.js (320KB) + Turnstile (87KB) — T-83 | Tech #3 | S | **Đo lại cùng điều kiện** (Pixel 5, 1,6 Mbps, CPU 4x): LCP < 2,5s (trước: 2,70s); Turnstile vẫn chạy ở đăng ký/đăng nhập; đọc được PDF thật |
+| B9 | Mobile: tab bar nổi che nút "Tạo hồ sơ", toast che nút — T-84 | UX phụ | S | `matrix.cjs` 30/30 + ảnh 390 |
+| B10 | `_headers`: HSTS, X-Frame-Options, Permissions-Policy, CSP Report-Only; contrast link footer — T-85 | Tech #4 | S 🔒 | Header có trên preview Pages |
+| D1 | `PATCH /applications` validate `stage` (T-17) | ROADMAP 1.6 | S | `stage:"xyz"` → 400 |
+| D2 | Không tự xoá kỹ năng cũ khi lưu từ CV; cho xoá cấp bậc/lương/follow-up (T-44, T-43) | 0.6 | S | 4 kỹ năng + tích 2 từ CV → 6 |
+| D3 | Brief sáng theo hồ sơ đang chọn (T-09) | 2.6 | S | Đổi hồ sơ → số brief đổi |
+| D4 | `titleGate` chặt hơn + lọc tag phi kỹ thuật ITviec (T-07, T-08) | 0.5 | S | Bảng ≥ 15 tiêu đề assert đúng |
+| D5 | `digest/today` không ghi DB mỗi lần gọi (T-47) | 1.6 | S | GET 2 lần → 0 lần ghi |
+| D6 | DLQ cho 3 queue (T-19): **chốt cấu hình queue với anh trước release** | 1.6 | S 🔒 | Message lỗi rơi vào DLQ trên lab |
+
+### Bước 2 — Kiểm thử bản tích hợp (lab, fixture hoặc snapshot đã loại PII và bí mật)
+Kiểm tra fixture/snapshot trước sử dụng; không nối DB production. Telegram dùng mock, chặn gửi tới dịch vụ thật và kiểm nội dung/đích gửi. Toàn bộ selfcheck + `node --check` · cron + Telegram mock end-to-end · `matrix.cjs` 30/30 · `vi-leak.cjs` 0 rò · đo B8 · tài khoản mới đi hết luồng (đăng ký → hồ sơ → tin có điểm) · bảng verdict trước/sau B1. Kết quả ghi vào `worklog/release/d2.md`. Không PASS thì quay lại bước 1.
+
+### Bước 3 — Duyệt migration + deploy (việc của anh)
+| # | Việc | |
+|---|---|---|
+| A1 | Migration 0007 + 0008 (theo bảng 0b) → Worker → Pages → merge `fix/d2-all` vào `main` + push; kiểm lại trên prod | 🔒 |
+| A2 | `wrangler triggers deploy` (cron backup `0 18`) | 🔒 |
+| A3 | Telegram: bot BotFather, `wrangler secret put TELEGRAM_BOT_TOKEN` / `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_BOT_USERNAME`, setWebhook | 🔒 |
+| A4 | Turnstile thật: site key + `TURNSTILE_SECRET` | 🔒 |
+| A5 | Trả lời 4 câu `TONG-HOP` + mục 5 (ToS ITviec/TopDev, luật dữ liệu, ai trả tiền); không chặn deploy nhưng chặn quảng bá (C4/C5) | |
+
+### Bước 4 — Thu hút người dùng (sau khi A1 live)
+Đo trước, quảng bá sau.
+
+| # | Việc | Nguồn | Cỡ |
+|---|---|---|---|
+| C3 | **Làm đầu tiên:** đo funnel + nguồn: `?ref`, 5 chỉ số (kích hoạt, D7/D30, nguồn → tài khoản, bật Telegram, bỏ ở bước CV) — T-88 (gộp T-34) | Growth #2, Codex | M |
+| C1 | Dùng thử không cần CV: landing chọn vai trò + kỹ năng → 10 tin đã chấm; "lưu thành hồ sơ" — T-86 | UX + Growth #1 | M |
+| C2 | Quét ngay theo `target_roles` khi tạo hồ sơ — T-87 | UX #5 | M |
+| C4 | Báo cáo dữ liệu #1 "tin đăng lại / treo lâu" (không quy lỗi công ty cụ thể) → Viblo, 48h sau Voz f91. Chỉ khi C3 live + A5 có câu trả lời ToS — T-89 | Growth #3,4 | M |
+| C5 | Kênh Telegram công khai tin đã chấm (tái dùng bot). Cùng điều kiện C4 — T-90 | Growth #5 | S |
+| C6 | Link chia sẻ kết quả 1 tin `/s/:id` (OG động, không lộ CV, TTL 30 ngày, `?ref`) — T-91 | Tech #5 | M 🔒 |
+| C7 | Badge "tin mới từ lần xem trước" — T-92 | UX | M |
+
+### Để sau
+0.4 thêm job bằng link (T-05, migration đổi thành `0009`, chờ review độc lập) · 1.4 đổi mật khẩu (T-22) · làm sạch location HN · đợt 3 (3.1–3.9), đợt 4, mục 4 ở trên · tên miền riêng (niềm tin + email digest T-31) · trang SEO theo ngách sau C4 · trang ngắn cho HR · tự host font · xoá 3 PNG thừa `public/assets/`.
+
+### Mốc thời gian (ước đoán)
+Tuần 1: bước 0–2 · tuần 2: bước 3 + C3 · tuần 3–5: C1, C2, rồi C4/C5 · trước Tết 2027: C6/C7 + tên miền, đón mùa nhảy việc sau Tết. Mục tiêu 150–400 tài khoản sau 90 ngày (ước đoán của audit growth, chưa có số so sánh).
