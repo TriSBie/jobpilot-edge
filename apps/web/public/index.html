@@ -9,8 +9,26 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" defer></script>
+<script>try{if(localStorage.getItem("jp_token"))document.documentElement.classList.add("jp-in");}catch(e){}</script><style>.jp-in #landingView{display:none}</style>
+<link rel="canonical" href="https://jobpilot-edge.pages.dev/">
+<link rel="alternate" hreflang="vi" href="https://jobpilot-edge.pages.dev/">
+<link rel="alternate" hreflang="en" href="https://jobpilot-edge.pages.dev/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://jobpilot-edge.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="JobPilot Edge">
+<meta property="og:title" content="JobPilot Edge — Săn việc, có hệ thống">
+<meta property="og:description" content="AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.">
+<meta property="og:url" content="https://jobpilot-edge.pages.dev/">
+<meta property="og:image" content="https://jobpilot-edge.pages.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JobPilot Edge — Săn việc, có hệ thống">
+<meta name="twitter:description" content="AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.">
+<meta name="twitter:image" content="https://jobpilot-edge.pages.dev/og.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"JobPilot Edge","url":"https://jobpilot-edge.pages.dev/","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":["vi","en"],"description":"AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.","offers":{"@type":"Offer","price":"0","priceCurrency":"VND"}}</script>
 <style>
 /* ===== SIGNAL TOKENS (bước 1) — dán nguyên khối 1 từ spec ===== */
 :root{
@@ -544,6 +562,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
     background:linear-gradient(90deg, transparent, var(--line-strong), transparent); }
 }
 .lp-foot{ align-items:center; }
+.lp-foot a{ color:var(--text); text-decoration:underline; }
 
 /* ================= TYPOGRAPHY: Unbounded + Manrope (Signal) ================= */
 .lp-hero h1{ font-weight:700; font-size:clamp(3rem,7vw,5.3rem); line-height:1.03; letter-spacing:-.03em; }
@@ -1299,7 +1318,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 <div id="toasts"></div>
 
 <!-- ================= LANDING ================= -->
-<div id="landingView" class="hidden">
+<div id="landingView">
   <div id="lp-progress" aria-hidden="true"></div>
   <header class="lp-nav">
     <div class="brand"><svg class="mark-img" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>JobPilot <span>Edge</span></div>
@@ -2146,9 +2165,18 @@ const AUTH_ERR = {
 function authErr(e){ return t(AUTH_ERR[e.message] || e.message); }
 
 /* ---------------- Cloudflare Turnstile: render lười theo #id, lấy token rồi reset sau mỗi lần gửi ---------------- */
-const tsWidgets = {}, tsWanted = new Set(); // tsWanted: form đã mở nhưng api.js (defer) có thể chưa tải
+const tsWidgets = {}, tsWanted = new Set(); // tsWanted: form đã mở nhưng api.js (nạp lười) có thể chưa tải
+let tsLoading = false;
+function turnstileLoad(){ // chỉ nạp khi form cần; onload gọi lại render các form đang chờ
+  if (tsLoading) return; tsLoading = true;
+  const s = document.createElement("script");
+  s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback"; s.async = true;
+  s.onerror = () => { tsLoading = false; };
+  document.head.appendChild(s);
+}
 function turnstileRender(id){
   tsWanted.add(id);
+  if (!window.turnstile) turnstileLoad();
   if (tsWidgets[id] !== undefined || !window.turnstile) return;
   tsWidgets[id] = turnstile.render("#" + id, { sitekey: TURNSTILE_SITE_KEY, theme: document.documentElement.dataset.theme === "light" ? "light" : "dark", language: LANG });
 }
@@ -2206,6 +2234,7 @@ function withViewTransition(update, opts){
   }, { passive: true });
 })();
 function showLanding(){
+  document.documentElement.classList.remove("jp-in"); // class đặt sớm trong <head> cho người đã đăng nhập
   withViewTransition(() => {
     $("#authView").classList.add("hidden");
     $("#appView").classList.add("hidden");
@@ -3497,6 +3526,11 @@ function renderSuggested(){
 }
 
 async function extractPdfText(file, statusEl){
+  if (!window.pdfjsLib) await new Promise(res => { // nạp lười khi người dùng chọn PDF
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; s.onload = s.onerror = res;
+    document.head.appendChild(s);
+  });
   if (!window.pdfjsLib) throw new Error(t("Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại."));
   window.pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
