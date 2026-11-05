@@ -2639,6 +2639,8 @@ async function loadDigest(){
         <div class="bignum"><em data-count="${sc}">0</em></div>
         ${strong.slice(0, 3).map(j =>
           `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
+           <span class="muted">${esc(j.company)}, ${t("%sđ", Math.round(j.final_score || 0))}</span></div>`).join("") || (d.fresh || []).slice(0, 3).map(j =>
+          `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
            <span class="muted">${esc(j.company)}, ${t("%sđ", Math.round(j.final_score || 0))}</span></div>`).join("") || `<div class="fu-item muted">${t("Chưa có job khớp mạnh mới trong 24h.")}</div>`}
       </div>
       <div>

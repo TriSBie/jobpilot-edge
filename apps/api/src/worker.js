@@ -606,10 +606,6 @@ function parseSalary(text) {
   if (m) return { min: Number(m[1]) * 1e3, max: Number(m[2]) * 1e3, currency: "VND", period: "month" };
   return null;
 }
-function parseSalaryVND(text) {
-  const p = parseSalary(text);
-  return p && p.currency === "VND" ? { min: p.min, max: p.max } : null;
-}
 // Quy về VNĐ/tháng.
 function monthlyVND(p) {
   const f = (p.currency === "USD" ? USD_VND : 1) / (p.period === "year" ? 12 : 1);
@@ -648,7 +644,8 @@ const REGION_LOCK = /\b(?:us|usa|u\.s\.?a?|united states|north america|americas?
 function fitBreakdown(profile, job) {
   const locs = (profile.locations || []).map(normLoc);
   const jobLoc = normLoc(job.location);
-  const jobLocTitle = `${jobLoc} ${normLoc(job.title)}`;
+  // ponytail: chỉ gỡ "join/contact/about us"; tiêu đề có "us" là đại từ kiểu khác vẫn có thể khớp nhầm khoá vùng.
+  const jobLocTitle = `${jobLoc} ${normLoc(job.title).replace(/\b(?:join|contact|about|with) us\b/g, "")}`;
   let location = 0, locationWhy = "", locationArg;
   if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
   // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
