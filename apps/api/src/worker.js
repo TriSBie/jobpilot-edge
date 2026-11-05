@@ -1296,8 +1296,8 @@ export default {
       await env.DB.prepare(
         "UPDATE profiles SET name = ?, target_roles = ?, level = ?, locations = ?, salary_min = ?, public_slug = ?, updated_at = ? WHERE id = ?"
       ).bind(b.name ?? p.name, JSON.stringify(b.target_roles ?? JSON.parse(p.target_roles || "[]")),
-        b.level ?? p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
-        b.salary_min ?? p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
+        "level" in b ? (b.level || null) : p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
+        "salary_min" in b ? (b.salary_min || null) : p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
       // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
       const rescoreQueued = await enqueueProfileRescore(env, p.id);
       const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
@@ -1510,7 +1510,7 @@ export default {
       const stage = b.stage ?? app.stage;
       const appliedAt = stage === "applied" && !app.applied_at ? now() : app.applied_at;
       await env.DB.prepare("UPDATE applications SET stage = ?, note = ?, next_follow_up_at = ?, applied_at = ?, updated_at = ? WHERE id = ?")
-        .bind(stage, b.note ?? app.note, b.next_follow_up_at ?? app.next_follow_up_at, appliedAt, now(), app.id).run();
+        .bind(stage, b.note ?? app.note, "next_follow_up_at" in b ? (b.next_follow_up_at || null) : app.next_follow_up_at, appliedAt, now(), app.id).run();
       await env.DB.prepare("INSERT INTO application_events (id, application_id, type, payload, created_at) VALUES (?, ?, 'stage_changed', ?, ?)")
         .bind(uid(), app.id, JSON.stringify({ from: app.stage, to: stage }), now()).run();
       const upd = await env.DB.prepare("SELECT * FROM applications WHERE id = ?").bind(app.id).first();
