@@ -18,3 +18,7 @@ assert.equal(a.verdict, 'apply_if'); assert.equal(a.why, 'Apply if you add S1, S
 assert.equal(v({ tier: 'partial', ...miss(5, 5) }, fit(6)).why, 'Nộp nếu chấp nhận onsite');
 assert.equal(v({ tier: 'partial', ...miss() }, fit(0), [], 0, 'en').why, 'Skip: location mismatch');
 console.log('verdict selfcheck OK');
+// S5 (review 05/11): tin weak không bao giờ "apply", dù thiếu ít skill.
+assert.equal(v({ tier: 'weak', ...miss(3) }, fit()).verdict, 'apply_if');
+assert.equal(v({ tier: 'partial', ...miss(3) }, fit()).verdict, 'apply');
+console.log('verdict S5 OK');

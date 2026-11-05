@@ -12,3 +12,7 @@ assert.equal(cnt('applied', t - W, t + 1), 2); assert.equal(cnt('applied', t - 2
 assert.equal(cnt('interview', t - W, t + 1), 1);
 assert.equal(rows.filter((r) => ['applied', 'interview'].includes(r.stage) && r.updated_at < t - 14 * D).length, 2);
 console.log('weekstats selfcheck OK');
+// S1 (review 05/11): đóng mềm bỏ qua đơn còn hẹn follow-up trong tương lai.
+assert(/AND \(next_follow_up_at IS NULL OR next_follow_up_at < \?\)/.test(src), 'soft-close respects future follow-up');
+assert(/\.bind\(tn, cutoff, tn\)/.test(src), 'soft-close binds 3 params');
+console.log('weekstats S1 OK');

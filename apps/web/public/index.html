@@ -2018,6 +2018,7 @@ Object.assign(EN, {
   "Đăng nhập để tiếp tục pipeline săn việc của bạn.": "Log in to continue your job pipeline.",
   "Đã đăng xuất.": "Logged out.",
   "Tạo tài khoản xong, chào %s": "Account created. Welcome, %s",
+  "Bot Telegram chưa được bật trên hệ thống. Thử lại sau.": "The Telegram bot is not enabled yet. Try again later.",
   "Chào %s, đã đăng nhập": "Welcome, %s. You are logged in",
   "Đang đăng nhập...": "Logging in...",
   "Đăng nhập": "Log in",
@@ -2467,7 +2468,7 @@ let tgTimer = 0;
 function tgShow(id){ clearInterval(tgTimer); ["tgIdle","tgPending","tgDone"].forEach(x => $("#" + x).classList.toggle("hidden", x !== id)); }
 $("#tgLinkBtn").addEventListener("click", async () => {
   try {
-    const r = await api("/api/me/telegram/link", { method: "POST" });
+    const r = await api("/api/me/telegram/link", { method: "POST" }).catch((e) => { throw new Error(e.message === "telegram_not_configured" ? t("Bot Telegram chưa được bật trên hệ thống. Thử lại sau.") : e.message); });
     $("#tgCode").textContent = r.code; $("#tgOpen").href = r.deeplink; tgShow("tgPending");
     let n = 0;
     tgTimer = setInterval(async () => {
@@ -2924,8 +2925,8 @@ async function loadApplications(){
   const firstKbLoad = kanbanFirstLoad;
   box.innerHTML = '<div class="kanban">' + STAGES.map(s => `<div class="kcol"><div class="kcol-head"><span>${esc(t(s.label))}</span><span class="count">–</span></div><div class="kcol-body"><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:48px"></div></div></div>`).join("") + "</div>";
   try {
-    const ar = await api("/api/applications?profile_id=" + encodeURIComponent(p.id));
-    state.applications = ar.items; state.weekStats = ar.stats;
+    const ar = await api("/api/applications?stats=1&profile_id=" + encodeURIComponent(p.id));
+    state.applications = Array.isArray(ar) ? ar : ar.items; state.weekStats = Array.isArray(ar) ? null : ar.stats; // Worker cũ trả mảng
     kanbanFirstLoad = false;
     box.classList.add("xfade");
     renderKanban();

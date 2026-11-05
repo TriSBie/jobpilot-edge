@@ -82,7 +82,7 @@ function verdictFor(match, fit, flags, risk, lang) {
   else if (risk >= 3) why = "tin rủi ro cao";
   else if ((flags || []).some((f) => f.type === "stale")) why = "tin đã cũ";
   if (why) return { verdict: "skip", why: tr(lang, "Bỏ qua: %s", tr(lang, why)) };
-  if (match.tier === "strong" || miss.filter((m) => m.weight >= 3).length <= 1) return { verdict: "apply", why: tr(lang, "Khớp đủ để nộp") };
+  if (match.tier === "strong" || (match.tier !== "weak" && miss.filter((m) => m.weight >= 3).length <= 1)) return { verdict: "apply", why: tr(lang, "Khớp đủ để nộp") };
   if (fit && fit.location === 6) return { verdict: "apply_if", why: tr(lang, "Nộp nếu chấp nhận onsite") };
   return { verdict: "apply_if", why: tr(lang, "Nộp nếu bổ sung %s", miss.slice(0, 2).map((m) => m.skill).join(", ")) };
 }
@@ -519,12 +519,14 @@ async function upsertJob(env, sourceId, job) {
   const t = now();
   const existing = await env.DB.prepare("SELECT id FROM jobs WHERE content_hash = ?").bind(hash).first();
   if (existing) {
-    // board "làm mới" ngày đăng = đăng lại
+    // board "làm mới" ngày đăng = đăng lại. ITviec chỉ có nhãn tương đối ("1 month ago") trôi theo ngày quét → không tin posted_at mới của nó.
+    // ponytail: ngưỡng 2 ngày lọc trôi 1 ngày/lần quét của nhãn tương đối; nguồn có ngày tuyệt đối mà "làm mới" trong 1 ngày sẽ bị bỏ qua.
+    const trust = sourceId === "src-itviec" ? 0 : posted || 0;
     await env.DB.prepare(
       `UPDATE jobs SET last_seen_at = ?, seen_count = seen_count + 1,
-         repost_count = repost_count + (CASE WHEN ? > COALESCE(posted_at,0) THEN 1 ELSE 0 END),
+         repost_count = repost_count + (CASE WHEN ? >= COALESCE(posted_at,0) + 172800 THEN 1 ELSE 0 END),
          posted_at = MAX(COALESCE(posted_at,0), ?) WHERE content_hash = ?`
-    ).bind(t, posted || 0, posted || 0, hash).run();
+    ).bind(t, trust, trust, hash).run();
   } else await env.DB.prepare(
     `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -1390,7 +1392,7 @@ export default {
           const jobSkillCount = new Set([...skillsArr.map((s) => String(s).toLowerCase()), ...extractSkillsFromText(jdOf(r)).map((s) => s.toLowerCase())]).size;
           ruleDetail = { matched: matchedW, missing: missingW, total_weight: totalW, rule_score: r.rule_score, capped: jobSkillCount < 3 };
         }
-        const vd = hasMatch ? verdictFor({ tier: r.tier, rule_detail: ruleDetail }, fit, flags, undefined, lang) : null;
+        const vd = hasMatch ? verdictFor({ tier: r.tier, rule_detail: ruleDetail }, fit, flags, risk, lang) : null;
         return {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
@@ -1486,7 +1488,8 @@ export default {
         job: { id: r.job_id, title: r.title, company: r.company, location: r.location, source_url: r.source_url },
         match: r.final_score !== null && r.final_score !== undefined ? { final_score: r.final_score, tier: r.tier } : null,
       }));
-      return json({ items, stats });
+      // Mặc định trả mảng như trước (SPA cũ/Worker cũ lệch phiên bản vẫn chạy); ?stats=1 mới bọc {items, stats}.
+      return json(url.searchParams.get("stats") === "1" ? { items, stats } : items);
     }
     if (path === "/api/applications" && request.method === "POST") {
       const b = await readBody(request);
@@ -1523,6 +1526,7 @@ export default {
       return json({ consent_cv_at: r.consent_cv_at });
     }
     if (path === "/api/me/telegram/link" && request.method === "POST") {
+      if (!env.TELEGRAM_BOT_USERNAME || !env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
       const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", rnd = crypto.getRandomValues(new Uint8Array(8));
       const code = [...rnd].map((b) => a[b % a.length]).join("");
       await env.DB.prepare("UPDATE users SET telegram_link_code = ? WHERE id = ?").bind(code, user.id).run();
@@ -1678,14 +1682,16 @@ export default {
       }
       // Đóng mềm: đơn im lặng quá AUTO_CLOSE_DAYS. Event chèn trước UPDATE vì UPDATE đổi stage.
       const cutoff = now() - AUTO_CLOSE_DAYS * 86400, tn = now();
-      const silent = "stage IN ('applied','interview') AND updated_at < ?";
+      // Không đóng đơn người dùng còn hẹn follow-up trong tương lai (S1 review 05/11).
+      const silent = "stage IN ('applied','interview') AND updated_at < ? AND (next_follow_up_at IS NULL OR next_follow_up_at < ?)";
       await env.DB.batch([
-        env.DB.prepare(`INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT lower(hex(randomblob(16))), id, 'stage_changed', json_object('from', stage, 'to', 'archived', 'auto', 1), ? FROM applications WHERE ${silent}`).bind(tn, cutoff),
-        env.DB.prepare(`UPDATE applications SET stage = 'archived', note = COALESCE(note, '') || ' [tự đóng: im lặng 14 ngày]', updated_at = ? WHERE ${silent}`).bind(tn, cutoff),
+        env.DB.prepare(`INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT lower(hex(randomblob(16))), id, 'stage_changed', json_object('from', stage, 'to', 'archived', 'auto', 1), ? FROM applications WHERE ${silent}`).bind(tn, cutoff, tn),
+        env.DB.prepare(`UPDATE applications SET stage = 'archived', note = COALESCE(note, '') || ' [tự đóng: im lặng 14 ngày]', updated_at = ? WHERE ${silent}`).bind(tn, cutoff, tn),
       ]);
-      try { await enrichJd(env, 8); } catch (e) { console.log("enrichJd error", e.message); }
+      // Purge (nghĩa vụ xoá dữ liệu) trước enrichJd (tốn subrequest, có thể chạm trần) — S2 review 05/11.
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
+      try { await enrichJd(env, 8); } catch (e) { console.log("enrichJd error", e.message); }
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at IS NULL").all();
       for (const u of users) await env.Q_NOTIFY.send({ kind: "digest", userId: u.id });

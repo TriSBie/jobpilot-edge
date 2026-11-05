@@ -18,3 +18,7 @@ assert.equal(postingFlags({ ...base, posted_at: N - 40 * D, first_seen_at: N - 2
 const all = types({ last_seen_at: N - 3 * D, repost_count: 1, salary_text: null, skillCount: 13, dup: true });
 assert.deepEqual(all, ['stale', 'duplicate', 'reposted', 'salary_hidden', 'bloated']);
 console.log('posting-risk selfcheck OK');
+// B1 (review 05/11): repost chỉ khi ngày đăng mới hơn >= 2 ngày; ITviec (nhãn tương đối) không được đẩy posted_at.
+assert.ok(/repost_count \+ \(CASE WHEN \? >= COALESCE\(posted_at,0\) \+ 172800 THEN 1 ELSE 0 END\)/.test(src), 'repost threshold 2 days');
+assert.ok(/const trust = sourceId === "src-itviec" \? 0 : posted \|\| 0;/.test(src), 'itviec posted_at not trusted');
+console.log('posting-risk B1 OK');
