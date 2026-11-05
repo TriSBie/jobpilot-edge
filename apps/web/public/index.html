@@ -2185,7 +2185,7 @@ function withViewTransition(update, opts){
   const clear = () => setBrand("");
   if (!reduced && document.startViewTransition) {
     const tr = document.startViewTransition(() => { update(); });
-    if (tr && tr.finished) tr.finished.then(clear).catch(clear);
+    if (tr && tr.finished) { tr.finished.then(clear).catch(clear); if (tr.ready) tr.ready.catch(() => {}); } // mobile: VT bị huỷ khi layout đổi giữa chừng, không phải lỗi
     else setTimeout(clear, 1000);
   } else { update(); clear(); }
 }
