@@ -1,5 +1,5 @@
 // Tự kiểm wrangler.toml.example khớp worker.js: mọi env.X có binding/var/secret khai báo,
-// mỗi queue consumer có DLQ riêng `<queue>-dlq`, max_retries = 3, main trỏ đúng file.
+// mỗi queue consumer có DLQ riêng `<queue>-dlq`, max_retries đúng theo queue, main trỏ đúng file.
 // Chạy: node apps/api/test/wrangler-config.selfcheck.cjs apps/api/src/worker.js [apps/api/wrangler.toml.example]
 const fs = require('fs'), assert = require('assert');
 const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8');
@@ -24,13 +24,14 @@ assert(!/\[\[workflows\]\]/.test(live), 'không có Workflow class trong worker.
 const consumers = live.split(/^\[\[queues\.consumers\]\]\s*$/m).slice(1).map((b) => b.split(/^\[/m)[0]);
 const producers = [...live.matchAll(/^\[\[queues\.producers\]\]\n[\s\S]*?^queue\s*=\s*"([^"]+)"/gm)].map((m) => m[1]);
 assert.strictEqual(consumers.length, 3, 'cần đúng 3 consumer (ingest, score, notify)');
+const RETRIES = { 'jobpilot-ingest': 3, 'jobpilot-score': 3, 'jobpilot-notify': 5 }; // notify 5: anh chốt 06/11/2026
 const seen = new Set();
 for (const b of consumers) {
   const q = (b.match(/^queue\s*=\s*"([^"]+)"/m) || [])[1];
   const dlq = (b.match(/^dead_letter_queue\s*=\s*"([^"]+)"/m) || [])[1];
   assert(q && producers.includes(q), 'consumer không khớp producer: ' + q);
   assert.strictEqual(dlq, q + '-dlq', q + ' thiếu dead_letter_queue riêng');
-  assert.match(b, /^max_retries\s*=\s*3\s*$/m, q + ' phải max_retries = 3');
+  assert.strictEqual(Number((b.match(/^max_retries\s*=\s*(\d+)/m) || [])[1]), RETRIES[q], q + ' phải max_retries = ' + RETRIES[q]);
   seen.add(q);
 }
 assert.strictEqual(seen.size, 3, 'consumer bị trùng queue');

@@ -65,7 +65,8 @@ dead_letter_queue = "jobpilot-score-dlq"
 [[queues.consumers]]
 queue = "jobpilot-notify"
 max_batch_size = 10
-max_retries = 3
+# Telegram/digest lỗi tạm hay gặp hơn → thử nhiều hơn (anh chốt 06/11/2026)
+max_retries = 5
 dead_letter_queue = "jobpilot-notify-dlq"
 
 # --- Durable Objects: hub realtime theo user ---
