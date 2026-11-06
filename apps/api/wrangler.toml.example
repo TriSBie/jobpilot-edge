@@ -1,9 +1,9 @@
-# JobPilot Edge — API Worker (Hono) — wrangler config mẫu
+# JobPilot Edge — API Worker (vanilla JS, apps/api/src/worker.js) — wrangler config mẫu
 # Copy thành wrangler.toml sau khi tạo tài nguyên ở Phase 0 và điền các ID thật.
 # TUYỆT ĐỐI không commit wrangler.toml đã điền ID/secret lên repo public.
 
 name = "jobpilot-api"
-main = "src/index.ts"
+main = "src/worker.js"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
@@ -17,7 +17,7 @@ DIGEST_HOUR_LOCAL = "7"
 TELEGRAM_BOT_USERNAME = "your_bot"
 # "1" mới bật cron tự đóng đơn im lặng 14 ngày (ghi lên dữ liệu người dùng); mặc định tắt
 AUTO_CLOSE_ENABLED = "0"
-# Secret (wrangler secret put), KHÔNG ghi ở đây: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
+# Secret: xem danh sách cuối file.
 
 # --- D1 (database chính) ---
 [[d1_databases]]
@@ -36,6 +36,8 @@ binding = "FILES"
 bucket_name = "jobpilot-files"
 
 # --- Queues: ingest / score / notify ---
+# DLQ: tạo trước khi deploy (`wrangler queues create jobpilot-<tên>-dlq`). Message lỗi quá
+# max_retries lần được chuyển sang DLQ, không tự xử lý lại — phải xem rồi replay tay.
 [[queues.producers]]
 binding = "Q_INGEST"
 queue = "jobpilot-ingest"
@@ -52,22 +54,19 @@ queue = "jobpilot-notify"
 queue = "jobpilot-ingest"
 max_batch_size = 10
 max_retries = 3
+dead_letter_queue = "jobpilot-ingest-dlq"
 
 [[queues.consumers]]
 queue = "jobpilot-score"
 max_batch_size = 10
 max_retries = 3
+dead_letter_queue = "jobpilot-score-dlq"
 
 [[queues.consumers]]
 queue = "jobpilot-notify"
 max_batch_size = 10
-max_retries = 5
-
-# --- Workflows: pipeline digest + ingest dài ---
-[[workflows]]
-binding = "WF_PIPELINE"
-name = "jobpilot-pipeline"
-class_name = "JobPipelineWorkflow"
+max_retries = 3
+dead_letter_queue = "jobpilot-notify-dlq"
 
 # --- Durable Objects: hub realtime theo user ---
 [durable_objects]
@@ -101,6 +100,9 @@ dataset = "jobpilot_events"
 # binding = "BROWSER"
 
 # Secrets (đặt bằng `wrangler secret put`, không ghi ở đây):
-# - SESSION_SECRET
-# - TURNSTILE_SECRET_KEY
-# - SOURCE_API_KEYS (JSON, nếu nguồn job cần)
+# - TELEGRAM_BOT_TOKEN
+# - TELEGRAM_WEBHOOK_SECRET
+# - TURNSTILE_SECRET (thiếu thì bỏ qua kiểm Turnstile, chỉ cho lab/dev)
+# Biến tuỳ chọn chỉ dùng ở lab (không đặt ở production):
+# - TELEGRAM_API_BASE (mặc định https://api.telegram.org)
+# - TELEGRAM_QUIET_OVERRIDE ("1" = bỏ giờ yên lặng)

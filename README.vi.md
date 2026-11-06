@@ -153,8 +153,8 @@ Cần: tài khoản Cloudflare, Node 18+, `wrangler` 4 (`npx wrangler@4`).
 ```bash
 # 1. Binding
 cp apps/api/wrangler.toml.example apps/api/wrangler.toml
-#    tạo một KV namespace, một D1 database, một R2 bucket, ba Queue
-#    (ingest, score, notify) và một Vectorize index (768 chiều, cosine),
+#    tạo một KV namespace, một D1 database, một R2 bucket, sáu Queue
+#    (ingest, score, notify và ba DLQ tương ứng) và một Vectorize index (768 chiều, cosine),
 #    rồi dán ID vào wrangler.toml
 
 # 2. Schema (chạy đủ ba file, đúng thứ tự)
@@ -179,6 +179,7 @@ Thứ tự deploy khi có thay đổi schema: migration, rồi Worker, rồi Pag
 ```bash
 node apps/api/test/score.selfcheck.cjs apps/api/src/worker.js
 node apps/api/test/remote-sources.selfcheck.cjs apps/api/src/worker.js
+node apps/api/test/wrangler-config.selfcheck.cjs apps/api/src/worker.js apps/api/wrangler.toml.example
 node apps/web/test/i18n.selfcheck.cjs apps/web/public/index.html
 ```
 
