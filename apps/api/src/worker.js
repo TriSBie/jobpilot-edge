@@ -513,35 +513,70 @@ const REMOTE_FETCHERS = { wwr: fetchWWR, remotive: fetchRemotive, remoteok: fetc
 const REMOTE_NAMES = { wwr: "We Work Remotely", remotive: "Remotive", remoteok: "Remote OK", hn: "HN Who's Hiring" };
 
 // ---------------- jobs: insert + score ----------------
-async function upsertJob(env, sourceId, job) {
-  const hash = await sha256hex(`${job.title}|${job.company}|${job.url}`.toLowerCase());
-  const posted = job.postedAt ? Math.floor(new Date(job.postedAt).getTime() / 1000) : null;
-  const t = now();
-  const existing = await env.DB.prepare("SELECT id FROM jobs WHERE content_hash = ?").bind(hash).first();
-  if (existing) {
-    // board "làm mới" ngày đăng = đăng lại. ITviec chỉ có nhãn tương đối ("1 month ago") trôi theo ngày quét → không tin posted_at mới của nó.
-    // ponytail: ngưỡng 2 ngày lọc trôi 1 ngày/lần quét của nhãn tương đối; nguồn có ngày tuyệt đối mà "làm mới" trong 1 ngày sẽ bị bỏ qua.
-    const trust = sourceId === "src-itviec" ? 0 : posted || 0;
-    await env.DB.prepare(
-      `UPDATE jobs SET last_seen_at = ?, seen_count = seen_count + 1,
-         repost_count = repost_count + (CASE WHEN ? >= COALESCE(posted_at,0) + 172800 THEN 1 ELSE 0 END),
-         posted_at = MAX(COALESCE(posted_at,0), ?) WHERE content_hash = ?`
-    ).bind(t, trust, trust, hash).run();
-  } else await env.DB.prepare(
-    `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(uid(), sourceId, job.url, job.title, job.company || "", job.location || "",
-    job.salaryText || null, job.jdText || "", JSON.stringify(job.skills || []),
-    hash, posted, t, t, t).run();
-  const row = await env.DB.prepare("SELECT * FROM jobs WHERE content_hash = ?").bind(hash).first();
-  // Tin cũ chưa có JD mà feed giờ có → bù JD + skills rồi chấm lại.
-  if (row && !jdOf(row) && row.jd_text !== "-" && job.jdText) {
-    const skills = [...new Set([...JSON.parse(row.skills || "[]"), ...(job.skills || [])])];
-    await env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ? WHERE id = ?").bind(job.jdText, JSON.stringify(skills), row.id).run();
-    row.jd_text = job.jdText; row.skills = JSON.stringify(skills);
-    await env.Q_SCORE.send({ kind: "score", jobId: row.id });
+// D1 Free: 50 truy vấn/lần chạy Worker; 1 env.DB.batch() = 1 truy vấn (developers.cloudflare.com/d1/platform/limits).
+// Danh sách vào IN qua json_each(?) = 1 tham số bind, không chạm trần 100 tham số/câu.
+const IN_JSON = "(SELECT value FROM json_each(?))";
+// ponytail: 1000 câu/batch là trần tự đặt (docs có ví dụ 2000 câu); vượt thì thêm 1 truy vấn mỗi 1000 câu.
+const BATCH_MAX = 1000;
+async function dbBatch(env, stmts) {
+  for (let i = 0; i < stmts.length; i += BATCH_MAX) await env.DB.batch(stmts.slice(i, i + BATCH_MAX));
+}
+async function sendScores(env, jobIds) {
+  const msgs = [...jobIds].map((jobId) => ({ body: { kind: "score", jobId } }));
+  for (let i = 0; i < msgs.length; i += 100) await env.Q_SCORE.sendBatch(msgs.slice(i, i + 100)); // trần 100 tin/sendBatch
+}
+// Upsert nhiều tin: 1 truy vấn đọc (batch 2 SELECT), trả câu ghi để người gọi gom vào 1 batch.
+// Tin trùng trong cùng lô xử lý tuần tự như vòng lặp cũ: lần sau thành UPDATE, không tính created.
+// ponytail: id INSERT sinh trước; nếu luồng khác chèn cùng content_hash giữa đọc và ghi, id trả về không tồn tại (consumer score bỏ qua).
+async function planUpsertJobs(env, items) {
+  if (!items.length) return { stmts: [], out: [], toScore: new Set() };
+  for (const it of items) it.hash = await sha256hex(`${it.job.title}|${it.job.company}|${it.job.url}`.toLowerCase());
+  const [{ results: known }, { results: urls }] = await env.DB.batch([
+    env.DB.prepare(`SELECT * FROM jobs WHERE content_hash IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.hash))),
+    env.DB.prepare(`SELECT DISTINCT source_url FROM jobs WHERE source_url IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.job.url))),
+  ]);
+  const rows = new Map(known.map((r) => [r.content_hash, { ...r }])), seenUrl = new Set(urls.map((r) => r.source_url));
+  const t = now(), stmts = [], out = [], toScore = new Set();
+  for (const { sourceId, job, hash } of items) {
+    const posted = job.postedAt ? Math.floor(new Date(job.postedAt).getTime() / 1000) : null;
+    const created = !seenUrl.has(job.url);
+    seenUrl.add(job.url);
+    let row = rows.get(hash);
+    if (row) {
+      // board "làm mới" ngày đăng = đăng lại. ITviec chỉ có nhãn tương đối ("1 month ago") trôi theo ngày quét → không tin posted_at mới của nó.
+      // ponytail: ngưỡng 2 ngày lọc trôi 1 ngày/lần quét của nhãn tương đối; nguồn có ngày tuyệt đối mà "làm mới" trong 1 ngày sẽ bị bỏ qua.
+      const trust = sourceId === "src-itviec" ? 0 : posted || 0;
+      stmts.push(env.DB.prepare(
+        `UPDATE jobs SET last_seen_at = ?, seen_count = seen_count + 1,
+           repost_count = repost_count + (CASE WHEN ? >= COALESCE(posted_at,0) + 172800 THEN 1 ELSE 0 END),
+           posted_at = MAX(COALESCE(posted_at,0), ?) WHERE content_hash = ?`
+      ).bind(t, trust, trust, hash));
+    } else {
+      row = { id: uid(), source_id: sourceId, source_url: job.url, title: job.title, company: job.company || "", location: job.location || "",
+        salary_text: job.salaryText || null, jd_text: job.jdText || "", skills: JSON.stringify(job.skills || []), content_hash: hash, posted_at: posted, first_seen_at: t };
+      rows.set(hash, row);
+      stmts.push(env.DB.prepare(
+        `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(row.id, sourceId, job.url, job.title, row.company, row.location, row.salary_text, row.jd_text, row.skills, hash, posted, t, t, t));
+    }
+    // Tin cũ chưa có JD mà feed giờ có → bù JD + skills rồi chấm lại.
+    if (!jdOf(row) && row.jd_text !== "-" && job.jdText) {
+      row.skills = JSON.stringify([...new Set([...JSON.parse(row.skills || "[]"), ...(job.skills || [])])]);
+      row.jd_text = job.jdText;
+      stmts.push(env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ? WHERE id = ?").bind(row.jd_text, row.skills, row.id));
+      toScore.add(row.id);
+    }
+    if (created) toScore.add(row.id);
+    out.push({ ...row, created });
   }
-  return row;
+  return { stmts, out, toScore };
+}
+// Một tin (route submit): 2 truy vấn. Người gọi tự gửi score như trước.
+async function upsertJob(env, sourceId, job) {
+  const plan = await planUpsertJobs(env, [{ sourceId, job }]);
+  await dbBatch(env, plan.stmts);
+  return plan.out[0];
 }
 
 // Bóc JD từ trang chi tiết ITviec/TopDev. Fallback: toàn trang. ponytail: selector đoán theo markup hiện tại; lệch thì rơi về fallback.
@@ -764,65 +799,70 @@ function formatDigestTg(d) {
 }
 const maskEmail = (e) => e.replace(/^(.).*(@.*)$/, "$1***$2");
 
-async function scoreJobForAllProfiles(env, job) {
-  const { results: profiles } = await env.DB.prepare("SELECT * FROM profiles WHERE is_active = 1").all();
-  for (const p of profiles) {
-    const { results: skills } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ?").bind(p.id).all();
-    if (!skills.length) continue;
-    const profile = { ...p, locations: JSON.parse(p.locations || "[]") };
-    const s = scoreJob(profile, skills, job);
-    await env.DB.prepare(
-      `INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
-       VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
-       ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`
-    ).bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()).run();
-    if (s.tier === "strong") {
-      await env.DB.prepare(
-        "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)"
-      ).bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id).run();
-      try {
-        const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
-        await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore }) });
-      } catch (_) { /* realtime là best-effort */ }
-      try { // báo ngay qua Telegram: tối đa 1 tin/giờ/người, không gửi giờ yên lặng
-        const u = await env.DB.prepare("SELECT telegram_chat_id FROM users WHERE id = ?").bind(p.user_id).first();
-        if (u && u.telegram_chat_id && !tgQuiet(env) && !(await env.KV.get("tgburst:" + p.user_id))) {
-          await env.KV.put("tgburst:" + p.user_id, "1", { expirationTtl: 3600 });
-          await tgSend(env, u.telegram_chat_id, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`);
-        }
-      } catch (e) { console.log("telegram burst lỗi", e.message); }
-    }
+const MATCH_UPSERT = `INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
+  VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
+  ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`;
+// Khử trùng theo (người dùng, tin): các câu trong batch chạy tuần tự nên NOT EXISTS thấy cả dòng vừa chèn cùng lô.
+const NOTIFY_STRONG = "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)";
+// Một lô queue score = 1 lần chạy Worker: 1 batch đọc (tin, hồ sơ, skills [+ 500 tin mới nhất nếu có rescore]),
+// chấm trong JS, ghi bằng batch, ≤ 1 SELECT users cho Telegram → 3 truy vấn, không tăng theo số hồ sơ hay số tin.
+async function scoreBatch(env, jobIds, rescoreIds) {
+  if (!jobIds.length && !rescoreIds.length) return;
+  const reads = [
+    env.DB.prepare(`SELECT * FROM jobs WHERE id IN ${IN_JSON}`).bind(JSON.stringify(jobIds)),
+    env.DB.prepare("SELECT * FROM profiles WHERE is_active = 1"),
+    env.DB.prepare("SELECT s.profile_id, s.skill, s.weight FROM profile_skills s JOIN profiles p ON p.id = s.profile_id WHERE p.is_active = 1"),
+  ];
+  if (rescoreIds.length) reads.push(env.DB.prepare("SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT 500"));
+  const [{ results: jobRows }, { results: profRows }, { results: skillRows }, recent] = await env.DB.batch(reads);
+  const skillsOf = new Map();
+  for (const r of skillRows) {
+    if (!skillsOf.has(r.profile_id)) skillsOf.set(r.profile_id, []);
+    skillsOf.get(r.profile_id).push({ skill: r.skill, weight: r.weight });
   }
-}
+  // Hồ sơ không có skill thì bỏ qua, như cũ.
+  // Một dòng JSON hỏng chỉ bỏ đúng tin đó, không kéo cả lô vào DLQ (lỗi ở đây = retryAll cả lô).
+  const jsonArr = (v) => { try { return JSON.parse(v || "[]"); } catch { return null; } };
+  const profiles = new Map(profRows.filter((p) => skillsOf.has(p.id)).map((p) => [p.id, { ...p, locations: jsonArr(p.locations) || [] }]));
+  const parse = (j) => { const skills = jsonArr(j.skills); if (!skills) console.log("score: bỏ qua tin skills hỏng", j.id); return skills && { ...j, skills }; };
+  const byId = new Map(jobRows.map((j) => [j.id, parse(j)]).filter(([, j]) => j));
+  const pairs = [];
+  for (const id of jobIds) if (byId.has(id)) for (const p of profiles.values()) pairs.push({ job: byId.get(id), p, alert: true });
+  const recentJobs = recent ? recent.results.map(parse).filter(Boolean) : [];
+  for (const id of rescoreIds) if (profiles.has(id)) for (const job of recentJobs) pairs.push({ job, p: profiles.get(id), alert: false });
 
-async function rescoreProfile(env, profileId) {
-  const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND is_active = 1").bind(profileId).first();
-  if (!p) return;
-  const { results: skills } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ?").bind(p.id).all();
-  if (!skills.length) return;
-  const { results: jobs } = await env.DB.prepare("SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT 500").all();
-  const profile = { ...p, locations: JSON.parse(p.locations || "[]") };
-  for (let i = 0; i < jobs.length; i += 50) {
-    const stmts = [], broadcasts = [];
-    for (const job of jobs.slice(i, i + 50)) {
-      job.skills = JSON.parse(job.skills || "[]");
-      const s = scoreJob(profile, skills, job);
-      stmts.push(env.DB.prepare(`INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
-        VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?) ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`)
-        .bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
-      if (s.tier === "strong") {
-        stmts.push(env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)")
-          .bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id));
-        broadcasts.push({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore });
-      }
-    }
-    await env.DB.batch(stmts);
-    for (const event of broadcasts) {
-      try {
-        const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
-        await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify(event) });
-      } catch (_) { /* realtime là best-effort */ }
-    }
+  const stmts = [], strong = [];
+  for (const x of pairs) {
+    const { job, p } = x, s = (x.s = scoreJob(p, skillsOf.get(p.id), job));
+    stmts.push(env.DB.prepare(MATCH_UPSERT).bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
+    if (s.tier !== "strong") continue;
+    stmts.push(env.DB.prepare(NOTIFY_STRONG).bind(uid(), p.user_id, `Strong match ${s.finalScore}%: ${job.title}`, `${job.company} — khớp ${s.matched.join(", ")}`, job.id, now(), p.user_id, job.id));
+    strong.push(x);
+  }
+  await dbBatch(env, stmts);
+  for (const { job, p, s } of strong) {
+    try {
+      const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
+      await stub.fetch("https://do/broadcast", { method: "POST", body: JSON.stringify({ type: "job.strong", jobId: job.id, title: job.title, score: s.finalScore }) });
+    } catch (_) { /* realtime là best-effort */ }
+  }
+  // Báo ngay qua Telegram (chỉ tin mới chấm, rescore không báo — như cũ): tối đa 1 tin/giờ/người, không gửi giờ yên lặng.
+  const alerts = strong.filter((x) => x.alert);
+  if (!alerts.length || tgQuiet(env)) return;
+  let chat;
+  try {
+    const { results } = await env.DB.prepare(`SELECT id, telegram_chat_id FROM users WHERE id IN ${IN_JSON}`).bind(JSON.stringify([...new Set(alerts.map((x) => x.p.user_id))])).all();
+    chat = new Map(results.map((u) => [u.id, u.telegram_chat_id]));
+  } catch (e) { console.log("telegram burst lỗi", e.message); return; }
+  for (const { job, p, s } of alerts) {
+    const chatId = chat.get(p.user_id);
+    chat.delete(p.user_id); // tin sau của cùng người trong lô đã vướng tgburst, như vòng lặp cũ
+    if (!chatId) continue;
+    try {
+      if (await env.KV.get("tgburst:" + p.user_id)) continue;
+      await env.KV.put("tgburst:" + p.user_id, "1", { expirationTtl: 3600 });
+      await tgSend(env, chatId, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`);
+    } catch (e) { console.log("telegram burst lỗi", e.message); }
   }
 }
 
@@ -875,6 +915,7 @@ function titleGate(title) {
   return true;
 }
 
+// 3 truy vấn D1/tin nhắn bất kể số tin nguồn trả về: SELECT nguồn, batch đọc trùng, batch ghi (gồm UPDATE sources).
 async function runIngestSource(env, sourceType, keyword) {
   const source = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(sourceType).first();
   if (!source) return { error: "source_missing" };
@@ -888,15 +929,12 @@ async function runIngestSource(env, sourceType, keyword) {
   }
   const rawCount = jobs.length;
   jobs = jobs.filter((j) => titleGate(j.title));
-  let created = 0;
-  for (const j of jobs) {
-    const before = await env.DB.prepare("SELECT COUNT(*) AS c FROM jobs WHERE source_url = ?").bind(j.url).first();
-    const row = await upsertJob(env, source.id, j);
-    if (row && before.c === 0) { created++; await env.Q_SCORE.send({ kind: "score", jobId: row.id }); }
-  }
-  await env.DB.prepare("UPDATE sources SET last_run_at = ?, last_status = ?, last_error = ? WHERE id = ?")
-    .bind(now(), status, error, source.id).run();
-  return { fetched: jobs.length, raw: rawCount, created, status, error };
+  const plan = await planUpsertJobs(env, jobs.map((job) => ({ sourceId: source.id, job })));
+  plan.stmts.push(env.DB.prepare("UPDATE sources SET last_run_at = ?, last_status = ?, last_error = ? WHERE id = ?")
+    .bind(now(), status, error, source.id));
+  await dbBatch(env, plan.stmts);
+  await sendScores(env, plan.toScore);
+  return { fetched: jobs.length, raw: rawCount, created: plan.out.filter((r) => r.created).length, status, error };
 }
 
 // ---------------- digest ----------------
@@ -1654,20 +1692,24 @@ export default {
   },
 
   async queue(batch, env, ctx) {
+    // Score: chấm cả lô một lần (D1 ≤ 50 truy vấn/lần chạy ở gói Free). Lỗi → thử lại cả lô; ghi là upsert nên lặp lại an toàn.
+    if (batch.queue === "jobpilot-score") {
+      const ids = (kind, key) => [...new Set(batch.messages.filter((m) => (m.body || {}).kind === kind).map((m) => m.body[key]))];
+      try {
+        await scoreBatch(env, ids("score", "jobId"), ids("rescore_profile", "profileId"));
+        batch.ackAll();
+      } catch (e) {
+        console.log("queue handler error:", batch.queue, e.message);
+        batch.retryAll();
+      }
+      return;
+    }
     for (const msg of batch.messages) {
       const body = msg.body || {};
       try {
         if (batch.queue === "jobpilot-ingest" && body.kind === "ingest") {
           const r = await runIngestSource(env, body.sourceType, body.keyword);
           console.log(`ingest ${body.sourceType}/${body.keyword}:`, JSON.stringify(r));
-        } else if (batch.queue === "jobpilot-score" && body.kind === "score") {
-          const job = await env.DB.prepare("SELECT * FROM jobs WHERE id = ?").bind(body.jobId).first();
-          if (job) {
-            job.skills = JSON.parse(job.skills || "[]");
-            await scoreJobForAllProfiles(env, job);
-          }
-        } else if (batch.queue === "jobpilot-score" && body.kind === "rescore_profile") {
-          await rescoreProfile(env, body.profileId);
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
           const u = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(body.userId).first();
           if (u) {

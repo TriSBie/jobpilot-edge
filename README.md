@@ -153,8 +153,8 @@ Requirements: a Cloudflare account, Node 18+, `wrangler` 4 (`npx wrangler@4`).
 ```bash
 # 1. Bindings
 cp apps/api/wrangler.toml.example apps/api/wrangler.toml
-#    create one KV namespace, one D1 database, one R2 bucket, three Queues
-#    (ingest, score, notify) and one Vectorize index (768 dimensions, cosine),
+#    create one KV namespace, one D1 database, one R2 bucket, six Queues
+#    (ingest, score, notify, and their three DLQs) and one Vectorize index (768 dimensions, cosine),
 #    then paste their IDs into wrangler.toml
 
 # 2. Schema (run all three, in order)
@@ -179,6 +179,8 @@ Deployment order for changes that touch the schema: migration, then Worker, then
 ```bash
 node apps/api/test/score.selfcheck.cjs apps/api/src/worker.js
 node apps/api/test/remote-sources.selfcheck.cjs apps/api/src/worker.js
+node apps/api/test/wrangler-config.selfcheck.cjs apps/api/src/worker.js apps/api/wrangler.toml.example
+node apps/api/test/d1-budget.selfcheck.cjs apps/api/src/worker.js apps/api/wrangler.toml.example
 node apps/web/test/i18n.selfcheck.cjs apps/web/public/index.html
 ```
 
