@@ -180,6 +180,7 @@ Thứ tự deploy khi có thay đổi schema: migration, rồi Worker, rồi Pag
 node apps/api/test/score.selfcheck.cjs apps/api/src/worker.js
 node apps/api/test/remote-sources.selfcheck.cjs apps/api/src/worker.js
 node apps/api/test/wrangler-config.selfcheck.cjs apps/api/src/worker.js apps/api/wrangler.toml.example
+node apps/api/test/d1-budget.selfcheck.cjs apps/api/src/worker.js apps/api/wrangler.toml.example
 node apps/web/test/i18n.selfcheck.cjs apps/web/public/index.html
 ```
 
