@@ -97,6 +97,10 @@ const run = (worker, queue, bodies, env) => worker.queue({ queue, messages: msgs
     const pids = S.q("SELECT id FROM profiles WHERE id GLOB 'p[0-9]*' ORDER BY id").map((r) => r.id).slice(0, batchSize('jobpilot-score'));
     await run(worker, 'jobpilot-score', pids.map((profileId) => ({ kind: 'rescore_profile', profileId })), S.env);
     result.rescore = { queries: S.stats.queries, matches: S.q('SELECT COUNT(*) c FROM job_matches')[0].c };
+    // R1: một tin skills hỏng chỉ bỏ đúng tin đó, lô không bị retryAll (run() ném lỗi nếu retryAll).
+    S.db.prepare("UPDATE jobs SET skills = '{hỏng' WHERE id = 'j0'").run(); S.db.prepare('DELETE FROM job_matches').run();
+    await run(worker, 'jobpilot-score', ['j0', 'j1'].map((jobId) => ({ kind: 'score', jobId })), S.env);
+    assert.deepStrictEqual(S.q('SELECT DISTINCT job_id FROM job_matches').map((r) => r.job_id), ['j1'], 'tin skills hỏng phải bị bỏ, tin còn lại vẫn chấm');
   }
 
   // --- ingest: lô đầy, mỗi tin nhắn 1 lần quét nguồn trả 50 tin, chồng lấn 25 tin với lần trước ---

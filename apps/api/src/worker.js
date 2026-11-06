@@ -821,12 +821,14 @@ async function scoreBatch(env, jobIds, rescoreIds) {
     skillsOf.get(r.profile_id).push({ skill: r.skill, weight: r.weight });
   }
   // Hồ sơ không có skill thì bỏ qua, như cũ.
-  const profiles = new Map(profRows.filter((p) => skillsOf.has(p.id)).map((p) => [p.id, { ...p, locations: JSON.parse(p.locations || "[]") }]));
-  const parse = (j) => ({ ...j, skills: JSON.parse(j.skills || "[]") });
-  const byId = new Map(jobRows.map((j) => [j.id, parse(j)]));
+  // Một dòng JSON hỏng chỉ bỏ đúng tin đó, không kéo cả lô vào DLQ (lỗi ở đây = retryAll cả lô).
+  const jsonArr = (v) => { try { return JSON.parse(v || "[]"); } catch { return null; } };
+  const profiles = new Map(profRows.filter((p) => skillsOf.has(p.id)).map((p) => [p.id, { ...p, locations: jsonArr(p.locations) || [] }]));
+  const parse = (j) => { const skills = jsonArr(j.skills); if (!skills) console.log("score: bỏ qua tin skills hỏng", j.id); return skills && { ...j, skills }; };
+  const byId = new Map(jobRows.map((j) => [j.id, parse(j)]).filter(([, j]) => j));
   const pairs = [];
   for (const id of jobIds) if (byId.has(id)) for (const p of profiles.values()) pairs.push({ job: byId.get(id), p, alert: true });
-  const recentJobs = recent ? recent.results.map(parse) : [];
+  const recentJobs = recent ? recent.results.map(parse).filter(Boolean) : [];
   for (const id of rescoreIds) if (profiles.has(id)) for (const job of recentJobs) pairs.push({ job, p: profiles.get(id), alert: false });
 
   const stmts = [], strong = [];
