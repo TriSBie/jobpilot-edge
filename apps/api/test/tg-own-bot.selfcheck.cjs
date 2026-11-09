@@ -12,7 +12,7 @@ const migDir = path.join(path.dirname(workerPath), '..', '..', '..', 'db', 'migr
 const code = src.slice(src.indexOf('const TG_TOKEN_RE'), src.indexOf('// Gửi bằng bot riêng'));
 const { TG_TOKEN_RE, tgEncrypt, tgDecrypt, ownBotEnabled } = new Function(code + '\nreturn { TG_TOKEN_RE, tgEncrypt, tgDecrypt, ownBotEnabled };')();
 const KEY = Buffer.alloc(32, 7).toString('base64');
-const TOK_A = '123456789:' + 'A'.repeat(35), TOK_B = '987654321:' + 'b_-'.repeat(12), TOK_C = '555555555:' + 'C'.repeat(35);
+const TOK_A = '123456789:' + 'A'.repeat(35), TOK_B = '987654321:' + 'b_-'.repeat(12), TOK_C = '555555555:' + 'C'.repeat(35), TOK_D = '444444444:' + 'D'.repeat(35);
 assert(TG_TOKEN_RE.test(TOK_A) && TG_TOKEN_RE.test(TOK_B));
 for (const bad of ['12345:' + 'A'.repeat(35), '123456789:short', '123456789:' + 'A'.repeat(34) + '!', 'abc:' + 'A'.repeat(40), ' ' + TOK_A]) assert(!TG_TOKEN_RE.test(bad), bad);
 assert(ownBotEnabled({ TG_TOKEN_KEY: KEY }) && !ownBotEnabled({}) && !ownBotEnabled({ TG_TOKEN_KEY: Buffer.alloc(16).toString('base64') }));
@@ -32,22 +32,22 @@ const env = {
   TELEGRAM_QUIET_OVERRIDE: '1', TG_TOKEN_KEY: KEY,
 };
 const T = Math.floor(Date.now() / 1000);
-for (const u of ['u1', 'u2']) {
+for (const u of ['u1', 'u2', 'u3', 'u4']) {
   db.prepare("INSERT INTO users (id, email, name, created_at, telegram_chat_id) VALUES (?, ?, 'U', ?, ?)").run(u, u + '@x.test', T, 'old-' + u);
   kv.set('session:s-' + u, u + '|' + Date.now());
 }
 
 // Telegram giả: token hợp lệ = A/B/C; REVOKED = token bị thu hồi (401); C không giữ được webhook.
-const calls = [], revoked = new Set(), hooks = {};
+const calls = [], revoked = new Set(), hooks = {}, secrets = {};
 globalThis.fetch = async (u, init = {}) => {
   const m = String(u).match(/^https:\/\/tg\.test\/bot([^/]+)\/(\w+)$/);
   assert(m, 'gọi ngoài Telegram giả: ' + u);
   const [, token, method] = m, body = init.body ? JSON.parse(init.body) : {};
   calls.push({ token, method, body });
-  const known = { [TOK_A]: 'alice_bot', [TOK_B]: 'bob_bot', [TOK_C]: 'carol_bot', SHARED: 'shared_bot' };
+  const known = { [TOK_A]: 'alice_bot', [TOK_B]: 'bob_bot', [TOK_C]: 'carol_bot', [TOK_D]: 'dave_bot', SHARED: 'shared_bot' };
   if (!known[token] || revoked.has(token)) return new Response(JSON.stringify({ ok: false, error_code: 401 }), { status: 401 });
   if (method === 'getMe') return Response.json({ ok: true, result: { username: known[token] } });
-  if (method === 'setWebhook') { if (token !== TOK_C) hooks[token] = body.url; return Response.json({ ok: true }); }
+  if (method === 'setWebhook') { if (token !== TOK_C) { hooks[token] = body.url; secrets[token] = body.secret_token; } return Response.json({ ok: true }); }
   if (method === 'getWebhookInfo') return Response.json({ ok: true, result: { url: hooks[token] || '', last_error_message: null } });
   if (method === 'deleteWebhook') { delete hooks[token]; return Response.json({ ok: true }); }
   return Response.json({ ok: true });
@@ -98,12 +98,19 @@ globalThis.fetch = async (u, init = {}) => {
   // bot của người khác → 409
   assert.deepStrictEqual(await call('PUT', '/api/me/telegram/bot', { user: 'u2', body: { token: TOK_A } }), { status: 409, body: { error: 'bot_in_use' } });
 
+  // B1: 2 PUT cùng token đồng thời → 1 thắng 200, 1 thua 409 (không 500); webhook giữ secret của người thắng
+  const race = await Promise.all(['u3', 'u4'].map((u) => call('PUT', '/api/me/telegram/bot', { user: u, body: { token: TOK_D } })));
+  assert.deepStrictEqual(race.map((r) => r.status).sort(), [200, 409], JSON.stringify(race));
+  assert.deepStrictEqual(race.find((r) => r.status === 409).body, { error: 'bot_in_use' });
+  const winner = db.prepare("SELECT * FROM user_bots WHERE bot_id = '444444444'").all();
+  assert(winner.length === 1 && winner[0].status === 'ok' && secrets[TOK_D] === winner[0].webhook_secret, 'webhook phải mang secret của chủ bot');
+
   // GET + /api/me không bao giờ lộ token
   const g = await call('GET', '/api/me/telegram/bot', { user: 'u1' });
   assert.deepStrictEqual({ ...g.body, checked_at: 0 }, { configured: true, bot_username: 'alice_bot', status: 'ok', last_error: null, checked_at: 0 });
   assert.deepStrictEqual((await call('GET', '/api/me/telegram/bot', { user: 'u2' })).body, { configured: false, bot_username: null, status: null, last_error: null, checked_at: null });
   const me = await call('GET', '/api/me', { user: 'u1' });
-  assert.deepStrictEqual(me.body.user.telegram_bot, { username: 'alice_bot', status: 'ok' });
+  assert.deepStrictEqual(me.body.user.telegram_bot, { username: 'alice_bot', status: 'ok', last_error: null });
   assert.strictEqual((await call('GET', '/api/me', { user: 'u2' })).body.user.telegram_bot, null);
   for (const x of [g, me]) assert(!JSON.stringify(x).includes(TOK_A.split(':')[1]) && !JSON.stringify(x).includes('token_enc'));
 
@@ -151,6 +158,18 @@ globalThis.fetch = async (u, init = {}) => {
   await digest('u1');
   assert.strictEqual(calls[0].token, 'SHARED', 'broken → dùng bot chung');
 
+  // B5: khoá đổi (giải mã lỗi) → broken/key_changed, không gửi gì (kể cả qua bot chung)
+  const goodEnc = row('u1').token_enc;
+  const otherEnc = await tgEncrypt({ TG_TOKEN_KEY: Buffer.alloc(32, 9).toString('base64') }, TOK_A, 'u1');
+  db.prepare("UPDATE user_bots SET status = 'ok', last_error = NULL, token_enc = ? WHERE user_id = 'u1'").run(otherEnc);
+  calls.length = 0;
+  await digest('u1');
+  assert(row('u1').status === 'broken' && row('u1').last_error === 'key_changed');
+  assert(!calls.some((c) => c.method === 'sendMessage'), 'không gửi lén qua bot chung');
+  const me2 = await call('GET', '/api/me', { user: 'u1' });
+  assert.deepStrictEqual(me2.body.user.telegram_bot, { username: 'alice_bot', status: 'broken', last_error: 'key_changed' });
+  db.prepare("UPDATE user_bots SET token_enc = ? WHERE user_id = 'u1'").run(goodEnc);
+
   // check: token sống lại → ok; webhook lệch → broken/webhook_mismatch
   revoked.delete(TOK_A);
   const c1 = await call('POST', '/api/me/telegram/bot/check', { user: 'u1' });
@@ -183,6 +202,13 @@ globalThis.fetch = async (u, init = {}) => {
   const expText = await exp.text();
   assert(exp.status === 200 && !expText.includes('token_enc') && !expText.includes(row('u2').token_enc));
   assert(/"DELETE FROM user_bots WHERE user_id = \?1"/.test(src.slice(src.indexOf('async function purgeUser'), src.indexOf('// ---------------- fetchers'))), 'purgeUser xoá user_bots');
+
+  // B2: purge gọi deleteWebhook bằng token bot riêng trước khi xoá dòng
+  db.prepare("UPDATE users SET deleted_at = ? WHERE id = 'u2'").run(T - 30 * 86400);
+  calls.length = 0;
+  await worker.scheduled({ cron: '*/30 * * * *' }, { ...env, Q_INGEST: { send: async () => {} }, FILES: { delete: async () => {} } }, {});
+  assert(!row('u2') && !db.prepare("SELECT 1 FROM users WHERE id = 'u2'").get(), 'purge xoá user + user_bots');
+  assert(calls.some((c) => c.method === 'deleteWebhook' && c.token === TOK_A), 'purge phải deleteWebhook');
 
   // không log token
   assert(!/console\.(log|error)\([^)]*token\b(?!_)/.test(src.replace(/thiếu TELEGRAM_BOT_TOKEN/g, '').replace(/token bot riêng/g, '')), 'có log token');

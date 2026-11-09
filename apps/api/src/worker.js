@@ -285,6 +285,11 @@ async function purgeUser(env, userId) {
   for (const f of files) await env.FILES.delete(f.r2_key);
   const { results: profiles } = await env.DB.prepare("SELECT id FROM profiles WHERE user_id = ?").bind(userId).all();
   for (const p of profiles) await env.KV.delete(`cvskills:${p.id}`);
+  // Bot riêng: gỡ webhook trước khi xoá dòng (best-effort), để Telegram thôi đẩy tin về.
+  const bot = await env.DB.prepare("SELECT token_enc FROM user_bots WHERE user_id = ?").bind(userId).first();
+  if (bot && ownBotEnabled(env)) {
+    try { await tgApi(env, await tgDecrypt(env, bot.token_enc, userId), "deleteWebhook", {}); } catch (_) { /* best-effort */ }
+  }
   const P = "SELECT id FROM profiles WHERE user_id = ?1", A = `SELECT id FROM applications WHERE profile_id IN (${P})`;
   await env.DB.batch([
     `DELETE FROM application_events WHERE application_id IN (${A})`,
@@ -868,11 +873,16 @@ async function tgDecrypt(env, enc, userId) {
   const raw = tgUnb64(enc);
   return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12), additionalData: new TextEncoder().encode(userId) }, await tgKey(env), raw.slice(12)));
 }
-// Gửi bằng bot riêng nếu có token_enc (dòng status 'ok'), không thì bot chung. 401 = khách đã thu hồi token → 'broken'.
+// Gửi bằng bot riêng nếu có token_enc (dòng status 'ok'), không thì bot chung. Giải mã lỗi → 'broken'/key_changed, không gửi. 401 = khách đã thu hồi token → 'broken'.
 async function tgSendFor(env, userId, chatId, html, tokenEnc) {
   let token = null;
-  if (tokenEnc && ownBotEnabled(env)) {
-    try { token = await tgDecrypt(env, tokenEnc, userId); } catch (_) { console.log("telegram: giải mã token bot riêng lỗi", userId); }
+  if (tokenEnc) {
+    // Khoá đổi/mất: chat này gắn với bot riêng, không gửi lén qua bot chung; đánh dấu broken để khách gắn lại.
+    try { token = await tgDecrypt(env, tokenEnc, userId); } catch (_) {
+      console.log("telegram: giải mã token bot riêng lỗi", userId);
+      await env.DB.prepare("UPDATE user_bots SET status = 'broken', last_error = 'key_changed', checked_at = ? WHERE user_id = ?").bind(now(), userId).run();
+      return 0;
+    }
   }
   const st = await tgSend(env, chatId, html, token || env.TELEGRAM_BOT_TOKEN);
   if (token && st === 401) {
@@ -1487,10 +1497,10 @@ export default {
       const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
-      const ownBot = await env.DB.prepare("SELECT username, status FROM user_bots WHERE user_id = ?").bind(user.id).first();
+      const ownBot = await env.DB.prepare("SELECT username, status, last_error FROM user_bots WHERE user_id = ?").bind(user.id).first();
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
-        telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status } : null }, profiles });
+        telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null }, profiles });
     }
     if (path === "/api/auth/change-password" && request.method === "POST") { // T-22
       const b = await readBody(request);
@@ -1887,7 +1897,17 @@ export default {
         ).bind(user.id, botId, me.result.username, await tgEncrypt(env, token, user.id), secret, now(), now())];
         // Đổi sang bot khác (hoặc lần đầu chuyển từ bot chung): chat cũ không nhận được từ bot mới → phải /start lại.
         if (!prev || prev.bot_id !== botId) stmts.push(env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE id = ?").bind(user.id));
-        await env.DB.batch(stmts);
+        try { await env.DB.batch(stmts); } catch (e) {
+          if (!/UNIQUE/i.test(String(e && e.message))) throw e;
+          // Hai người PUT cùng token đồng thời: người thua nhận 409, nhưng setWebhook của họ đã ghi đè secret của chủ bot
+          // → đặt lại webhook bằng secret đang lưu của chủ bot; không được thì đánh dấu broken để chủ bot bấm Kiểm tra lại.
+          const win = await env.DB.prepare("SELECT user_id, webhook_secret FROM user_bots WHERE bot_id = ?").bind(botId).first();
+          if (win) {
+            const re = await tgApi(env, token, "setWebhook", { url: hook, secret_token: win.webhook_secret, allowed_updates: ["message"] }).catch(() => ({ ok: false }));
+            if (!re.ok) await env.DB.prepare("UPDATE user_bots SET status = 'broken', last_error = 'webhook_mismatch' WHERE user_id = ?").bind(win.user_id).run();
+          }
+          return json({ error: "bot_in_use" }, 409);
+        }
         return json({ ok: true, bot_username: me.result.username });
       }
     }
