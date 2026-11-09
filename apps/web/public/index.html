@@ -747,6 +747,15 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .wbar button:disabled{cursor:wait;opacity:.6}
   .skill:last-child{border-bottom:0}
   #manualWeight button,.sug .wbar button{width:28px}
+.sk-list{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.sk{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 6px 0 12px;border-radius:var(--r-pill);border:var(--bw) solid var(--line);background:transparent;color:var(--ink);font:600 14px var(--f-body);cursor:pointer}
+.sk b{min-width:22px;height:22px;border-radius:var(--r-pill);display:grid;place-items:center;font:700 12px var(--f-body);background:var(--line)}
+.sk.core{background:var(--mint);color:var(--mint-ink);border-color:transparent}
+.sk.core b{background:var(--surface)}
+.sk.low{color:var(--mute)}
+.sk[aria-pressed="true"]{outline:2px solid var(--brand);outline-offset:1px}
+.sk.more{padding:0 12px;border-style:dashed;color:var(--mute)}
+#currentSkills .skill{margin-top:8px;padding:8px 12px;border:var(--bw) solid var(--line);border-radius:var(--r-md)}
   #manualWeight button i,.sug .wbar button i{width:20px;height:10px}
   #cvFile{display:block;width:100%;min-height:var(--tap);padding:4px 6px;border:var(--bw) solid var(--ink);border-radius:var(--r-md);background:var(--surface);color:var(--ink);font:600 14px var(--f-body)}
   #cvFile:focus{border-color:var(--ink);background:var(--surface);box-shadow:none}
@@ -3001,7 +3010,8 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Dựa trên %s tin tuyển có ghi lương trong hệ thống.": "Based on %s job posts with a listed salary.",
   "Chưa đủ dữ liệu lương trong hệ thống (mới %s tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.": "Not enough salary data yet (only %s posts list a salary). Below is a market reference; it recomputes as more posts with salaries arrive.",
   "Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.": "Source: ITviec/TopDev 2025–2026 reports, secondary summary. Check the original PDFs before relying on it officially.",
-  "Trọng số %s/5": "Weight %s/5", "Trọng số %s": "Weight for %s", "Xóa %s": "Remove %s", "Xóa": "Remove",
+  "Trọng số %s/5": "Weight %s/5", "%s, trọng số %s/5": "%s, weight %s/5", "+%s kỹ năng": "+%s skills",
+  "%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xóa.": "%s skills · %s core (weight 4–5). Tap a skill to edit or remove it.", "Trọng số %s": "Weight for %s", "Xóa %s": "Remove %s", "Xóa": "Remove",
   "Chưa có hồ sơ.": "No profile yet.",
   "Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.": "No skills yet. Upload a CV or add them manually below.",
   "Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.": "Skills saved, but rescoring failed. Try saving again later.",
@@ -3473,11 +3483,20 @@ function renderCurrentSkills(){
     box.innerHTML = '<p class="muted small">' + t("Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.") + '</p>';
     return;
   }
-  box.innerHTML = skills.map((s, i) =>
-    `<div class="skill" data-i="${i}"><b>${esc(s.skill)}</b>
-     <div class="wbar" role="group" aria-label="${t("Trọng số %s", esc(s.skill))}">${weightBars(Number(s.weight))}</div>
-     <button type="button" class="btn ghost" data-del aria-label="${t("Xóa %s", esc(s.skill))}">${t("Xóa")}</button></div>`).join("");
+  if (skUi.pid !== p.id) skUi = { pid: p.id, sel: -1, all: false };
+  // Chip gọn, nặng trước; bấm chip mới mở thanh trọng số + nút Xóa cho đúng kỹ năng đó.
+  const order = skills.map((_, i) => i).sort((a, b) => skills[b].weight - skills[a].weight);
+  const shown = skUi.all ? order : order.slice(0, SK_FOLD), sel = skills[skUi.sel];
+  const chip = (i) => { const s = skills[i], w = Number(s.weight);
+    return `<button type="button" class="sk${w >= 4 ? " core" : w <= 2 ? " low" : ""}" data-pick="${i}" aria-pressed="${i === skUi.sel}" aria-label="${t("%s, trọng số %s/5", esc(s.skill), w)}">${esc(s.skill)}<b aria-hidden="true">${w}</b></button>`; };
+  box.innerHTML = `<p class="muted small">${t("%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xóa.", skills.length, skills.filter(s => s.weight >= 4).length)}</p>
+    <div class="sk-list">${shown.map(chip).join("")}${order.length > SK_FOLD ? `<button type="button" class="sk more" data-more aria-expanded="${skUi.all}">${skUi.all ? t("Thu gọn") : t("+%s kỹ năng", order.length - SK_FOLD)}</button>` : ""}</div>
+    ${sel ? `<div class="skill" data-i="${skUi.sel}"><b>${esc(sel.skill)}</b>
+     <div class="wbar" role="group" aria-label="${t("Trọng số %s", esc(sel.skill))}">${weightBars(Number(sel.weight))}</div>
+     <button type="button" class="btn ghost" data-del aria-label="${t("Xóa %s", esc(sel.skill))}">${t("Xóa")}</button></div>` : ""}`;
 }
+const SK_FOLD = 12;
+let skUi = { pid: null, sel: -1, all: false };
 
 // Gửi trọn danh sách lên /skills/confirm (API thay toàn bộ kỹ năng của hồ sơ).
 async function saveSkills(p, list, okMsg){
@@ -3492,13 +3511,21 @@ async function saveSkills(p, list, okMsg){
 $("#currentSkills").addEventListener("click", async (ev) => {
   const b = ev.target.closest("button"), row = b && b.closest(".skill[data-i]");
   const p = currentProfile();
+  if (b && (b.dataset.pick != null || b.hasAttribute("data-more"))) {
+    if (b.hasAttribute("data-more")) skUi.all = !skUi.all;
+    else skUi.sel = skUi.sel === Number(b.dataset.pick) ? -1 : Number(b.dataset.pick);
+    renderCurrentSkills();
+    const f = $(b.hasAttribute("data-more") ? "#currentSkills [data-more]" : `#currentSkills [data-pick="${b.dataset.pick}"]`);
+    if (f) f.focus();
+    return;
+  }
   if (!row || !p || b.disabled) return;
   const i = Number(row.dataset.i), cur = (p.skills || [])[i];
   if (!cur) return;
   const w = Number(b.dataset.w);
   if (w && w === Number(cur.weight)) return;
   const list = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
-  if (w) list[i].weight = w; else list.splice(i, 1);
+  if (w) list[i].weight = w; else { list.splice(i, 1); skUi.sel = -1; }
   $$("#currentSkills button").forEach(x => x.disabled = true);
   try {
     await saveSkills(p, list, w ? t("Đã đổi trọng số %s: %s/5", cur.skill, w) : t("Đã xóa kỹ năng: %s", cur.skill));
