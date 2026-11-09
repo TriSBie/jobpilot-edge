@@ -297,7 +297,7 @@ html[data-theme="dark"]{
   /* Hồ sơ: 1 cột < 1024, 2 cột từ 1024 (Kỹ năng cao nhất chiếm cột phải, Benchmark xếp dưới Thông tin hồ sơ ở cột trái) */
   #tab-profile .page-sub{max-width:60ch}
   @media (min-width:1024px){
-    .pf-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr}
+    #tab-profile .pf-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr} /* #id: thắng rule .pf-grid 1 cột (SIGNAL 6) nằm phía dưới */
     .pf-grid>:nth-child(2){grid-column:2;grid-row:1/span 2}
     .pf-grid>:nth-child(3){grid-column:1;grid-row:2}
   }
@@ -722,7 +722,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer button.chip[data-expand-for]{min-height:var(--tap);min-width:var(--tap);justify-content:center;cursor:pointer}
 
   /* ===== SIGNAL BƯỚC 6 — Hồ sơ & CV: 3 khối, chip khu vực, 5 vạch trọng số ===== */
-  .pf-grid{display:grid;grid-template-columns:1fr;gap:22px;align-items:start}
+  .pf-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
   #tab-profile .card-p{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-lg);box-shadow:none;min-width:0}
   #tab-profile .card-p h3{font:700 18px/1.3 var(--f-head);color:var(--ink)}
   #tab-profile .pf-sep{border-top:var(--bw) dashed var(--line);margin-top:1.2rem;padding-top:1rem}
@@ -751,7 +751,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .sk{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 6px 0 12px;border-radius:var(--r-pill);border:var(--bw) solid var(--line);background:transparent;color:var(--ink);font:600 14px var(--f-body);cursor:pointer}
 .sk b{min-width:22px;height:22px;border-radius:var(--r-pill);display:grid;place-items:center;font:700 12px var(--f-body);background:var(--line)}
 .sk.core{background:var(--mint);color:var(--mint-ink);border-color:transparent}
-.sk.core b{background:var(--surface)}
+.sk.core b{background:#fff;color:var(--mint-ink)}
 .sk.low{color:var(--mute)}
 .sk[aria-pressed="true"]{outline:2px solid var(--brand);outline-offset:1px}
 .sk.more{padding:0 12px;border-style:dashed;color:var(--mute)}
@@ -1723,12 +1723,21 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
                 <button id="createProfileBtn" class="btn" type="button" data-en="Create profile">Tạo hồ sơ</button> <button id="cloneProfileBtn" class="btn" type="button" data-en="Clone current profile">Nhân bản hồ sơ hiện tại</button>
               </div>
             </div>
+            <div class="pf-sep" id="tgBox">
+              <label data-en="Telegram">Telegram</label>
+              <div id="tgIdle"><button id="tgLinkBtn" class="btn p" type="button" data-en="Get updates on Telegram">Nhận tin qua Telegram</button></div>
+              <div id="tgPending" class="hidden">
+                <p><span data-en="Code:">Mã:</span> <b id="tgCode"></b></p>
+                <a id="tgOpen" class="btn p" target="_blank" rel="noopener" href="#" data-en="Open Telegram">Mở Telegram</a>
+                <p class="muted small" style="margin:.4rem 0 0" data-en="Press Start in Telegram, then come back here">Bấm Start trong Telegram, rồi quay lại đây</p>
+              </div>
+              <div id="tgDone" class="hidden"><span data-en="Telegram linked">Đã gắn Telegram</span> <button id="tgUnlinkBtn" class="btn" type="button" data-en="Unlink">Gỡ</button></div>
+            </div>
           </section>
 
           <section class="card-p">
             <h3 data-en="Skills">Kỹ năng</h3>
             <div id="currentSkills"></div>
-            <button id="cvDeleteBtn" class="btn ghost hidden" type="button" style="margin-top:.6rem" data-en="Delete uploaded CV">Xoá CV đã tải lên</button>
             <div class="pf-sep">
               <label data-en="Add a skill manually" for="manualSkill">Thêm kỹ năng thủ công</label>
               <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka" data-en-placeholder="e.g. Kafka">
@@ -1741,7 +1750,10 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
               <label class="check" style="margin-bottom:.8rem"><input id="aiOptOut" type="checkbox"> <span data-en="Enter skills myself, do not use AI">Tự nhập kỹ năng, không dùng AI</span></label>
               <label data-en="Or upload a CV for AI extraction (PDF, TXT or MD)" for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
               <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
-              <button data-en="Analyze CV" id="cvUploadBtn" class="btn" type="button" style="margin-top:.9rem">Phân tích CV</button>
+              <div class="inline-row" style="margin-top:.9rem">
+                <button data-en="Analyze CV" id="cvUploadBtn" class="btn" type="button">Phân tích CV</button>
+                <button id="cvDeleteBtn" class="btn ghost hidden" type="button" data-en="Delete uploaded CV">Xoá CV đã tải lên</button>
+              </div>
               <div id="cvStatus"></div>
               <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
                 <label data-en="Suggested skills (tick to keep, set weight 1 to 5)">Kỹ năng gợi ý (tích chọn, đặt trọng số 1 đến 5)</label>
@@ -1751,16 +1763,6 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
             </div>
           </section>
 
-          <div class="pf-sep" id="tgBox">
-            <label data-en="Telegram">Telegram</label>
-            <div id="tgIdle"><button id="tgLinkBtn" class="btn p" type="button" data-en="Get updates on Telegram">Nhận tin qua Telegram</button></div>
-            <div id="tgPending" class="hidden">
-              <p><span data-en="Code:">Mã:</span> <b id="tgCode"></b></p>
-              <a id="tgOpen" class="btn p" target="_blank" rel="noopener" href="#" data-en="Open Telegram">Mở Telegram</a>
-              <p class="muted small" style="margin:.4rem 0 0" data-en="Press Start in Telegram, then come back here">Bấm Start trong Telegram, rồi quay lại đây</p>
-            </div>
-            <div id="tgDone" class="hidden"><span data-en="Telegram linked">Đã gắn Telegram</span> <button id="tgUnlinkBtn" class="btn" type="button" data-en="Unlink">Gỡ</button></div>
-          </div>
           <section class="card-p bench-card">
           <h3 data-en="Salary benchmark">Benchmark lương</h3>
           <p data-en="Computed from salaries listed in the jobs we have collected. When data is thin, a market reference table is shown instead." class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
