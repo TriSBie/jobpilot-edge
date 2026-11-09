@@ -302,6 +302,9 @@ html[data-theme="dark"]{
     .pf-grid>:nth-child(3){grid-column:1;grid-row:2}
   }
   #tab-profile .field{margin-top:0} #tab-profile .field+.field{margin-top:16px}
+  #tgOwn{margin-top:14px} #tgOwn summary{cursor:pointer;padding:10px 0;font:600 14px/1.3 var(--f-body);color:var(--ink)}
+  #tgOwn p{margin:.2rem 0 0} #tgOwnStatus{min-height:1.2em;margin-top:.6rem!important;color:var(--ink);overflow-wrap:anywhere} #tgOwnActions{margin-top:.5rem}
+  #tgOwn label{display:block;margin:10px 0 6px;font:600 13px/1.3 var(--f-body);color:var(--mute)}
   #tab-profile .field label,#tab-profile .pf-sep>label{font:600 13px/1.3 var(--f-body);color:var(--mute);margin:0 0 6px}
   #tab-profile .field small{display:block;margin-top:6px;font:500 12px/1.4 var(--f-body);color:var(--mute)}
   #tab-profile .field .chips{margin:0 0 8px;gap:8px}
@@ -1732,6 +1735,19 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
                 <p class="muted small" style="margin:.4rem 0 0" data-en="Press Start in Telegram, then come back here">Bấm Start trong Telegram, rồi quay lại đây</p>
               </div>
               <div id="tgDone" class="hidden"><span data-en="Telegram linked">Đã gắn Telegram</span> <button id="tgUnlinkBtn" class="btn" type="button" data-en="Unlink">Gỡ</button></div>
+              <details id="tgOwn">
+                <summary data-en="Use your own bot (optional)">Dùng bot riêng của bạn (tuỳ chọn)</summary>
+                <p class="muted small" data-en="Create a bot with @BotFather → /newbot → paste its token here.">Tạo bot bằng @BotFather → /newbot → dán token vào đây.</p>
+                <form id="tgOwnForm" novalidate>
+                  <label for="tgOwnToken" data-en="Bot token">Token của bot</label>
+                  <div class="inline-row">
+                    <div class="grow"><input id="tgOwnToken" class="input" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="123456:ABC…"></div>
+                    <button id="tgOwnSaveBtn" class="btn p" type="submit" data-en="Save &amp; check">Lưu &amp; kiểm tra</button>
+                  </div>
+                </form>
+                <p id="tgOwnStatus" class="small" aria-live="polite"></p>
+                <div id="tgOwnActions" class="inline-row hidden"><button id="tgOwnCheckBtn" class="btn" type="button" data-en="Check again">Kiểm tra lại</button> <button id="tgOwnRemoveBtn" class="btn" type="button" data-en="Remove own bot">Gỡ bot riêng</button></div>
+              </details>
             </div>
           </section>
 
@@ -2564,6 +2580,43 @@ $("#tgLinkBtn").addEventListener("click", async () => {
 $("#tgUnlinkBtn").addEventListener("click", async () => {
   try { await api("/api/me/telegram", { method: "DELETE" }); tgShow("tgIdle"); } catch (e) { toast(e.message, "err"); }
 });
+/* Bot Telegram riêng của khách. Token chỉ nằm trong ô nhập và body PUT, không vào toast/log/URL. */
+const TG_OWN_ERR = { invalid_token_format: "Token không đúng định dạng (dạng 123456:ABC…)", token_rejected: "Telegram từ chối token này", bot_in_use: "Bot này đã được tài khoản khác dùng", webhook_failed: "Không đăng ký được webhook, thử lại", too_many_attempts: "Thử quá nhiều lần, đợi 1 giờ", own_bot_disabled: "Tính năng bot riêng chưa bật trên hệ thống", token_revoked: "Token đã bị thu hồi, hãy dán token mới" };
+const tgOwnErr = (code) => TG_OWN_ERR[code] ? t(TG_OWN_ERR[code]) : (code || t("Lỗi không rõ"));
+// b: {username|bot_username, status, last_error} | null
+function tgOwnRender(b){
+  const name = b && (b.username || b.bot_username);
+  const on = !!(b && (b.configured !== false) && name);
+  $("#tgOwnActions").classList.toggle("hidden", !on);
+  $("#tgOwnStatus").textContent = !on ? "" : b.status === "broken" ? t("⚠ Bot riêng lỗi: %s", tgOwnErr(b.last_error)) : t("✅ Đang dùng @%s", name);
+  if (on && b.status === "broken") $("#tgOwn").open = true;
+}
+async function tgOwnRun(fn, focusEl){
+  const els = ["#tgOwnToken", "#tgOwnSaveBtn", "#tgOwnCheckBtn", "#tgOwnRemoveBtn"].map(s => $(s));
+  els.forEach(el => { el.disabled = true; });
+  $("#tgOwnStatus").textContent = t("Đang kiểm tra…");
+  try { await fn(); }
+  catch (e) { $("#tgOwnStatus").textContent = "⚠ " + tgOwnErr(e.message); focusEl = $("#tgOwnToken"); }
+  finally { $("#tgOwnToken").value = ""; els.forEach(el => { el.disabled = false; }); }
+  const f = typeof focusEl === "function" ? focusEl() : focusEl;
+  if (f && !f.closest(".hidden")) f.focus();
+}
+$("#tgOwnForm").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const token = $("#tgOwnToken").value.trim();
+  if (!/^\d+:[\w-]{20,}$/.test(token)) { $("#tgOwnToken").value = ""; $("#tgOwnStatus").textContent = "⚠ " + tgOwnErr("invalid_token_format"); $("#tgOwnToken").focus(); return; }
+  tgOwnRun(async () => {
+    const r = await api("/api/me/telegram/bot", { method: "PUT", body: JSON.stringify({ token }) });
+    tgShow("tgIdle"); // bot mới làm mất liên kết chat
+    tgOwnRender({ bot_username: r.bot_username, status: "ok" });
+  }, () => $("#tgOwnCheckBtn"));
+});
+$("#tgOwnCheckBtn").addEventListener("click", () => tgOwnRun(async () => tgOwnRender(await api("/api/me/telegram/bot/check", { method: "POST" })), $("#tgOwnCheckBtn")));
+$("#tgOwnRemoveBtn").addEventListener("click", () => tgOwnRun(async () => {
+  await api("/api/me/telegram/bot", { method: "DELETE" });
+  tgShow("tgIdle"); tgOwnRender(null);
+}, $("#tgOwnToken")));
+Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)": "Invalid token format (looks like 123456:ABC…)", "Telegram từ chối token này": "Telegram rejected this token", "Bot này đã được tài khoản khác dùng": "This bot is already used by another account", "Không đăng ký được webhook, thử lại": "Couldn't register the webhook, try again", "Thử quá nhiều lần, đợi 1 giờ": "Too many attempts, wait 1 hour", "Tính năng bot riêng chưa bật trên hệ thống": "Own bot isn't enabled on this system yet", "Token đã bị thu hồi, hãy dán token mới": "The token was revoked, paste a new one", "Lỗi không rõ": "Unknown error", "⚠ Bot riêng lỗi: %s": "⚠ Own bot error: %s", "✅ Đang dùng @%s": "✅ Using @%s", "Đang kiểm tra…": "Checking…" });
 /* ---------------- Boot / profiles ---------------- */
 // T-86: kỹ năng khách chọn ở landing → hồ sơ thật qua API sẵn có, xong thì xoá.
 async function createTryProfile(){
@@ -2583,6 +2636,7 @@ async function boot(){
   state.user = me.user;
   $("#aiOptOut").checked = !!me.user.ai_opt_out;
   tgShow(me.user.telegram_linked ? "tgDone" : "tgIdle");
+  tgOwnRender(me.user.telegram_bot || null);
   { const owner = !!(me.user && me.user.is_owner); $("#scanBtn").classList.toggle("hidden", !owner); $(".src-status").classList.toggle("hidden", !owner); }
   state.profiles = me.profiles || [];
   if (!state.profiles.length) {
