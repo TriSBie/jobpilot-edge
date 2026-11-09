@@ -1920,7 +1920,8 @@ export default {
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
       // T-45: xoá tin cũ không được đơn/phiên luyện nào tham chiếu; match xoá trước (FK). ORDER BY id để 2 câu cùng chọn một tập.
-      try {
+      // Mặc định TẮT trên prod (xoá dữ liệu); owner bật bằng var JOB_CLEANUP_ENABLED="1" sau khi xem số đếm.
+      if (env.JOB_CLEANUP_ENABLED === "1") try {
         const old = `SELECT id FROM jobs WHERE COALESCE(last_seen_at, first_seen_at) < ? AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.job_id = jobs.id)
           AND NOT EXISTS (SELECT 1 FROM prep_sessions s WHERE s.job_id = jobs.id) ORDER BY id LIMIT ${JOB_CLEAN_BATCH}`;
         const cut = now() - JOB_RETENTION_DAYS * 86400;

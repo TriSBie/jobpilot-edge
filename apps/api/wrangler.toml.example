@@ -17,6 +17,8 @@ DIGEST_HOUR_LOCAL = "7"
 TELEGRAM_BOT_USERNAME = "your_bot"
 # "1" mới bật cron tự đóng đơn im lặng 14 ngày (ghi lên dữ liệu người dùng); mặc định tắt
 AUTO_CLOSE_ENABLED = "0"
+# "1" mới bật cron xoá tin không thấy lại sau 30 ngày (giữ tin còn trong Kanban); mặc định tắt
+JOB_CLEANUP_ENABLED = "0"
 # Secret: xem danh sách cuối file.
 
 # --- D1 (database chính) ---

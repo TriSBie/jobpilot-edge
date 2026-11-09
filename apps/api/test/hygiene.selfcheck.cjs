@@ -17,6 +17,7 @@ const stmt = (sql, args = []) => ({
 });
 const kv = new Map(), sent = [];
 const env = {
+  JOB_CLEANUP_ENABLED: '1',
   DB: { prepare: (sql) => stmt(sql), batch: async (list) => { queries++; db.exec('BEGIN'); try { const r = list.map((s) => ({ results: exec(s.sql, s.args) })); db.exec('COMMIT'); return r; } catch (e) { db.exec('ROLLBACK'); throw e; } } },
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); } },
   Q_INGEST: { send: async (b) => { sent.push(b); } }, Q_SCORE: { send: async () => {}, sendBatch: async () => {} },
