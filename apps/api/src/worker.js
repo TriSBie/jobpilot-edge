@@ -312,7 +312,7 @@ async function fetchText(url, timeoutMs = 20000) {
 // đọc tối đa 1 MB. Host khác vẫn lưu link nhưng không tải (Worker không thành proxy đọc URL tuỳ ý).
 const SUBMIT_FETCH_HOSTS = new Set(["itviec.com", "topdev.vn", "www.topdev.vn"]);
 function submitFetchAllowed(raw) {
-  try { const u = new URL(raw); return u.protocol === "https:" && SUBMIT_FETCH_HOSTS.has(u.hostname); } catch (_) { return false; }
+  try { const u = new URL(raw); return u.protocol === "https:" && u.port === "" && SUBMIT_FETCH_HOSTS.has(u.hostname); } catch (_) { return false; }
 }
 async function fetchSubmittedPage(raw) {
   if (!submitFetchAllowed(raw)) return null;
@@ -1507,6 +1507,10 @@ export default {
       const recent = await env.DB.prepare("SELECT COUNT(*) AS c FROM jobs WHERE submitted_by = ? AND created_at > ?")
         .bind(user.id, now() - 3600).first();
       if (recent.c >= 20) return json({ error: "too_many_submissions" }, 429);
+      // Review T-103 (M1): dán lại cùng link/tiêu đề → trả dòng cũ, không fetch, không chấm lại.
+      const dupUrl = link || srcLink || `manual://${await sha256hex(str(b.title, 300) + str(b.company, 200))}`;
+      const dup = await env.DB.prepare("SELECT id, title, company FROM jobs WHERE submitted_by = ? AND source_url = ?").bind(user.id, dupUrl).first();
+      if (dup) return json({ job: dup, created: false });
       await ensureSources(env);
       let job = null;
       if (link) {

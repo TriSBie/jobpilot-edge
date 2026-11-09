@@ -77,11 +77,18 @@ globalThis.fetch = async (u, init) => {
   assert.notStrictEqual(bShared.body.job.id, 'shared');
   assert.strictEqual(q("SELECT submitted_by FROM jobs WHERE id = 'shared'")[0].submitted_by, null, 'job chung không bị gắn người nộp');
   fetched.length = 0;
+  // Review T-103 M1: dán lại 10 lần cùng link → không tải, không thêm dòng, không xếp hàng chấm.
+  const queued = scoreMsgs.length, again = [];
+  for (let i = 0; i < 10; i++) again.push((await call('A', 'POST', '/api/jobs/submit', { url: 'https://topdev.vn/detail-jobs/java-backend-99' })).body);
+  assert.ok(again.every((x) => x.job.id === aId && x.created === false), 'dán lại trả dòng cũ, created:false');
+  assert.strictEqual(fetched.length, 0, 'dán lại không tải trang');
+  assert.strictEqual(scoreMsgs.length, queued, 'dán lại không xếp hàng chấm');
+  r.repeat = { calls: 10, fetched: fetched.length, rows: q("SELECT COUNT(*) c FROM jobs WHERE submitted_by = 'A'")[0].c };
 
   // 3. URL nguy hiểm / host lạ: không tải; scheme lạ → 400.
   for (const u of ['javascript:alert(1)', 'file:///etc/passwd', 'ftp://x/y']) assert.strictEqual((await call('A', 'POST', '/api/jobs/submit', { url: u })).status, 400, u);
   assert.strictEqual((await call('A', 'POST', '/api/jobs/submit', { title: 'T', source_url: 'javascript:x' })).status, 400);
-  for (const u of ['http://127.0.0.1:8787/api/health', 'https://169.254.169.254/latest', 'http://topdev.vn/detail-jobs/plain-http', 'https://evil.example/topdev.vn']) {
+  for (const u of ['http://127.0.0.1:8787/api/health', 'https://169.254.169.254/latest', 'http://topdev.vn/detail-jobs/plain-http', 'https://evil.example/topdev.vn', 'https://itviec.com:8443/it-jobs/x']) {
     assert.strictEqual((await call('A', 'POST', '/api/jobs/submit', { url: u })).status, 201, u);
   }
   r.fetchedOther = fetched.length;
@@ -91,7 +98,7 @@ globalThis.fetch = async (u, init) => {
   const codes = [];
   for (let i = 0; i < 20; i++) codes.push((await call('A', 'POST', '/api/jobs/submit', { title: `Job ${i}`, company: 'C' })).status);
   r.rate = codes.reduce((m, c) => ({ ...m, [c]: (m[c] || 0) + 1 }), {});
-  assert.deepStrictEqual(r.rate, { 201: 15, 429: 5 });
+  assert.deepStrictEqual(r.rate, { 201: 14, 429: 6 }); // A đã có 6 dòng: 1 link TopDev + 5 link không tải
 
   // 5. Landing sample + benchmark bỏ job dán tay; rescore B không kéo job của A vào.
   db.prepare("UPDATE jobs SET salary_text = '9999 USD' WHERE id = ?").run(aId);
