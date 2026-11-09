@@ -105,6 +105,7 @@ dataset = "jobpilot_events"
 # Secrets (đặt bằng `wrangler secret put`, không ghi ở đây):
 # - TELEGRAM_BOT_TOKEN
 # - TELEGRAM_WEBHOOK_SECRET
+# - TG_TOKEN_KEY (base64 32 byte, mã hoá token bot Telegram riêng; thiếu = tắt tính năng bot riêng, 503)
 # - TURNSTILE_SECRET (thiếu thì bỏ qua kiểm Turnstile, chỉ cho lab/dev)
 # Biến tuỳ chọn chỉ dùng ở lab (không đặt ở production):
 # - TELEGRAM_API_BASE (mặc định https://api.telegram.org)

@@ -299,6 +299,7 @@ async function purgeUser(env, userId) {
     "DELETE FROM digests WHERE user_id = ?1",
     "DELETE FROM notifications WHERE user_id = ?1",
     "DELETE FROM login_failures WHERE user_id = ?1",
+    "DELETE FROM user_bots WHERE user_id = ?1",
     // T-05: job dán tay thuộc riêng user; chỉ hồ sơ của chính user (đã xoá ở trên) chấm/gắn được nó.
     "DELETE FROM job_matches WHERE job_id IN (SELECT id FROM jobs WHERE submitted_by = ?1)",
     "DELETE FROM jobs WHERE submitted_by = ?1",
@@ -798,16 +799,23 @@ function scoreJob(profile, profileSkills, job) {
 const APP_URL = "https://jobpilot-edge.pages.dev";
 const tgEsc = (x) => String(x ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const tgLink = (url, text) => url ? `<a href="${tgEsc(url).replace(/"/g, "&quot;")}">${tgEsc(text)}</a>` : tgEsc(text);
-async function tgSend(env, chatId, html) {
-  if (!env.TELEGRAM_BOT_TOKEN) { console.log("telegram: thiếu TELEGRAM_BOT_TOKEN, bỏ qua"); return false; }
+// Trả mã HTTP của Telegram (200 = gửi được), 0 khi thiếu token hoặc lỗi mạng. Không log URL (chứa token).
+async function tgSend(env, chatId, html, token = env.TELEGRAM_BOT_TOKEN) {
+  if (!token) { console.log("telegram: thiếu TELEGRAM_BOT_TOKEN, bỏ qua"); return 0; }
   try {
-    const r = await fetch((env.TELEGRAM_API_BASE || "https://api.telegram.org") + "/bot" + env.TELEGRAM_BOT_TOKEN + "/sendMessage", {
+    const r = await fetch((env.TELEGRAM_API_BASE || "https://api.telegram.org") + "/bot" + token + "/sendMessage", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: chatId, text: html, parse_mode: "HTML", disable_web_page_preview: true }),
     });
     if (!r.ok) console.log("telegram: sendMessage", r.status);
-    return r.ok;
-  } catch (e) { console.log("telegram: sendMessage lỗi", e.message); return false; }
+    return r.status;
+  } catch (e) { console.log("telegram: sendMessage lỗi", e.message); return 0; }
+}
+// Gọi Bot API bất kỳ (getMe, setWebhook…), trả JSON của Telegram; mạng lỗi thì ném.
+async function tgApi(env, token, method, body) {
+  const r = await fetch((env.TELEGRAM_API_BASE || "https://api.telegram.org") + "/bot" + token + "/" + method, body
+    ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
+  return r.json().catch(() => ({ ok: false }));
 }
 // Giờ yên lặng 22:00-07:00 VN (UTC+7); TELEGRAM_QUIET_OVERRIDE=1 bỏ qua (lab).
 function tgQuiet(env, ms = Date.now()) {
@@ -837,6 +845,77 @@ function formatDigestTg(d) {
   return out.join("\n");
 }
 const maskEmail = (e) => e.replace(/^(.).*(@.*)$/, "$1***$2");
+
+// ---------------- bot Telegram riêng từng khách ----------------
+// Token mã hoá AES-GCM bằng env.TG_TOKEN_KEY (base64 32 byte), AAD = user_id, lưu base64(iv12 + ciphertext).
+// Không bao giờ log token hay URL chứa token.
+const TG_TOKEN_RE = /^\d{6,12}:[A-Za-z0-9_-]{30,}$/;
+const OWN_BOT_TRIES = 10; // PUT + check chung, mỗi giờ mỗi người
+const tgB64 = (u8) => btoa(String.fromCharCode(...u8));
+const tgUnb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+function ownBotEnabled(env) {
+  try { return tgUnb64(env.TG_TOKEN_KEY || "").length === 32; } catch (_) { return false; }
+}
+const tgKey = (env) => crypto.subtle.importKey("raw", tgUnb64(env.TG_TOKEN_KEY), "AES-GCM", false, ["encrypt", "decrypt"]);
+async function tgEncrypt(env, token, userId) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: new TextEncoder().encode(userId) }, await tgKey(env), new TextEncoder().encode(token)));
+  const out = new Uint8Array(12 + ct.length);
+  out.set(iv); out.set(ct, 12);
+  return tgB64(out);
+}
+async function tgDecrypt(env, enc, userId) {
+  const raw = tgUnb64(enc);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12), additionalData: new TextEncoder().encode(userId) }, await tgKey(env), raw.slice(12)));
+}
+// Gửi bằng bot riêng nếu có token_enc (dòng status 'ok'), không thì bot chung. 401 = khách đã thu hồi token → 'broken'.
+async function tgSendFor(env, userId, chatId, html, tokenEnc) {
+  let token = null;
+  if (tokenEnc && ownBotEnabled(env)) {
+    try { token = await tgDecrypt(env, tokenEnc, userId); } catch (_) { console.log("telegram: giải mã token bot riêng lỗi", userId); }
+  }
+  const st = await tgSend(env, chatId, html, token || env.TELEGRAM_BOT_TOKEN);
+  if (token && st === 401) {
+    await env.DB.prepare("UPDATE user_bots SET status = 'broken', last_error = 'token_revoked', checked_at = ? WHERE user_id = ?").bind(now(), userId).run();
+  }
+  return st;
+}
+// ponytail: đếm trên KV không nguyên tử, vài lần vượt khi bấm dồn dập là chấp nhận được; cần chặt thì chuyển sang bảng D1 như register_attempts.
+async function ownBotAttempt(env, userId) {
+  const k = `tgbotrl:${userId}:${Math.floor(now() / 3600)}`;
+  const n = Number((await env.KV.get(k)) || 0) + 1;
+  if (n > OWN_BOT_TRIES) return false;
+  await env.KV.put(k, String(n), { expirationTtl: 3600 });
+  return true;
+}
+async function ownBotView(env, userId) {
+  const r = await env.DB.prepare("SELECT username, status, last_error, checked_at FROM user_bots WHERE user_id = ?").bind(userId).first();
+  return r ? { configured: true, bot_username: r.username, status: r.status, last_error: r.last_error, checked_at: r.checked_at }
+    : { configured: false, bot_username: null, status: null, last_error: null, checked_at: null };
+}
+// /start <mã> và /stop, dùng cho cả bot chung (ownerId null) và bot riêng (chỉ chủ bot gắn được); send trả lời bằng đúng bot nhận tin.
+async function tgHandleUpdate(env, update, send, ownerId = null) {
+  const m = update.message || {};
+  const chatId = m.chat && m.chat.id != null ? String(m.chat.id) : "";
+  const text = String(m.text || "").trim();
+  const start = text.match(/^\/start(?:@\w+)?\s+([A-Za-z0-9]{8})$/);
+  if (chatId && start) {
+    const uidLinked = await env.KV.get(`tglink:${start[1]}`); // mã sống 900s trong KV (T-99), hết hạn là null
+    const u = uidLinked && (!ownerId || uidLinked === ownerId)
+      ? await env.DB.prepare("SELECT id, email FROM users WHERE id = ? AND deleted_at IS NULL").bind(uidLinked).first() : null;
+    if (u) {
+      await env.KV.delete(`tglink:${start[1]}`);
+      await env.DB.prepare("UPDATE users SET telegram_chat_id = ?, telegram_linked_at = ?, telegram_link_code = NULL WHERE id = ?").bind(chatId, now(), u.id).run();
+      await send(chatId, `Đã gắn JobPilot với tài khoản ${tgEsc(maskEmail(u.email))}. Bạn sẽ nhận 1 bản tin mỗi sáng và báo ngay khi có tin khớp mạnh. / Linked: one digest each morning plus instant strong matches.`);
+    } else await send(chatId, "Mã không đúng hoặc đã dùng. / Invalid or used code.");
+  } else if (chatId && /^\/stop(?:@\w+)?$/.test(text)) {
+    // Bot chung không gỡ người đang nhận qua bot riêng; bot riêng chỉ gỡ chủ bot.
+    await (ownerId
+      ? env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE telegram_chat_id = ? AND id = ?").bind(chatId, ownerId)
+      : env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE telegram_chat_id = ? AND id NOT IN (SELECT user_id FROM user_bots WHERE status = 'ok')").bind(chatId)).run();
+    await send(chatId, "Đã tắt thông báo JobPilot. / JobPilot notifications turned off.");
+  }
+}
 
 const MATCH_UPSERT = `INSERT INTO job_matches (job_id, profile_id, rule_score, semantic_score, final_score, tier, matched_skills, missing_skills, scored_at)
   VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
@@ -892,17 +971,17 @@ async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
   if (!alerts.length || tgQuiet(env)) return;
   let chat;
   try {
-    const { results } = await env.DB.prepare(`SELECT id, telegram_chat_id FROM users WHERE id IN ${IN_JSON}`).bind(JSON.stringify([...new Set(alerts.map((x) => x.p.user_id))])).all();
-    chat = new Map(results.map((u) => [u.id, u.telegram_chat_id]));
+    const { results } = await env.DB.prepare(`SELECT u.id, u.telegram_chat_id, b.token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.id IN ${IN_JSON}`).bind(JSON.stringify([...new Set(alerts.map((x) => x.p.user_id))])).all();
+    chat = new Map(results.map((u) => [u.id, u]));
   } catch (e) { console.log("telegram burst lỗi", e.message); return; }
   for (const { job, p, s } of alerts) {
-    const chatId = chat.get(p.user_id);
+    const { telegram_chat_id: chatId, token_enc: tokenEnc } = chat.get(p.user_id) || {};
     chat.delete(p.user_id); // tin sau của cùng người trong lô đã vướng tgburst, như vòng lặp cũ
     if (!chatId) continue;
     try {
       if (await env.KV.get("tgburst:" + p.user_id)) continue;
       await env.KV.put("tgburst:" + p.user_id, "1", { expirationTtl: 3600 });
-      await tgSend(env, chatId, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`);
+      await tgSendFor(env, p.user_id, chatId, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`, tokenEnc);
     } catch (e) { console.log("telegram burst lỗi", e.message); }
   }
 }
@@ -1370,24 +1449,18 @@ export default {
     if (path === "/api/telegram/webhook" && request.method === "POST") {
       if (!env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
       if (request.headers.get("x-telegram-bot-api-secret-token") !== env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "forbidden" }, 403);
-      try {
-        const m = (await readBody(request)).message || {};
-        const chatId = m.chat && m.chat.id != null ? String(m.chat.id) : "";
-        const text = String(m.text || "").trim();
-        const start = text.match(/^\/start(?:@\w+)?\s+([A-Za-z0-9]{8})$/);
-        if (chatId && start) {
-          const uidLinked = await env.KV.get(`tglink:${start[1]}`); // mã sống 900s trong KV (T-99), hết hạn là null
-          const u = uidLinked ? await env.DB.prepare("SELECT id, email FROM users WHERE id = ? AND deleted_at IS NULL").bind(uidLinked).first() : null;
-          if (u) {
-            await env.KV.delete(`tglink:${start[1]}`);
-            await env.DB.prepare("UPDATE users SET telegram_chat_id = ?, telegram_linked_at = ?, telegram_link_code = NULL WHERE id = ?").bind(chatId, now(), u.id).run();
-            await tgSend(env, chatId, `Đã gắn JobPilot với tài khoản ${tgEsc(maskEmail(u.email))}. Bạn sẽ nhận 1 bản tin mỗi sáng và báo ngay khi có tin khớp mạnh. / Linked: one digest each morning plus instant strong matches.`);
-          } else await tgSend(env, chatId, "Mã không đúng hoặc đã dùng. / Invalid or used code.");
-        } else if (chatId && /^\/stop(?:@\w+)?$/.test(text)) {
-          await env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE telegram_chat_id = ?").bind(chatId).run();
-          await tgSend(env, chatId, "Đã tắt thông báo JobPilot. / JobPilot notifications turned off.");
-        }
-      } catch (e) { console.log("telegram webhook lỗi", e.message); }
+      try { await tgHandleUpdate(env, await readBody(request), (c, t) => tgSend(env, c, t)); }
+      catch (e) { console.log("telegram webhook lỗi", e.message); }
+      return json({ ok: true });
+    }
+    // Webhook bot riêng: khoá theo bot_id trong path, secret riêng từng dòng user_bots.
+    const ownHook = path.match(/^\/api\/telegram\/webhook\/(\d{6,12})$/);
+    if (ownHook && request.method === "POST") {
+      if (!ownBotEnabled(env)) return json({ error: "own_bot_disabled" }, 503);
+      const row = await env.DB.prepare("SELECT user_id, token_enc, webhook_secret FROM user_bots WHERE bot_id = ?").bind(ownHook[1]).first();
+      if (!row || !row.webhook_secret || request.headers.get("x-telegram-bot-api-secret-token") !== row.webhook_secret) return json({ error: "forbidden" }, 403);
+      try { await tgHandleUpdate(env, await readBody(request), (c, t) => tgSendFor(env, row.user_id, c, t, row.token_enc), row.user_id); }
+      catch (e) { console.log("telegram webhook bot riêng lỗi", e.message); }
       return json({ ok: true });
     }
 
@@ -1414,8 +1487,10 @@ export default {
       const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
+      const ownBot = await env.DB.prepare("SELECT username, status FROM user_bots WHERE user_id = ?").bind(user.id).first();
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
-        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id }, profiles });
+        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
+        telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status } : null }, profiles });
     }
     if (path === "/api/auth/change-password" && request.method === "POST") { // T-22
       const b = await readBody(request);
@@ -1744,13 +1819,77 @@ export default {
       return json({ consent_cv_at: r.consent_cv_at });
     }
     if (path === "/api/me/telegram/link" && request.method === "POST") {
-      if (!env.TELEGRAM_BOT_USERNAME || !env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
+      // Bot riêng đang ok → deeplink tới bot đó, không cần cấu hình bot chung.
+      const own = ownBotEnabled(env) ? await env.DB.prepare("SELECT username FROM user_bots WHERE user_id = ? AND status = 'ok'").bind(user.id).first() : null;
+      if (!own && (!env.TELEGRAM_BOT_USERNAME || !env.TELEGRAM_WEBHOOK_SECRET)) return json({ error: "telegram_not_configured" }, 503);
       const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", rnd = crypto.getRandomValues(new Uint8Array(8));
       const code = [...rnd].map((b) => a[b % a.length]).join("");
       await env.KV.put(`tglink:${code}`, user.id, { expirationTtl: 900 });
       await env.DB.prepare("UPDATE users SET telegram_link_code = NULL WHERE id = ?").bind(user.id).run(); // dọn mã cũ còn sót trong cột
-      const bot = env.TELEGRAM_BOT_USERNAME || "";
+      const bot = own ? own.username : env.TELEGRAM_BOT_USERNAME || "";
       return json({ code, bot, deeplink: `https://t.me/${bot}?start=${code}` });
+    }
+    // Bot Telegram riêng: GET xem, PUT gắn/đổi token, POST check kiểm lại, DELETE gỡ. Không bao giờ trả token.
+    if (path === "/api/me/telegram/bot" || path === "/api/me/telegram/bot/check") {
+      const isCheck = path.endsWith("/check");
+      const allowed = isCheck ? ["POST"] : ["GET", "PUT", "DELETE"];
+      if (allowed.includes(request.method)) {
+        if (!ownBotEnabled(env)) return json({ error: "own_bot_disabled" }, 503);
+        if (request.method === "GET") return json(await ownBotView(env, user.id));
+        if (request.method === "DELETE") {
+          const row = await env.DB.prepare("SELECT token_enc FROM user_bots WHERE user_id = ?").bind(user.id).first();
+          if (row) {
+            try { await tgApi(env, await tgDecrypt(env, row.token_enc, user.id), "deleteWebhook", {}); } catch (_) { /* best-effort */ }
+          }
+          await env.DB.batch([
+            env.DB.prepare("DELETE FROM user_bots WHERE user_id = ?").bind(user.id),
+            env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE id = ?").bind(user.id),
+          ]);
+          return json({ ok: true });
+        }
+        if (!(await ownBotAttempt(env, user.id))) return json({ error: "too_many_attempts" }, 429);
+        if (isCheck) {
+          const row = await env.DB.prepare("SELECT * FROM user_bots WHERE user_id = ?").bind(user.id).first();
+          if (!row) return json({ error: "own_bot_not_configured" }, 404);
+          let status = "ok", lastError = null;
+          try {
+            const token = await tgDecrypt(env, row.token_enc, user.id);
+            const me = await tgApi(env, token, "getMe");
+            if (!me.ok) { status = "broken"; lastError = "token_revoked"; }
+            else {
+              const info = await tgApi(env, token, "getWebhookInfo");
+              const want = `${url.origin}/api/telegram/webhook/${row.bot_id}`;
+              if (!info.ok || info.result.url !== want) { status = "broken"; lastError = "webhook_mismatch"; }
+              else if (info.result.last_error_message) lastError = String(info.result.last_error_message).slice(0, 200);
+            }
+          } catch (e) { status = "broken"; lastError = "check_failed"; }
+          await env.DB.prepare("UPDATE user_bots SET status = ?, last_error = ?, checked_at = ? WHERE user_id = ?").bind(status, lastError, now(), user.id).run();
+          return json(await ownBotView(env, user.id));
+        }
+        // PUT {token}
+        const token = String((await readBody(request)).token || "").trim();
+        if (!TG_TOKEN_RE.test(token)) return json({ error: "invalid_token_format" }, 400);
+        const me = await tgApi(env, token, "getMe").catch(() => ({ ok: false }));
+        if (!me.ok || !me.result || !me.result.username) return json({ error: "token_rejected" }, 400);
+        const botId = token.split(":")[0];
+        const owner = await env.DB.prepare("SELECT user_id FROM user_bots WHERE bot_id = ?").bind(botId).first();
+        if (owner && owner.user_id !== user.id) return json({ error: "bot_in_use" }, 409);
+        const secret = randomToken().slice(0, 32);
+        const hook = `${url.origin}/api/telegram/webhook/${botId}`;
+        const set = await tgApi(env, token, "setWebhook", { url: hook, secret_token: secret, allowed_updates: ["message"] }).catch(() => ({ ok: false }));
+        const info = set.ok ? await tgApi(env, token, "getWebhookInfo").catch(() => ({ ok: false })) : { ok: false };
+        if (!info.ok || !info.result || info.result.url !== hook) return json({ error: "webhook_failed" }, 400);
+        const prev = await env.DB.prepare("SELECT bot_id FROM user_bots WHERE user_id = ?").bind(user.id).first();
+        const stmts = [env.DB.prepare(
+          `INSERT INTO user_bots (user_id, bot_id, username, token_enc, webhook_secret, status, last_error, created_at, checked_at) VALUES (?, ?, ?, ?, ?, 'ok', NULL, ?, ?)
+           ON CONFLICT(user_id) DO UPDATE SET bot_id = excluded.bot_id, username = excluded.username, token_enc = excluded.token_enc,
+             webhook_secret = excluded.webhook_secret, status = 'ok', last_error = NULL, checked_at = excluded.checked_at`
+        ).bind(user.id, botId, me.result.username, await tgEncrypt(env, token, user.id), secret, now(), now())];
+        // Đổi sang bot khác (hoặc lần đầu chuyển từ bot chung): chat cũ không nhận được từ bot mới → phải /start lại.
+        if (!prev || prev.bot_id !== botId) stmts.push(env.DB.prepare("UPDATE users SET telegram_chat_id = NULL WHERE id = ?").bind(user.id));
+        await env.DB.batch(stmts);
+        return json({ ok: true, bot_username: me.result.username });
+      }
     }
     if (path === "/api/me/telegram" && request.method === "DELETE") {
       await env.DB.prepare("UPDATE users SET telegram_chat_id = NULL, telegram_link_code = NULL WHERE id = ?").bind(user.id).run();
@@ -1881,11 +2020,11 @@ export default {
           const r = await runIngestSource(env, body.sourceType, body.keyword);
           console.log(`ingest ${body.sourceType}/${body.keyword}:`, JSON.stringify(r));
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
-          const u = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(body.userId).first();
+          const u = await env.DB.prepare("SELECT u.*, b.token_enc AS own_token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.id = ?").bind(body.userId).first();
           if (u) {
             const digest = await buildDigest(env, u, "vi", null, true);
             const msg = u.telegram_chat_id && formatDigestTg(digest);
-            if (msg) await tgSend(env, u.telegram_chat_id, msg);
+            if (msg) await tgSendFor(env, u.id, u.telegram_chat_id, msg, u.own_token_enc);
           }
         }
         msg.ack();
