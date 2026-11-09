@@ -163,9 +163,11 @@ function skillInText(skill, text) {
 const extractSkillsFromText = (text) => SKILL_CATALOG.filter((s) => skillInText(s, text || ""));
 const CORE_SKILLS = new Set(["Java", "Spring Boot", "Kafka", "PostgreSQL", "Redis", "NestJS", "Node.js", "TypeScript", "Microservices", "Docker"]);
 
+// llama-3.1-8b-instruct bị Cloudflare khai tử 2026-05-30 (lỗi 5028) nên hàm này từng âm thầm trả [].
+const CV_SKILL_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
 async function aiExtractSkills(env, cvText) {
   try {
-    const res = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+    const res = await env.AI.run(CV_SKILL_MODEL, {
       messages: [
         { role: "system", content: "You extract technical skills from a resume. Reply with ONLY a JSON array of skill name strings, no explanation." },
         { role: "user", content: `Resume:\n${cvText.slice(0, 6000)}\n\nList every technical skill, framework, tool and platform mentioned (e.g. "Java", "Spring Boot", "Kafka", "Transactional Outbox"). JSON array only.` },
@@ -288,6 +290,9 @@ async function purgeUser(env, userId) {
     "DELETE FROM digests WHERE user_id = ?1",
     "DELETE FROM notifications WHERE user_id = ?1",
     "DELETE FROM login_failures WHERE user_id = ?1",
+    // T-05: job dán tay thuộc riêng user; chỉ hồ sơ của chính user (đã xoá ở trên) chấm/gắn được nó.
+    "DELETE FROM job_matches WHERE job_id IN (SELECT id FROM jobs WHERE submitted_by = ?1)",
+    "DELETE FROM jobs WHERE submitted_by = ?1",
     "DELETE FROM users WHERE id = ?1",
   ].map((sql) => env.DB.prepare(sql).bind(userId)));
 }
@@ -302,6 +307,30 @@ async function fetchText(url, timeoutMs = 20000) {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.text();
+}
+// T-05: job dán tay chỉ tải trang từ site tuyển dụng đã biết, qua https, không theo redirect sang host khác,
+// đọc tối đa 1 MB. Host khác vẫn lưu link nhưng không tải (Worker không thành proxy đọc URL tuỳ ý).
+const SUBMIT_FETCH_HOSTS = new Set(["itviec.com", "topdev.vn", "www.topdev.vn"]);
+function submitFetchAllowed(raw) {
+  try { const u = new URL(raw); return u.protocol === "https:" && SUBMIT_FETCH_HOSTS.has(u.hostname); } catch (_) { return false; }
+}
+async function fetchSubmittedPage(raw) {
+  if (!submitFetchAllowed(raw)) return null;
+  const res = await fetch(raw, {
+    headers: { "User-Agent": UA, "Accept-Language": "vi-VN,vi;q=0.9,en;q=0.8" },
+    signal: AbortSignal.timeout(15000),
+    redirect: "manual",
+  });
+  if (!res.ok || !res.body) return null;
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let html = "", bytes = 0;
+  while (bytes < 1_000_000) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytes += value.byteLength; html += dec.decode(value, { stream: true });
+  }
+  try { await reader.cancel(); } catch (_) { /* đã đọc đủ */ }
+  return html;
 }
 function stripTags(html) {
   return html
@@ -530,14 +559,14 @@ async function sendScores(env, jobIds) {
 // ponytail: id INSERT sinh trước; nếu luồng khác chèn cùng content_hash giữa đọc và ghi, id trả về không tồn tại (consumer score bỏ qua).
 async function planUpsertJobs(env, items) {
   if (!items.length) return { stmts: [], out: [], toScore: new Set() };
-  for (const it of items) it.hash = await sha256hex(`${it.job.title}|${it.job.company}|${it.job.url}`.toLowerCase());
+  for (const it of items) it.hash = await sha256hex(`${it.job.title}|${it.job.company}|${it.job.url}`.toLowerCase() + (it.submittedBy ? `|user:${it.submittedBy}` : ""));
   const [{ results: known }, { results: urls }] = await env.DB.batch([
     env.DB.prepare(`SELECT * FROM jobs WHERE content_hash IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.hash))),
-    env.DB.prepare(`SELECT DISTINCT source_url FROM jobs WHERE source_url IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.job.url))),
+    env.DB.prepare(`SELECT DISTINCT source_url FROM jobs WHERE submitted_by IS NULL AND source_url IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.job.url))),
   ]);
   const rows = new Map(known.map((r) => [r.content_hash, { ...r }])), seenUrl = new Set(urls.map((r) => r.source_url));
   const t = now(), stmts = [], out = [], toScore = new Set();
-  for (const { sourceId, job, hash } of items) {
+  for (const { sourceId, job, hash, submittedBy = null } of items) {
     const posted = job.postedAt ? Math.floor(new Date(job.postedAt).getTime() / 1000) : null;
     const created = !seenUrl.has(job.url);
     seenUrl.add(job.url);
@@ -553,12 +582,12 @@ async function planUpsertJobs(env, items) {
       ).bind(t, trust, trust, hash));
     } else {
       row = { id: uid(), source_id: sourceId, source_url: job.url, title: job.title, company: job.company || "", location: job.location || "",
-        salary_text: job.salaryText || null, jd_text: job.jdText || "", skills: JSON.stringify(job.skills || []), content_hash: hash, posted_at: posted, first_seen_at: t };
+        salary_text: job.salaryText || null, jd_text: job.jdText || "", skills: JSON.stringify(job.skills || []), content_hash: hash, posted_at: posted, first_seen_at: t, submitted_by: submittedBy };
       rows.set(hash, row);
       stmts.push(env.DB.prepare(
-        `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(row.id, sourceId, job.url, job.title, row.company, row.location, row.salary_text, row.jd_text, row.skills, hash, posted, t, t, t));
+        `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at, submitted_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(row.id, sourceId, job.url, job.title, row.company, row.location, row.salary_text, row.jd_text, row.skills, hash, posted, t, t, t, submittedBy));
     }
     // Tin cũ chưa có JD mà feed giờ có → bù JD + skills rồi chấm lại.
     if (!jdOf(row) && row.jd_text !== "-" && job.jdText) {
@@ -573,8 +602,8 @@ async function planUpsertJobs(env, items) {
   return { stmts, out, toScore };
 }
 // Một tin (route submit): 2 truy vấn. Người gọi tự gửi score như trước.
-async function upsertJob(env, sourceId, job) {
-  const plan = await planUpsertJobs(env, [{ sourceId, job }]);
+async function upsertJob(env, sourceId, job, submittedBy = null) {
+  const plan = await planUpsertJobs(env, [{ sourceId, job, submittedBy }]);
   await dbBatch(env, plan.stmts);
   return plan.out[0];
 }
@@ -597,7 +626,7 @@ function extractJd(html, sourceId) {
 async function enrichJd(env, limit) {
   const { results } = await env.DB.prepare(
     `SELECT j.id, j.source_id, j.source_url, j.skills FROM jobs j
-     WHERE j.jd_text = '' AND j.source_id IN ('src-itviec','src-topdev')
+     WHERE j.jd_text = '' AND j.submitted_by IS NULL AND j.source_id IN ('src-itviec','src-topdev')
      ORDER BY EXISTS (SELECT 1 FROM job_matches m WHERE m.job_id = j.id AND m.tier IN ('strong','partial')) DESC, j.first_seen_at DESC LIMIT ?`
   ).bind(limit).all();
   let done = 0, failed = 0;
@@ -833,6 +862,7 @@ async function scoreBatch(env, jobIds, rescoreIds) {
 
   const stmts = [], strong = [];
   for (const x of pairs) {
+    if (x.job.submitted_by && x.job.submitted_by !== x.p.user_id) continue; // T-05: job dán tay chỉ chấm cho người nộp
     const { job, p } = x, s = (x.s = scoreJob(p, skillsOf.get(p.id), job));
     stmts.push(env.DB.prepare(MATCH_UPSERT).bind(job.id, p.id, s.rule, s.finalScore, s.tier, JSON.stringify(s.matched), JSON.stringify(s.missing), now()));
     if (s.tier !== "strong") continue;
@@ -1171,7 +1201,7 @@ export default {
     // Landing: job THẬT vừa quét chấm cho một hồ sơ mẫu cố định. Chỉ lấy link quét chuẩn của
     // ITviec/TopDev (không bao giờ là job dán tay), chỉ đọc, chỉ trả trường công khai; cache 5 phút.
     if (path === "/api/public/sample" && request.method === "GET") {
-      const SCRAPED = "(source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%')";
+      const SCRAPED = "submitted_by IS NULL AND (source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%')";
       const { results } = await env.DB.prepare(
         `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at, last_seen_at, repost_count
          FROM jobs WHERE ${SCRAPED} ORDER BY COALESCE(last_seen_at, first_seen_at) DESC LIMIT 60`
@@ -1400,11 +1430,12 @@ export default {
                   a.id AS app_id, a.stage AS app_stage
            FROM jobs j LEFT JOIN job_matches m ON m.job_id = j.id AND m.profile_id = ?
            LEFT JOIN applications a ON a.job_id = j.id AND a.profile_id = ?
+           WHERE j.submitted_by IS NULL OR j.submitted_by = ?
            ORDER BY COALESCE(m.final_score, 0) DESC, j.first_seen_at DESC LIMIT 300`
-        ).bind(profileId, profileId).all();
+        ).bind(profileId, profileId, user.id).all();
         rows = results;
       } else {
-        const { results } = await env.DB.prepare("SELECT j.*, NULL AS app_id, NULL AS app_stage FROM jobs j ORDER BY j.first_seen_at DESC LIMIT 300").all();
+        const { results } = await env.DB.prepare("SELECT j.*, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE j.submitted_by IS NULL OR j.submitted_by = ? ORDER BY j.first_seen_at DESC LIMIT 300").bind(user.id).all();
         rows = results;
       }
       // Phase 2 — flags + giải thích điểm (tính trực tiếp, không cần chấm lại)
@@ -1465,33 +1496,47 @@ export default {
     }
     if (path === "/api/jobs/submit" && request.method === "POST") {
       const b = await readBody(request);
+      const str = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+      const isHttpUrl = (v) => { try { return /^https?:$/.test(new URL(v).protocol); } catch (_) { return false; } };
+      const link = str(b.url, 2000), srcLink = str(b.source_url, 2000);
+      if (link && !isHttpUrl(link)) return json({ error: "invalid_url" }, 400);
+      if (srcLink && !isHttpUrl(srcLink)) return json({ error: "invalid_url" }, 400);
+      if (!link && !str(b.title, 300)) return json({ error: "nothing_to_submit" }, 400);
       if (!(await verifyTurnstile(env, b.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
+      // T-05: 20 job dán tay / giờ / người, đếm trên D1.
+      const recent = await env.DB.prepare("SELECT COUNT(*) AS c FROM jobs WHERE submitted_by = ? AND created_at > ?")
+        .bind(user.id, now() - 3600).first();
+      if (recent.c >= 20) return json({ error: "too_many_submissions" }, 429);
       await ensureSources(env);
       let job = null;
-      if (b.url) {
-        const sourceType = /topdev/.test(b.url) ? "topdev" : /itviec/.test(b.url) ? "itviec" : "manual";
+      if (link) {
+        const host = new URL(link).hostname;
+        const sourceType = /(^|\.)topdev\.vn$/.test(host) ? "topdev" : /(^|\.)itviec\.com$/.test(host) ? "itviec" : "manual";
         const src = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(sourceType === "manual" ? "topdev" : sourceType).first();
-        let jdText = b.jd_text || "", title = b.title || "", company = b.company || "";
+        let jdText = str(b.jd_text, 8000), title = str(b.title, 300), company = str(b.company, 200);
         if (!jdText) {
           try {
-            const html = await fetchText(b.url);
-            jdText = stripTags(html).slice(0, 8000);
-            const tm = html.match(/<title>([^<]+)<\/title>/i);
-            if (!title && tm) title = tm[1].split("|")[0].split(" - ")[0].trim();
+            const html = await fetchSubmittedPage(link);
+            if (html) {
+              jdText = stripTags(html).slice(0, 8000);
+              const tm = html.match(/<title>([^<]+)<\/title>/i);
+              if (!title && tm) title = tm[1].split("|")[0].split(" - ")[0].trim().slice(0, 300);
+            }
           } catch (e) { /* giữ jd rỗng nếu fetch lỗi */ }
         }
         job = await upsertJob(env, sourceType === "manual" ? null : src?.id || null, {
-          title: title || "Job không tiêu đề", company, location: b.location || "",
-          url: b.url, jdText, skills: extractSkillsFromText(jdText),
-          postedAt: null, salaryText: b.salary_text || null,
-        });
-      } else if (b.title) {
+          title: title || "Job không tiêu đề", company, location: str(b.location, 200),
+          url: link, jdText, skills: extractSkillsFromText(jdText),
+          postedAt: null, salaryText: str(b.salary_text, 100) || null,
+        }, user.id);
+      } else {
+        const title = str(b.title, 300), company = str(b.company, 200), jdText = str(b.jd_text, 8000);
         job = await upsertJob(env, null, {
-          title: b.title, company: b.company || "", location: b.location || "",
-          url: b.source_url || `manual://${await sha256hex(b.title + (b.company || ""))}`,
-          jdText: b.jd_text || "", skills: extractSkillsFromText(b.jd_text || ""),
-          postedAt: null, salaryText: b.salary_text || null,
-        });
+          title, company, location: str(b.location, 200),
+          url: srcLink || `manual://${await sha256hex(title + company)}`,
+          jdText, skills: extractSkillsFromText(jdText),
+          postedAt: null, salaryText: str(b.salary_text, 100) || null,
+        }, user.id);
       }
       if (!job) return json({ error: "nothing_to_submit" }, 400);
       await env.Q_SCORE.send({ kind: "score", jobId: job.id });
@@ -1499,7 +1544,7 @@ export default {
     }
     const jobMatch = path.match(/^\/api\/jobs\/([^/]+)$/);
     if (jobMatch && request.method === "GET") {
-      const job = await env.DB.prepare("SELECT * FROM jobs WHERE id = ?").bind(jobMatch[1]).first();
+      const job = await env.DB.prepare("SELECT * FROM jobs WHERE id = ? AND (submitted_by IS NULL OR submitted_by = ?)").bind(jobMatch[1], user.id).first();
       if (!job) return json({ error: "job_not_found" }, 404);
       const { results: matches } = await env.DB.prepare("SELECT m.* FROM job_matches m JOIN profiles p ON p.id = m.profile_id WHERE m.job_id = ? AND p.user_id = ?").bind(job.id, user.id).all();
       return json({ ...job, skills: JSON.parse(job.skills || "[]"), matches });
@@ -1544,6 +1589,8 @@ export default {
       const b = await readBody(request);
       if (!(await ownsProfile(env, user, b.profile_id))) return json({ error: "profile_not_found" }, 404);
       if (b.stage !== undefined && !APP_STAGES.includes(b.stage)) return json({ error: "invalid_stage" }, 400);
+      const visible = await env.DB.prepare("SELECT id FROM jobs WHERE id = ? AND (submitted_by IS NULL OR submitted_by = ?)").bind(b.job_id, user.id).first();
+      if (!visible) return json({ error: "job_not_found" }, 404);
       const id = uid();
       await env.DB.prepare(
         "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
@@ -1657,7 +1704,7 @@ export default {
       const role = (url.searchParams.get("role") || "").toLowerCase().trim();
       const level = (url.searchParams.get("level") || "").toLowerCase().trim();
       const loc = (url.searchParams.get("location") || "").toLowerCase().trim();
-      const { results } = await env.DB.prepare("SELECT j.title, j.location, j.salary_text, s.type AS src FROM jobs j LEFT JOIN sources s ON s.id = j.source_id WHERE j.salary_text IS NOT NULL AND j.salary_text != '' LIMIT 1000").all();
+      const { results } = await env.DB.prepare("SELECT j.title, j.location, j.salary_text, s.type AS src FROM jobs j LEFT JOIN sources s ON s.id = j.source_id WHERE j.submitted_by IS NULL AND j.salary_text IS NOT NULL AND j.salary_text != '' LIMIT 1000").all();
       const vals = [], sources = {}; let vnd = 0, usd = 0;
       for (const j of results) {
         const title = (j.title || "").toLowerCase();
