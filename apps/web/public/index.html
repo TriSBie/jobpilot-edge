@@ -757,10 +757,10 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .sk.more{padding:0 12px;border-style:dashed;color:var(--mute)}
 #currentSkills .skill{margin-top:8px;padding:8px 12px;border:var(--bw) solid var(--line);border-radius:var(--r-md)}
   #manualWeight button i,.sug .wbar button i{width:20px;height:10px}
-  #cvFile{display:block;width:100%;min-height:var(--tap);padding:4px 6px;border:var(--bw) solid var(--ink);border-radius:var(--r-md);background:var(--surface);color:var(--ink);font:600 14px var(--f-body)}
-  #cvFile:focus{border-color:var(--ink);background:var(--surface);box-shadow:none}
-  #cvFile:focus-visible,.sug input:focus-visible{box-shadow:var(--focus)}
-  #cvFile::file-selector-button{min-height:32px;margin-right:10px;padding:0 14px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:var(--surface);color:var(--ink);font:700 14px var(--f-body);cursor:pointer}
+  #cvFile,#cvDraftFile{display:block;width:100%;min-height:var(--tap);padding:4px 6px;border:var(--bw) solid var(--ink);border-radius:var(--r-md);background:var(--surface);color:var(--ink);font:600 14px var(--f-body)}
+  #cvFile:focus,#cvDraftFile:focus{border-color:var(--ink);background:var(--surface);box-shadow:none}
+  #cvFile:focus-visible,#cvDraftFile:focus-visible,.sug input:focus-visible{box-shadow:var(--focus)}
+  #cvFile::file-selector-button,#cvDraftFile::file-selector-button{min-height:32px;margin-right:10px;padding:0 14px;border:var(--bw) solid var(--ink);border-radius:var(--r-pill);background:var(--surface);color:var(--ink);font:700 14px var(--f-body);cursor:pointer}
   #suggestedList{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:0 20px}
   .sug{display:flex;align-items:center;gap:8px;min-height:var(--tap);border-bottom:var(--bw) dashed var(--line)}
   .sug input[type=checkbox]{flex:none;width:22px;height:22px;margin:0;accent-color:var(--brand)}
@@ -3535,7 +3535,7 @@ $("#currentSkills").addEventListener("click", async (ev) => {
     toast(e.message, "err");
   } finally {
     renderCurrentSkills();
-    const f = w && $(`#currentSkills .skill[data-i="${i}"] [data-w="${w}"]`);
+    const f = w ? $(`#currentSkills .skill[data-i="${i}"] [data-w="${w}"]`) : ($("#currentSkills [data-pick]") || $("#manualSkill"));
     if (f) f.focus(); // giữ focus cho người dùng bàn phím sau khi render lại
   }
 });
