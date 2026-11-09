@@ -852,7 +852,7 @@ async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
     env.DB.prepare("SELECT * FROM profiles WHERE is_active = 1"),
     env.DB.prepare("SELECT s.profile_id, s.skill, s.weight FROM profile_skills s JOIN profiles p ON p.id = s.profile_id WHERE p.is_active = 1"),
   ];
-  if (rescoreIds.length) reads.push(env.DB.prepare(`SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`));
+  if (rescoreIds.length) reads.push(env.DB.prepare(`SELECT * FROM jobs WHERE submitted_by IS NULL ORDER BY first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`)); // review T-103 L2: job dán tay chấm riêng khi nộp
   const [{ results: jobRows }, { results: profRows }, { results: skillRows }, recent] = await env.DB.batch(reads);
   const skillsOf = new Map();
   for (const r of skillRows) {
