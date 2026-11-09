@@ -1780,6 +1780,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       </section>
     </main>
     <div class="src-status"><span class="dot"></span><span id="sourceStatus" data-en="Job sources: checking…">Nguồn job: đang kiểm tra…</span></div>
+    <details id="funnelBox" class="hidden muted small" style="margin:.6rem 1rem"><summary data-en="Beta funnel (owner)">Funnel beta (owner)</summary><div id="funnelOut" style="overflow-x:auto"></div></details>
   </div>
 </div>
 
@@ -1852,6 +1853,10 @@ const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
 
 /* ---------------- i18n: tiếng Việt là nguồn, EN tra từ điển; ?lang=en hoặc nút EN/VI ---------------- */
 // EN: { "câu tiếng Việt trong code": "English" }. %s = tham số theo thứ tự.
+// T-88: nguồn ?ref (first-touch) giữ trong localStorage, gửi kèm đăng ký; server tự lọc ký tự.
+let REF = "";
+try { const q = new URLSearchParams(location.search).get("ref"); if (q && !localStorage.getItem("jp_ref")) localStorage.setItem("jp_ref", q); REF = localStorage.getItem("jp_ref") || q || ""; } catch (e) { /* bỏ qua */ }
+const refSource = () => REF;
 const EN = {};
 let LANG = "vi";
 try { LANG = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jp_lang") || "vi"; } catch (e) { /* bỏ qua */ }
@@ -2345,7 +2350,7 @@ $("#registerForm").addEventListener("submit", async (ev) => {
   if (pw !== pw2) { err.textContent = t("Hai mật khẩu chưa khớp nhau."); return; }
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang tạo tài khoản...");
   try {
-    const data = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ name, email, password: pw, turnstile_token: turnstileToken("registerTurnstile") }) });
+    const data = await api("/api/auth/register", { method: "POST", body: JSON.stringify({ name, email, password: pw, ref: refSource(), turnstile_token: turnstileToken("registerTurnstile") }) });
     await afterAuth(data, true);
   } catch (e) {
     err.textContent = authErr(e);
@@ -2571,6 +2576,18 @@ async function loadSourceStatus(){
         rows.map(r => `${srcLabel(r.type)} ${fmtDateTime(r.last_run_at)}`).join(" · ");
     }
   } catch (e) { /* trạng thái nguồn là phụ */ }
+  loadFunnel();
+}
+
+// T-88: funnel closed beta (owner), số tổng hợp theo nguồn × tuần đăng ký
+async function loadFunnel(){
+  if (!(state.user && state.user.is_owner)) return;
+  try {
+    const d = await api("/api/admin/funnel"), pct = (a, n) => n ? Math.round(100 * a / n) + "%" : "–";
+    const th = ["Nguồn", "Tuần", "Đăng ký", "Kích hoạt", "Bỏ ở bước CV", "Hồ sơ 0 kỹ năng", "Telegram", "D7", "D30"].map(h => `<th>${esc(t(h))}</th>`).join("");
+    $("#funnelOut").innerHTML = `<table><tr>${th}</tr>` + d.rows.map(r => `<tr><td>${esc(r.ref)}</td><td>${esc(r.week)}</td><td>${r.signups}</td><td>${r.activated}</td><td>${r.cv_dropout}</td><td>${r.profile_no_skills}</td><td>${r.telegram_linked}</td><td>${pct(r.d7_retained, r.d7_eligible)}</td><td>${pct(r.d30_retained, r.d30_eligible)}</td></tr>`).join("") + "</table>";
+    $("#funnelBox").classList.remove("hidden");
+  } catch (e) { /* funnel là phụ */ }
 }
 
 /* ---------------- Tabs ---------------- */
@@ -2898,6 +2915,8 @@ $("#scanBtn").addEventListener("click", async () => {
 
 /* ---------------- Kanban ---------------- */
 Object.assign(EN, {
+  "Funnel beta (owner)": "Beta funnel (owner)", "Nguồn": "Source", "Tuần": "Week", "Đăng ký": "Sign-ups", "Kích hoạt": "Activated",
+  "Bỏ ở bước CV": "Dropped at CV step", "Hồ sơ 0 kỹ năng": "Profile with 0 skills",
   "tự đóng: im lặng 14 ngày": "auto-closed: silent for 14 days",
   "Nên nộp": "Worth applying", "Bỏ qua": "Skip", "Kết luận": "Verdict", "Tuần này": "This week",
   "nộp": "applied", "phỏng vấn": "interviews", "offer": "offers", "bị từ chối": "rejected", "im lặng": "silent",
