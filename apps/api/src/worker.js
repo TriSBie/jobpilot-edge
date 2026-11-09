@@ -95,6 +95,8 @@ function json(data, status = 200) {
 const now = () => Math.floor(Date.now() / 1000);
 // ponytail: 14 ngày cố định cho mọi người dùng; thành cài đặt theo hồ sơ khi có người xin.
 const AUTO_CLOSE_DAYS = 14;
+// T-45: một giới hạn dùng chung cho danh sách /api/jobs và lượt chấm lại; dọn tin quét không thấy > 30 ngày, mỗi lượt cron tối đa 200 tin.
+const JOB_LIST_LIMIT = 300, JOB_RETENTION_DAYS = 30, JOB_CLEAN_BATCH = 200;
 const APP_STAGES = ["new", "saved", "applied", "interview", "offer", "rejected", "archived"]; // khớp STAGES của kanban (index.html)
 const OWNER_EMAIL = "tribui.it.work@gmail.com";
 // T-88: nguồn đăng ký ?ref — chỉ chữ thường/số/_/-, tối đa 40 ký tự, sai thì null.
@@ -207,7 +209,9 @@ async function ownsProfile(env, user, profileId) {
 
 async function enqueueProfileRescore(env, profileId) {
   try {
-    await env.Q_SCORE.send({ kind: "rescore_profile", profileId });
+    // T-50: kèm phiên bản hồ sơ (updated_at); scoreBatch bỏ lượt cũ hơn bản hiện tại.
+    const row = await env.DB.prepare("SELECT updated_at FROM profiles WHERE id = ?").bind(profileId).first();
+    await env.Q_SCORE.send({ kind: "rescore_profile", profileId, v: row && row.updated_at });
     return true;
   } catch (error) {
     console.error("profile rescore enqueue failed", profileId, error);
@@ -364,6 +368,7 @@ function filterTechTags(tags) {
 
 function slugifyKeyword(kw) {
   return kw.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d")
+    .replace(/\./g, "") // T-49: "Node.js" → nodejs (ITviec: node-js = 404)
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 function relativePostedToISO(text) {
@@ -840,14 +845,14 @@ const MATCH_UPSERT = `INSERT INTO job_matches (job_id, profile_id, rule_score, s
 const NOTIFY_STRONG = "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)";
 // Một lô queue score = 1 lần chạy Worker: 1 batch đọc (tin, hồ sơ, skills [+ 500 tin mới nhất nếu có rescore]),
 // chấm trong JS, ghi bằng batch, ≤ 1 SELECT users cho Telegram → 3 truy vấn, không tăng theo số hồ sơ hay số tin.
-async function scoreBatch(env, jobIds, rescoreIds) {
+async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
   if (!jobIds.length && !rescoreIds.length) return;
   const reads = [
     env.DB.prepare(`SELECT * FROM jobs WHERE id IN ${IN_JSON}`).bind(JSON.stringify(jobIds)),
     env.DB.prepare("SELECT * FROM profiles WHERE is_active = 1"),
     env.DB.prepare("SELECT s.profile_id, s.skill, s.weight FROM profile_skills s JOIN profiles p ON p.id = s.profile_id WHERE p.is_active = 1"),
   ];
-  if (rescoreIds.length) reads.push(env.DB.prepare("SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT 500"));
+  if (rescoreIds.length) reads.push(env.DB.prepare(`SELECT * FROM jobs ORDER BY first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`));
   const [{ results: jobRows }, { results: profRows }, { results: skillRows }, recent] = await env.DB.batch(reads);
   const skillsOf = new Map();
   for (const r of skillRows) {
@@ -863,7 +868,8 @@ async function scoreBatch(env, jobIds, rescoreIds) {
   const pairs = [];
   for (const id of jobIds) if (byId.has(id)) for (const p of profiles.values()) pairs.push({ job: byId.get(id), p, alert: true });
   const recentJobs = recent ? recent.results.map(parse).filter(Boolean) : [];
-  for (const id of rescoreIds) if (profiles.has(id)) for (const job of recentJobs) pairs.push({ job, p: profiles.get(id), alert: false });
+  // T-50: hồ sơ đã sửa sau lúc xếp message → có message mới hơn đang chờ, bỏ lượt cũ (không thêm truy vấn).
+  for (const id of rescoreIds) if (profiles.has(id) && !(ver.get(id) < profiles.get(id).updated_at)) for (const job of recentJobs) pairs.push({ job, p: profiles.get(id), alert: false });
 
   const stmts = [], strong = [];
   for (const x of pairs) {
@@ -983,14 +989,15 @@ async function runIngestSource(env, sourceType, keyword) {
     jobs = REMOTE_FETCHERS[sourceType] ? await REMOTE_FETCHERS[sourceType]()
       : sourceType === "topdev" ? await fetchTopDev(keyword) : await fetchITviec(keyword);
   } catch (e) {
+    // T-49: keyword lỗi không đè 'ok' của keyword khác vừa xong (<20 phút, cùng lượt cron); chỉ khi mọi keyword lỗi mới ra 'error'.
     // ITviec trả 404 cho slug không có tin: coi là 0 tin, không phải lỗi nguồn (T-49 một phần).
     if (e.message !== "HTTP 404" || REMOTE_FETCHERS[sourceType]) { status = "error"; error = e.message; }
   }
   const rawCount = jobs.length;
   jobs = jobs.filter((j) => titleGate(j.title));
   const plan = await planUpsertJobs(env, jobs.map((job) => ({ sourceId: source.id, job })));
-  plan.stmts.push(env.DB.prepare("UPDATE sources SET last_run_at = ?, last_status = ?, last_error = ? WHERE id = ?")
-    .bind(now(), status, error, source.id));
+  plan.stmts.push(env.DB.prepare("UPDATE sources SET last_run_at = ?, last_status = CASE WHEN ? = 'error' AND last_status = 'ok' AND last_run_at > ? THEN 'ok' ELSE ? END, last_error = ? WHERE id = ?")
+    .bind(now(), status, now() - 1200, status, error, source.id));
   await dbBatch(env, plan.stmts);
   await sendScores(env, plan.toScore);
   return { fetched: jobs.length, raw: rawCount, created: plan.out.filter((r) => r.created).length, status, error };
@@ -1518,6 +1525,7 @@ export default {
         stmts.push(env.DB.prepare("INSERT INTO profile_skills (profile_id, skill, weight, source) VALUES (?, ?, ?, ?)")
           .bind(profile.id, canonSkill(String(s.skill)), Math.min(5, Math.max(1, s.weight || 3)), s.source || "cv"));
       }
+      stmts.push(env.DB.prepare("UPDATE profiles SET updated_at = ? WHERE id = ?").bind(now(), profile.id)); // T-50: đổi kỹ năng = phiên bản mới
       await env.DB.batch(stmts);
       // chấm lại toàn bộ job hiện có cho profile này
       const rescoreQueued = await enqueueProfileRescore(env, profile.id);
@@ -1540,11 +1548,11 @@ export default {
            FROM jobs j LEFT JOIN job_matches m ON m.job_id = j.id AND m.profile_id = ?
            LEFT JOIN applications a ON a.job_id = j.id AND a.profile_id = ?
            WHERE j.submitted_by IS NULL OR j.submitted_by = ?
-           ORDER BY COALESCE(m.final_score, 0) DESC, j.first_seen_at DESC LIMIT 300`
+           ORDER BY COALESCE(m.final_score, 0) DESC, j.first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`
         ).bind(profileId, profileId, user.id).all();
         rows = results;
       } else {
-        const { results } = await env.DB.prepare("SELECT j.*, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE j.submitted_by IS NULL OR j.submitted_by = ? ORDER BY j.first_seen_at DESC LIMIT 300").bind(user.id).all();
+        const { results } = await env.DB.prepare(`SELECT j.*, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE j.submitted_by IS NULL OR j.submitted_by = ? ORDER BY j.first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`).bind(user.id).all();
         rows = results;
       }
       // Phase 2 — flags + giải thích điểm (tính trực tiếp, không cần chấm lại)
@@ -1856,7 +1864,9 @@ export default {
     if (batch.queue === "jobpilot-score") {
       const ids = (kind, key) => [...new Set(batch.messages.filter((m) => (m.body || {}).kind === kind).map((m) => m.body[key]))];
       try {
-        await scoreBatch(env, ids("score", "jobId"), ids("rescore_profile", "profileId"));
+        const ver = new Map();
+        for (const m of batch.messages) { const b = m.body || {}; if (b.kind === "rescore_profile") ver.set(b.profileId, Math.max(ver.get(b.profileId) ?? 0, b.v ?? Infinity)); }
+        await scoreBatch(env, ids("score", "jobId"), ids("rescore_profile", "profileId"), ver);
         batch.ackAll();
       } catch (e) {
         console.log("queue handler error:", batch.queue, e.message);
@@ -1909,6 +1919,13 @@ export default {
       // Purge (nghĩa vụ xoá dữ liệu) trước enrichJd (tốn subrequest, có thể chạm trần) — S2 review 05/11.
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
+      // T-45: xoá tin cũ không được đơn/phiên luyện nào tham chiếu; match xoá trước (FK). ORDER BY id để 2 câu cùng chọn một tập.
+      try {
+        const old = `SELECT id FROM jobs WHERE COALESCE(last_seen_at, first_seen_at) < ? AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.job_id = jobs.id)
+          AND NOT EXISTS (SELECT 1 FROM prep_sessions s WHERE s.job_id = jobs.id) ORDER BY id LIMIT ${JOB_CLEAN_BATCH}`;
+        const cut = now() - JOB_RETENTION_DAYS * 86400;
+        await env.DB.batch([env.DB.prepare(`DELETE FROM job_matches WHERE job_id IN (${old})`).bind(cut), env.DB.prepare(`DELETE FROM jobs WHERE id IN (${old})`).bind(cut)]);
+      } catch (e) { console.log("cleanup jobs error", e.message); }
       try { await enrichJd(env, 8); } catch (e) { console.log("enrichJd error", e.message); }
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at IS NULL").all();
