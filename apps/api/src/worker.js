@@ -34,7 +34,7 @@ export class UserHub {
 const CORS = {
   "access-control-allow-origin": "*",
   "access-control-allow-headers": "authorization, content-type, accept-language",
-  "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 };
 // i18n: tiếng Việt là nguồn; chỉ dịch chuỗi trả về client theo Accept-Language.
 // ponytail: chỉ có "en"; thêm ngôn ngữ thì đổi EN thành map theo lang.
