@@ -2581,7 +2581,7 @@ $("#tgUnlinkBtn").addEventListener("click", async () => {
   try { await api("/api/me/telegram", { method: "DELETE" }); tgShow("tgIdle"); } catch (e) { toast(e.message, "err"); }
 });
 /* Bot Telegram riêng của khách. Token chỉ nằm trong ô nhập và body PUT, không vào toast/log/URL. */
-const TG_OWN_ERR = { invalid_token_format: "Token không đúng định dạng (dạng 123456:ABC…)", token_rejected: "Telegram từ chối token này", bot_in_use: "Bot này đã được tài khoản khác dùng", webhook_failed: "Không đăng ký được webhook, thử lại", too_many_attempts: "Thử quá nhiều lần, đợi 1 giờ", own_bot_disabled: "Tính năng bot riêng chưa bật trên hệ thống", token_revoked: "Token đã bị thu hồi, hãy dán token mới" };
+const TG_OWN_ERR = { invalid_token_format: "Token không đúng định dạng (dạng 123456:ABC…)", token_rejected: "Telegram từ chối token này", bot_in_use: "Bot này đã được tài khoản khác dùng", webhook_failed: "Không đăng ký được webhook, thử lại", too_many_attempts: "Thử quá nhiều lần, đợi 1 giờ", own_bot_disabled: "Tính năng bot riêng chưa bật trên hệ thống", token_revoked: "Token đã bị thu hồi, hãy dán token mới", webhook_mismatch: "Webhook không còn trỏ về JobPilot, bấm Kiểm tra lại hoặc dán lại token", check_failed: "Không kiểm tra được bot, thử lại sau", own_bot_not_configured: "Chưa có bot riêng", key_changed: "Hệ thống đã đổi khoá, hãy dán lại token" };
 const tgOwnErr = (code) => TG_OWN_ERR[code] ? t(TG_OWN_ERR[code]) : (code || t("Lỗi không rõ"));
 // b: {username|bot_username, status, last_error} | null
 function tgOwnRender(b){
@@ -2611,12 +2611,15 @@ $("#tgOwnForm").addEventListener("submit", (ev) => {
     tgOwnRender({ bot_username: r.bot_username, status: "ok" });
   }, () => $("#tgOwnCheckBtn"));
 });
-$("#tgOwnCheckBtn").addEventListener("click", () => tgOwnRun(async () => tgOwnRender(await api("/api/me/telegram/bot/check", { method: "POST" })), $("#tgOwnCheckBtn")));
+$("#tgOwnCheckBtn").addEventListener("click", () => tgOwnRun(async () => {
+  try { tgOwnRender(await api("/api/me/telegram/bot/check", { method: "POST" })); }
+  catch (e) { if (e.message === "own_bot_not_configured") tgOwnRender(null); throw e; } // 404: ẩn Kiểm tra lại/Gỡ
+}, $("#tgOwnCheckBtn")));
 $("#tgOwnRemoveBtn").addEventListener("click", () => tgOwnRun(async () => {
   await api("/api/me/telegram/bot", { method: "DELETE" });
   tgShow("tgIdle"); tgOwnRender(null);
 }, $("#tgOwnToken")));
-Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)": "Invalid token format (looks like 123456:ABC…)", "Telegram từ chối token này": "Telegram rejected this token", "Bot này đã được tài khoản khác dùng": "This bot is already used by another account", "Không đăng ký được webhook, thử lại": "Couldn't register the webhook, try again", "Thử quá nhiều lần, đợi 1 giờ": "Too many attempts, wait 1 hour", "Tính năng bot riêng chưa bật trên hệ thống": "Own bot isn't enabled on this system yet", "Token đã bị thu hồi, hãy dán token mới": "The token was revoked, paste a new one", "Lỗi không rõ": "Unknown error", "⚠ Bot riêng lỗi: %s": "⚠ Own bot error: %s", "✅ Đang dùng @%s": "✅ Using @%s", "Đang kiểm tra…": "Checking…" });
+Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)": "Invalid token format (looks like 123456:ABC…)", "Telegram từ chối token này": "Telegram rejected this token", "Bot này đã được tài khoản khác dùng": "This bot is already used by another account", "Không đăng ký được webhook, thử lại": "Couldn't register the webhook, try again", "Thử quá nhiều lần, đợi 1 giờ": "Too many attempts, wait 1 hour", "Tính năng bot riêng chưa bật trên hệ thống": "Own bot isn't enabled on this system yet", "Token đã bị thu hồi, hãy dán token mới": "The token was revoked, paste a new one", "Lỗi không rõ": "Unknown error", "Webhook không còn trỏ về JobPilot, bấm Kiểm tra lại hoặc dán lại token": "The webhook no longer points to JobPilot, press Check again or paste the token again", "Không kiểm tra được bot, thử lại sau": "Couldn't check the bot, try again later", "Chưa có bot riêng": "No own bot yet", "Hệ thống đã đổi khoá, hãy dán lại token": "The system key changed, paste the token again", "⚠ Bot riêng lỗi: %s": "⚠ Own bot error: %s", "✅ Đang dùng @%s": "✅ Using @%s", "Đang kiểm tra…": "Checking…" });
 /* ---------------- Boot / profiles ---------------- */
 // T-86: kỹ năng khách chọn ở landing → hồ sơ thật qua API sẵn có, xong thì xoá.
 async function createTryProfile(){
