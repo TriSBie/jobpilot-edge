@@ -1154,6 +1154,17 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .sg-center{ text-align:center; margin-top:1rem; }
 .sg-live-who{ margin:.5rem 0 .9rem; color:var(--mute); font-size:.92rem; }
 .sg-live-who b{ color:var(--ink); }
+.sg-try{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--ink); border-radius:var(--r-md); box-shadow:var(--off) var(--off) 0 var(--shadow); padding:1.1rem 1.2rem; }
+.sg-try fieldset{ border:0; margin:.6rem 0; padding:0; min-width:0; }
+.sg-try legend{ font-weight:700; padding:0; margin-bottom:.4rem; }
+.sg-try-sk{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.sg-try-sk label{ cursor:pointer; }
+.sg-try-sk input{ position:absolute; opacity:0; }
+.sg-try-sk span{ display:inline-block; font-size:.85rem; font-weight:600; border-radius:var(--r-pill); padding:.2rem .65rem; border:var(--bw) solid var(--line); color:var(--mute); }
+.sg-try-sk input:checked + span{ border-color:var(--ink); color:var(--ink); background:var(--sun); }
+.sg-try-sk input:focus-visible + span{ outline:2px solid var(--ink); outline-offset:2px; }
+.sg-try-row{ display:flex; flex-wrap:wrap; gap:.8rem; align-items:end; }
+.sg-try-row label{ display:flex; flex-direction:column; gap:.2rem; font-weight:600; font-size:.9rem; }
 .sg-jobs{ list-style:none; margin:0; padding:0; display:grid; gap:.6rem; }
 .sg-jobs{ gap:0; }
 .sg-job{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.3rem 1rem; align-items:center; padding:.8rem 0; border-top:var(--bw) dashed var(--line); }
@@ -1326,6 +1337,21 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <li data-en="Delete all your data with one button">Xoá mọi dữ liệu bằng một nút</li>
       <li data-en="Never applies for you, never invents CV content">Không tự nộp đơn thay bạn, không bịa CV</li>
     </ul>
+    <section class="sg-try" id="lp-try" aria-labelledby="tryH">
+      <h2 id="tryH" style="margin:0" data-en="Try it without a CV">Thử ngay, không cần CV</h2>
+      <p class="sg-mut" data-en="Pick 3 to 8 skills and see the 10 best-matching postings, scored by the real formula.">Chọn 3 đến 8 kỹ năng để xem 10 tin hợp nhất, chấm bằng đúng công thức thật.</p>
+      <form id="tryForm">
+        <fieldset><legend data-en="Skills (3 to 8)">Kỹ năng (3 đến 8)</legend><div class="sg-try-sk"><label><input type="checkbox" name="trySk" value="Java"><span>Java</span></label><label><input type="checkbox" name="trySk" value="Spring Boot"><span>Spring Boot</span></label><label><input type="checkbox" name="trySk" value="Node.js"><span>Node.js</span></label><label><input type="checkbox" name="trySk" value="TypeScript"><span>TypeScript</span></label><label><input type="checkbox" name="trySk" value="JavaScript"><span>JavaScript</span></label><label><input type="checkbox" name="trySk" value="React"><span>React</span></label><label><input type="checkbox" name="trySk" value="Next.js"><span>Next.js</span></label><label><input type="checkbox" name="trySk" value="Angular"><span>Angular</span></label><label><input type="checkbox" name="trySk" value="Vue.js"><span>Vue.js</span></label><label><input type="checkbox" name="trySk" value="Python"><span>Python</span></label><label><input type="checkbox" name="trySk" value="Django"><span>Django</span></label><label><input type="checkbox" name="trySk" value="Go"><span>Go</span></label><label><input type="checkbox" name="trySk" value="PHP"><span>PHP</span></label><label><input type="checkbox" name="trySk" value="Laravel"><span>Laravel</span></label><label><input type="checkbox" name="trySk" value="C#"><span>C#</span></label><label><input type="checkbox" name="trySk" value=".NET"><span>.NET</span></label><label><input type="checkbox" name="trySk" value="PostgreSQL"><span>PostgreSQL</span></label><label><input type="checkbox" name="trySk" value="MySQL"><span>MySQL</span></label><label><input type="checkbox" name="trySk" value="MongoDB"><span>MongoDB</span></label><label><input type="checkbox" name="trySk" value="Redis"><span>Redis</span></label><label><input type="checkbox" name="trySk" value="Kafka"><span>Kafka</span></label><label><input type="checkbox" name="trySk" value="Docker"><span>Docker</span></label><label><input type="checkbox" name="trySk" value="Kubernetes"><span>Kubernetes</span></label><label><input type="checkbox" name="trySk" value="AWS"><span>AWS</span></label></div></fieldset>
+        <div class="sg-try-row">
+          <label><span data-en="Level">Cấp bậc</span><select id="tryLevel" class="input"><option value="fresher">Fresher</option><option value="junior">Junior</option><option value="middle" selected>Middle</option><option value="senior">Senior</option></select></label>
+          <label><span data-en="Location">Khu vực</span><select id="tryLoc" class="input"><option value="Hồ Chí Minh" data-en="Ho Chi Minh City">Hồ Chí Minh</option><option value="Hà Nội" data-en="Hanoi">Hà Nội</option><option value="Đà Nẵng" data-en="Da Nang">Đà Nẵng</option><option value="Remote">Remote</option></select></label>
+          <button class="btn primary" type="submit" data-en="Show jobs">Xem tin</button>
+        </div>
+      </form>
+      <p id="tryMsg" class="sg-mut" role="status"></p>
+      <ol class="sg-jobs" id="tryJobs"></ol>
+      <button class="btn ghost hidden" id="trySave" type="button" data-auth="register" data-en="Save as profile">Lưu thành hồ sơ</button>
+    </section>
     <div class="sg-live" id="lp-live" aria-live="polite">
       <div class="sg-live-head">
         <span class="sg-dot" aria-hidden="true"></span>
@@ -1858,6 +1884,7 @@ let REF = "";
 try { const q = new URLSearchParams(location.search).get("ref"); if (q && !localStorage.getItem("jp_ref")) localStorage.setItem("jp_ref", q); REF = localStorage.getItem("jp_ref") || q || ""; } catch (e) { /* bỏ qua */ }
 const refSource = () => REF;
 const EN = {};
+Object.assign(EN, {"Hồ sơ của tôi":"My profile","Tối đa 8 kỹ năng.":"At most 8 skills.","Chọn ít nhất 3 kỹ năng.":"Pick at least 3 skills.","Đang chấm điểm…":"Scoring…","Chưa có tin nào khớp, thử thêm kỹ năng khác.":"No matching postings yet, try other skills."});
 let LANG = "vi";
 try { LANG = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jp_lang") || "vi"; } catch (e) { /* bỏ qua */ }
 if (LANG !== "en") LANG = "vi";
@@ -2527,6 +2554,18 @@ $("#tgUnlinkBtn").addEventListener("click", async () => {
   try { await api("/api/me/telegram", { method: "DELETE" }); tgShow("tgIdle"); } catch (e) { toast(e.message, "err"); }
 });
 /* ---------------- Boot / profiles ---------------- */
+// T-86: kỹ năng khách chọn ở landing → hồ sơ thật qua API sẵn có, xong thì xoá.
+async function createTryProfile(){
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem("jp_try") || "null"); } catch (_) { return; }
+  if (!d || !Array.isArray(d.skills)) return;
+  try {
+    const p = await api("/api/profiles", { method: "POST", body: JSON.stringify({ name: t("Hồ sơ của tôi"), level: d.level, locations: [d.location] }) });
+    const full = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", { method: "POST", body: JSON.stringify({ skills: d.skills.map(skill => ({ skill, weight: 4, source: "manual" })) }) });
+    state.profiles.push(full);
+    try { localStorage.removeItem("jp_try"); } catch (_) { /* bỏ qua */ }
+  } catch (e) { /* giữ lại để lần sau thử tiếp */ }
+}
 async function boot(){
   const me = await api("/api/me");
   state.user = me.user;
@@ -2541,6 +2580,7 @@ async function boot(){
     state.profileId = state.profiles.length ? state.profiles[0].id : "";
     if (state.profileId) localStorage.setItem("jp_profile", state.profileId);
   }
+  await createTryProfile();
   showApp();
   renderProfileSelect();
   fillProfileForm();
@@ -4384,6 +4424,38 @@ if (LANG === "en") {
     var typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName || "");
     if (typing) return;
     if (e.key === "/") { e.preventDefault(); demoPalOpenFn(); }
+  });
+})();
+
+/* T-86: thử không cần CV. Kỹ năng chọn lưu localStorage; sau đăng nhập boot() tạo hồ sơ rồi xoá. */
+(function landingTry(){
+  const form = document.getElementById("tryForm");
+  if (!form) return;
+  const msg = $("#tryMsg"), list = $("#tryJobs"), save = $("#trySave");
+  const picked = () => $$("input[name=trySk]:checked", form).map(i => i.value);
+  const loc = (s) => [...new Set(String(s || "").split(",").map(x => x.trim()).filter(Boolean))].join(", ");
+  form.addEventListener("change", e => {
+    if (e.target.name === "trySk" && picked().length > 8) { e.target.checked = false; msg.textContent = t("Tối đa 8 kỹ năng."); }
+  });
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const skills = picked();
+    if (skills.length < 3) { msg.textContent = t("Chọn ít nhất 3 kỹ năng."); return; }
+    const level = $("#tryLevel").value, location = $("#tryLoc").value;
+    msg.textContent = t("Đang chấm điểm…");
+    try {
+      const qs = new URLSearchParams({ skills: skills.join(","), level, location });
+      const r = await fetch(API_BASE + "/api/public/try?" + qs, { headers: { "Accept-Language": LANG } });
+      if (!r.ok) throw new Error(r.status);
+      const jobs = (await r.json()).jobs || [];
+      msg.textContent = jobs.length ? "" : t("Chưa có tin nào khớp, thử thêm kỹ năng khác.");
+      list.innerHTML = jobs.map(j => `<li class="sg-job"><a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
+        <span class="score-pill ${esc(j.tier)}">${t("%sđ", Math.round(j.score))}</span>
+        <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}${j.salary ? ", " + esc(j.salary) : ""}</span>
+        <span class="sg-chips">${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}</span></li>`).join("");
+      try { localStorage.setItem("jp_try", JSON.stringify({ skills, level, location })); } catch (_) { /* bỏ qua */ }
+      save.classList.toggle("hidden", !jobs.length);
+    } catch (_) { msg.textContent = t("Không tải được tin lúc này. Thử tải lại trang."); }
   });
 })();
 

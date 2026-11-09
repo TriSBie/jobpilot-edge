@@ -924,6 +924,30 @@ async function ingestKeywords(env) {
   } catch (e) { console.log("ingestKeywords fallback:", e.message); }
   return out;
 }
+// T-87: hồ sơ mới/đổi vai trò/kỹ năng → quét ngay từ khoá của hồ sơ đó (cùng cách suy ra như ingestKeywords),
+// bỏ từ khoá nền, tối đa 3, mỗi từ khoá 1 lần/6 giờ (KV) để lưu liên tục không dồn queue. Không bao giờ ném lỗi.
+async function enqueueProfileScan(env, profileId) {
+  try {
+    const r = await env.DB.prepare(
+      "SELECT p.target_roles, (SELECT json_group_array(skill) FROM (SELECT skill FROM profile_skills WHERE profile_id = p.id ORDER BY weight DESC, skill LIMIT 2)) AS top FROM profiles p WHERE p.id = ? AND p.is_active = 1"
+    ).bind(profileId).first();
+    if (!r) return 0;
+    const base = new Set(DEFAULT_KEYWORDS.map((k) => k.toLowerCase())), picked = [];
+    for (const kw of [...JSON.parse(r.target_roles || "[]"), ...JSON.parse(r.top || "[]")]) {
+      const k = String(kw).trim(), low = k.toLowerCase();
+      if (k.length <= 2 || base.has(low) || GENERIC_KEYWORDS.has(low)) continue;
+      base.add(low);
+      if (await env.KV.get("scankw:" + low)) continue;
+      picked.push(k);
+      if (picked.length >= 3) break;
+    }
+    for (const k of picked) {
+      await env.KV.put("scankw:" + k.toLowerCase(), "1", { expirationTtl: 21600 });
+      for (const sourceType of ["itviec", "topdev"]) await env.Q_INGEST.send({ kind: "ingest", sourceType, keyword: k });
+    }
+    return picked.length;
+  } catch (e) { console.log("enqueueProfileScan lỗi:", e.message); return 0; }
+}
 async function ensureSources(env) {
   for (const type of ["topdev", "itviec"]) {
     await env.DB.prepare(
@@ -1205,14 +1229,28 @@ export default {
 
     // Landing: job THẬT vừa quét chấm cho một hồ sơ mẫu cố định. Chỉ lấy link quét chuẩn của
     // ITviec/TopDev (không bao giờ là job dán tay), chỉ đọc, chỉ trả trường công khai; cache 5 phút.
-    if (path === "/api/public/sample" && request.method === "GET") {
+    // /api/public/try: cùng đường chấm, hồ sơ do khách chọn (allow-list chặt), top 10, cache theo tham số đã chuẩn hoá.
+    if ((path === "/api/public/sample" || path === "/api/public/try") && request.method === "GET") {
+      const isTry = path === "/api/public/try";
+      let tryP = null, cacheKey = null;
+      if (isTry) {
+        const skills = [...new Set((url.searchParams.get("skills") || "").split(",").map((x) => x.trim()).filter(Boolean).map(canonSkill))];
+        const level = url.searchParams.get("level") || "middle", location = url.searchParams.get("location") || "Hồ Chí Minh";
+        if (!skills.length || skills.length > 8 || skills.some((x) => !SKILL_CATALOG.includes(x))) return json({ error: "invalid_skills" }, 400);
+        if (!["fresher", "junior", "middle", "senior"].includes(level)) return json({ error: "invalid_level" }, 400);
+        if (!["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"].includes(location)) return json({ error: "invalid_location" }, 400);
+        tryP = { skills: skills.sort(), level, location };
+        cacheKey = new Request("https://cache.jobpilot.internal/try?" + new URLSearchParams({ s: tryP.skills.join(","), l: level, c: location, lang }));
+        const hit = typeof caches !== "undefined" ? await caches.default.match(cacheKey) : null;
+        if (hit) return hit;
+      }
       const SCRAPED = "submitted_by IS NULL AND (source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%')";
       const { results } = await env.DB.prepare(
         `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at, last_seen_at, repost_count
-         FROM jobs WHERE ${SCRAPED} ORDER BY COALESCE(last_seen_at, first_seen_at) DESC LIMIT 60`
+         FROM jobs WHERE ${SCRAPED} ORDER BY COALESCE(last_seen_at, first_seen_at) DESC LIMIT ${isTry ? 150 : 60}`
       ).all();
-      const sampleProfile = { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
-      const sampleSkills = [
+      const sampleProfile = isTry ? { level: tryP.level, locations: [tryP.location] } : { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
+      const sampleSkills = isTry ? tryP.skills.map((skill) => ({ skill, weight: 4 })) : [
         { skill: "Java", weight: 5 }, { skill: "Spring Boot", weight: 5 }, { skill: "PostgreSQL", weight: 3 },
         { skill: "Docker", weight: 3 }, { skill: "REST APIs", weight: 3 }, { skill: "Git", weight: 2 },
       ];
@@ -1242,10 +1280,12 @@ export default {
                 (SELECT MAX(last_run_at) FROM sources) AS last_scan`
       ).bind(now() - 86400).first();
       const res = json({
-        profile: { label: tr(lang, "Backend Java · 3 năm · Hồ Chí Minh / Remote"), skills: sampleSkills },
-        jobs: scored.slice(0, 5), stats,
+        profile: isTry ? { level: tryP.level, location: tryP.location, skills: sampleSkills }
+          : { label: tr(lang, "Backend Java · 3 năm · Hồ Chí Minh / Remote"), skills: sampleSkills },
+        jobs: scored.slice(0, isTry ? 10 : 5), stats,
       });
       res.headers.set("cache-control", "public, max-age=300");
+      if (isTry && typeof caches !== "undefined") (ctx && ctx.waitUntil(caches.default.put(cacheKey, res.clone())));
       return res;
     }
 
@@ -1430,6 +1470,7 @@ export default {
       ).bind(id, user.id, b.name || "Hồ sơ mới", JSON.stringify(b.target_roles || []), b.level || null,
         JSON.stringify(b.locations || []), b.salary_min || null, now(), now()).run();
       const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(id).first();
+      await enqueueProfileScan(env, id);
       return json(await profileWithSkills(env, p), 201);
     }
     const profMatch = path.match(/^\/api\/profiles\/([^/]+)$/);
@@ -1444,6 +1485,7 @@ export default {
         "salary_min" in b ? (b.salary_min || null) : p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
       // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
       const rescoreQueued = await enqueueProfileRescore(env, p.id);
+      if ("target_roles" in b) await enqueueProfileScan(env, p.id);
       const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
       return json({ ...(await profileWithSkills(env, upd)), rescore_queued: rescoreQueued });
     }
@@ -1479,6 +1521,7 @@ export default {
       await env.DB.batch(stmts);
       // chấm lại toàn bộ job hiện có cho profile này
       const rescoreQueued = await enqueueProfileRescore(env, profile.id);
+      await enqueueProfileScan(env, profile.id);
       return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
     }
 
