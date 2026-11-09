@@ -97,6 +97,8 @@ const now = () => Math.floor(Date.now() / 1000);
 const AUTO_CLOSE_DAYS = 14;
 const APP_STAGES = ["new", "saved", "applied", "interview", "offer", "rejected", "archived"]; // khớp STAGES của kanban (index.html)
 const OWNER_EMAIL = "tribui.it.work@gmail.com";
+// T-88: nguồn đăng ký ?ref — chỉ chữ thường/số/_/-, tối đa 40 ký tự, sai thì null.
+const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
 const uid = () => crypto.randomUUID();
 async function sha256hex(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -1261,8 +1263,8 @@ export default {
       const rec = await makePasswordRecord(body.password);
       const id = uid();
       await env.DB.prepare(
-        "INSERT INTO users (id, email, name, timezone, digest_email, created_at, password_hash, password_salt, password_set_at) VALUES (?, ?, ?, 'Asia/Saigon', ?, ?, ?, ?, ?)"
-      ).bind(id, email, name, email, now(), rec.hash, rec.salt, now()).run();
+        "INSERT INTO users (id, email, name, timezone, digest_email, created_at, password_hash, password_salt, password_set_at, ref_source, last_active_day) VALUES (?, ?, ?, 'Asia/Saigon', ?, ?, ?, ?, ?, ?, ?)"
+      ).bind(id, email, name, email, now(), rec.hash, rec.salt, now(), cleanRef(body.ref), Math.floor(now() / 86400)).run();
       const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
       return json(await issueSession(env, user), 201);
     }
@@ -1326,6 +1328,13 @@ export default {
     const user = await getUser(request, env);
     if (!user) return json({ error: "unauthorized" }, 401);
 
+    // T-88: ghi ngày hoạt động tối đa 1 lần/ngày/user (chỉ khi khác hôm nay), không ghi mỗi request.
+    const today = Math.floor(now() / 86400);
+    if (user.last_active_day !== today) {
+      await env.DB.prepare("UPDATE users SET last_active_day = ? WHERE id = ?").bind(today, user.id).run();
+      user.last_active_day = today;
+    }
+
     if (path === "/api/realtime") {
       return env.USER_HUB.get(env.USER_HUB.idFromName(user.id)).fetch(request);
     }
@@ -1341,6 +1350,20 @@ export default {
       for (const p of results) profiles.push(await profileWithSkills(env, p));
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id }, profiles });
+    }
+    // T-88: funnel closed beta, chỉ số tổng hợp theo nguồn × tuần đăng ký (không email/id). 1 query D1.
+    if (path === "/api/admin/funnel" && request.method === "GET") {
+      const { results } = await env.DB.prepare(`
+        SELECT COALESCE(ref_source, 'direct') AS ref, strftime('%Y-W%W', created_at, 'unixepoch') AS week,
+          COUNT(*) AS signups,
+          SUM(EXISTS (SELECT 1 FROM profiles p WHERE p.user_id = u.id AND (SELECT COUNT(*) FROM profile_skills s WHERE s.profile_id = p.id) >= 3)) AS activated,
+          SUM(consent_cv_at IS NOT NULL AND NOT EXISTS (SELECT 1 FROM files f WHERE f.user_id = u.id AND f.kind = 'cv')) AS cv_dropout,
+          SUM(EXISTS (SELECT 1 FROM profiles p WHERE p.user_id = u.id) AND NOT EXISTS (SELECT 1 FROM profiles p JOIN profile_skills s ON s.profile_id = p.id WHERE p.user_id = u.id)) AS profile_no_skills,
+          SUM(telegram_chat_id IS NOT NULL) AS telegram_linked,
+          SUM(created_at / 86400 + 7 <= ?1) AS d7_eligible, SUM(created_at / 86400 + 7 <= ?1 AND last_active_day >= created_at / 86400 + 7) AS d7_retained,
+          SUM(created_at / 86400 + 30 <= ?1) AS d30_eligible, SUM(created_at / 86400 + 30 <= ?1 AND last_active_day >= created_at / 86400 + 30) AS d30_retained
+        FROM users u WHERE deleted_at IS NULL GROUP BY ref, week ORDER BY week DESC, ref`).bind(today).all();
+      return json({ today, rows: results });
     }
     if (path === "/api/admin/quota") {
       const out = {};
