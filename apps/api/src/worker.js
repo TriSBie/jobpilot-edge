@@ -190,9 +190,12 @@ async function getUser(request, env) {
   const auth = request.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token) return null;
-  const userId = await env.KV.get(`session:${token}`);
-  if (!userId) return null;
-  return env.DB.prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL").bind(userId).first();
+  const v = await env.KV.get(`session:${token}`);
+  if (!v) return null;
+  const [userId, iat] = v.split("|"); // T-22: "userId|iat(ms)"; giá trị cũ chỉ có userId
+  const u = await env.DB.prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL").bind(userId).first();
+  if (u && u.sessions_valid_after && !(Number(iat) >= u.sessions_valid_after)) return null; // session cũ / trước mốc đổi mật khẩu
+  return u;
 }
 
 async function ownsProfile(env, user, profileId) {
@@ -1049,7 +1052,7 @@ async function verifyPassword(password, saltB64, hashB64) {
 }
 async function issueSession(env, user) {
   const token = randomToken();
-  await env.KV.put(`session:${token}`, user.id, { expirationTtl: 2592000 });
+  await env.KV.put(`session:${token}`, `${user.id}|${Date.now()}`, { expirationTtl: 2592000 });
   return { token, user: { id: user.id, email: user.email, name: user.name } };
 }
 // Giới hạn đăng nhập sai bằng D1 (không dùng KV: Free chỉ 1.000 lượt ghi/ngày, email lạ từng đốt hết).
@@ -1297,6 +1300,22 @@ export default {
     if (path === "/api/auth/set-password" && request.method === "POST") {
       return json({ error: "password_setup_disabled" }, 410);
     }
+    if (path === "/api/auth/reset-password" && request.method === "POST") { // T-22: token 1 lần do owner phát
+      const body = await readBody(request);
+      const pwErr = passwordError(body.new_password);
+      if (pwErr) return json({ error: pwErr }, 400);
+      const tk = typeof body.token === "string" ? body.token : "";
+      const userId = tk ? await env.KV.get(`pwreset:${tk}`) : null;
+      if (!userId) return json({ error: "invalid_reset_token" }, 400);
+      await env.KV.delete(`pwreset:${tk}`); // xoá trước khi đổi: dùng 1 lần
+      const rec = await makePasswordRecord(body.new_password);
+      const r = await env.DB.prepare(
+        "UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ?, sessions_valid_after = ? WHERE id = ? AND deleted_at IS NULL"
+      ).bind(rec.hash, rec.salt, now(), Date.now(), userId).run();
+      if (r.meta && r.meta.changes === 0) return json({ error: "invalid_reset_token" }, 400);
+      await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(userId).run();
+      return json({ ok: true });
+    }
 
     // Webhook Telegram: không Bearer, xác thực bằng secret header; luôn 200 sau khi qua kiểm tra.
     if (path === "/api/telegram/webhook" && request.method === "POST") {
@@ -1341,6 +1360,30 @@ export default {
       for (const p of results) profiles.push(await profileWithSkills(env, p));
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id }, profiles });
+    }
+    if (path === "/api/auth/change-password" && request.method === "POST") { // T-22
+      const b = await readBody(request);
+      const pwErr = passwordError(b.new_password);
+      if (pwErr) return json({ error: pwErr }, 400);
+      if (!b.current_password || typeof b.current_password !== "string" || !user.password_hash) return json({ error: "invalid_credentials" }, 401);
+      if (!(await loginAttemptAllowed(env, user.id))) return json({ error: "too_many_attempts" }, 429);
+      if (!(await verifyPassword(b.current_password, user.password_salt, user.password_hash))) return json({ error: "invalid_credentials" }, 401);
+      const rec = await makePasswordRecord(b.new_password);
+      const t0 = Date.now();
+      await env.DB.batch([
+        env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ?, sessions_valid_after = ? WHERE id = ?").bind(rec.hash, rec.salt, now(), t0, user.id),
+        env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id),
+      ]);
+      await env.KV.delete(`session:${request.headers.get("Authorization").slice(7)}`);
+      return json(await issueSession(env, user)); // token mới (iat >= mốc) để người gọi vẫn đăng nhập
+    }
+    if (path === "/api/admin/password-reset" && request.method === "POST") { // T-22: owner gửi link thủ công (chưa có email)
+      const email = ((await readBody(request)).email || "").trim().toLowerCase();
+      const target = await env.DB.prepare("SELECT id FROM users WHERE email = ? AND deleted_at IS NULL").bind(email).first();
+      if (!target) return json({ error: "account_not_found" }, 404);
+      const token = randomToken();
+      await env.KV.put(`pwreset:${token}`, target.id, { expirationTtl: 1800 });
+      return json({ link: `https://jobpilot-edge.pages.dev/?reset=${token}`, expires_in: 1800 });
     }
     if (path === "/api/admin/quota") {
       const out = {};

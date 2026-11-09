@@ -1513,6 +1513,19 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
         <button id="restoreBtn" class="btn ghost hidden" type="button" style="width:100%;margin-top:.5rem" data-en="Restore account">Khôi phục tài khoản</button>
       </form>
 
+      <form id="resetForm" class="hidden">
+        <div class="field">
+          <label for="resetPw" data-en="New password">Mật khẩu mới</label>
+          <input id="resetPw" type="password" required placeholder="Tối thiểu 8 ký tự" data-en-placeholder="At least 8 characters" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label for="resetPw2" data-en="Confirm password">Nhập lại mật khẩu</label>
+          <input id="resetPw2" type="password" required placeholder="Nhập lại mật khẩu" data-en-placeholder="Re-enter your password" autocomplete="new-password">
+        </div>
+        <button id="resetBtn" class="btn primary" type="submit" style="width:100%" data-en="Set new password">Đặt mật khẩu mới</button>
+        <div id="resetError"></div>
+      </form>
+
       <form id="registerForm" class="hidden">
         <div class="field">
           <label for="regName" data-en="Full name">Họ tên</label>
@@ -1742,6 +1755,19 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
           </div>
         </section>
         </div>
+        <section class="card-p" style="margin-top:1.2rem">
+          <h3 data-en="Change password">Đổi mật khẩu</h3>
+          <p class="muted small" style="margin:.2rem 0 .8rem" data-en="You stay logged in here; every other device is logged out.">Bạn vẫn đăng nhập ở máy này; các thiết bị khác bị đăng xuất.</p>
+          <div class="field">
+            <label for="cpCurrent" data-en="Current password">Mật khẩu hiện tại</label>
+            <input id="cpCurrent" class="input" type="password" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label for="cpNew" data-en="New password">Mật khẩu mới</label>
+            <input id="cpNew" class="input" type="password" autocomplete="new-password" placeholder="Tối thiểu 8 ký tự" data-en-placeholder="At least 8 characters">
+          </div>
+          <button id="cpBtn" class="btn" type="button" style="margin-top:.9rem" data-en="Change password">Đổi mật khẩu</button>
+        </section>
         <section class="card-p" style="margin-top:1.2rem">
           <h3 data-en="Delete account">Xoá tài khoản</h3>
           <p class="muted small" style="margin:.2rem 0 .8rem" data-en="Your account is marked for deletion right away and you are logged out. Within 7 days you can restore it by logging in again; after that your profiles, CV, skills, application cards and account are permanently erased.">Tài khoản được đánh dấu xoá ngay và bạn bị đăng xuất. Trong 7 ngày bạn có thể khôi phục bằng cách đăng nhập lại; sau đó hồ sơ, CV, kỹ năng, thẻ ứng tuyển và tài khoản bị xoá hẳn.</p>
@@ -1997,6 +2023,13 @@ Object.assign(EN, {
   "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.": "Your session has expired. Please log in again.",
   "Lỗi %s": "Error %s",
   "Đã tải dữ liệu của bạn.": "Your data has been downloaded.",
+  // T-22 đổi / đặt lại mật khẩu
+  "Đổi mật khẩu": "Change password", "Đặt mật khẩu mới": "Set new password",
+  "Đã đổi mật khẩu. Các thiết bị khác đã bị đăng xuất.": "Password changed. Other devices have been logged out.",
+  "Đã đặt mật khẩu mới. Hãy đăng nhập.": "New password set. Please log in.",
+  "Link đặt lại mật khẩu không đúng hoặc đã hết hạn — nhờ quản trị viên gửi link mới.": "This reset link is invalid or has expired. Ask the admin for a new link.",
+  "Hãy nhập mật khẩu hiện tại và mật khẩu mới.": "Enter your current and new password.",
+  "Hai mật khẩu chưa khớp.": "The two passwords do not match.",
   // AUTH_ERR
   "Email hoặc mật khẩu chưa đúng.": "Incorrect email or password.",
   "Email này đã có tài khoản — hãy chuyển sang tab Đăng nhập.": "This email already has an account. Switch to the Log in tab.",
@@ -2134,6 +2167,7 @@ const AUTH_ERR = {
   password_too_short: "Mật khẩu tối thiểu 8 ký tự.",
   password_too_long: "Mật khẩu tối đa 128 ký tự.",
   missing_password: "Hãy nhập mật khẩu.",
+  invalid_reset_token: "Link đặt lại mật khẩu không đúng hoặc đã hết hạn — nhờ quản trị viên gửi link mới.",
   too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
   turnstile_failed: "Không tải được bước xác minh, tải lại trang.",
   too_many_registrations: "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.",
@@ -2249,7 +2283,9 @@ function setAuthMode(mode){
   $$("#authTabs button").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
   $("#loginForm").classList.toggle("hidden", mode !== "login");
   $("#registerForm").classList.toggle("hidden", mode !== "register");
-  $("#authTabs").classList.remove("hidden");
+  $("#resetForm").classList.toggle("hidden", mode !== "reset");
+  $("#authTabs").classList.toggle("hidden", mode === "reset");
+  if (mode === "reset") { $("#authTitle").textContent = t("Đặt mật khẩu mới"); $("#authSub").textContent = ""; return; }
   turnstileRender(mode === "register" ? "registerTurnstile" : "loginTurnstile"); // render khi form hiện: widget trong display:none đo sai kích thước
   if (mode === "register") {
     $("#authTitle").innerHTML = t("Tạo tài khoản <em>miễn phí.</em>");
@@ -4013,6 +4049,29 @@ $("#delAccountBtn").addEventListener("click", async () => {
     toast(t("Đã xoá tài khoản. Bạn có 7 ngày để khôi phục bằng cách đăng nhập lại."), "ok");
   } catch (e) { toast(authErr(e), "err"); }
 });
+$("#cpBtn").addEventListener("click", async () => { // T-22: server trả token mới, các token khác bị huỷ
+  const current_password = $("#cpCurrent").value, new_password = $("#cpNew").value;
+  if (!current_password || !new_password) { toast(t("Hãy nhập mật khẩu hiện tại và mật khẩu mới."), "err"); return; }
+  try {
+    const d = await api("/api/auth/change-password", { method: "POST", body: JSON.stringify({ current_password, new_password }), keepSession: true });
+    state.token = d.token; localStorage.setItem("jp_token", d.token);
+    $("#cpCurrent").value = ""; $("#cpNew").value = "";
+    toast(t("Đã đổi mật khẩu. Các thiết bị khác đã bị đăng xuất."), "ok");
+  } catch (e) { toast(authErr(e), "err"); }
+});
+let resetToken = "";
+$("#resetForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const err = $("#resetError"); err.textContent = "";
+  if ($("#resetPw").value !== $("#resetPw2").value) { err.textContent = t("Hai mật khẩu chưa khớp."); return; }
+  try {
+    await api("/api/auth/reset-password", { method: "POST", body: JSON.stringify({ token: resetToken, new_password: $("#resetPw").value }), keepSession: true });
+    resetToken = ""; $("#resetPw").value = ""; $("#resetPw2").value = "";
+    $("#resetForm").classList.add("hidden");
+    setAuthMode("login");
+    toast(t("Đã đặt mật khẩu mới. Hãy đăng nhập."), "ok");
+  } catch (e) { err.textContent = authErr(e); }
+});
 $("#restoreBtn").addEventListener("click", async () => {
   const btn = $("#restoreBtn"), err = $("#loginError");
   btn.disabled = true; btn.textContent = t("Đang khôi phục...");
@@ -4026,6 +4085,14 @@ $("#restoreBtn").addEventListener("click", async () => {
 });
 
 (async function init(){
+  try { // T-22: ?reset=<token> -> form đặt mật khẩu mới, rồi xoá query khỏi URL
+    const u = new URL(location.href), rt = u.searchParams.get("reset");
+    if (rt) {
+      resetToken = rt; u.searchParams.delete("reset"); history.replaceState(null, "", u.pathname + u.search + u.hash);
+      showAuth("reset");
+      return;
+    }
+  } catch (e) { /* bỏ qua */ }
   if (!state.token) { showLanding(); return; }
   try {
     await boot();
