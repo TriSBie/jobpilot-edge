@@ -138,7 +138,7 @@ const run = (worker, queue, bodies, env) => worker.queue({ queue, messages: msgs
   // Kết quả ghi (giống bản cũ — xem commit perf/d1-batch): 10 hồ sơ có skill × lô tin; 3 tin mạnh × 10 hồ sơ = 30 strong,
   // notification khử trùng theo người → 3 × 5 = 15; Telegram 1 tin/người: u1, u3 (u2 vướng tgburst, u4/u5 không có chat).
   assert.deepStrictEqual({ ...result.score, queries: 0 }, { queries: 0, matches: 10 * Math.min(nScore, 10), strong: 30, notifications: 15, broadcasts: 30, telegram: 2, notificationsAfterRerun: 15 });
-  assert.strictEqual(result.rescore.matches, 10 * 500, 'rescore: 10 hồ sơ × 500 tin mới nhất');
+  assert.strictEqual(result.rescore.matches, 10 * 300, 'rescore: 10 hồ sơ × 300 tin mới nhất (JOB_LIST_LIMIT, T-45)');
   // Ingest: 5 lần quét × 50 tin, mỗi lần chồng 25 → 150 URL mỗi nguồn; 10 tin có sẵn không tính created.
   const per = (Math.ceil(nIngest / 2) - 1) * 25 + 50;
   assert.deepStrictEqual({ ...result.ingest, queries: 0 }, { queries: 0, jobs: 2 * per, created: 2 * per - 10, scoreMsgs: 2 * per - 10 + 5, jdFilled: 5, seenTwice: 2 * (per - 50) + 10, sourceRuns: 2 });
