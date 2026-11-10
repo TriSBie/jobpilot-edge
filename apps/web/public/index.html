@@ -3776,7 +3776,7 @@ function ivSave(id, patch){
   return p;
 }
 function ivOpen(appId, opener){
-  const a = (state.applications || []).find(x => String(x.id) === String(appId));
+  const a = (state.applications || []).find(x => String(x.id) === String(appId) || (x.next_interview && String(x.next_interview.id) === String(appId))); // thông báo interview gửi ref_id = id vòng
   if (!a) { toast(t("Không tìm thấy đơn này trên Kanban."), "err"); return; }
   const d = $("#ivDlg");
   iv.app = a; iv.rows = []; iv.q = new Map();
