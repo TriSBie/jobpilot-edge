@@ -2689,7 +2689,7 @@ function nfBadge(n, attention){
   $("#nfReadAll").disabled = !n;
 }
 async function nfRefresh(){
-  try { const me = await api("/api/me"); nfBadge(me.unread_count, me.has_attention); } catch (e) { /* giữ số cũ */ }
+  try { const me = await api("/api/me"); nfBadge(me.user.unread_count, me.user.has_attention); } catch (e) { /* giữ số cũ */ }
 }
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && state.token && !$("#appView").classList.contains("hidden")) nfRefresh();
@@ -2905,8 +2905,8 @@ async function boot(){
   $("#aiOptOut").checked = !!me.user.ai_opt_out;
   tgShow(me.user.telegram_linked ? "tgDone" : "tgIdle");
   tgOwnRender(me.user.telegram_bot || null);
-  nfBadge(me.unread_count, me.has_attention);
-  if (jobsPrevSeen === undefined) jobsPrevSeen = me.jobs_seen_at == null ? null : Number(me.jobs_seen_at); // mốc phiên trước, giữ cả phiên
+  nfBadge(me.user.unread_count, me.user.has_attention);
+  if (jobsPrevSeen === undefined) jobsPrevSeen = me.user.jobs_seen_at == null ? null : Number(me.user.jobs_seen_at); // mốc phiên trước, giữ cả phiên
   { const owner = !!(me.user && me.user.is_owner); $("#scanBtn").classList.toggle("hidden", !owner); $(".src-status").classList.toggle("hidden", !owner); }
   state.profiles = me.profiles || [];
   if (!state.profiles.length) {
