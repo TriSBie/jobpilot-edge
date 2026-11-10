@@ -1070,6 +1070,12 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-split-text h2, .sg-split-text .lede{ text-align:left; margin-left:0; max-width:34ch; }
 .sg-split .sg-why, .sg-split-text .sg-formula{ margin-top:0; width:auto; }
 .sg-split-text .sg-formula{ margin-top:1.4rem; }
+.lp-shot{ display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:var(--r-lg); }
+html[data-theme="light"] .lp-shot.shot-dark, html:not([data-theme="light"]) .lp-shot.shot-light{ display:none; }
+.sg-vis{ display:grid; gap:1rem; min-width:0; }
+.sg-split-text .lp-shot{ margin-top:1.4rem; max-width:440px; }
+.lp-shot-wide{ width:min(1080px,100%); margin:1.4rem auto 0; }
+@media (max-width:640px){ .lp-shot-wide{ overflow-x:auto; border-radius:var(--r-lg); } .lp-shot-wide .lp-shot{ width:760px; max-width:none; } }
 .sg-sub{ font-family:var(--f-display); font-weight:600; font-size:1.3rem; margin:3rem 0 .3rem; }
 .sg-split .sg-pair{ margin-top:0; width:auto; grid-template-columns:1fr; }
 @media (max-width:860px){ .sg-split{ grid-template-columns:1fr; gap:1.2rem; } }
@@ -1443,7 +1449,8 @@ html.fx-on .bg-fx{opacity:1}
         <p data-en="A posting that lists fewer than 3 skills is capped at 69, since there is too little information to score it higher.">Tin chỉ ghi dưới 3 kỹ năng thì điểm tối đa 69, vì quá ít thông tin để chấm cao.</p>
       </details>
       </div>
-      <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div>
+      <div class="sg-vis"><img class="lp-shot shot-dark" src="assets/shot-scoring-dark.webp" width="533" height="701" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ tin tuyển dụng 86 điểm, mở phần giải thích kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: an 86-point job card with the explanation open, showing matched and missing skills and each score part"><img class="lp-shot shot-light" src="assets/shot-scoring-light.webp" width="533" height="701" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ tin tuyển dụng 86 điểm, mở phần giải thích kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: an 86-point job card with the explanation open, showing matched and missing skills and each score part">
+      <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div></div>
     </div>
     <h3 class="sg-sub" data-en="Drag the sliders and watch the score change">Kéo thử để thấy điểm thay đổi</h3>
     <p class="sg-mut" data-en="Change the number of matched skills or the posting's freshness; the score on the right recalculates with the formula.">Đổi số kỹ năng khớp hoặc độ mới của tin, điểm bên phải tính lại theo công thức.</p>
@@ -1490,6 +1497,7 @@ html.fx-on .bg-fx{opacity:1}
     <div class="demo-kcol" data-demo-col="applied"><h3 data-en="Applied">Đã apply</h3><div class="demo-kbody"><div class="kph" data-en="Use the arrow buttons to move a card here">Bấm nút mũi tên để đưa thẻ vào đây</div></div></div>
   </div>
   <p class="sg-mut sg-center sg-narrow" data-en="The app has all 7 columns: New, Saved, Applied, Interview, Offer, Rejected, Archived.">Trong app có đủ 7 cột: Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, Từ chối, Lưu trữ.</p>
+  <div class="lp-shot-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="1200" height="304" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban 7 cột với các đơn ứng tuyển, có nhắc follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the 7-column kanban board with applications, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="1200" height="304" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban 7 cột với các đơn ứng tuyển, có nhắc follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the 7-column kanban board with applications, a follow-up date and a 9-day silence warning"></div>
 </section>
 
 <section class="lp-sec sg-left" id="lp-salary">
@@ -1498,6 +1506,7 @@ html.fx-on .bg-fx{opacity:1}
       <h2 data-en="Know the salary range before you talk">Biết mức lương trước khi nói chuyện</h2>
       <p class="lede" data-en="Many postings say &quot;negotiable&quot;. JobPilot works out a salary range from the live postings that do list pay, then suggests what to say in the two hardest moments.">Nhiều tin ghi "thỏa thuận". JobPilot tính khoảng lương từ chính các tin đang tuyển có ghi lương, rồi gợi ý câu nói cho hai tình huống khó mở lời nhất.</p>
       <p data-en="Computed from postings that list a salary once there are enough samples; otherwise we show the ITviec/TopDev reports as a reference.">Tính từ tin có ghi lương khi đủ mẫu; chưa đủ thì tham khảo báo cáo ITviec/TopDev.</p>
+      <img class="lp-shot shot-dark" src="assets/shot-salary-dark.webp" width="533" height="571" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"><img class="lp-shot shot-light" src="assets/shot-salary-light.webp" width="533" height="571" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay">
     </div>
   <div class="sg-pair">
     <div class="sg-box">
@@ -2025,14 +2034,14 @@ function t(vi){
   for (let i = 1; i < arguments.length; i++) s = s.replace("%s", arguments[i]);
   return s;
 }
-// HTML tĩnh: data-en="..." (innerHTML) và data-en-placeholder / data-en-title / data-en-aria-label.
+// HTML tĩnh: data-en="..." (innerHTML) và data-en-placeholder / data-en-title / data-en-aria-label / data-en-alt.
 function applyLang(){
   document.documentElement.lang = LANG;
   $$("[data-en]").forEach(el => {
     if (el.dataset.vi === undefined) el.dataset.vi = el.innerHTML;
     el.innerHTML = LANG === "en" ? el.dataset.en : el.dataset.vi;
   });
-  ["placeholder", "title", "aria-label"].forEach(a => $$(`[data-en-${a}]`).forEach(el => {
+  ["placeholder", "title", "aria-label", "alt"].forEach(a => $$(`[data-en-${a}]`).forEach(el => {
     if (!el.hasAttribute("data-vi-" + a)) el.setAttribute("data-vi-" + a, el.getAttribute(a) || "");
     el.setAttribute(a, el.getAttribute(LANG === "en" ? "data-en-" + a : "data-vi-" + a));
   }));
