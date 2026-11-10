@@ -418,52 +418,10 @@ html[data-theme="dark"]{
   border:1px solid rgba(45,75,255,.5); color:var(--brand); font-weight:700; font-size:.9rem; margin-bottom:.7rem; }
 .lp-foot{ border-top:1px solid var(--line); padding:2rem clamp(1rem,4vw,2.5rem); display:flex; gap:1rem; flex-wrap:wrap;
   color:var(--muted); font-size:.88rem; max-width:1180px; margin:0 auto; }
-.rv{ opacity:0; transform:translateY(18px); transition:opacity var(--m-enter) var(--e-out), transform var(--m-enter) var(--e-out); }
-.rv.in{ opacity:1; transform:none; }
 @media (max-width: 900px){ .lp-grid3,.lp-steps{ grid-template-columns:1fr 1fr; } .lp-bento{ grid-template-columns:1fr 1fr; } .lp-links{ display:none; } }
 @media (max-width: 560px){ .lp-grid3,.lp-steps,.lp-bento{ grid-template-columns:1fr; } .lp-bento .wide{ grid-column:span 1; } }
-@media (prefers-reduced-motion: reduce){ .rv{ opacity:1; transform:none; transition:none; } }
 
-/* ================= LANDING MOTION — ĐỢT 1 (P0) ================= */
-/* 1.1 Hero entrance (CSS là chính): stagger 60ms, mỗi bước 600ms ease-out,
-   bước cuối kết thúc ở 240+600=840ms (<900ms). Trạng thái mặc định HIỆN:
-   không có animation thì hero vẫn đủ; animation chỉ thêm nhịp vào. */
-/* LƯU Ý: class entrance đặt lên wrapper .lp-shot (không đặt lên img bên
-   trong) để Đợt 2 thay visual bên trong mà vẫn giữ entrance. */
-@keyframes lp-hero-in{ from{ opacity:0; transform:translateY(28px); } to{ opacity:1; transform:translateY(0); } }
-.lp-hero .medallion-img{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 0ms backwards; }
-/* h1 + .sub (phần tử LCP) hiện ngay, không entrance: opacity 0→1 làm trễ LCP (B8) */
-.lp-hero .lp-cta{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 240ms backwards; }
-.lp-hero .lp-shot{ animation:lp-hero-in 600ms cubic-bezier(.16,1,.3,1) 320ms backwards; }
-/* 1.2 Ambient glow: 1 lớp duy nhất sau hero, vòng 18s (trong 15–20s),
-   bão hoà thấp, chỉ transform/opacity, không phủ toàn trang. */
 .lp-hero{ position:relative; }
-/* 1.3 Reveal upgrade: translateY 18px → 24px; khối nhấn mạnh (.rv-strong:
-   ảnh sản phẩm, công thức) không còn blur; stagger con 50ms. */
-.rv{ transform:translateY(24px); transition:opacity var(--m-enter) var(--e-out), transform var(--m-enter) var(--e-out); }
-
-
-.lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2), .lp-bento .rv:nth-child(2){ transition-delay:.05s; }
-.lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3), .lp-bento .rv:nth-child(3){ transition-delay:.10s; }
-.lp-steps .rv:nth-child(4), .lp-bento .rv:nth-child(4){ transition-delay:.15s; }
-.lp-bento .rv:nth-child(5){ transition-delay:.20s; }
-.lp-bento .rv:nth-child(6){ transition-delay:.25s; }
-/* Thử animation-timeline: view() trong @supports; trình duyệt không hỗ trợ
-   vẫn dùng IntersectionObserver sẵn có làm fallback. */
-@supports (animation-timeline: view()){
-  .rv{ opacity:1; transform:none; filter:none; transition:none;
-    animation:lp-rv 500ms cubic-bezier(.16,1,.3,1) both;
-    animation-timeline:view(); animation-range:entry 0% cover 40%; }
-  .rv-strong{ animation-name:lp-rv-strong; }
-  @keyframes lp-rv{ from{ opacity:0; transform:translateY(24px); } to{ opacity:1; transform:none; } }
-  @keyframes lp-rv-strong{ from{ opacity:0; transform:translateY(24px); }
-    to{ opacity:1; transform:none; } }
-}
-/* Mở rộng prefers-reduced-motion cho toàn bộ motion mới của Đợt 1. */
-@media (prefers-reduced-motion: reduce){
-  .lp-hero .medallion-img, .lp-hero h1, .lp-hero .sub, .lp-hero .lp-cta, .lp-hero .lp-shot{ animation:none; }
-  .rv-strong{ filter:none; }
-}
 
 /* ================= AUTH (v3) ================= */
 .auth-tabs{ display:flex; gap:.4rem; padding:.35rem; border:1px solid var(--line); border-radius:999px; margin-bottom:1.2rem; background:rgba(var(--ov),.03); }
@@ -527,9 +485,6 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 @media (hover:hover) and (pointer:fine){
 
 }
-.lp-grid3 .rv:nth-child(2), .lp-steps .rv:nth-child(2){ transition-delay:.07s; }
-.lp-grid3 .rv:nth-child(3), .lp-steps .rv:nth-child(3){ transition-delay:.14s; }
-.lp-steps .rv:nth-child(4){ transition-delay:.21s; }
 .lp-bento{ grid-auto-rows:1fr; }
 .lp-bento .lp-card{ display:flex; flex-direction:column; }
 .lp-bento img{ aspect-ratio:16/9; object-fit:cover; object-position:top; margin-top:auto; }
@@ -881,17 +836,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .demo-pal-item.sel{background:rgba(45,75,255,.13);color:var(--text)}
 .demo-pal-empty{padding:1rem;text-align:center;color:var(--faint);font-size:.9rem}
 .demo-pal-foot{color:var(--faint);font-size:.8rem;text-align:center;margin:.4rem 0 .8rem}
-.demo-marquee{display:flex;align-items:center;gap:1rem;max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,2.5rem);color:var(--muted);font-weight:700}
-.demo-marquee-label{flex:none;font-size:.85rem}
-.demo-marquee-viewport{flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-.demo-marquee-track{display:flex;width:max-content;animation:demo-marquee 30s linear infinite;will-change:transform}
-.demo-marquee-group{white-space:nowrap;font-size:1rem;letter-spacing:.02em}
-@keyframes demo-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .demo-hero button:focus-visible,.demo-kanban button:focus-visible,.demo-score input:focus-visible,.demo-score select:focus-visible,.demo-pal-item:focus-visible{outline:none;box-shadow:var(--focus)}
-@media (hover:hover) and (pointer:fine){
-
-  .demo-marquee:hover .demo-marquee-track{animation-play-state:paused}
-}
 @media (max-width:640px){
   .demo-frame.on,.demo-frame[data-demo-frame="kanban"]{grid-template-columns:1fr}
   .demo-side{flex-direction:row;flex-wrap:wrap}
@@ -901,85 +846,15 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 @media (prefers-reduced-motion: reduce){
   .demo-frame.on,.demo-kcard.demo-just-moved,.demo-pal-box{animation:none}
   .demo-tab-ind,.demo-kcard{transition:none}
-  .demo-marquee-track{animation:none}
 }
-/* ===== LANDING WAVE 3 (P2): sticky tour + progress + before/after ===== */
-  /* 3.2 — thanh tiến trình đọc: cố định ở đỉnh viewport, chỉ transform scaleX.
-     Header .lp-nav cao ~56px (padding .8rem + mark 30px) nên thanh 3px ở top:0
-     chỉ phủ phần padding nền của header, không che chữ brand, link nav hay CTA. */
-  #lp-progress{ position:fixed; top:0; left:0; width:100%; height:4px; z-index:60;
-    background:var(--brand); transform-origin:0 50%; transform:scaleX(0); pointer-events:none; }
-  @supports (animation-timeline: scroll()){
-    #lp-progress{ animation:lp-progress linear both; animation-timeline:scroll(); }
-  }
-  @keyframes lp-progress{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
-  /* 3.1 — sticky product tour cho #lp-how: frame dính 1 bên, bước cuộn bên còn lại.
-     Crossfade frame ~300ms, chỉ opacity/transform, easing theo guardrails đợt 3. */
-  .lp-tour{ display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:2rem; align-items:start; width:100%; margin-top:2.6rem; text-align:left; }
-  .lp-tour-frame{ position:sticky; top:76px; border:1px solid var(--line); border-radius:var(--r-lg); padding:1.4rem;
-    background:linear-gradient(180deg, rgba(var(--ov),.045), rgba(var(--ov),.015)); }
-  .lp-tour-frames{ display:grid; }
-  .lp-tour-state{ grid-area:1/1; opacity:0; pointer-events:none; transition:opacity 450ms var(--e-out); }
-  .lp-tour-state.active{ opacity:1; pointer-events:auto; }
-  .lp-tour-state h3{ margin:0 0 .4rem; font-size:1rem; }
-  .lp-tour-state p{ color:var(--muted); line-height:1.6; margin:0 0 1rem; font-size:.92rem; }
-  .lp-tour-note{ color:var(--muted); font-size:.82rem; line-height:1.6; margin:1rem 0 0; }
-  .lp-mini{ display:flex; flex-direction:column; gap:.55rem; }
-  .lp-mini-row{ display:flex; gap:.6rem; align-items:center; border:1px solid var(--line); border-radius:var(--r-md); padding:.6rem .8rem; font-size:.88rem; }
-  .lp-mini-row b{ font-weight:600; }
-  .lp-mini-row span{ color:var(--muted); font-size:.82rem; margin-left:auto; text-align:right; }
-  .lp-mini-cols{ display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
-  .lp-mini-col{ border:1px solid var(--line); border-radius:var(--r-md); padding:.55rem .5rem; font-size:.8rem; color:var(--muted); min-height:4.2rem; }
-  .lp-mini-col b{ display:block; color:var(--text); font-size:.82rem; margin-bottom:.35rem; }
-  .lp-mini-card{ border:1px solid var(--line); border-radius:var(--r-sm); padding:.45rem .6rem; font-size:.8rem; color:var(--text); background:rgba(var(--ov),.03); }
-  .lp-tour-steps{ display:flex; flex-direction:column; gap:1rem; }
-  .lp-tour-step{ min-height:52vh; display:flex; flex-direction:column; justify-content:center;
-    opacity:.75; transition:opacity 300ms cubic-bezier(0.16,1,0.3,1); }
-  .lp-tour-step.is-active{ opacity:1; }
-  .lp-tour-step .n{ font-family:var(--f-head); font-weight:700; font-size:1.5rem; color:var(--brand); }
-  .lp-tour-step h3{ margin:.6rem 0 .45rem; font-size:1.05rem; }
-  .lp-tour-step p{ color:var(--muted); line-height:1.6; margin:0; font-size:.94rem; }
-  @media (max-width: 900px){
-    .lp-tour{ grid-template-columns:1fr; }
-    .lp-tour-frame{ position:static; }
-    .lp-tour-step{ min-height:0; padding:1rem 0; }
-    .lp-mini-cols{ grid-template-columns:1fr 1fr; }
-  }
-  /* 3.3 — tab before/after: chỉ đổi panel theo tab, không số bịa (xem chú thích dưới section). */
-  .lp-compare-tabs{ display:flex; gap:.4rem; padding:.35rem; border:1px solid var(--line); border-radius:999px; margin-top:2.2rem; background:rgba(var(--ov),.03); }
-  .lp-compare-tab{ flex:1; border:0; background:transparent; color:var(--muted); padding:.6rem 1rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.95rem; font-weight:600;
-    transition:background 200ms cubic-bezier(0.16,1,0.3,1), color 200ms cubic-bezier(0.16,1,0.3,1); }
-  .lp-compare-tab[aria-selected="true"]{ background:var(--brand); color:var(--brand-ink); }
-  .lp-compare-tab:focus-visible{ outline:none; box-shadow:var(--focus); }
-  @media (hover:hover) and (pointer:fine){ .lp-compare-tab:not([aria-selected="true"]):hover{ color:var(--text); } }
-  .lp-compare-panel{ display:none; width:100%; margin-top:1.6rem; text-align:left; }
-  .lp-compare-panel.active{ display:block; animation:tab-in 300ms cubic-bezier(0.16,1,0.3,1) both; }
-  .lp-compare-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding:1rem 0; border-top:1px solid var(--line); }
-  .lp-compare-row:first-child{ border-top:0; }
-  .lp-compare-row h3{ margin:0 0 .3rem; font-size:.95rem; }
-  .lp-compare-row p{ margin:0; color:var(--muted); line-height:1.6; font-size:.92rem; }
-  .lp-compare-note{ color:var(--muted); font-size:.85rem; line-height:1.6; margin:1.2rem 0 0; max-width:62ch; text-align:center; }
-  @media (max-width: 560px){ .lp-compare-row{ grid-template-columns:1fr; } }
-  @media (prefers-reduced-motion: reduce){
-    #lp-progress{ animation:none; }
-    .lp-tour-state, .lp-tour-step{ transition:none; }
-    .lp-compare-panel.active{ animation:none; }
-  }
 /* ===== WAVE 4 (Đợt 4): sửa lỗi + motion rõ + nội dung đậm ===== */
 html{scroll-padding-top:96px}
-.rv-scale{transform:scale(.97)}
-.rv-slide{transform:translateX(24px)}
-@keyframes lp-n-pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-.lp-tour-step.is-active .n{animation:lp-n-pulse 300ms cubic-bezier(.16,1,.3,1)}
 .lp-mini-vis{margin-top:auto;padding-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 .lp-mv-chip{border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;font-size:.82rem;color:var(--muted);background:rgba(var(--ov),.03)}
 .lp-mv-arrow{color:var(--muted)}
 .lp-mv-input{flex:1;min-width:12rem;border:1px solid var(--line);border-radius:var(--r-sm);padding:.55rem .8rem;font-size:.88rem;color:var(--muted);background:rgba(var(--ov),.03)}
 .kph{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:.9rem;text-align:center;color:var(--muted);font-size:.88rem}.demo-kbody:has(.demo-kcard) .kph{display:none}
 #lp-scoring{background:linear-gradient(180deg, rgba(var(--ov),.04), rgba(var(--ov),.01))}
-#lp-compare h2{font-size:clamp(2.1rem,4.8vw,3.3rem)}
-@media (max-width:640px){ .rv-slide{transform:translateY(12px)} .lp-mini-vis{gap:.4rem} }
-@media (prefers-reduced-motion: reduce){ .rv-scale,.rv-slide{transform:none;transition:none} .lp-tour-step.is-active .n{animation:none} }
 
 /* PASS SAU (review Opus T-52 + nav mobile): header 2 hàng ở mobile để không tràn ngang; nền đặc thay backdrop blur để giảm vẽ lại khi cuộn. */
 @media (max-width:640px){
@@ -1019,7 +894,6 @@ html{scroll-padding-top:96px}
 @supports (animation-timing-function:linear(0,1)){
   :root{ --ease-spring:cubic-bezier(0.22,1,0.36,1); --dur-spring:320ms; }
 }
-@keyframes demo-progress{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
 @keyframes pal-in{ from{ opacity:0; transform:translateY(8px) scale(.98); } to{ opacity:1; transform:none; } }
 @keyframes vt-out{ to{ opacity:0; transform:translateY(-8px); } }
 @keyframes vt-in{ from{ opacity:0; transform:translateY(12px); } }
@@ -1056,14 +930,6 @@ button.chip::after{ box-shadow:0 8px 20px rgba(0,0,0,.16); }
 .demo-kcard::after{ box-shadow:0 12px 28px rgba(0,0,0,.16); }
 .kcard::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 10px 24px rgba(0,0,0,.18); opacity:0; transition:opacity var(--dur-card) var(--ease-out); }
 html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12); }
-/* M1 — spotlight: glow + vòng sáng theo chuột, chỉ opacity (JS ghi --mx/--my, chỉ pointer:fine) */
-.lp-card::before, .job::before, .tile::before, button.chip::before, .demo-kcard::before{
-  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  background:
-    radial-gradient(240px circle at var(--mx,50%) var(--my,50%), rgba(45,75,255,.14), transparent 70%),
-    radial-gradient(180px circle at var(--mx,50%) var(--my,50%), transparent 0 68%, rgba(45,75,255,.35) 69% 71%, transparent 72%);
-  opacity:0; transition:opacity var(--dur-card) var(--ease-out);
-}
 /* Q2+Q3+Q4 — mọi :hover mới đều nằm trong gate chuột thật */
 @media (hover:hover) and (pointer:fine){
   .btn:hover{ transition-duration:var(--dur-hover); }
@@ -1086,12 +952,6 @@ html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12
 .lp-cta{ position:relative; isolation:isolate; }
 /* OPUS-FIX 2026-10-30 (1): h1 nhận focus lập trình qua focusEl (tabindex=-1) không hiện viền đen mặc định của Chrome */
 [tabindex="-1"]:focus{ outline:none; }
-/* B2 — progress bar của khối demo kanban, chỉ hiện khi hỗ trợ view-timeline (cộng thêm, không thay reveal) */
-.demo-progress{ display:none; height:3px; border-radius:2px; background:var(--brand); transform-origin:0 50%; transform:scaleX(0); }
-@supports (view-timeline-name:--demo){
-  #lp-demo-kanban{ view-timeline-name:--demo; }
-  .demo-progress{ display:block; animation:demo-progress linear both; animation-timeline:--demo; animation-range:entry 0% exit 100%; }
-}
 /* M6 — entry cho view khi không có View Transitions (có VT thì VT lo, tránh double) */
 .no-vt #landingView, .no-vt #authView, .no-vt #appView{ transition:opacity var(--dur-view) var(--ease-out), transform var(--dur-view) var(--ease-out); }
 @starting-style{ .no-vt #landingView, .no-vt #authView, .no-vt #appView{ opacity:0; transform:translateY(12px); } }
@@ -1106,18 +966,14 @@ button.chip:active{ transform:scale(.98); transition-duration:var(--dur-press); 
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
 /* Q6 — reduced-motion: tắt hẳn các hiệu ứng mới (block cũ + global duration .01ms vẫn giữ) */
 @media (prefers-reduced-motion: reduce){
-  .lp-tour-step, .demo-kcard, .demo-tab-ind{ transition:none !important; }
-  .demo-progress{ display:none !important; }
-  .lp-card::before, .job::before, .tile::before, button.chip::before, .demo-kcard::before{ opacity:0 !important; }
+  .demo-kcard, .demo-tab-ind{ transition:none !important; }
   .skel{ animation:none !important; }
-  .lp-tour-frame::before{ transition:none !important; }
 }
 
 
 /* ===== PROTO signal-real-data: landing phẳng theo Signal, dữ liệu thật ===== */
 /* Nền đặc, không quầng sáng; chỉ landing (app giữ nguyên). */
 body:has(#landingView:not(.hidden)){ background:var(--bg); }
-#lp-progress, #landingView .demo-progress{ display:none !important; }
 /* App: nền phẳng như landing; chưa có hồ sơ thì giấu bộ lọc và ô dán link. */
 body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:var(--bg); }
 #tab-jobs.no-profile .toolbar, #tab-jobs.no-profile #submitForm{ display:none; }
@@ -1262,7 +1118,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .card.nf-hl{box-shadow:var(--focus)}
 /* ===== UI REFRESH: SaaS tối giản (Inter, viền hairline, 1 accent indigo) ===== */
 body{font-feature-settings:"cv11","ss01"}
-.score,.score-pill,.brief .bignum,kbd,#tab-profile .tile .num,.sg-why .total,.lp-card .n,.lp-tour-step .n,.bench-stat b,.demo-final b,.why .row .n,.ring-wrap text,.nf-badge,.lp-formula,.sg-formula,.lp-step .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
+.score,.score-pill,.brief .bignum,kbd,#tab-profile .tile .num,.sg-why .total,.lp-card .n,.bench-stat b,.demo-final b,.why .row .n,.ring-wrap text,.nf-badge,.lp-formula,.sg-formula,.lp-step .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
 kbd{border-bottom-width:1px;font-size:.72rem}
 /* bề mặt: hairline + bóng mềm, không bóng lệch */
 .card,.kcard,.brief-in,.sg-live,.sg-try,#tab-profile .tile,#landingView .demo-kcard{border-color:var(--line);box-shadow:var(--soft)}
@@ -1298,11 +1154,10 @@ kbd{border-bottom-width:1px;font-size:.72rem}
 .lp-sec .lede,.lp-hero .sub{color:var(--muted)}
 .lp-formula{color:var(--text)}
 .lp-sec{padding-top:clamp(4.5rem,11vh,8rem)}
-/* hero: chip eyebrow + quầng sáng/lưới tĩnh (không chuyển động) */
+/* hero: một quầng sáng tĩnh, không lưới */
 .lp-hero{isolation:isolate}
 .lp-hero::before{content:"";position:absolute;z-index:-1;left:50%;top:0;width:min(1100px,100vw);height:640px;transform:translateX(-50%);pointer-events:none;
-  background:radial-gradient(520px 280px at 50% 0%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 70%),
-    linear-gradient(var(--line) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/56px 56px;
+  background:radial-gradient(520px 280px at 50% 0%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 70%);
   -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%)}
 .lp-hero .medallion-img{width:44px;height:44px;margin-bottom:1rem}
 .lp-trust{background:none;border:0;padding:0;font-weight:400;color:var(--muted);font-size:14px}
@@ -1319,8 +1174,11 @@ html[data-theme="dark"]{--spot:rgba(124,140,255,.05)} /* faint #787C84 trên tâ
 .bg-fx{position:fixed;left:0;top:0;z-index:-1;width:1200px;height:1200px;margin:-600px 0 0 -600px;pointer-events:none;opacity:0;transition:opacity .6s;
   background:radial-gradient(closest-side,var(--spot),transparent);transform:translate3d(var(--mx,50vw),var(--my,30vh),0);will-change:transform}
 html.fx-on .bg-fx{opacity:1}
-.lp-hero::before{-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%),radial-gradient(260px circle at var(--hx,-999px) var(--hy,-999px),#000,transparent 75%);
-  mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%),radial-gradient(260px circle at var(--hx,-999px) var(--hy,-999px),#000,transparent 75%)}
+/* reveal duy nhất: section landing nhích lên 16px khi vào khung nhìn; luôn nhìn thấy (opacity ≥ .6), chỉ CSS, không JS */
+@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){
+  #landingView .lp-sec:not(.lp-hero){animation:lp-rise linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
+}}
+@keyframes lp-rise{from{opacity:.6;transform:translateY(16px)}}
 @media (max-width:640px){
   .tabbar-row{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line-strong);color:var(--text)}
   .tabbar-row .tab{color:var(--muted);font-weight:500}
@@ -1430,7 +1288,6 @@ html.fx-on .bg-fx{opacity:1}
 
 <!-- ================= LANDING ================= -->
 <div id="landingView">
-  <div id="lp-progress" aria-hidden="true"></div>
   <header class="lp-nav">
     <div class="brand"><svg class="mark-img" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>JobPilot <span>Edge</span></div>
     <nav class="lp-links">
@@ -1452,7 +1309,7 @@ html.fx-on .bg-fx{opacity:1}
     <h1 data-en="Apply less, land more">Nộp ít hơn, đúng hơn</h1>
     <p class="sub" data-en="JobPilot reads new postings from 6 sources (ITviec, TopDev, We Work Remotely, Remotive, Remote OK and HN Who's Hiring) every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới từ 6 nguồn (ITviec, TopDev, We Work Remotely, Remotive, Remote OK và HN Who's Hiring) mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
     <div class="lp-cta">
-      <a class="btn primary big lp-magnet" href="#lp-live" style="text-decoration:none" data-en="See today's jobs">Xem tin sáng nay</a>
+      <a class="btn primary big" href="#lp-live" style="text-decoration:none" data-en="See today's jobs">Xem tin sáng nay</a>
       <a class="btn ghost big" data-auth="register" href="#" style="text-decoration:none" data-en="Sign up free">Đăng ký miễn phí</a>
     </div>
     <ul class="lp-trust">
@@ -1613,7 +1470,7 @@ html.fx-on .bg-fx{opacity:1}
 <section class="lp-sec" id="lp-final">
     <h2 data-en="Sign up, upload your CV, get matching jobs tomorrow morning">Đăng ký, tải CV, nhận tin hợp sáng mai</h2>
     <p class="lede" data-en="Sign up with your email. Upload your CV so JobPilot can suggest skills; review them and save. The latest scan is scored against your profile right away.">Đăng ký bằng email. Tải CV để JobPilot gợi ý kỹ năng, bạn duyệt lại rồi lưu. Lần quét gần nhất được chấm ngay theo hồ sơ của bạn.</p>
-    <div class="lp-cta"><button class="btn primary big lp-magnet" data-magnet-cap="6" data-auth="register" data-en="Sign up free">Đăng ký miễn phí</button></div>
+    <div class="lp-cta"><button class="btn primary big" data-auth="register" data-en="Sign up free">Đăng ký miễn phí</button></div>
   </section>
 
   <footer class="lp-foot">
@@ -2378,7 +2235,6 @@ function turnstileRerender(){ // đổi theme: widget không đổi theme tại 
   tsWanted.forEach(turnstileRender);
 }
 
-let landingAnimated = false;
 /* MOTION-ALL B1/M6 — view transitions (fallback: swap thường + @starting-style khi không có VT) */
 if (!document.startViewTransition) document.documentElement.classList.add("no-vt");
 function focusEl(sel){
@@ -2404,17 +2260,15 @@ function withViewTransition(update, opts){
     else setTimeout(clear, 1000);
   } else { update(); clear(); }
 }
-/* Nền theo chuột: 1 listener, rAF + lerp; ghi --mx/--my lên .bg-fx (không recalc cả trang) và --hx/--hy lên hero để lưới sáng dưới con trỏ */
+/* Nền theo chuột: 1 listener, rAF + lerp; chỉ ghi --mx/--my lên .bg-fx (không recalc cả trang) */
 (function initBgFx(){
-  const fx = document.querySelector(".bg-fx"), hero = document.querySelector(".lp-hero");
+  const fx = document.querySelector(".bg-fx");
   if (!fx || !matchMedia("(hover: hover) and (pointer: fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   document.documentElement.classList.add("fx-on");
   let tx = innerWidth / 2, ty = innerHeight * .3, x = tx, y = ty, raf = 0;
   function frame(){
     x += (tx - x) * .18; y += (ty - y) * .18;
-    const r = hero && hero.offsetParent ? hero.getBoundingClientRect() : null; // đọc trước, ghi sau: không ép layout
     fx.style.setProperty("--mx", x.toFixed(1) + "px"); fx.style.setProperty("--my", y.toFixed(1) + "px");
-    if (r) { hero.style.setProperty("--hx", (x - r.left - (r.width - Math.min(1100, innerWidth)) / 2).toFixed(1) + "px"); hero.style.setProperty("--hy", (y - r.top).toFixed(1) + "px"); }
     raf = Math.abs(tx - x) + Math.abs(ty - y) > .5 ? requestAnimationFrame(frame) : 0;
   }
   addEventListener("pointermove", (e) => { if (e.pointerType !== "mouse") return; tx = e.clientX; ty = e.clientY; if (!raf) raf = requestAnimationFrame(frame); }, { passive: true });
@@ -2449,25 +2303,6 @@ function withViewTransition(update, opts){
     if (!raf) raf = requestAnimationFrame(step);
   }, { passive: false });
 })();
-/* MOTION-ALL M1 — spotlight: 1 listener delegated, rAF-throttle, chỉ pointer:fine, không reduced-motion, loại .kcard */
-(function initSpotlight(){
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  let raf = 0, lastEv = null;
-  document.addEventListener("pointermove", (e) => {
-    lastEv = e;
-    if (raf) return;
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      const ev = lastEv; if (!ev) return;
-      const card = ev.target.closest(".lp-card, .job, .tile, button.chip, .demo-kcard");
-      if (!card) return;
-      const r = card.getBoundingClientRect();
-      card.style.setProperty("--mx", (ev.clientX - r.left) + "px");
-      card.style.setProperty("--my", (ev.clientY - r.top) + "px");
-    });
-  }, { passive: true });
-})();
 function showLanding(){
   document.documentElement.classList.remove("jp-in"); // class đặt sớm trong <head> cho người đã đăng nhập
   withViewTransition(() => {
@@ -2476,7 +2311,6 @@ function showLanding(){
     $("#landingView").classList.remove("hidden");
     window.scrollTo({ top: 0, behavior: "instant" });
     focusEl("#landingView .lp-hero h1");
-    initLandingFx();
   }, { sharedBrand: true });
 }
 function showAuth(mode){
@@ -2592,138 +2426,6 @@ $("#regPassword").addEventListener("input", (e) => {
   hint.textContent = v ? t("Độ mạnh: %s", label) + (v.length < 8 ? t(" — cần tối thiểu 8 ký tự") : "") : "";
 });
 
-function initLpTour(root){
-  const tour = root.querySelector(".lp-tour");
-  if (!tour || tour.dataset.bound) return;
-  tour.dataset.bound = "1";
-  const frame = tour.querySelector(".lp-tour-frame");
-  if (frame) {
-    if ("IntersectionObserver" in window) {
-      const gio = new IntersectionObserver((entries) => {
-        entries.forEach((en) => { if (en.isIntersecting) { frame.classList.add("glow-on"); gio.disconnect(); } });
-      }, { threshold: 0.2 });
-      gio.observe(tour);
-    } else { frame.classList.add("glow-on"); }
-  }
-  const steps = Array.from(tour.querySelectorAll(".lp-tour-step"));
-  const states = Array.from(tour.querySelectorAll(".lp-tour-state"));
-  if (!steps.length || !states.length) return;
-  const setActive = (key) => {
-    states.forEach(s => {
-      const on = s.dataset.tour === key;
-      s.classList.toggle("active", on);
-      s.setAttribute("aria-hidden", on ? "false" : "true");
-    });
-    steps.forEach(s => s.classList.toggle("is-active", s.dataset.tour === key));
-  };
-  if (!("IntersectionObserver" in window)) return; // không có observer thì frame mặc định (jobs) giữ nguyên
-  const pickNearest = () => {
-    const mid = window.innerHeight / 2;
-    let best = null, bestD = Infinity;
-    steps.forEach(s => {
-      const r = s.getBoundingClientRect();
-      const d = Math.abs((r.top + r.bottom) / 2 - mid);
-      if (d < bestD) { bestD = d; best = s; }
-    });
-    if (best) setActive(best.dataset.tour);
-  };
-  const io = new IntersectionObserver(() => { pickNearest(); }, { rootMargin: "-40% 0px -40% 0px" }); // chọn bước gần tâm viewport nhất, không lấy entry cuối thắng
-  steps.forEach(s => io.observe(s));
-}
-function initLpProgress(){
-  const bar = document.getElementById("lp-progress");
-  if (!bar || bar.dataset.bound) return;
-  bar.dataset.bound = "1";
-  // Trình duyệt đã hỗ trợ animation-timeline: scroll() thì CSS lo, khỏi JS.
-  if (window.CSS && CSS.supports && CSS.supports("animation-timeline: scroll()")) return;
-  let ticking = false;
-  const update = () => {
-    ticking = false;
-    const landing = document.getElementById("landingView");
-    if (landing && landing.classList.contains("hidden")) return;
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
-    bar.style.transform = "scaleX(" + p + ")";
-  };
-  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", onScroll);
-  update();
-}
-function initLpCompare(root){
-  const tabs = Array.from(root.querySelectorAll(".lp-compare-tab"));
-  if (!tabs.length || tabs[0].dataset.bound) return;
-  const panels = tabs.map(t => document.getElementById(t.getAttribute("aria-controls"))).filter(Boolean);
-  const select = (tab) => {
-    tabs.forEach(t => {
-      const on = t === tab;
-      t.setAttribute("aria-selected", on ? "true" : "false");
-      t.tabIndex = on ? 0 : -1;
-    });
-    panels.forEach(p => {
-      const on = p.id === tab.getAttribute("aria-controls");
-      p.classList.toggle("active", on);
-      p.hidden = !on;
-    });
-  };
-  tabs.forEach((tab, i) => {
-    tab.dataset.bound = "1";
-    tab.addEventListener("click", () => select(tab));
-    tab.addEventListener("keydown", (e) => {
-      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-      e.preventDefault();
-      const next = tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
-      next.focus();
-      select(next);
-    });
-  });
-}
-
-function initLandingFx(){
-  const root = $("#landingView");
-  if (!root || root.classList.contains("hidden")) return;
-  if (!landingAnimated) {
-    landingAnimated = true;
-    initLandingMagnet(root);
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
-    }, { threshold: 0.12 });
-    $$(".rv", root).forEach(el => io.observe(el));
-    initLpTour(root);
-    initLpProgress();
-    initLpCompare(root);
-  }
-}
-
-/* Đợt 1 (P0) — magnetic: nút .lp-magnet (hero chính + CTA cuối, cap theo data-magnet-cap), CHỈ desktop có
-   hover tinh, KHÔNG reduced-motion. Kéo nhẹ stickDelta 0.15, kẹp tối đa 8px,
-   chạy bằng requestAnimationFrame, bật lại khi rời chuột (nhờ transition
-   sẵn có của .btn). Các nút khác hover thường, không ảnh hưởng. */
-function initLandingMagnet(root){
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  const btns = root.querySelectorAll(".lp-magnet");
-  btns.forEach((btn) => {
-    const cap = Number(btn.dataset.magnetCap || 8);
-    let raf = 0, tx = 0, ty = 0;
-    const apply = () => { raf = 0; btn.style.transform = "translate(" + tx + "px," + ty + "px)"; };
-    btn.addEventListener("mouseenter", () => { btn.style.transition = "none"; });
-    btn.addEventListener("mousemove", (ev) => {
-      const r = btn.getBoundingClientRect();
-      const dx = ev.clientX - (r.left + r.width / 2), dy = ev.clientY - (r.top + r.height / 2);
-      tx = Math.max(-cap, Math.min(cap, dx * 0.15));
-      ty = Math.max(-cap, Math.min(cap, dy * 0.15));
-      if (!raf) raf = requestAnimationFrame(apply);
-    });
-    btn.addEventListener("mouseleave", () => {
-      if (raf) { cancelAnimationFrame(raf); raf = 0; }
-      tx = 0; ty = 0;
-      btn.style.transition = "transform var(--dur-spring) var(--ease-spring)";
-      btn.style.transform = "";
-      setTimeout(() => { btn.style.transition = ""; }, 550);
-    });
-  });
-}
 /* ---------------- Telegram ---------------- */
 let tgTimer = 0;
 function tgShow(id){ clearInterval(tgTimer); ["tgIdle","tgPending","tgDone"].forEach(x => $("#" + x).classList.toggle("hidden", x !== id)); }
