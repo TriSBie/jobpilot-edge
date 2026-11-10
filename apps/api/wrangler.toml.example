@@ -11,9 +11,8 @@ workers_dev = true
 [triggers]
 crons = ["*/30 * * * *", "0 1 * * *", "0 18 * * *"]
 
+# Mọi biến worker.js đọc; giá trị mặc định an toàn. prod hiện chỉ bật AUTO_CLOSE_ENABLED = "1".
 [vars]
-APP_ENV = "production"
-DIGEST_HOUR_LOCAL = "7"
 TELEGRAM_BOT_USERNAME = "your_bot"
 # "1" mới bật cron tự đóng đơn im lặng 14 ngày (ghi lên dữ liệu người dùng); mặc định tắt
 AUTO_CLOSE_ENABLED = "0"
@@ -75,9 +74,11 @@ dead_letter_queue = "jobpilot-notify-dlq"
 [durable_objects]
 bindings = [{ name = "USER_HUB", class_name = "UserHub" }]
 
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["UserHub"]
+# Không khai báo [[migrations]]: class UserHub đã có trên prod, khai báo lại gây lỗi 10074.
+# Chỉ khi deploy lần ĐẦU lên tài khoản mới (chưa có DO) mới bỏ comment 3 dòng dưới, deploy xong comment lại.
+# [[migrations]]
+# tag = "v1"
+# new_sqlite_classes = ["UserHub"]
 
 # --- Workers AI + AI Gateway (mọi call AI đi qua gateway "jobpilot") ---
 [ai]

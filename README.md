@@ -157,11 +157,9 @@ cp apps/api/wrangler.toml.example apps/api/wrangler.toml
 #    (ingest, score, notify, and their three DLQs) and one Vectorize index (768 dimensions, cosine),
 #    then paste their IDs into wrangler.toml
 
-# 2. Schema (run all three, in order)
+# 2. Schema (every file in db/migrations, in order, each exactly once)
 cd apps/api
-npx wrangler@4 d1 execute <db-name> --remote --file ../../db/migrations/0001_init.sql
-npx wrangler@4 d1 execute <db-name> --remote --file ../../db/migrations/0002_auth_passwords.sql
-npx wrangler@4 d1 execute <db-name> --remote --file ../../db/migrations/0003_login_failures.sql
+for f in ../../db/migrations/*.sql; do npx wrangler@4 d1 execute <db-name> --remote --file "$f"; done
 
 # 3. Worker (cron triggers come from wrangler.toml)
 npx wrangler@4 deploy
@@ -169,6 +167,20 @@ npx wrangler@4 deploy
 # 4. Frontend: point API_BASE near the top of index.html's script at your Worker, then
 npx wrangler@4 pages deploy ../web/public --project-name <pages-project>
 ```
+
+### Deploy from repo
+
+`apps/api/wrangler.toml` is gitignored; the committed `wrangler.toml.example` mirrors the production config (bindings, queues + DLQs, AI, Vectorize, Analytics Engine, every `[vars]` entry) with placeholder IDs.
+
+```bash
+cd apps/api
+cp wrangler.toml.example wrangler.toml
+npx wrangler@4 d1 list                 # paste the jobpilot database_id into [[d1_databases]]
+npx wrangler@4 kv namespace list       # paste the KV id into [[kv_namespaces]]
+npx wrangler@4 deploy
+```
+
+The example has no `[[migrations]]` for `UserHub`: the Durable Object already exists on an account that has deployed before, and declaring it again fails with error 10074. On a brand-new account, uncomment that block for the first deploy only. Never commit the filled-in `wrangler.toml` — this repo is public.
 
 Job sources register themselves on the first cron run. Local development: `npx wrangler@4 dev --local --test-scheduled` inside `apps/api`, and any static server for `apps/web/public` with `API_BASE` rewritten to `http://127.0.0.1:8787`. Hit `/__scheduled?cron=*/30+*+*+*+*` to run an ingest on demand.
 
