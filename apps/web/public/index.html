@@ -2454,6 +2454,10 @@ function logout(manual){
   jobsPrevSeen = undefined; jobsSeenSent = false; state.filters.onlyNew = false; nfClose(false); nfBadge(0, false);
   localStorage.removeItem("jp_token");
   localStorage.removeItem("jp_profile");
+  $("#acctEmail").textContent = ""; $("#acctInitial").textContent = ""; acctMenu(false);
+  // Phiên sau luôn bắt đầu ở Việc làm, không mở lại view Tài khoản/Hồ sơ của người trước.
+  $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === "jobs"));
+  ["kanban", "profile", "account"].forEach(k => $("#tab-" + k)?.classList.add("hidden")); $("#tab-jobs").classList.remove("hidden");
   showLanding();
   if (manual) toast(t("Đã đăng xuất."));
 }
