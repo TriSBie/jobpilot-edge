@@ -3807,6 +3807,32 @@ async function saveSkills(p, list, okMsg){
   await refreshProfiles();
   tgCardRender();
 }
+// Thêm/đổi trọng số/xóa MỘT kỹ năng. Xếp hàng tuần tự: bấm nhanh không bị nuốt, không gửi danh sách cũ đè lên server.
+// State lấy từ phản hồi (không qua refreshProfiles vốn nuốt lỗi); lỗi thì báo, các thao tác sau vẫn chạy.
+let skillQ = Promise.resolve(), skillPending = 0;
+// Còn thao tác chưa lưu mà rời/tải lại trang thì trình duyệt hỏi lại (hộp thoại chuẩn, không thêm chuỗi).
+addEventListener("beforeunload", (e) => { if (skillPending) e.preventDefault(); });
+function skillOp(p, method, skill, weight, okMsg){
+  skillPending++;
+  const base = "/api/profiles/" + encodeURIComponent(p.id) + "/skills";
+  const run = async () => {
+    try {
+      const updated = await api(method === "DELETE" ? base + "/" + encodeURIComponent(skill) : base,
+        method === "DELETE" ? { method } : { method, body: JSON.stringify({ skill, weight }) });
+      const i = state.profiles.findIndex(x => x.id === updated.id);
+      if (i >= 0) state.profiles[i] = Object.assign({}, state.profiles[i], { skills: updated.skills, updated_at: updated.updated_at });
+      if (updated.rescore_queued === false) toast(t("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
+      else { toast(okMsg, "ok"); startRescoringWatch(); }
+      renderCurrentSkills();
+      tgCardRender();
+    } catch (e) {
+      toast(e.message, "err");
+    } finally {
+      skillPending--;
+    }
+  };
+  return (skillQ = skillQ.then(run));
+}
 
 $("#currentSkills").addEventListener("click", async (ev) => {
   const b = ev.target.closest("button"), row = b && b.closest(".skill[data-i]");
@@ -3824,18 +3850,13 @@ $("#currentSkills").addEventListener("click", async (ev) => {
   if (!cur) return;
   const w = Number(b.dataset.w);
   if (w && w === Number(cur.weight)) return;
-  const list = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
-  if (w) list[i].weight = w; else { list.splice(i, 1); skUi.sel = -1; }
-  $$("#currentSkills button").forEach(x => x.disabled = true);
-  try {
-    await saveSkills(p, list, w ? t("Đã đổi trọng số %s: %s/5", cur.skill, w) : t("Đã xóa kỹ năng: %s", cur.skill));
-  } catch (e) {
-    toast(e.message, "err");
-  } finally {
-    renderCurrentSkills();
-    const f = w ? $(`#currentSkills .skill[data-i="${i}"] [data-w="${w}"]`) : ($("#currentSkills [data-pick]") || $("#manualSkill"));
-    if (f) f.focus(); // giữ focus cho người dùng bàn phím sau khi render lại
-  }
+  if (!w) skUi.sel = -1;
+  await skillOp(p, w ? "POST" : "DELETE", cur.skill, w, w ? t("Đã đổi trọng số %s: %s/5", cur.skill, w) : t("Đã xóa kỹ năng: %s", cur.skill));
+  const np = currentProfile();
+  if (w && np) skUi.sel = (np.skills || []).findIndex(s => s.skill === cur.skill); // vị trí đổi sau khi sắp lại theo trọng số
+  renderCurrentSkills();
+  const f = w ? $(`#currentSkills .skill[data-i="${skUi.sel}"] [data-w="${w}"]`) : ($("#currentSkills [data-pick]") || $("#manualSkill"));
+  if (f) f.focus(); // giữ focus cho người dùng bàn phím sau khi render lại
 });
 
 // Chọn trọng số trên một .wbar có data-value (thêm thủ công + kỹ năng gợi ý).
@@ -3866,19 +3887,8 @@ $("#addSkillBtn").addEventListener("click", async () => {
   const skill = $("#manualSkill").value.trim();
   if (!skill) { toast(t("Nhập tên kỹ năng trước đã."), "err"); return; }
   const weight = Number($("#manualWeight").dataset.value) || 3;
-  const existing = (p.skills || []).map(s => ({ skill: s.skill, weight: s.weight }));
-  const merged = existing.filter(s => s.skill.toLowerCase() !== skill.toLowerCase());
-  merged.push({ skill, weight });
-  const btn = $("#addSkillBtn");
-  btn.disabled = true;
-  try {
-    await saveSkills(p, merged, t("Đã thêm kỹ năng: %s", skill));
-    $("#manualSkill").value = "";
-  } catch (e) {
-    toast(e.message, "err");
-  } finally {
-    btn.disabled = false;
-  }
+  $("#manualSkill").value = ""; // xóa ngay để gõ kỹ năng tiếp; nút không khóa, thao tác được xếp hàng
+  skillOp(p, "POST", skill, weight, t("Đã thêm kỹ năng: %s", skill));
 });
 
 /* ---------------- CV upload ---------------- */

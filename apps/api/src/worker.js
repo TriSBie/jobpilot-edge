@@ -1635,6 +1635,34 @@ export default {
       await enqueueProfileScan(env, profile.id);
       return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
     }
+    // Sửa từng kỹ năng (thêm/đổi trọng số/xoá): không ghi đè cả danh sách, nên client giữ bản cũ cũng không làm mất kỹ năng khác.
+    const oneSkill = path.match(/^\/api\/profiles\/([^/]+)\/skills(?:\/([^/]+))?$/);
+    if (oneSkill && (request.method === "POST" && !oneSkill[2] || request.method === "DELETE" && oneSkill[2])) {
+      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(oneSkill[1], user.id).first();
+      if (!profile) return json({ error: "profile_not_found" }, 404);
+      let stmts;
+      if (request.method === "POST") {
+        const b = await readBody(request);
+        const skill = typeof b?.skill === "string" ? canonSkill(b.skill) : "";
+        if (!skill || skill.length > 100) return json({ error: "invalid_skill" }, 400);
+        const weight = Math.min(5, Math.max(1, Math.round(Number(b.weight)) || 3));
+        stmts = [ // PK (profile_id, skill) phân biệt hoa thường: bỏ bản khác hoa thường trước (client cũ cũng lọc như vậy)
+          env.DB.prepare("DELETE FROM profile_skills WHERE profile_id = ? AND lower(skill) = lower(?) AND skill <> ?").bind(profile.id, skill, skill),
+          env.DB.prepare("INSERT INTO profile_skills (profile_id, skill, weight, source) VALUES (?, ?, ?, 'manual') ON CONFLICT(profile_id, skill) DO UPDATE SET weight = excluded.weight")
+            .bind(profile.id, skill, weight),
+        ];
+      } else {
+        let skill = "";
+        try { skill = decodeURIComponent(oneSkill[2]).trim(); } catch (_) { /* %xx hỏng → 400 */ }
+        if (!skill) return json({ error: "invalid_skill" }, 400);
+        stmts = [env.DB.prepare("DELETE FROM profile_skills WHERE profile_id = ? AND skill = ?").bind(profile.id, skill)];
+      }
+      stmts.push(env.DB.prepare("UPDATE profiles SET updated_at = ? WHERE id = ?").bind(now(), profile.id)); // T-50
+      await env.DB.batch(stmts);
+      const rescoreQueued = await enqueueProfileRescore(env, profile.id);
+      await enqueueProfileScan(env, profile.id);
+      return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
+    }
 
     // --- jobs ---
     if (path === "/api/jobs" && request.method === "GET") {
