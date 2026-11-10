@@ -409,14 +409,10 @@ html[data-theme="dark"]{
 @media (prefers-reduced-motion:reduce){.testi-row,.testi-rev{position:static;width:auto;height:auto;clip:auto;white-space:normal;overflow:visible;-webkit-mask-image:none;mask-image:none}.testi-track{animation:none;width:auto;display:block}.testi-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:0}.testi-group.testi-clone{display:none}.testi-card{width:auto}}
 .lp-hero{ padding-top:clamp(3rem,8vh,5.5rem); }
 .lp-hero h1{ font-family:var(--f-head); font-weight:400; font-size:clamp(2.7rem,6.5vw,4.6rem); line-height:1.06; margin:1.2rem 0 1rem; }
-.lp-hero .sub{ color:var(--muted); max-width:56ch; font-size:1.08rem; line-height:1.65; margin:0 auto; }
+.lp-hero .sub{ color:var(--muted); max-width:60ch; font-size:1.08rem; line-height:1.65; margin:0 auto; }
 .lp-cta{ display:flex; gap:.8rem; margin-top:2rem; flex-wrap:wrap; justify-content:center; }
 .btn.ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
 .btn.big{ padding:.85rem 1.7rem; font-size:1rem; border-radius:999px; }
-.lp-shot{  margin-top:3rem; width:min(880px,100%); border-radius:var(--r-lg); padding:10px;
-  background:linear-gradient(160deg, rgba(45,75,255,.35), rgba(var(--ov),.05) 40%, rgba(var(--ov),.02));
-  box-shadow:0 30px 80px rgba(0,0,0,.55); }
-.lp-shot img{ display:block; width:100%; border-radius:var(--r-md); border:1px solid var(--line); }
 .lp-grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:2.6rem; width:100%; text-align:left; }
 .lp-card{ border:1px solid var(--line); border-radius:var(--r-lg); padding:1.5rem; background:linear-gradient(180deg, rgba(var(--ov),.045), rgba(var(--ov),.015)); }
 .lp-card .n{ font-family:var(--f-head); font-style:italic; font-size:1.5rem; color:var(--brand); }
@@ -478,7 +474,6 @@ html[data-theme="light"]{
 html[data-theme="light"] .brief-in{ background:#ffffff; box-shadow:inset 0 1px 0 rgba(13,20,36,.04), 0 12px 32px rgba(13,20,36,.07); }
 html[data-theme="light"] .lp-formula{ color:var(--text); }
 html[data-theme="light"] .auth-note{ color:#7c4a03; }
-html[data-theme="light"] .lp-shot{ box-shadow:0 30px 80px rgba(13,20,36,.18); }
 
 /* Nút gạt theme */
 .lang-toggle{ width:auto; padding:0 10px; font:500 12px/1 var(--f-body); letter-spacing:.04em; }
@@ -506,7 +501,6 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .lp-bento .lp-card{ display:flex; flex-direction:column; }
 .lp-bento img{ aspect-ratio:16/9; object-fit:cover; object-position:top; margin-top:auto; }
 .lp-bento .lp-card p{ margin-bottom:.9rem; }
-.lp-shot{ position:relative; }
 .lp-chrome{ display:flex; align-items:center; gap:.45rem; padding:.15rem .3rem .65rem; }
 .lp-chrome i{ width:11px; height:11px; border-radius:50%; background:rgba(var(--ov),.16); flex:none; }
 .lp-chrome i:first-child{ background:rgba(45,75,255,.55); }
@@ -817,19 +811,6 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .demo-brief{display:flex;flex-direction:column;gap:.4rem}
 .demo-brief b{font-size:1rem}
 .demo-brief p,.demo-brief span{color:var(--muted);font-size:.9rem;margin:0}
-.demo-count{font-weight:700;margin-top:1.6rem}
-.demo-kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;width:100%;text-align:left;margin-top:1rem}
-.demo-kcol{border:1px solid var(--line);border-radius:var(--r-lg);padding:1rem;background:linear-gradient(180deg,rgba(var(--ov),.045),rgba(var(--ov),.015))}
-.demo-kcol h3{margin:0 0 .8rem;font-size:1rem}
-.demo-kbody{display:flex;flex-direction:column;gap:.7rem;min-height:120px}
-.demo-kbody.demo-drop{outline:2px dashed var(--brand);outline-offset:-2px;border-radius:var(--r-md)}
-.demo-kcard{border:1px solid var(--line);border-radius:var(--r-md);padding:.9rem;background:rgba(var(--ov),.03);cursor:grab;transition:transform 200ms cubic-bezier(0.4,0,0.2,1),opacity 200ms cubic-bezier(0.4,0,0.2,1)}
-.demo-kcard b{display:block;font-size:.92rem}
-.demo-kcard>span{display:block;color:var(--muted);font-size:.82rem;margin-top:.2rem}
-.demo-kcard.demo-just-moved{animation:demo-frame-in 200ms cubic-bezier(0.4,0,0.2,1) both}
-.demo-kmv{display:flex;gap:.4rem;margin-top:.7rem}
-.demo-kmv button{min-width:38px;min-height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--text);font-size:.85rem}
-.demo-kmv button:disabled{opacity:.35;cursor:default}
 .demo-score{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;width:100%;text-align:left;margin-top:2rem}
 .demo-controls,.demo-result{border:1px solid var(--line);border-radius:var(--r-lg);padding:1.5rem;background:linear-gradient(180deg,rgba(var(--ov),.045),rgba(var(--ov),.015))}
 .demo-controls label{font-size:.9rem}
@@ -854,16 +835,16 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .demo-pal-item.sel{background:rgba(45,75,255,.13);color:var(--text)}
 .demo-pal-empty{padding:1rem;text-align:center;color:var(--faint);font-size:.9rem}
 .demo-pal-foot{color:var(--faint);font-size:.8rem;text-align:center;margin:.4rem 0 .8rem}
-.demo-hero button:focus-visible,.demo-kanban button:focus-visible,.demo-score input:focus-visible,.demo-score select:focus-visible,.demo-pal-item:focus-visible{outline:none;box-shadow:var(--focus)}
+.demo-hero button:focus-visible,.demo-score input:focus-visible,.demo-score select:focus-visible,.demo-pal-item:focus-visible{outline:none;box-shadow:var(--focus)}
 @media (max-width:640px){
   .demo-frame.on,.demo-frame[data-demo-frame="kanban"]{grid-template-columns:1fr}
   .demo-side{flex-direction:row;flex-wrap:wrap}
   .demo-side .demo-prof{margin-top:0}
-  .demo-kanban,.demo-score{grid-template-columns:1fr}
+  .demo-score{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion: reduce){
-  .demo-frame.on,.demo-kcard.demo-just-moved,.demo-pal-box{animation:none}
-  .demo-tab-ind,.demo-kcard{transition:none}
+  .demo-frame.on,.demo-pal-box{animation:none}
+  .demo-tab-ind{transition:none}
 }
 /* ===== WAVE 4 (Đợt 4): sửa lỗi + motion rõ + nội dung đậm ===== */
 html{scroll-padding-top:96px}
@@ -871,7 +852,6 @@ html{scroll-padding-top:96px}
 .lp-mv-chip{border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;font-size:.82rem;color:var(--muted);background:rgba(var(--ov),.03)}
 .lp-mv-arrow{color:var(--muted)}
 .lp-mv-input{flex:1;min-width:12rem;border:1px solid var(--line);border-radius:var(--r-sm);padding:.55rem .8rem;font-size:.88rem;color:var(--muted);background:rgba(var(--ov),.03)}
-.kph{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:.9rem;text-align:center;color:var(--muted);font-size:.88rem}.demo-kbody:has(.demo-kcard) .kph{display:none}
 
 
 /* PASS SAU (review Opus T-52 + nav mobile): header 2 hàng ở mobile để không tràn ngang; nền đặc thay backdrop blur để giảm vẽ lại khi cuộn. */
@@ -931,10 +911,9 @@ html{scroll-padding-top:96px}
 .kcard{ position:relative; transition:transform var(--m-fast) var(--e-out); }
 .tile{ position:relative; transition:transform var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out); }
 button.chip{ position:relative; transition:transform var(--dur-card) var(--ease-out), border-color var(--dur-card) var(--ease-out), background-color var(--dur-card) var(--ease-out); }
-.demo-kcard{ position:relative; transition:transform var(--dur-card) var(--ease-out), opacity var(--dur-hover) var(--ease-out); }
 .demo-tab-ind{ transition:transform var(--dur-card) var(--ease-out), opacity var(--dur-hover) var(--ease-out); }
 /* Q3 — bóng qua ::after opacity-only (không transition box-shadow trực tiếp) */
-.lp-card::after, .job::after, .tile::after, button.chip::after, .demo-kcard::after{
+.lp-card::after, .job::after, .tile::after, button.chip::after{
   content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
   opacity:0; transition:opacity var(--dur-card) var(--ease-out);
 }
@@ -944,7 +923,6 @@ html[data-theme="light"] .lp-card::after{ box-shadow:0 18px 40px rgba(13,20,36,.
 html[data-theme="light"] .job::after{ box-shadow:0 14px 32px rgba(13,20,36,.12); }
 .tile::after{ box-shadow:0 14px 30px rgba(0,0,0,.18); }
 button.chip::after{ box-shadow:0 8px 20px rgba(0,0,0,.16); }
-.demo-kcard::after{ box-shadow:0 12px 28px rgba(0,0,0,.16); }
 .kcard::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 10px 24px rgba(0,0,0,.18); opacity:0; transition:opacity var(--dur-card) var(--ease-out); }
 html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12); }
 /* Q2+Q3+Q4 — mọi :hover mới đều nằm trong gate chuột thật */
@@ -959,7 +937,6 @@ html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12
   .kcard:hover{ border-color:var(--brand); }
   .tile:hover{ border-color:var(--brand); transition-duration:var(--dur-hover); }
   button.chip:hover{ border-color:var(--ink); transition-duration:var(--dur-hover); }
-  .demo-kcard:hover{ border-color:var(--line-strong); transition-duration:var(--dur-hover); }
   .lp-links a:hover{ color:var(--brand); }
   .lp-links a:hover::after{ transform:scaleX(1); }
   .demo-tabs button:hover{ color:var(--text); }
@@ -983,7 +960,7 @@ button.chip:active{ transform:scale(.98); transition-duration:var(--dur-press); 
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible{ outline:2px solid var(--brand); outline-offset:2px; }
 /* Q6 — reduced-motion: tắt hẳn các hiệu ứng mới (block cũ + global duration .01ms vẫn giữ) */
 @media (prefers-reduced-motion: reduce){
-  .demo-kcard, .demo-tab-ind{ transition:none !important; }
+  .demo-tab-ind{ transition:none !important; }
   .skel{ animation:none !important; }
 }
 
@@ -1006,12 +983,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 /* Thẻ: viền phẳng, bo vừa phải, không bóng (bóng cứng chỉ dành cho 2 chỗ nhấn bên dưới). */
 #landingView .lp-card, #landingView .demo-controls, #landingView .demo-result{ background:var(--surface); border:var(--bw) solid var(--line); border-radius:var(--r-md); box-shadow:none; }
 /* Cột kanban là vùng nền, không phải thẻ, để thẻ việc không thành "thẻ trong thẻ". */
-#landingView .demo-kcol{ background:none; border:none; border-radius:0; padding:0; }
-#landingView .demo-kcol h3{ padding-bottom:.5rem; border-bottom:1px solid var(--line-strong); }
-#landingView .kph{ color:var(--ink); border-color:var(--line); }
-#landingView .demo-kcard{ background:var(--surface); border:1px solid var(--line-strong); }
 #landingView .lp-card:hover{ transform:none; }
-#landingView .demo-kcard{ border-radius:var(--r-sm); }
 /* Tương phản AA: link landing dùng màu mực, nút chính chữ trắng trên brand phẳng. */
 #landingView .lp-links a{ color:var(--ink); }
 #landingView .lp-links a:hover{ color:var(--brand); }
@@ -1050,9 +1022,6 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-chips .vd{ margin:0; }
 .sg-skel{ height:64px; background:var(--line); border:none; opacity:.5; }
 .sg-live-foot{ margin:.9rem 0 0; color:var(--mute); font-size:.85rem; }
-.lp-trust{ list-style:none; margin:1.2rem 0 0; padding:0; display:grid; gap:.45rem; color:var(--muted); font-size:14px; }
-.lp-trust li{ display:flex; align-items:center; gap:.6rem; }
-.lp-trust li::before{ content:""; flex:none; width:10px; height:10px; border-radius:50%; background:var(--mint); border:1px solid var(--line-strong); }
 .sg-why{ margin-top:1.6rem; width:min(760px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:1.1rem 1.2rem; }
 .sg-why h3{ margin:0 0 .2rem; font-size:1.05rem; text-wrap:balance; }
 .sg-why h3 a{ color:var(--ink); }
@@ -1066,18 +1035,9 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-narrow{ max-width:60ch; margin-left:auto; margin-right:auto; }
 /* Khối lệch trái: chữ bên trái, hai hộp bên phải; phá nhịp căn giữa của các khối còn lại. */
 .sg-left{ text-align:left; align-items:flex-start; }
-.sg-split{ width:100%; max-width:1080px; margin:0 auto; display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:2.5rem; align-items:start; }
-.sg-split-text h2, .sg-split-text .lede{ text-align:left; margin-left:0; max-width:34ch; }
-.sg-split .sg-why, .sg-split-text .sg-formula{ margin-top:0; width:auto; }
-.sg-split-text .sg-formula{ margin-top:1.4rem; }
-.lp-shot{ display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:var(--r-lg); }
-html[data-theme="light"] .lp-shot.shot-dark, html:not([data-theme="light"]) .lp-shot.shot-light{ display:none; }
-.sg-vis{ display:grid; gap:1rem; min-width:0; }
-.sg-split-text .lp-shot{ margin-top:1.4rem; max-width:440px; }
-.lp-shot-wide{ width:min(1080px,100%); margin:1.4rem auto 0; }
-@media (max-width:640px){ .lp-shot-wide{ overflow-x:auto; border-radius:var(--r-lg); } .lp-shot-wide .lp-shot{ width:760px; max-width:none; } }
+.sg-split{ width:100%; max-width:1080px; margin:0 auto; display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:clamp(2rem,4vw,3.5rem); align-items:center; }
+.sg-split-text h2, .sg-split-text .lede{ text-align:left; margin-left:0; max-width:40ch; }
 .sg-sub{ font-family:var(--f-display); font-weight:600; font-size:1.3rem; margin:3rem 0 .3rem; }
-.sg-split .sg-pair{ margin-top:0; width:auto; grid-template-columns:1fr; }
 @media (max-width:860px){ .sg-split{ grid-template-columns:1fr; gap:1.2rem; } }
 .sg-about{ width:100%; max-width:720px; margin:0 auto 0 max(0px, calc((100% - 1080px) / 2)); }
 .sg-about h2{ text-align:left; margin-left:0; }
@@ -1158,7 +1118,7 @@ body{font-feature-settings:"cv11","ss01"}
 .score,.score-pill,.brief .bignum,kbd,:is(#tab-profile,#tab-account) .tile .num,.sg-why .total,.lp-card .n,.bench-stat b,.demo-final b,.why .row .n,.ring-wrap text,.nf-badge,.lp-formula,.sg-formula,.lp-step .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
 kbd{border-bottom-width:1px;font-size:.72rem}
 /* bề mặt: hairline + bóng mềm, không bóng lệch */
-.card,.kcard,.brief-in,.sg-live,.sg-try,:is(#tab-profile,#tab-account) .tile,#landingView .demo-kcard{border-color:var(--line);box-shadow:var(--soft)}
+.card,.kcard,.brief-in,.sg-live,.sg-try,:is(#tab-profile,#tab-account) .tile{border-color:var(--line);box-shadow:var(--soft)}
 .input,select.input{border-color:var(--line-strong);font-weight:400}
 /* nút: primary là pill sáng trên nền tối (pill đen trên nền sáng); hover dùng accent */
 .btn.primary,#landingView .btn.primary{background:var(--ink);color:var(--bg);border:1px solid transparent;box-shadow:none;font-weight:500}
@@ -1176,7 +1136,7 @@ kbd{border-bottom-width:1px;font-size:.72rem}
 .why .row .n.y,html[data-theme="dark"] .why .row .n.y,html[data-theme="dark"] .kcard .c.due{color:var(--sun-ink)}
 .kcard.warn,.sg-chip.warn,#jobsContainer .chip.flag.sun{border-color:var(--sun-ink)}
 .vd{font-weight:500}
-.toast.ok::before,.lp-trust li::before,.sg-dot{background:var(--mint-ink);border:0}
+.toast.ok::before,.sg-dot{background:var(--mint-ink);border:0}
 .alert{border:1px solid var(--line)}
 .alert b{font-weight:600}
 .toast-x:focus-visible{outline-color:currentColor}
@@ -1193,14 +1153,32 @@ kbd{border-bottom-width:1px;font-size:.72rem}
 .lp-sec{padding-top:clamp(4.5rem,11vh,8rem)}
 /* hero: một quầng sáng tĩnh, không lưới */
 .lp-hero{isolation:isolate}
-.lp-hero::before{content:"";position:absolute;z-index:-1;left:50%;top:0;width:min(1100px,100vw);height:640px;transform:translateX(-50%);pointer-events:none;
-  background:radial-gradient(520px 280px at 50% 0%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 70%);
-  -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%)}
+.lp-hero::before{content:"";position:absolute;z-index:-1;inset:0 0 auto 0;height:min(760px,100%);pointer-events:none;
+  background:url(assets/hero-dark.webp) center top/cover no-repeat;
+  -webkit-mask-image:radial-gradient(ellipse 50% 90% at 50% 0%,#000 55%,transparent);mask-image:radial-gradient(ellipse 50% 90% at 50% 0%,#000 55%,transparent)}
+html[data-theme="light"] .lp-hero::before{background-image:url(assets/hero-light.webp)}
+.lp-trust{list-style:none;margin:1.4rem 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;row-gap:.4rem;color:var(--muted);font-size:14px}
+.lp-trust li{display:flex;align-items:center}
+.lp-trust li+li::before{content:"";width:1px;height:12px;margin:0 .9rem;background:var(--line-strong)}
+@media (max-width:640px){.lp-trust{flex-direction:column}.lp-trust li+li::before{display:none}}
+/* polish: 3 section tinh nang dung chung mot mau; anh nam trong DUNG mot khung, khong the trong the */
+.lp-eyebrow{margin:0 0 .8rem;font:500 12px/1.4 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sg-split-text h2{font-size:clamp(1.8rem,2.7vw,2.25rem);margin-bottom:.8rem}
+.lp-facts{list-style:none;margin:1.3rem 0 0;padding:0;display:grid;gap:.55rem;text-align:left;color:var(--muted);font-size:.95rem;line-height:1.5}
+.lp-facts li{padding-left:.9rem;border-left:1px solid var(--line-strong)}
+.lp-frame{margin:0;width:100%;min-width:0;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--surface);box-shadow:inset 0 1px 0 rgba(var(--ov),.06)}
+.lp-frame .lp-shot{display:block;width:100%;height:auto}
+html[data-theme="light"] .lp-shot.shot-dark, html:not([data-theme="light"]) .lp-shot.shot-light{display:none}
+.lp-feat-head{margin-bottom:2rem}
+.lp-frame-wide{max-width:1080px;margin:0 auto}
+@media (max-width:640px){.lp-frame-wide{overflow-x:auto}.lp-frame-wide .lp-shot{width:1080px;max-width:none}}
+.lp-below{width:100%;max-width:1080px;margin:0 auto}
+.lp-below .sg-why,.lp-below .sg-formula{width:100%}
+.lp-below .sg-formula{margin-top:1rem}
+.lp-split-after{width:100%;max-width:1080px;margin:2rem auto 0}
 .lp-hero .medallion-img{width:44px;height:44px;margin-bottom:1rem}
-.lp-trust li::before{width:6px;height:6px}
 .sk.core b{background:var(--mint-ink);color:var(--bg)}
 .brief .bignum em{font-style:normal;color:var(--brand)}
-html[data-theme] .lp-shot{background:var(--surface);border:1px solid var(--line);box-shadow:var(--pop-shadow)}
 /* tab bar mobile: nền mờ + hairline thay pill mực */
 
 /* cuộn mượt cho anchor/nav; quầng sáng theo chuột (chỉ transform, tắt ở touch/reduced-motion) */
@@ -1399,7 +1377,7 @@ html.fx-on .bg-fx{opacity:1}
     <section class="lp-sec lp-hero">
     <svg class="medallion-img" width="74" height="74" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>
     <h1 data-en="Apply less, land more">Nộp ít hơn, đúng hơn</h1>
-    <p class="sub" data-en="JobPilot reads new postings from 6 sources (ITviec, TopDev, We Work Remotely, Remotive, Remote OK and HN Who's Hiring) every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới từ 6 nguồn (ITviec, TopDev, We Work Remotely, Remotive, Remote OK và HN Who's Hiring) mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
+    <p class="sub" data-en="New postings from 6 sources, scored against your CV with the reasons shown. Built for developers in Vietnam.">Tin mới từ 6 nguồn, chấm theo CV của bạn và ghi rõ lý do. Dành cho lập trình viên ở Việt Nam.</p>
     <div class="lp-cta">
       <a class="btn primary big" href="#lp-live" style="text-decoration:none" data-en="See today's jobs">Xem tin sáng nay</a>
       <a class="btn ghost big" data-auth="register" href="#" style="text-decoration:none" data-en="Sign up free">Đăng ký miễn phí</a>
@@ -1439,8 +1417,20 @@ html.fx-on .bg-fx{opacity:1}
   <section class="lp-sec sg-left" id="lp-scoring">
     <div class="sg-split">
       <div class="sg-split-text">
+        <p class="lp-eyebrow" data-en="Scoring">Chấm điểm</p>
         <h2 data-en="Every score has a reason">Mỗi điểm đều có lý do</h2>
-        <p class="lede" data-en="JobPilot explains the score of the top posting above: which skills match, which are missing, and how each part adds up.">JobPilot giải thích điểm của tin xếp đầu ở trên: kỹ năng nào khớp, kỹ năng nào còn thiếu, từng phần cộng lại ra sao.</p>
+        <p class="lede" data-en="Each posting gets a breakdown: which skills match, which are missing, and how the parts add up.">Mỗi tin có bảng điểm: kỹ năng nào khớp, kỹ năng nào thiếu, từng phần cộng lại ra sao.</p>
+        <ul class="lp-facts">
+          <li data-en="Skills up to 50 points, the rest up to 20">Kỹ năng tối đa 50 điểm, phần còn lại 20</li>
+          <li data-en="75 and up is a strong match, 50 and up partial">Từ 75 là khớp mạnh, từ 50 là khớp một phần</li>
+          <li data-en="Postings with fewer than 3 skills cap at 69">Tin ghi dưới 3 kỹ năng tối đa 69 điểm</li>
+        </ul>
+      </div>
+      <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-scoring-dark.webp" width="1066" height="892" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng điểm 86 của một tin, kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: the 86-point breakdown of a posting, with matched skills, missing skills and each score part"><img class="lp-shot shot-light" src="assets/shot-scoring-light.webp" width="1066" height="892" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng điểm 86 của một tin, kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: the 86-point breakdown of a posting, with matched skills, missing skills and each score part"></figure>
+    </div>
+    <div class="lp-below">
+    <h3 class="sg-sub" data-en="A real posting today">Tin thật hôm nay</h3>
+    <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div>
       <details class="sg-formula">
         <summary data-en="Full formula">Công thức đầy đủ</summary>
         <p data-en="<b>Skills</b> (max 50): total weight of the skills you have, divided by the total weight of the skills the posting requires."><b>Kỹ năng</b> (tối đa 50): tổng trọng số kỹ năng bạn có, chia cho tổng trọng số kỹ năng tin yêu cầu.</p>
@@ -1448,10 +1438,6 @@ html.fx-on .bg-fx{opacity:1}
         <p data-en="<b>Total</b> = (skills + the rest) / 70 × 100. 75 and up is a strong match, 50 and up a partial match."><b>Tổng</b> = (kỹ năng + phần còn lại) / 70 × 100. Từ 75 trở lên là khớp mạnh, từ 50 là khớp một phần.</p>
         <p data-en="A posting that lists fewer than 3 skills is capped at 69, since there is too little information to score it higher.">Tin chỉ ghi dưới 3 kỹ năng thì điểm tối đa 69, vì quá ít thông tin để chấm cao.</p>
       </details>
-      </div>
-      <div class="sg-vis"><img class="lp-shot shot-dark" src="assets/shot-scoring-dark.webp" width="533" height="701" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ tin tuyển dụng 86 điểm, mở phần giải thích kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: an 86-point job card with the explanation open, showing matched and missing skills and each score part"><img class="lp-shot shot-light" src="assets/shot-scoring-light.webp" width="533" height="701" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ tin tuyển dụng 86 điểm, mở phần giải thích kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: an 86-point job card with the explanation open, showing matched and missing skills and each score part">
-      <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div></div>
-    </div>
     <h3 class="sg-sub" data-en="Drag the sliders and watch the score change">Kéo thử để thấy điểm thay đổi</h3>
     <p class="sg-mut" data-en="Change the number of matched skills or the posting's freshness; the score on the right recalculates with the formula.">Đổi số kỹ năng khớp hoặc độ mới của tin, điểm bên phải tính lại theo công thức.</p>
   <div class="demo-score">
@@ -1481,34 +1467,40 @@ html.fx-on .bg-fx{opacity:1}
       <p class="demo-cap hidden" id="demoScoreCap" data-en="Capped at 69 pts: the posting lists fewer than 3 skills.">Đã chặn ở 69đ: tin ghi dưới 3 kỹ năng.</p>
     </div>
   </div>
+  </div>
   </section>
 
-<section class="lp-sec" id="lp-demo-kanban">
-  <h2 data-en="Track every application until you hear back">Theo dõi từng đơn tới khi có kết quả</h2>
-  <p class="lede" data-en="Every posting you care about becomes a card. When one goes quiet for more than 7 days, JobPilot reminds you to follow up. Try moving the cards below (drag and drop on desktop, arrow buttons on mobile).">Mỗi tin bạn quan tâm thành một thẻ. Đơn nào im lặng quá 7 ngày, JobPilot nhắc bạn nhắn lại. Thử chuyển thẻ bên dưới (máy tính kéo thả, điện thoại bấm nút mũi tên).</p>
-  <p class="demo-count" id="demoKanbanCount" aria-live="polite">Đã chuyển 0/3</p>
-  <div class="demo-kanban">
-    <div class="demo-kcol" data-demo-col="new"><h3 data-en="New">Mới</h3><div class="demo-kbody">
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-1" data-demo-start="new"><b>Backend Java</b><span data-en="82 pts · ITviec">82đ · ITviec</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-1" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước" data-en-aria-label="Move to previous column"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-demo-move="demo-job-1" data-demo-dir="1" aria-label="Chuyển sang cột sau" data-en-aria-label="Move to next column"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></article>
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-2" data-demo-start="new"><b>Java + Kafka</b><span data-en="68 pts · TopDev">68đ · TopDev</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-2" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước" data-en-aria-label="Move to previous column"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-demo-move="demo-job-2" data-demo-dir="1" aria-label="Chuyển sang cột sau" data-en-aria-label="Move to next column"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></article>
-      <article class="demo-kcard" draggable="true" data-demo-card="demo-job-3" data-demo-start="new"><b>Spring Boot</b><span data-en="74 pts · ITviec">74đ · ITviec</span><div class="demo-kmv"><button type="button" data-demo-move="demo-job-3" data-demo-dir="-1" disabled aria-label="Chuyển sang cột trước" data-en-aria-label="Move to previous column"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-demo-move="demo-job-3" data-demo-dir="1" aria-label="Chuyển sang cột sau" data-en-aria-label="Move to next column"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></article>
-    </div></div>
-    <div class="demo-kcol" data-demo-col="watch"><h3 data-en="Watching">Đang theo</h3><div class="demo-kbody"><div class="kph" data-en="Use the arrow buttons to move a card here">Bấm nút mũi tên để đưa thẻ vào đây</div></div></div>
-    <div class="demo-kcol" data-demo-col="applied"><h3 data-en="Applied">Đã apply</h3><div class="demo-kbody"><div class="kph" data-en="Use the arrow buttons to move a card here">Bấm nút mũi tên để đưa thẻ vào đây</div></div></div>
+<section class="lp-sec sg-left" id="lp-demo-kanban">
+  <div class="sg-split lp-feat-head">
+    <div class="sg-split-text">
+      <p class="lp-eyebrow" data-en="Tracking">Theo dõi đơn</p>
+      <h2 data-en="Track every application">Theo dõi từng đơn</h2>
+      <p class="lede" data-en="Every posting you care about becomes a card, from New to Offer.">Mỗi tin bạn quan tâm thành một thẻ, từ Mới tới Offer.</p>
+    </div>
+    <ul class="lp-facts">
+      <li data-en="A follow-up reminder 7 days after you apply">Nhắc follow-up 7 ngày sau khi nộp</li>
+      <li data-en="A warning when an application goes quiet">Cảnh báo khi đơn im lặng quá lâu</li>
+      <li data-en="Interview rounds noted right on the card">Ghi vòng phỏng vấn ngay trên thẻ</li>
+    </ul>
   </div>
-  <p class="sg-mut sg-center sg-narrow" data-en="The app has all 7 columns: New, Saved, Applied, Interview, Offer, Rejected, Archived.">Trong app có đủ 7 cột: Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, Từ chối, Lưu trữ.</p>
-  <div class="lp-shot-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="1200" height="304" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban 7 cột với các đơn ứng tuyển, có nhắc follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the 7-column kanban board with applications, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="1200" height="304" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban 7 cột với các đơn ứng tuyển, có nhắc follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the 7-column kanban board with applications, a follow-up date and a 9-day silence warning"></div>
+  <figure class="lp-frame lp-frame-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"></figure>
 </section>
 
 <section class="lp-sec sg-left" id="lp-salary">
   <div class="sg-split">
     <div class="sg-split-text">
-      <h2 data-en="Know the salary range before you talk">Biết mức lương trước khi nói chuyện</h2>
-      <p class="lede" data-en="Many postings say &quot;negotiable&quot;. JobPilot works out a salary range from the live postings that do list pay, then suggests what to say in the two hardest moments.">Nhiều tin ghi "thỏa thuận". JobPilot tính khoảng lương từ chính các tin đang tuyển có ghi lương, rồi gợi ý câu nói cho hai tình huống khó mở lời nhất.</p>
-      <p data-en="Computed from postings that list a salary. With fewer than 5 matching posts, it says the data is thin instead of showing a number.">Tính từ tin có ghi lương. Dưới 5 tin khớp thì báo dữ liệu còn mỏng, không đưa con số.</p>
-      <img class="lp-shot shot-dark" src="assets/shot-salary-dark.webp" width="533" height="571" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"><img class="lp-shot shot-light" src="assets/shot-salary-light.webp" width="533" height="571" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay">
+      <p class="lp-eyebrow" data-en="Salary">Lương</p>
+      <h2 data-en="Know the pay range first">Biết khung lương trước</h2>
+      <p class="lede" data-en="Many postings say &quot;negotiable&quot;. JobPilot works out the range from live postings that do list pay.">Nhiều tin ghi "thỏa thuận". JobPilot tính khoảng lương từ chính các tin đang tuyển có ghi lương.</p>
+      <ul class="lp-facts">
+        <li data-en="Median and P25 to P75 by role and level">Trung vị và P25 đến P75 theo vị trí, cấp bậc</li>
+        <li data-en="Fewer than 5 matching posts: it says so, no number">Dưới 5 tin khớp thì báo dữ liệu mỏng, không đưa số</li>
+        <li data-en="Suggested lines for the two hardest moments">Gợi ý câu nói cho hai lúc khó mở lời nhất</li>
+      </ul>
     </div>
-  <div class="sg-pair">
+    <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-salary-dark.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"><img class="lp-shot shot-light" src="assets/shot-salary-light.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"></figure>
+  </div>
+  <div class="sg-pair lp-split-after">
     <div class="sg-box">
       <h3 data-en="When they ask your expected salary first">Khi bị hỏi lương mong muốn trước</h3>
       <p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc hai bên cùng khoảng trước khi đưa con số cụ thể."</p>
@@ -1517,7 +1509,6 @@ html.fx-on .bg-fx{opacity:1}
       <h3 data-en="When the offer is below your expectations">Khi offer thấp hơn kỳ vọng</h3>
       <p data-en="&quot;This is below the range I am considering, based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Mức này thấp hơn khoảng em đang cân nhắc theo thị trường và kinh nghiệm của em. Anh/chị có linh hoạt được tới khoảng đó không?"</p>
     </div>
-  </div>
   </div>
 </section>
 
@@ -4947,7 +4938,6 @@ $("#restoreBtn").addEventListener("click", async () => {
 <script>
 /* i18n landing + <head> (zone A). Key = exact Vietnamese string in this script. */
 Object.assign(EN, {
-  "Đã chuyển %s/3": "Moved %s/3",
   "Khớp %s/%s kỹ năng (rule %s) + fit %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, tier %s": "Matched %s/%s skills (rule %s) + fit %s (location 8 + freshness %s + seniority 5) = %s pts, tier %s",
   " (đã chặn 69 vì bằng chứng dưới 3 kỹ năng).": " (capped at 69: fewer than 3 skills as evidence).",
   "Tìm job Backend Java": "Find Backend Java jobs",
@@ -5025,63 +5015,6 @@ if (LANG === "en") {
     new MutationObserver(function(){ if (landingVisible()) demoPositionInd(); })
       .observe(landing, { attributes: true, attributeFilter: ["class"] });
   }
-
-  /* ---- 2.2 Kanban mini-demo: handler RIÊNG demoMoveCard, state cục bộ ---- */
-  var DEMO_COLS = ["new", "watch", "applied"];
-  var demoCountEl = dq("#demoKanbanCount");
-  function demoKanbanCount(){
-    if (!demoCountEl) return;
-    var moved = dqq("[data-demo-card]").filter(function(c){
-      var col = c.closest("[data-demo-col]");
-      return col && c.dataset.demoStart !== col.dataset.demoCol;
-    }).length;
-    demoCountEl.textContent = t("Đã chuyển %s/3", moved);
-  }
-  function demoMoveCard(cardId, targetCol){
-    var card = dq('[data-demo-card="' + cardId + '"]');
-    var body = dq('[data-demo-col="' + targetCol + '"] .demo-kbody');
-    if (!card || !body) return;
-    body.appendChild(card);
-    var idx = DEMO_COLS.indexOf(targetCol);
-    var prev = card.querySelector('[data-demo-dir="-1"]');
-    var next = card.querySelector('[data-demo-dir="1"]');
-    if (prev) prev.disabled = idx <= 0;
-    if (next) next.disabled = idx >= DEMO_COLS.length - 1;
-    card.classList.remove("demo-just-moved"); void card.offsetWidth; card.classList.add("demo-just-moved");
-    demoKanbanCount();
-  }
-  dqq("[data-demo-move]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var card = dq('[data-demo-card="' + btn.dataset.demoMove + '"]');
-      var col = card && card.closest("[data-demo-col]");
-      if (!col) return;
-      var next = DEMO_COLS.indexOf(col.dataset.demoCol) + Number(btn.dataset.demoDir);
-      if (next >= 0 && next < DEMO_COLS.length) demoMoveCard(btn.dataset.demoMove, DEMO_COLS[next]);
-    });
-  });
-  var demoDragId = null;
-  dqq("[data-demo-card]").forEach(function(card){
-    card.addEventListener("dragstart", function(e){
-      demoDragId = card.dataset.demoCard;
-      try { e.dataTransfer.setData("text/plain", demoDragId); } catch (err) {}
-    });
-    card.addEventListener("dragend", function(){
-      demoDragId = null;
-      dqq(".demo-kbody").forEach(function(b){ b.classList.remove("demo-drop"); });
-    });
-  });
-  dqq(".demo-kbody").forEach(function(body){
-    body.addEventListener("dragover", function(e){ e.preventDefault(); body.classList.add("demo-drop"); });
-    body.addEventListener("dragleave", function(){ body.classList.remove("demo-drop"); });
-    body.addEventListener("drop", function(e){
-      e.preventDefault(); body.classList.remove("demo-drop");
-      var id = demoDragId;
-      try { id = id || e.dataTransfer.getData("text/plain"); } catch (err) {}
-      var col = body.closest("[data-demo-col]");
-      if (id && col) demoMoveCard(id, col.dataset.demoCol);
-    });
-  });
-  demoKanbanCount();
 
   /* ---- 2.3 Slider tính điểm: ĐÚNG công thức app ----
      rule = min(50, khớp / yêu cầu × 50); fit = khu vực 8 + độ mới + cấp bậc 5;
