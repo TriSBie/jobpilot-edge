@@ -1333,6 +1333,18 @@ html.fx-on .bg-fx{opacity:1}
   .lp-cta .btn,.btn.big,#landingView .btn{min-height:var(--tap)}
 }
 
+/* Nộp nhanh + thẻ Telegram: khối riêng, chỉ dùng token sẵn có */
+#qaDlg{width:min(560px,calc(100vw - 32px))}
+#qaDlg .qa-sec{margin:.9rem 0 0}
+#qaDlg .qa-sec b{display:block;font-size:.85rem;margin-bottom:.35rem}
+#qaDlg .chips{margin-top:0}
+#qaDlg textarea{width:100%;min-height:7.5rem;resize:vertical;font:inherit;padding:.6rem .7rem;border-radius:var(--r-sm)}
+#qaDlg .qa-row{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;margin-top:.45rem}
+#qaDlg .qa-foot{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.1rem}
+.qa-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px}
+.qa-strip>div:first-child{min-width:0;flex:1 1 220px}
+.qa-strip .qa-act{display:flex;gap:.5rem;flex-wrap:wrap}
+.card .actions [data-qa-for]{gap:6px}.card .actions [data-qa-for] .ic-svg{width:18px;height:18px;flex:none}
 </style>
 </head>
 <body>
@@ -1757,6 +1769,8 @@ html.fx-on .bg-fx{opacity:1}
         </div>
 
         <div id="jobsAlertStrip"></div>
+        <div id="qaPrompt" class="qa-strip hidden" role="status"></div>
+        <div id="tgCard" class="qa-strip hidden"></div>
 
         <form id="submitForm" class="submit-row">
           <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…" data-en-placeholder="Paste a job link from any site to add it manually…"></div>
@@ -1970,6 +1984,8 @@ html.fx-on .bg-fx{opacity:1}
     <button class="btn primary" value="ok" type="submit" data-en="Confirm">Xác nhận</button>
   </form>
 </dialog>
+
+<dialog id="qaDlg" aria-labelledby="qaTitle"></dialog>
 
 <!-- ================= COMMAND PALETTE ================= -->
 <div id="palette" class="hidden">
@@ -2722,7 +2738,7 @@ function initLandingMagnet(root){
 }
 /* ---------------- Telegram ---------------- */
 let tgTimer = 0;
-function tgShow(id){ clearInterval(tgTimer); ["tgIdle","tgPending","tgDone"].forEach(x => $("#" + x).classList.toggle("hidden", x !== id)); }
+function tgShow(id){ clearInterval(tgTimer); ["tgIdle","tgPending","tgDone"].forEach(x => $("#" + x).classList.toggle("hidden", x !== id)); if (state.user) state.user.telegram_linked = id === "tgDone"; tgCardRender(); }
 $("#tgLinkBtn").addEventListener("click", async () => {
   try {
     const r = await api("/api/me/telegram/link", { method: "POST" }).catch((e) => { throw new Error(e.message === "telegram_not_configured" ? t("Bot Telegram chưa được bật trên hệ thống. Thử lại sau.") : e.message); });
@@ -3066,8 +3082,8 @@ async function loadFunnel(){
   if (!(state.user && state.user.is_owner)) return;
   try {
     const d = await api("/api/admin/funnel"), pct = (a, n) => n ? Math.round(100 * a / n) + "%" : "–";
-    const th = ["Nguồn", "Tuần", "Đăng ký", "Kích hoạt", "Bỏ ở bước CV", "Hồ sơ 0 kỹ năng", "Telegram", "D7", "D30"].map(h => `<th>${esc(t(h))}</th>`).join("");
-    $("#funnelOut").innerHTML = `<table><tr>${th}</tr>` + d.rows.map(r => `<tr><td>${esc(r.ref)}</td><td>${esc(r.week)}</td><td>${r.signups}</td><td>${r.activated}</td><td>${r.cv_dropout}</td><td>${r.profile_no_skills}</td><td>${r.telegram_linked}</td><td>${pct(r.d7_retained, r.d7_eligible)}</td><td>${pct(r.d30_retained, r.d30_eligible)}</td></tr>`).join("") + "</table>";
+    const th = ["Nguồn", "Tuần", "Đăng ký", "Kích hoạt", "Bỏ ở bước CV", "Hồ sơ 0 kỹ năng", "Telegram", "D7", "D30", "Nộp nhanh: mở", "Nộp nhanh: đã nộp"].map(h => `<th>${esc(t(h))}</th>`).join("");
+    $("#funnelOut").innerHTML = `<table><tr>${th}</tr>` + d.rows.map(r => `<tr><td>${esc(r.ref)}</td><td>${esc(r.week)}</td><td>${r.signups}</td><td>${r.activated}</td><td>${r.cv_dropout}</td><td>${r.profile_no_skills}</td><td>${r.telegram_linked}</td><td>${pct(r.d7_retained, r.d7_eligible)}</td><td>${pct(r.d30_retained, r.d30_eligible)}</td><td>${r.quick_open ?? "–"}</td><td>${r.quick_applied ?? "–"}</td></tr>`).join("") + "</table>";
     $("#funnelBox").classList.remove("hidden");
   } catch (e) { /* funnel là phụ */ }
 }
@@ -3290,6 +3306,7 @@ function renderJobs(){
             <option value="">${t("Chấm bằng hồ sơ khác…")}</option>
             ${state.profiles.filter(x => x.id !== state.profileId).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}
           </select>` : ""}
+          ${STAGE_KEYS.indexOf(stage) < 2 ? `<button class="btn${job.verdict === "apply" ? " p" : ""}" data-qa-for="${esc(job.id)}" type="button"><svg class="ic-svg" aria-hidden="true"><use href="#apply"/></svg>${t("Nộp nhanh")}</button>` : ""}
           ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">${t("Vì sao điểm này?")}</button>` : ""}
         </div>
       </div>
@@ -3323,6 +3340,8 @@ function renderJobs(){
     });
   });
 
+  $$("[data-qa-for]", box).forEach(b => b.addEventListener("click", () => qaOpen(b.dataset.qaFor, b)));
+  tgCardRender();
   const lm = $("#loadMoreJobs", box);
   if (lm) lm.addEventListener("click", () => { state.jobsVisible = (state.jobsVisible || 20) + 20; renderJobs(); });
   jobsNewPillBind(box);
@@ -3356,6 +3375,130 @@ async function changeJobStage(jobId, stage, selEl){
   } finally {
     selEl.disabled = false;
   }
+}
+
+/* Nộp nhanh (Đợt A): JobPilot không tự nộp. Bảng chuẩn bị nội dung, mở trang nộp, hỏi lại khi user quay về tab. */
+Object.assign(EN, {
+  "Nộp nhanh": "Quick apply", "Kỹ năng khớp": "Matched skills", "Kỹ năng còn thiếu": "Missing skills", "Không có": "None",
+  "Đoạn giới thiệu": "Short intro", "Lấy từ hồ sơ của bạn, sửa thoải mái trước khi dán.": "Built from your profile. Edit it before pasting.",
+  "Copy giới thiệu": "Copy intro", "Copy danh sách kỹ năng": "Copy skill list", "Mở trang nộp": "Open application page", "Đã nộp": "I applied", "Chưa": "Not yet",
+  "Đã copy.": "Copied.", "Không copy được, hãy chọn chữ rồi copy tay.": "Couldn't copy. Select the text and copy it manually.",
+  "Bạn đã nộp đơn cho %s chưa?": "Did you apply to %s?", "Đã chuyển sang Đã apply, nhắc theo dõi sau 7 ngày": "Moved to Applied. Follow-up reminder in 7 days",
+  "Xin chào, tôi là %s.": "Hi, I'm %s.", "Tôi đang ở cấp %s.": "I'm at %s level.", "Tôi có kinh nghiệm với %s.": "I have experience with %s.",
+  "Tôi muốn ứng tuyển vị trí %s tại %s.": "I'd like to apply for the %s role at %s.", "Tôi muốn ứng tuyển vị trí %s.": "I'd like to apply for the %s role.",
+  "Không tìm thấy hồ sơ.": "Profile not found.", "Tin này không còn.": "This job is no longer available.",
+  "Nhận tin khớp mạnh qua Telegram": "Get strong matches on Telegram", "Ví dụ tin khớp mạnh: %s": "A strong match right now: %s",
+  "Báo ngay khi có tin hợp hồ sơ, không cần mở JobPilot.": "Get pinged when a job fits your profile, without opening JobPilot.",
+  "Kết nối Telegram": "Connect Telegram", "Để sau": "Later", "Nộp nhanh: mở": "Quick apply: opened", "Nộp nhanh: đã nộp": "Quick apply: applied",
+});
+const QA_ERR = { profile_not_found: "Không tìm thấy hồ sơ.", job_not_found: "Tin này không còn." };
+let qaPendingJob = null; // job vừa "Mở trang nộp", chờ hỏi lại; chỉ 1 cái
+const qaSkills = (job) => {
+  const m = job.match || {};
+  return { matched: job.matched || m.matched_skills || [], missing: job.missing || m.missing_skills || [] };
+};
+// Chỉ dùng dữ liệu thật: tên user, cấp bậc hồ sơ, tối đa 3 kỹ năng vừa khớp vừa có trong hồ sơ (nặng trước), tiêu đề/công ty của tin.
+function qaIntro(job){
+  const p = currentProfile() || {}, name = state.user && state.user.name;
+  const matched = new Set(qaSkills(job).matched.map(s => String(s).toLowerCase()));
+  const top = (p.skills || []).slice().sort((a, b) => b.weight - a.weight)
+    .filter(s => matched.has(String(s.skill).toLowerCase())).slice(0, 3).map(s => s.skill);
+  const out = [];
+  if (name) out.push(t("Xin chào, tôi là %s.", name));
+  if (p.level) out.push(t("Tôi đang ở cấp %s.", p.level[0].toUpperCase() + p.level.slice(1)));
+  if (top.length) out.push(t("Tôi có kinh nghiệm với %s.", top.join(", ")));
+  out.push(job.company ? t("Tôi muốn ứng tuyển vị trí %s tại %s.", job.title, job.company) : t("Tôi muốn ứng tuyển vị trí %s.", job.title));
+  return out.join(" ");
+}
+async function qaCopy(text){
+  try { await navigator.clipboard.writeText(text); toast(t("Đã copy."), "ok"); }
+  catch (e) { toast(t("Không copy được, hãy chọn chữ rồi copy tay."), "err"); }
+}
+async function qaAction(job, action){
+  const p = currentProfile();
+  if (!p) return null;
+  try {
+    const row = await api("/api/applications/quick", { method: "POST", body: JSON.stringify({ profile_id: p.id, job_id: job.id, action }) });
+    if (row && row.stage) job.application = Object.assign({}, job.application, row);
+    return row;
+  } catch (e) { toast(t(QA_ERR[e.message] || e.message), "err"); return null; }
+}
+async function qaApplied(job){
+  const row = await qaAction(job, "applied");
+  if (!row) return false;
+  toast(t("Đã chuyển sang Đã apply, nhắc theo dõi sau 7 ngày"), "ok");
+  renderJobs();
+  loadApplications();
+  return true;
+}
+function qaOpen(jobId, opener){
+  const job = state.jobs.find(j => j.id === jobId), d = $("#qaDlg");
+  if (!job) return;
+  const { matched, missing } = qaSkills(job);
+  const chips = (list, cls) => list.length ? list.map(s => `<span class="chip ${cls}">${esc(s)}</span>`).join("") : `<span class="muted small">${t("Không có")}</span>`;
+  d.innerHTML = `<h3 id="qaTitle">${t("Nộp nhanh")}: ${esc(job.title)}</h3>
+    ${job.company ? `<p class="muted small" style="margin:0">${esc(job.company)}</p>` : ""}
+    <div class="qa-sec"><b>${t("Kỹ năng khớp")}</b><div class="chips">${chips(matched, "ok")}</div></div>
+    <div class="qa-sec"><b>${t("Kỹ năng còn thiếu")}</b><div class="chips">${chips(missing, "miss")}</div></div>
+    ${matched.length ? `<div class="qa-row"><button class="btn small" type="button" data-qa="copy-skills">${t("Copy danh sách kỹ năng")}</button></div>` : ""}
+    <div class="qa-sec"><label for="qaIntro"><b>${t("Đoạn giới thiệu")}</b></label>
+      <p class="muted small" id="qaIntroHint" style="margin:0 0 .35rem">${t("Lấy từ hồ sơ của bạn, sửa thoải mái trước khi dán.")}</p>
+      <textarea id="qaIntro" aria-describedby="qaIntroHint">${esc(qaIntro(job))}</textarea>
+      <div class="qa-row"><button class="btn small" type="button" data-qa="copy-intro">${t("Copy giới thiệu")}</button></div></div>
+    <div class="qa-foot">
+      <button class="btn ghost" type="button" data-qa="close">${t("Đóng")}</button>
+      <button class="btn" type="button" data-qa="applied">${t("Đã nộp")}</button>
+      <button class="btn primary" type="button" data-qa="open">${t("Mở trang nộp")}</button>
+    </div>`;
+  d.onclick = async (ev) => {
+    const b = ev.target.closest("[data-qa]");
+    if (!b) return;
+    const a = b.dataset.qa;
+    if (a === "close") d.close();
+    else if (a === "copy-skills") qaCopy(matched.join(", "));
+    else if (a === "copy-intro") qaCopy($("#qaIntro").value);
+    else if (a === "open") {
+      window.open(job.source_url, "_blank", "noopener"); // mở trước await để không bị chặn popup
+      qaPendingJob = job; $("#qaPrompt").classList.add("hidden");
+      d.close();
+      qaAction(job, "open");
+    } else if (a === "applied") { b.disabled = true; if (await qaApplied(job)) d.close(); else b.disabled = false; }
+  };
+  d.onclose = () => { if (opener && opener.isConnected) opener.focus(); };
+  d.showModal(); // dialog native: giữ focus trong bảng, Esc đóng
+  $("#qaIntro").focus();
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !qaPendingJob) return;
+  const job = qaPendingJob, box = $("#qaPrompt");
+  box.innerHTML = `<div><b>${t("Bạn đã nộp đơn cho %s chưa?", esc(job.title))}</b></div>
+    <div class="qa-act"><button class="btn small primary" type="button" data-qp="yes">${t("Đã nộp")}</button><button class="btn small ghost" type="button" data-qp="no">${t("Chưa")}</button></div>`;
+  box.classList.remove("hidden");
+  box.onclick = async (ev) => {
+    const b = ev.target.closest("[data-qp]");
+    if (!b) return;
+    qaPendingJob = null; box.classList.add("hidden");
+    if (b.dataset.qp === "yes") await qaApplied(job);
+  };
+});
+// Thẻ mời Telegram ở tab Việc làm: hồ sơ ≥3 kỹ năng, chưa liên kết, chưa bấm Để sau.
+function tgCardRender(){
+  const box = $("#tgCard"), p = currentProfile();
+  if (!box) return;
+  let off = false; try { off = !!localStorage.getItem("jp_tg_card_off"); } catch (e) { /* bỏ qua */ }
+  const show = !off && state.user && !state.user.telegram_linked && p && (p.skills || []).length >= 3;
+  box.classList.toggle("hidden", !show);
+  if (!show) { box.innerHTML = ""; return; }
+  const strong = (state.jobs || []).find(j => j.match && j.match.tier === "strong");
+  box.innerHTML = `<div><b>${t("Nhận tin khớp mạnh qua Telegram")}</b><div class="muted small">${strong ? t("Ví dụ tin khớp mạnh: %s", esc(strong.title)) : t("Báo ngay khi có tin hợp hồ sơ, không cần mở JobPilot.")}</div></div>
+    <div class="qa-act"><button class="btn small primary" type="button" data-tgc="go">${t("Kết nối Telegram")}</button><button class="btn small ghost" type="button" data-tgc="later">${t("Để sau")}</button></div>`;
+  box.onclick = (ev) => {
+    const b = ev.target.closest("[data-tgc]");
+    if (!b) return;
+    if (b.dataset.tgc === "later") { try { localStorage.setItem("jp_tg_card_off", "1"); } catch (e) { /* bỏ qua */ } tgCardRender(); return; }
+    switchTab("profile");
+    setTimeout(() => { const l = $("#tgLinkBtn"); if (l && !l.closest(".hidden")) { l.scrollIntoView({ block: "center" }); l.focus(); } }, 80);
+  };
 }
 
 $("#filterTier").addEventListener("change", (e) => { state.filters.tier = e.target.value; loadJobs(); });
@@ -3944,6 +4087,7 @@ async function saveSkills(p, list, okMsg){
   if (updated.rescore_queued === false) toast(t("Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
   else { toast(okMsg, "ok"); startRescoringWatch(); }
   await refreshProfiles();
+  tgCardRender();
 }
 
 $("#currentSkills").addEventListener("click", async (ev) => {
