@@ -391,6 +391,22 @@ html[data-theme="dark"]{
 .lp-sec h2{ font-family:var(--f-head); font-weight:400; font-size:clamp(1.9rem,4.4vw,3rem); line-height:1.15; margin:0 0 .9rem; }
 .lp-sec h2 em, .lp-hero h1 em{ font-style:italic; color:#9ba1a8; }
 .lp-sec .lede{ color:var(--muted); max-width:62ch; font-size:1.02rem; line-height:1.65; margin:0 auto; }
+/* Testimonial: marquee chỉ bằng CSS, 2 hàng ngược chiều; bản sao aria-hidden để lặp liền mạch. */
+#lp-testi[hidden]{display:none!important}
+#lp-testi{text-align:center}
+.testi{margin-top:2.4rem;display:grid;gap:16px}
+.testi-row{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.testi-track{display:flex;width:max-content;animation:testi-x 52s linear infinite}
+.testi-rev .testi-track{animation-direction:reverse;animation-duration:58s}
+.testi-row:hover .testi-track,.testi-row:focus-within .testi-track{animation-play-state:paused}
+.testi-group{display:flex;gap:16px;padding:0 16px 0 0;margin:0;list-style:none}
+.testi-card{width:340px;flex:none;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:16px}
+.testi-q{margin:0;font:400 15px/1.6 var(--f-body);color:var(--text);text-wrap:pretty}
+.testi-who{display:flex;align-items:center;gap:10px;font:400 13px var(--f-body);color:var(--muted)}
+.testi-av{width:32px;height:32px;flex:none;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;font:500 12px var(--f-body);color:var(--text)}
+@keyframes testi-x{to{transform:translateX(-50%)}}
+@media (max-width:640px){.testi-card{width:280px}.testi-rev{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.testi-rev .testi-track{animation:none}}
+@media (prefers-reduced-motion:reduce){.testi-row,.testi-rev{position:static;width:auto;height:auto;clip:auto;white-space:normal;overflow:visible;-webkit-mask-image:none;mask-image:none}.testi-track{animation:none;width:auto;display:block}.testi-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:0}.testi-group.testi-clone{display:none}.testi-card{width:auto}}
 .lp-hero{ padding-top:clamp(3rem,8vh,5.5rem); }
 .lp-hero h1{ font-family:var(--f-head); font-weight:400; font-size:clamp(2.7rem,6.5vw,4.6rem); line-height:1.06; margin:1.2rem 0 1rem; }
 .lp-hero .sub{ color:var(--muted); max-width:56ch; font-size:1.08rem; line-height:1.65; margin:0 auto; }
@@ -1493,6 +1509,26 @@ html.fx-on .bg-fx{opacity:1}
       <p data-en="&quot;This is below the range I am considering, based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Mức này thấp hơn khoảng em đang cân nhắc theo thị trường và kinh nghiệm của em. Anh/chị có linh hoạt được tới khoảng đó không?"</p>
     </div>
   </div>
+  </div>
+</section>
+
+<!-- Testimonial: 6 câu dưới đây là MẪU minh hoạ, không phải khách thật. Chủ sản phẩm thay bằng phản hồi thật rồi bỏ thuộc tính hidden. -->
+<section class="lp-sec" id="lp-testi" hidden data-testi-placeholder>
+  <h2 data-en="What developers say">Dev dùng JobPilot nói gì</h2>
+  <p class="lede" data-en="Short notes on the parts people use every day: scoring, skip suggestions, reminders and salary.">Vài nhận xét ngắn về những phần dùng hằng ngày: chấm điểm, gợi ý bỏ qua, nhắc việc và lương.</p>
+  <div class="testi">
+    <div class="testi-row">
+      <div class="testi-track">
+        <ul class="testi-group"><li class="testi-card"><p class="testi-q" data-en="I can see why a job scores 82: Java and Spring match, Kafka is missing. No need to read the whole JD to know if it fits.">Thấy rõ vì sao một tin được 82 điểm: khớp Java, Spring, thiếu Kafka. Đỡ phải đọc cả JD mới biết có hợp không.</p><div class="testi-who"><span class="testi-av">BE</span><span data-en="Backend dev, 3 years">Backend dev, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="Skip suggestions stop me from wasting time on jobs that ask for 8 years of experience.">Gợi ý bỏ qua giúp mình không phí thời gian vào những tin yêu cầu 8 năm kinh nghiệm.</p><div class="testi-who"><span class="testi-av">FE</span><span data-en="Frontend dev, 2 years">Frontend dev, 2 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The 7-day follow-up reminder is exactly what I kept forgetting when tracking in a spreadsheet.">Nhắc follow-up sau 7 ngày là thứ mình hay quên nhất khi tự theo dõi bằng bảng tính.</p><div class="testi-who"><span class="testi-av">FS</span><span data-en="Fullstack dev, 4 years">Fullstack dev, 4 năm</span></div></li></ul>
+        <ul class="testi-group testi-clone" aria-hidden="true"><li class="testi-card"><p class="testi-q" data-en="I can see why a job scores 82: Java and Spring match, Kafka is missing. No need to read the whole JD to know if it fits.">Thấy rõ vì sao một tin được 82 điểm: khớp Java, Spring, thiếu Kafka. Đỡ phải đọc cả JD mới biết có hợp không.</p><div class="testi-who"><span class="testi-av">BE</span><span data-en="Backend dev, 3 years">Backend dev, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="Skip suggestions stop me from wasting time on jobs that ask for 8 years of experience.">Gợi ý bỏ qua giúp mình không phí thời gian vào những tin yêu cầu 8 năm kinh nghiệm.</p><div class="testi-who"><span class="testi-av">FE</span><span data-en="Frontend dev, 2 years">Frontend dev, 2 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The 7-day follow-up reminder is exactly what I kept forgetting when tracking in a spreadsheet.">Nhắc follow-up sau 7 ngày là thứ mình hay quên nhất khi tự theo dõi bằng bảng tính.</p><div class="testi-who"><span class="testi-av">FS</span><span data-en="Fullstack dev, 4 years">Fullstack dev, 4 năm</span></div></li></ul>
+      </div>
+    </div>
+    <div class="testi-row testi-rev">
+      <div class="testi-track">
+        <ul class="testi-group"><li class="testi-card"><p class="testi-q" data-en="The salary range on each job tells me what to ask for before the interview.">Khoảng lương đi kèm từng tin giúp mình biết nên đề xuất bao nhiêu trước buổi phỏng vấn.</p><div class="testi-who"><span class="testi-av">MB</span><span data-en="Mobile dev, 5 years">Mobile dev, 5 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The kanban board is tidy; I drag a card and see which round I am in with each company.">Bảng kanban gọn, kéo thả trạng thái nhanh, nhìn một lần là biết đang ở vòng nào với công ty nào.</p><div class="testi-who"><span class="testi-av">QA</span><span data-en="QA engineer, 3 years">QA engineer, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="I like that the score comes with concrete reasons, not a number from nowhere.">Mình thích việc điểm được giải thích bằng lý do cụ thể, không phải một con số không rõ nguồn.</p><div class="testi-who"><span class="testi-av">DO</span><span data-en="DevOps engineer, 6 years">DevOps engineer, 6 năm</span></div></li></ul>
+        <ul class="testi-group testi-clone" aria-hidden="true"><li class="testi-card"><p class="testi-q" data-en="The salary range on each job tells me what to ask for before the interview.">Khoảng lương đi kèm từng tin giúp mình biết nên đề xuất bao nhiêu trước buổi phỏng vấn.</p><div class="testi-who"><span class="testi-av">MB</span><span data-en="Mobile dev, 5 years">Mobile dev, 5 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The kanban board is tidy; I drag a card and see which round I am in with each company.">Bảng kanban gọn, kéo thả trạng thái nhanh, nhìn một lần là biết đang ở vòng nào với công ty nào.</p><div class="testi-who"><span class="testi-av">QA</span><span data-en="QA engineer, 3 years">QA engineer, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="I like that the score comes with concrete reasons, not a number from nowhere.">Mình thích việc điểm được giải thích bằng lý do cụ thể, không phải một con số không rõ nguồn.</p><div class="testi-who"><span class="testi-av">DO</span><span data-en="DevOps engineer, 6 years">DevOps engineer, 6 năm</span></div></li></ul>
+      </div>
+    </div>
   </div>
 </section>
 
