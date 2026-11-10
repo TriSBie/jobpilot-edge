@@ -1230,6 +1230,51 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
   .sg-live{ box-shadow:4px 4px 0 var(--shadow); padding:.9rem; }
   .sg-why, .sg-formula, .sg-box{ padding:.9rem; }
 }
+/* ===== Thông báo: chuông + bảng; tin mới ở tab Việc làm ===== */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.nf-wrap{position:relative;display:inline-flex}
+.nf-bell{position:relative;cursor:pointer}
+.nf-bell svg{width:18px;height:18px}
+.nf-badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:var(--r-pill);background:var(--brand);color:var(--brand-ink);font:700 11px/16px var(--f-body);text-align:center;border:2px solid var(--bg)}
+.nf-badge.attn{background:#d43a3a;color:#fff}
+.nf-panel{position:absolute;right:0;top:calc(100% + 8px);width:380px;max-height:min(560px,calc(100vh - 96px));display:flex;flex-direction:column;background:var(--surface);color:var(--ink);border:var(--bw) solid var(--ink);border-radius:var(--r-lg);box-shadow:var(--off) var(--off) 0 var(--shadow);z-index:120;overflow:hidden}
+.nf-head{display:flex;align-items:center;gap:6px;padding:10px 8px 6px 16px}
+.nf-head h2{margin:0;flex:1;font:700 16px var(--f-head)}
+.topbar .nf-head .btn{padding:0 10px}
+.topbar .nf-head .btn:disabled{opacity:.45;cursor:default}
+.nf-x{min-width:var(--tap);min-height:var(--tap);border:0;background:transparent;color:var(--ink);font-size:22px;line-height:1;cursor:pointer;border-radius:var(--r-pill)}
+.nf-tabs{display:flex;gap:6px;padding:0 16px 10px}
+.nf-tabs button{min-height:36px;padding:0 14px;border-radius:var(--r-pill);border:var(--bw) solid var(--line);background:transparent;color:var(--ink);font:600 13px var(--f-body);cursor:pointer}
+.nf-tabs button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.nf-list{overflow-y:auto;overscroll-behavior:contain;flex:1;padding-bottom:8px}
+.nf-group{margin:0;padding:10px 16px 4px;font:700 12px var(--f-body);color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.nf-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;width:100%;min-height:var(--tap);padding:10px 16px;text-align:left;background:transparent;border:0;border-top:1px solid var(--line);color:var(--ink);font:400 14px/1.4 var(--f-body);cursor:pointer}
+.nf-row:focus-visible,.nf-tabs button:focus-visible,.nf-x:focus-visible,.nf-more:focus-visible,.new-pill:focus-visible{outline:none;box-shadow:inset 0 0 0 3px #FFC83D}
+.nf-dot{width:8px;height:8px;border-radius:50%;align-self:center}
+.nf-row.unread .nf-dot{background:var(--brand)}
+.nf-ttl{font-weight:500;overflow-wrap:anywhere}
+.nf-row.unread .nf-ttl{font-weight:700}
+.nf-time{font-size:12px;color:var(--mute);white-space:nowrap}
+.nf-body,.nf-tg{grid-column:2/4;font-size:13px;color:var(--mute);overflow-wrap:anywhere}
+.nf-tg{font-size:12px;font-weight:600}
+.nf-tg.failed{color:var(--red)}
+.nf-skel{display:grid;gap:8px;padding:14px 16px;border-top:1px solid var(--line)}
+.nf-state{padding:28px 16px;text-align:center;color:var(--mute);display:grid;gap:12px;justify-items:center}
+.nf-state p{margin:0}
+.nf-more,.nf-state button{min-height:var(--tap);padding:0 16px;border-radius:var(--r-pill);border:var(--bw) solid var(--ink);background:var(--surface);color:var(--ink);font:700 13px var(--f-body);cursor:pointer}
+.nf-more{display:block;margin:10px auto 0}
+.nf-state .nf-link{border:0;background:transparent;color:var(--brand);text-decoration:underline;padding:0 4px}
+@media (hover:hover) and (pointer:fine){ .nf-row:hover,.nf-x:hover{background:rgba(var(--ov),.06)} }
+@media (max-width:640px){
+  .nf-panel{position:fixed;inset:0;width:auto;max-height:none;border:0;border-radius:0;box-shadow:none;z-index:250;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  .nf-tabs button{min-height:var(--tap)}
+  .nf-row{min-height:56px;padding:12px 16px}
+  body.nf-lock{overflow:hidden}
+}
+#jobsContainer .chip.new{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
+.new-pill{display:inline-flex;align-items:center;gap:8px;min-height:var(--tap);padding:0 16px;margin:0 0 12px;border-radius:var(--r-pill);border:var(--bw) solid var(--brand);background:var(--surface);color:var(--brand);font:700 14px var(--f-body);cursor:pointer}
+.new-pill[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
+.card.nf-hl{box-shadow:0 0 0 3px #FFC83D,var(--off) var(--off) 0 var(--shadow)}
 </style>
 </head>
 <body>
@@ -1603,11 +1648,17 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
       <select id="profileSelect" class="input" style="width:170px" title="Chọn hồ sơ" data-en-title="Choose profile"></select>
       <span class="sp"></span>
       <button class="btn sm" id="paletteBtn" type="button">⌘K</button>
+      <span class="nf-wrap"><button id="nfBell" class="theme-toggle nf-bell" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="nfPanel" aria-label="Thông báo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span id="nfBadge" class="nf-badge hidden" aria-hidden="true"></span></button>
+        <div id="nfPanel" class="nf-panel hidden" role="dialog" aria-labelledby="nfTitle">
+          <div class="nf-head"><h2 id="nfTitle" data-en="Notifications">Thông báo</h2><button id="nfReadAll" class="btn sm ghost" type="button" data-en="Mark all as read">Đánh dấu đã đọc hết</button><button id="nfClose" class="nf-x" type="button" aria-label="Đóng" data-en-aria-label="Close">×</button></div>
+          <div class="nf-tabs"><button id="nfTabAll" type="button" aria-pressed="true" data-en="All">Tất cả</button><button id="nfTabUnread" type="button" aria-pressed="false" data-en="Unread">Chưa đọc</button></div>
+          <div id="nfList" class="nf-list"></div>
+        </div><span id="nfLive" class="sr-only" aria-live="polite"></span></span>
       <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" data-en-title="Switch light / dark theme" data-en-aria-label="Toggle light or dark theme"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
       <button id="logoutBtn" class="btn sm ghost" type="button" data-en="Log out">Đăng xuất</button>
     </div>
     <nav class="tabbar-row">
-      <button class="tab active" data-tab="jobs" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Jobs'><svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Việc làm</button>
+      <button class="tab active" data-tab="jobs" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Jobs<span id="jobsNewBadge" class="alert-badge hidden"></span>'><svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Việc làm<span id="jobsNewBadge" class="alert-badge hidden"></span></button>
       <button class="tab" data-tab="kanban"><svg class="ic-svg" aria-hidden="true"><use href="#kanban"/></svg>Kanban<span id="kanbanAlertBadge" class="alert-badge hidden">0</span></button>
       <button class="tab" data-tab="profile" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#profile"/></svg>Profile &amp; CV'><svg class="ic-svg" aria-hidden="true"><use href="#profile"/></svg>Hồ sơ &amp; CV</button>
     </nav>
@@ -1896,7 +1947,7 @@ const state = {
   applications: [],
   suggested: [],
   cvDraftSkills: [],
-  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false },
+  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false, onlyNew: false },
 };
 
 let jobsFirstRender = true, kanbanFirstLoad = true, palCloseTimer = null;
@@ -2357,6 +2408,7 @@ function setAuthMode(mode){
 function logout(manual){
   if (manual && state.token) fetch(API_BASE + "/api/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + state.token } }).catch(() => {}); // best-effort thu hồi session
   state.token = ""; state.user = null; state.profiles = []; state.profileId = "";
+  jobsPrevSeen = undefined; jobsSeenSent = false; state.filters.onlyNew = false; nfClose(false); nfBadge(0, false);
   localStorage.removeItem("jp_token");
   localStorage.removeItem("jp_profile");
   showLanding();
@@ -2620,6 +2672,219 @@ $("#tgOwnRemoveBtn").addEventListener("click", () => tgOwnRun(async () => {
   tgShow("tgIdle"); tgOwnRender(null);
 }, $("#tgOwnToken")));
 Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)": "Invalid token format (looks like 123456:ABC…)", "Telegram từ chối token này": "Telegram rejected this token", "Bot này đã được tài khoản khác dùng": "This bot is already used by another account", "Không đăng ký được webhook, thử lại": "Couldn't register the webhook, try again", "Thử quá nhiều lần, đợi 1 giờ": "Too many attempts, wait 1 hour", "Tính năng bot riêng chưa bật trên hệ thống": "Own bot isn't enabled on this system yet", "Token đã bị thu hồi, hãy dán token mới": "The token was revoked, paste a new one", "Lỗi không rõ": "Unknown error", "Webhook không còn trỏ về JobPilot, bấm Kiểm tra lại hoặc dán lại token": "The webhook no longer points to JobPilot, press Check again or paste the token again", "Không kiểm tra được bot, thử lại sau": "Couldn't check the bot, try again later", "Chưa có bot riêng": "No own bot yet", "Hệ thống đã đổi khoá, hãy dán lại token": "The system key changed, paste the token again", "⚠ Bot riêng lỗi: %s": "⚠ Own bot error: %s", "✅ Đang dùng @%s": "✅ Using @%s", "Đang kiểm tra…": "Checking…" });
+/* ---------------- Thông báo (chuông) + tin mới ---------------- */
+// Chuông: số lấy từ /api/me lúc tải trang và khi quay lại tab; không poll. Mọi chữ từ server đi qua textContent.
+const nf = { items: [], unread: false, open: false, loading: false, error: "", more: false, seq: 0, count: 0, attn: false };
+let jobsPrevSeen, jobsSeenSent = false; // undefined = chưa đọc /api/me trong phiên này
+const NF_IC = { strong_match: "⚡", digest: "📰", bot_broken: "⚠" };
+const nfEl = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+function nfBadge(n, attention){
+  n = Math.max(0, Number(n) || 0);
+  const label = n > 9 ? "9+" : String(n), b = $("#nfBadge");
+  nf.count = n; nf.attn = !!attention && n > 0;
+  b.textContent = label;
+  b.classList.toggle("hidden", !n);
+  b.classList.toggle("attn", nf.attn);
+  $("#nfBell").setAttribute("aria-label", n ? t("Thông báo, %s chưa đọc", label) : t("Thông báo"));
+  $("#nfReadAll").disabled = !n;
+}
+async function nfRefresh(){
+  try { const me = await api("/api/me"); nfBadge(me.unread_count, me.has_attention); } catch (e) { /* giữ số cũ */ }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && state.token && !$("#appView").classList.contains("hidden")) nfRefresh();
+});
+function nfDayGroup(ts){
+  const d0 = new Date(); d0.setHours(0, 0, 0, 0);
+  const start = d0.getTime() / 1000;
+  return ts >= start ? 0 : ts >= start - 86400 ? 1 : 2;
+}
+function nfTime(ts){
+  const s = Math.floor(Date.now() / 1000) - ts;
+  if (s < 60) return t("vừa xong");
+  if (s < 3600) return t("%s phút trước", Math.floor(s / 60));
+  if (s < 86400) return t("%s giờ trước", Math.floor(s / 3600));
+  return fmtDateTime(ts);
+}
+async function nfLoad(more){
+  const seq = ++nf.seq;
+  nf.loading = true; nf.error = "";
+  if (!more) { nf.items = []; nf.more = false; }
+  nfRender();
+  const qs = new URLSearchParams({ limit: "20" });
+  if (nf.unread) qs.set("unread", "1");
+  // ponytail: phân trang theo created_at; 2 thông báo cùng giây ở ranh giới trang có thể bị sót. Cần thì đổi sang before=<created_at>,<id>.
+  if (more && nf.items.length) qs.set("before", String(nf.items[nf.items.length - 1].created_at));
+  try {
+    const r = await api("/api/notifications?" + qs.toString());
+    if (seq !== nf.seq) return;
+    const arr = Array.isArray(r) ? r : (r && r.items) || [];
+    nf.items = nf.items.concat(arr);
+    nf.more = arr.length >= 20;
+  } catch (e) {
+    if (seq !== nf.seq) return;
+    nf.error = e.message || t("Lỗi không rõ");
+  }
+  nf.loading = false;
+  nfRender();
+}
+function nfRender(){
+  const box = $("#nfList");
+  const keepFocus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.dataset.nfFocus : "";
+  box.replaceChildren();
+  box.setAttribute("aria-busy", nf.loading ? "true" : "false");
+  const skel = () => { const r = nfEl("div", "nf-skel"); r.setAttribute("aria-hidden", "true"); ["70%", "92%"].forEach(w => { const k = nfEl("div", "skel"); k.style.width = w; r.append(k); }); return r; };
+  const retry = () => {
+    const st = nfEl("div", "nf-state"), b = nfEl("button", "", t("Thử lại"));
+    st.setAttribute("role", "alert");
+    b.type = "button"; b.dataset.nfFocus = "retry";
+    b.addEventListener("click", () => nfLoad(nf.items.length > 0));
+    st.append(nfEl("p", "", t("Không tải được thông báo")), b);
+    return st;
+  };
+  if (!nf.items.length) {
+    if (nf.loading) { box.append(skel(), skel(), skel()); return; }
+    if (nf.error) box.append(retry());
+    else {
+      const st = nfEl("div", "nf-state");
+      st.append(nfEl("p", "", nf.unread ? t("Không còn thông báo chưa đọc") : t("Bạn đã xem hết 🎉")));
+      if (state.user && !state.user.telegram_linked) {
+        const a = nfEl("button", "nf-link", t("Bật Telegram để nhận tin khớp mạnh ngay"));
+        a.type = "button";
+        a.addEventListener("click", () => { nfClose(false); switchTab("profile"); setTimeout(() => { const b = $("#tgLinkBtn"); if (b && !b.closest(".hidden")) { b.scrollIntoView({ block: "center" }); b.focus(); } }, 80); });
+        st.append(a);
+      }
+      box.append(st);
+    }
+    const f = keepFocus && box.querySelector(`[data-nf-focus="${keepFocus}"]`);
+    if (f) f.focus();
+    return;
+  }
+  const GROUPS = ["Hôm nay", "Hôm qua", "Cũ hơn"];
+  let g = -1;
+  nf.items.forEach(n => {
+    const ts = Number(n.created_at) || 0, gi = nfDayGroup(ts);
+    if (gi !== g) { g = gi; box.append(nfEl("h3", "nf-group", t(GROUPS[gi]))); }
+    const row = nfEl("button", "nf-row" + (n.is_read ? "" : " unread"));
+    row.type = "button"; row.dataset.nfFocus = "n" + n.id;
+    const dot = nfEl("span", "nf-dot"); dot.setAttribute("aria-hidden", "true");
+    const ttl = nfEl("span", "nf-ttl");
+    if (!n.is_read) ttl.append(nfEl("span", "sr-only", t("Chưa đọc: ")));
+    ttl.append((NF_IC[n.type] ? NF_IC[n.type] + " " : "") + (n.title || ""));
+    row.append(dot, ttl, nfEl("span", "nf-time", nfTime(ts)));
+    if (n.body) row.append(nfEl("span", "nf-body", n.body));
+    if (n.tg_status === "sent") row.append(nfEl("span", "nf-tg", t("✓ Đã gửi Telegram")));
+    else if (n.tg_status === "failed") row.append(nfEl("span", "nf-tg failed", t("✕ Gửi Telegram lỗi")));
+    row.addEventListener("click", () => nfActivate(n));
+    box.append(row);
+  });
+  if (nf.loading) box.append(skel());
+  else if (nf.error) box.append(retry());
+  else if (nf.more) {
+    const m = nfEl("button", "nf-more", t("Tải thêm"));
+    m.type = "button"; m.dataset.nfFocus = "more";
+    m.addEventListener("click", () => nfLoad(true));
+    box.append(m);
+  }
+  if (!keepFocus) return;
+  const f = box.querySelector(`[data-nf-focus="${keepFocus}"]`);
+  if (f) f.focus();
+  else if (keepFocus === "more" || keepFocus === "retry") { const rows = $$(".nf-row", box); if (rows.length) rows[rows.length - 1].focus(); } // hết trang: focus dòng cuối
+}
+function nfMarkRead(ids, all){
+  const hit = nf.items.filter(n => !n.is_read && (all || ids.includes(n.id)));
+  if (!hit.length && !all) return;
+  const prev = { count: nf.count, attn: nf.attn };
+  hit.forEach(n => { n.is_read = 1; });
+  nfBadge(all ? 0 : nf.count - hit.length, all ? false : nf.attn && !hit.some(n => n.type === "bot_broken")); // mỗi người tối đa 1 bot_broken chưa đọc
+  nfRender();
+  api("/api/notifications/read", { method: "POST", body: JSON.stringify(all ? { all: true } : { ids }) })
+    .then(r => { if (r && r.unread_count != null) nfBadge(r.unread_count, nf.attn); })
+    .catch(() => {
+      hit.forEach(n => { n.is_read = 0; });
+      nfBadge(prev.count, prev.attn); nfRender();
+      toast(t("Không đánh dấu đã đọc được, thử lại sau"), "err");
+    });
+}
+function nfActivate(n){
+  if (!n.is_read) nfMarkRead([n.id]);
+  nfClose(false);
+  const later = (fn) => setTimeout(fn, 80); // sau view transition của switchTab
+  if (n.type === "bot_broken") {
+    switchTab("profile");
+    later(() => { const d = $("#tgOwn"); if (!d) return; d.open = true; d.scrollIntoView({ block: "center" }); const s = $("summary", d); if (s) s.focus(); });
+  } else if (n.type === "strong_match" && n.ref_id) {
+    switchTab("jobs");
+    later(() => nfShowJob(String(n.ref_id)));
+  } else switchTab("jobs");
+}
+function nfShowJob(id){
+  const miss = () => toast(t("Tin này không có trong danh sách hiện tại, thử bỏ bộ lọc"));
+  const idx = state.jobs.findIndex(j => String(j.id) === id);
+  if (idx < 0) return miss(); // ponytail: chưa có API lấy 1 tin; thêm GET /api/jobs/:id khi cần
+  if (state.filters.onlyNew || idx >= (state.jobsVisible || 20)) {
+    state.filters.onlyNew = false; state.jobsVisible = Math.max(state.jobsVisible || 20, idx + 1); renderJobs();
+  }
+  const card = $(`#jobsContainer [data-job-id="${CSS.escape(id)}"]`);
+  if (!card) return miss();
+  card.scrollIntoView({ block: "center" });
+  card.classList.add("nf-hl"); setTimeout(() => card.classList.remove("nf-hl"), 2400);
+  const a = $(".ttl a", card); if (a) a.focus({ preventScroll: true });
+}
+function nfOpenPanel(){
+  nf.open = true;
+  $("#nfPanel").classList.remove("hidden");
+  $("#nfBell").setAttribute("aria-expanded", "true");
+  document.body.classList.toggle("nf-lock", matchMedia("(max-width:640px)").matches);
+  nfLoad(false);
+  (nf.unread ? $("#nfTabUnread") : $("#nfTabAll")).focus();
+}
+function nfClose(restore){
+  if (!nf.open) return;
+  nf.open = false;
+  $("#nfPanel").classList.add("hidden");
+  $("#nfBell").setAttribute("aria-expanded", "false");
+  document.body.classList.remove("nf-lock");
+  if (restore) $("#nfBell").focus();
+}
+$("#nfBell").addEventListener("click", () => nf.open ? nfClose(true) : nfOpenPanel());
+$("#nfClose").addEventListener("click", () => nfClose(true));
+$("#nfReadAll").addEventListener("click", () => { nfMarkRead([], true); $("#nfLive").textContent = t("Đã đánh dấu tất cả là đã đọc"); });
+[["#nfTabAll", false], ["#nfTabUnread", true]].forEach(([sel, v]) => $(sel).addEventListener("click", () => {
+  if (nf.unread === v) return;
+  nf.unread = v;
+  $("#nfTabAll").setAttribute("aria-pressed", String(!v)); $("#nfTabUnread").setAttribute("aria-pressed", String(v));
+  nfLoad(false);
+}));
+document.addEventListener("keydown", (e) => {
+  if (!nf.open) return;
+  if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); nfClose(true); return; }
+  if (e.key === "Tab" && matchMedia("(max-width:640px)").matches) { // tấm toàn màn hình: giữ Tab trong bảng
+    const f = $$("#nfPanel button:not(:disabled)").filter(b => b.offsetParent);
+    if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  }
+}, true);
+document.addEventListener("click", (e) => { if (nf.open && !e.target.closest(".nf-wrap")) nfClose(false); });
+
+// Tin mới: so với mốc lần xem trước (jobs_seen_at lúc tải trang), không đổi giữa phiên, không đảo thứ tự danh sách.
+const isNewJob = (j) => jobsPrevSeen != null && Number(j.first_seen_at) > jobsPrevSeen && !!j.match && (j.match.tier === "strong" || j.match.tier === "partial");
+function jobsNewRender(){
+  const n = state.jobs.filter(isNewJob).length, b = $("#jobsNewBadge");
+  if (b) { b.textContent = n > 9 ? "9+" : String(n); b.classList.toggle("hidden", !n); b.title = t("%s tin mới", n); }
+  return n;
+}
+function jobsNewPillBind(box){
+  const p = $("#jobsNewPill", box);
+  if (p) p.addEventListener("click", () => { state.filters.onlyNew = !state.filters.onlyNew; state.jobsVisible = 20; renderJobs(); const q = $("#jobsNewPill"); if (q) q.focus(); });
+}
+function markJobsSeen(){
+  if (jobsSeenSent || !state.token || jobsPrevSeen === undefined) return;
+  jobsSeenSent = true;
+  api("/api/me", { method: "PATCH", body: JSON.stringify({ jobs_seen: true }) }).catch(() => { jobsSeenSent = false; });
+}
+Object.assign(EN, { "Thông báo": "Notifications", "Thông báo, %s chưa đọc": "Notifications, %s unread", "vừa xong": "just now", "%s phút trước": "%s min ago", "%s giờ trước": "%s h ago", "Hôm nay": "Today", "Hôm qua": "Yesterday", "Cũ hơn": "Earlier", "Không tải được thông báo": "Couldn't load notifications", "Thử lại": "Retry", "Bạn đã xem hết 🎉": "You're all caught up 🎉", "Không còn thông báo chưa đọc": "No unread notifications", "Bật Telegram để nhận tin khớp mạnh ngay": "Turn on Telegram to get strong matches right away", "Chưa đọc: ": "Unread: ", "✓ Đã gửi Telegram": "✓ Sent to Telegram", "✕ Gửi Telegram lỗi": "✕ Telegram send failed", "Tải thêm": "Load more", "Không đánh dấu đã đọc được, thử lại sau": "Couldn't mark as read, try again later", "Tin này không có trong danh sách hiện tại, thử bỏ bộ lọc": "This job isn't in the current list, try clearing filters", "Đã đánh dấu tất cả là đã đọc": "All marked as read", "%s tin mới": "%s new jobs", "%s tin mới · Xem": "%s new · View", "Chỉ tin mới (%s) · Bỏ lọc": "New only (%s) · Clear" });
 /* ---------------- Boot / profiles ---------------- */
 // T-86: kỹ năng khách chọn ở landing → hồ sơ thật qua API sẵn có, xong thì xoá.
 async function createTryProfile(){
@@ -2640,6 +2905,8 @@ async function boot(){
   $("#aiOptOut").checked = !!me.user.ai_opt_out;
   tgShow(me.user.telegram_linked ? "tgDone" : "tgIdle");
   tgOwnRender(me.user.telegram_bot || null);
+  nfBadge(me.unread_count, me.has_attention);
+  if (jobsPrevSeen === undefined) jobsPrevSeen = me.jobs_seen_at == null ? null : Number(me.jobs_seen_at); // mốc phiên trước, giữ cả phiên
   { const owner = !!(me.user && me.user.is_owner); $("#scanBtn").classList.toggle("hidden", !owner); $(".src-status").classList.toggle("hidden", !owner); }
   state.profiles = me.profiles || [];
   if (!state.profiles.length) {
@@ -2655,6 +2922,7 @@ async function boot(){
   fillProfileForm();
   renderCurrentSkills();
   await Promise.all([loadDigest(), loadJobs(), loadApplications(), loadSourceStatus()]);
+  if (!$("#tab-jobs").classList.contains("hidden")) markJobsSeen();
 }
 
 function renderProfileSelect(){
@@ -2711,6 +2979,7 @@ function switchTab(t){
     }
   });
   if (t === "kanban") loadApplications();
+  if (t === "jobs") markJobsSeen();
 }
 $$(".tab").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
 
@@ -2857,9 +3126,13 @@ function renderJobs(){
   const cnt = $("#jobsCount");
   let list = state.filters.hideFlagged ? state.jobs.filter(j => !cardFlags(j).length) : state.jobs;
   if (state.filters.onlyApply) list = list.filter(j => j.verdict === "apply");
+  const newCount = jobsNewRender();
+  if (state.filters.onlyNew) list = list.filter(isNewJob);
+  const newPill = newCount || state.filters.onlyNew ? `<button class="new-pill" id="jobsNewPill" type="button" aria-pressed="${state.filters.onlyNew}">${state.filters.onlyNew ? t("Chỉ tin mới (%s) · Bỏ lọc", newCount) : t("%s tin mới · Xem", newCount)}</button>` : "";
   if (cnt) cnt.textContent = list.length ? t("%s tin", list.length) : "";
   if (!list.length) {
-    box.innerHTML = '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
+    box.innerHTML = newPill + '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
+    jobsNewPillBind(box);
     return;
   }
   // P0 — strip tổng quan: tính từ danh sách đã lọc, không gọi API thêm
@@ -2882,7 +3155,7 @@ function renderJobs(){
   const visible = Math.min(state.jobsVisible || 20, list.length);
   const page = list.slice(0, visible);
   const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s job còn lại)", list.length - visible)}</button></div>` : "";
-  box.innerHTML = sumHTML + '<div class="list">' + page.map((job, i) => {
+  box.innerHTML = newPill + sumHTML + '<div class="list">' + page.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
     const stage = app ? app.stage : "new";
@@ -2897,13 +3170,13 @@ function renderJobs(){
     const moreChip = (!expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">+${skillChips.length - 5}</button>` : "";
     const lessChip = (expanded && skillChips.length > 5) ? `<button class="chip off" data-expand-for="${esc(job.id)}" type="button">${t("Thu gọn")}</button>` : "";
     const date = job.posted_at || job.first_seen_at;
-    return `<article class="card" style="--i:${i}">
+    return `<article class="card" style="--i:${i}" data-job-id="${esc(job.id)}">
       ${m ? scoreDiv(m.final_score, m.tier) : scoreDiv(0, "")}
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
         <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
-        <div class="chips"><span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
@@ -2947,6 +3220,7 @@ function renderJobs(){
 
   const lm = $("#loadMoreJobs", box);
   if (lm) lm.addEventListener("click", () => { state.jobsVisible = (state.jobsVisible || 20) + 20; renderJobs(); });
+  jobsNewPillBind(box);
 }
 
 async function changeJobStage(jobId, stage, selEl){
