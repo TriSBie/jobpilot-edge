@@ -23,7 +23,10 @@ const env = {
 const CV = `Backend Developer, 3 years of experience.
 Built loyalty point services with Java and Spring Boot, processing events through Kafka.
 Designed PostgreSQL schemas for reward ledgers serving 200k members.
-Led a team of 4 engineers.`;
+Led a team of 4 engineers.
+Backend developer with 4 years of experience in loyalty platforms.
+- Built REST APIs for the points and voucher service using NestJS and PostgreSQL.
+- Migrated two services from Spring Boot 2 to Spring Boot 3.`;
 const T = Math.floor(Date.now() / 1000);
 for (const u of ['u1', 'u2', 'u3']) db.prepare("INSERT INTO users (id, email, name, created_at) VALUES (?, ?, 'U', ?)").run(u, u + '@x.test', T);
 db.prepare("UPDATE users SET ai_opt_out = 1 WHERE id = 'u3'").run();
@@ -34,6 +37,8 @@ for (const [p, u, f] of [['p1', 'u1', 'f1'], ['p2', 'u2', null], ['p3', 'u3', 'f
 db.prepare("INSERT INTO profile_skills (profile_id, skill, weight, source) VALUES ('p1', 'Java', 5, 'cv')").run();
 const JD = 'We need a Java Spring Boot engineer with Kafka, PostgreSQL, Kubernetes and Redis experience.';
 for (const j of ['j1', 'j2']) db.prepare("INSERT INTO jobs (id, source_url, title, company, content_hash, jd_text, first_seen_at, created_at) VALUES (?, 'https://x.test', 'T', 'C', ?, ?, ?, ?)").run(j, j, JD, T, T);
+const JD3 = 'Senior Java engineer. You will take ownership of production reliability for our event-driven loyalty platform, building RESTful APIs with Java and Spring Boot.';
+db.prepare("INSERT INTO jobs (id, source_url, title, company, content_hash, jd_text, first_seen_at, created_at) VALUES ('j3', 'https://x.test', 'T', 'C', 'j3', ?, ?, ?)").run(JD3, T, T);
 db.prepare("INSERT INTO jobs (id, source_url, title, company, content_hash, jd_text, first_seen_at, created_at, submitted_by) VALUES ('jp', 'https://x.test', 'T', 'C', 'jp', ?, ?, ?, 'u2')").run(JD, T, T);
 kv.set('session:t1', 'u1'); kv.set('session:t2', 'u2'); kv.set('session:t3', 'u3');
 const rlKey = () => `cvsugrl:u1:${Math.floor(Date.now() / 86400000)}`;
@@ -83,6 +88,21 @@ const good = { section: 'Experience', original: 'Built loyalty point services wi
   for (const s of r.body.suggestions) for (const m of r.body.missing) assert.ok(!s.suggested.includes(m), 'missing không bao giờ vào gợi ý');
   assert.strictEqual(r.body.suggestions[1].reason, 'Diễn đạt lại theo cách JD dùng', 'reason mặc định VI');
 
+  // 3 ca bịa thật từ llama-4-scout (Ada chạy AI thật): phải bị loại; 1 diễn đạt lại hợp lệ được giữ.
+  aiReply = { suggestions: [
+    { section: 'Experience', original: '- Built REST APIs for the points and voucher service using NestJS and PostgreSQL.', suggested: '- Designed and built RESTful APIs for points and voucher services using Java, Spring Boot and PostgreSQL.' }, // đổi công nghệ của dòng
+    { section: 'Summary', original: 'Backend developer with 4 years of experience in loyalty platforms.', suggested: 'Senior Backend Developer with 4 years of experience in loyalty platforms.' }, // cấp bậc bịa
+    { section: 'Experience', original: '- Migrated two services from Spring Boot 2 to Spring Boot 3.', suggested: '- Migrated two services from Spring Boot 2 to Spring Boot 3, demonstrating ownership of production reliability.' }, // chép claim từ JD
+    { section: 'Experience', original: '- Built REST APIs for the points and voucher service using NestJS and PostgreSQL.', suggested: '- Built RESTful APIs in NestJS and PostgreSQL for the event-driven loyalty points and voucher service.' }, // hợp lệ: cụm JD ngắn, cùng skill
+    { section: 'Experience', original: '- Migrated two services from Spring Boot 2 to Spring Boot 3.', suggested: '- Upgraded two production services from Spring Boot 2 to Spring Boot 3.' }, // hợp lệ
+  ] };
+  aiCalls = 0;
+  r = await call('t1', 'p1', { job_id: 'j3' });
+  assert.strictEqual(aiCalls, 1);
+  assert.ok(aiPrompt.includes('same tools'), 'prompt siết');
+  assert.strictEqual(r.body.dropped, 3, 'loại 3 ca bịa thật');
+  assert.deepStrictEqual(r.body.suggestions.map((s) => s.suggested), ['- Built RESTful APIs in NestJS and PostgreSQL for the event-driven loyalty points and voucher service.', '- Upgraded two production services from Spring Boot 2 to Spring Boot 3.']);
+
   // cache: không gọi AI, không tính lượt
   const used = kv.get(rlKey());
   r = await call('t1', 'p1', { job_id: 'j2' });
@@ -99,8 +119,8 @@ const good = { section: 'Experience', original: 'Built loyalty point services wi
   assert.deepStrictEqual([r.status, r.body.ai_used, r.body.suggestions, aiCalls], [200, false, [], 0], 'opt-out');
   assert.ok(r.body.matched.length && r.body.skills_text);
 
-  // giới hạn 15 lượt AI/ngày (đã dùng 3), lượt 16 → 429
-  for (let i = 4; i <= 15; i++) { kv.delete('cvsug:p1:j1:f1:vi'); assert.strictEqual((await call('t1', 'p1', { job_id: 'j1' })).status, 200, 'lượt ' + i); }
+  // giới hạn 15 lượt AI/ngày (đã dùng 4), lượt 16 → 429
+  for (let i = 5; i <= 15; i++) { kv.delete('cvsug:p1:j1:f1:vi'); assert.strictEqual((await call('t1', 'p1', { job_id: 'j1' })).status, 200, 'lượt ' + i); }
   assert.strictEqual(kv.get(rlKey()), '15');
   kv.delete('cvsug:p1:j1:f1:vi'); aiCalls = 0;
   r = await call('t1', 'p1', { job_id: 'j1' });

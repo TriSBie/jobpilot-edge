@@ -296,17 +296,29 @@ async function handleCvText(request, env, user, profileId) {
 const CV_SUGGEST_MAX = 8, CV_SUGGEST_DAILY = 15, CV_SUGGEST_TTL = 7 * 86400;
 const normWs = (s) => String(s).replace(/\s+/g, " ").trim();
 const numsOf = (s) => String(s).match(/\d+(?:[.,]\d+)*/g) || [];
-// Trả { kept, dropped }. Bỏ gợi ý: original không nằm nguyên văn trong CV, thêm skill CV không có, nhắc skill missing, thêm số CV không có.
-function guardSuggestions(raw, cvText, missing, lang) {
-  const cv = normWs(cvText), cvSkills = new Set(extractSkillsFromText(cvText)), cvNums = new Set(numsOf(cvText));
+// Chức danh/cấp bậc: không được xuất hiện trong suggested nếu original không có.
+const SENIORITY_RE = /(^|[^\p{L}\p{N}])(senior|sr|junior|jr|lead|leads|leader|tech lead|principal|staff|head|manager|managers|management|architect|director|chief|cto|vp|trưởng nhóm|trưởng phòng|trưởng|quản lý|giám đốc|kiến trúc sư)(?=$|[^\p{L}\p{N}])/giu;
+const seniorityOf = (s) => new Set([...String(s).matchAll(SENIORITY_RE)].map((m) => m[2].toLowerCase()));
+const wordsOf = (s) => String(s).toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+// ponytail: n=4 diệt "ownership of production reliability" mà vẫn cho cụm 2-3 từ của JD ("event-driven", "REST APIs"); hạ xuống 3 nếu còn lọt.
+const JD_LIFT_N = 4;
+const ngrams = (w, n) => { const out = new Set(); for (let i = 0; i + n <= w.length; i++) out.add(w.slice(i, i + n).join(" ")); return out; };
+// Trả { kept, dropped }. Bỏ gợi ý khi: original không nằm nguyên văn trong CV; thêm skill mà CHÍNH dòng đó không có;
+// nhắc skill missing; thêm số CV không có; thêm chức danh/cấp bậc; chép cụm ≥ JD_LIFT_N từ của JD mà CV không có.
+function guardSuggestions(raw, cvText, missing, lang, jdText = "") {
+  const cv = normWs(cvText), cvNums = new Set(numsOf(cvText));
+  const cvGrams = ngrams(wordsOf(cvText), JD_LIFT_N), jdGrams = ngrams(wordsOf(jdText), JD_LIFT_N);
   const kept = []; let dropped = 0;
   for (const x of (Array.isArray(raw) ? raw : []).slice(0, 20)) {
     const original = normWs(x?.original ?? ""), suggested = normWs(x?.suggested ?? "");
     if (!original || !suggested || original === suggested) continue; // không phải gợi ý, không tính là bịa
+    const lineSkills = new Set(extractSkillsFromText(original)), lineRanks = seniorityOf(original);
     const ok = original.length >= 10 && suggested.length <= 800 && cv.includes(original)
-      && extractSkillsFromText(suggested).every((k) => cvSkills.has(k))
+      && extractSkillsFromText(suggested).every((k) => lineSkills.has(k))
       && !missing.some((m) => skillInText(m, suggested))
-      && numsOf(suggested).every((n) => cvNums.has(n));
+      && numsOf(suggested).every((n) => cvNums.has(n))
+      && [...seniorityOf(suggested)].every((w) => lineRanks.has(w))
+      && ![...ngrams(wordsOf(suggested), JD_LIFT_N)].some((g) => jdGrams.has(g) && !cvGrams.has(g));
     if (!ok) { dropped++; continue; }
     if (kept.length >= CV_SUGGEST_MAX) continue;
     kept.push({ id: `s${kept.length + 1}`, section: normWs(x.section || "").slice(0, 40) || null, original, suggested,
@@ -317,8 +329,8 @@ function guardSuggestions(raw, cvText, missing, lang) {
 async function aiCvSuggest(env, cvText, jd, matched, missing, lang) {
   const res = await env.AI.run(CV_SKILL_MODEL, {
     messages: [
-      { role: "system", content: "You improve a resume for one job description WITHOUT inventing anything. Only reorder, rephrase, move job-relevant facts up, or use the JD's wording for the same thing. Never add a skill, tool, number, year, percentage, team size, employer or achievement that is not already in the resume. Reply with ONLY strict JSON." },
-      { role: "user", content: `Resume:\n${cvText.slice(0, 6000)}\n\nJob description:\n${jd.slice(0, 3000)}\n\nSkills the resume already has that the JD wants: ${matched.join(", ") || "none"}\nSkills the resume does NOT have (NEVER mention these): ${missing.join(", ") || "none"}\n\nReturn {"suggestions":[{"section":"Experience|Summary|Skills|Projects","original":"<exact sentence copied from the resume>","suggested":"<rewrite using only facts in that resume>","reason":"<short reason in ${lang === "en" ? "English" : "Vietnamese"}>"}]} with at most ${CV_SUGGEST_MAX} items. JSON only.` },
+      { role: "system", content: "You improve a resume for one job description WITHOUT inventing anything. Each suggestion rewords ONE line of the resume: only reword the SAME line, reorder it, or tighten it. Keep every tool/technology exactly as in that line; never bring in a tool from another line. Never add a skill, tool, number, year, percentage, team size, employer, achievement, job title or seniority (senior, lead, manager...) that is not already in that line. Do not copy claims or phrases from the job description. Reply with ONLY strict JSON." },
+      { role: "user", content: `Resume:\n${cvText.slice(0, 6000)}\n\nJob description:\n${jd.slice(0, 3000)}\n\nSkills the resume already has that the JD wants: ${matched.join(", ") || "none"}\nSkills the resume does NOT have (NEVER mention these): ${missing.join(", ") || "none"}\n\nReturn {"suggestions":[{"section":"Experience|Summary|Skills|Projects","original":"<one line copied EXACTLY from the resume>","suggested":"<the same line reworded, same tools, no new facts>","reason":"<short reason in ${lang === "en" ? "English" : "Vietnamese"}>"}]} with at most ${CV_SUGGEST_MAX} items. JSON only.` },
     ],
     max_tokens: 1500,
   });
@@ -357,7 +369,7 @@ async function handleCvSuggest(request, env, user, profileId, lang) {
   const hit = await env.KV.get(cacheKey);
   if (hit) {
     // Lọc lại theo missing hiện tại: kỹ năng hồ sơ có thể đã đổi sau khi cache.
-    const c = JSON.parse(hit), g = guardSuggestions(c.suggestions, cvText, missing, lang);
+    const c = JSON.parse(hit), g = guardSuggestions(c.suggestions, cvText, missing, lang, jdOf(job));
     return json({ ...base, suggestions: g.kept, dropped: c.dropped + g.dropped, ai_used: true, cached: true });
   }
   // ponytail: đếm KV không nguyên tử (giống ownBotAttempt), bấm dồn dập có thể lố 1-2 lượt.
@@ -368,7 +380,7 @@ async function handleCvSuggest(request, env, user, profileId, lang) {
   let raw;
   try { raw = await aiCvSuggest(env, cvText, jdOf(job) || job.title || "", matched, missing, lang); }
   catch (e) { console.log("cv-suggest AI failed:", String(e && e.message).slice(0, 80)); return json({ ...base, suggestions: [], dropped: 0, ai_used: false }); }
-  const g = guardSuggestions(raw, cvText, missing, lang);
+  const g = guardSuggestions(raw, cvText, missing, lang, jdOf(job));
   await env.KV.put(cacheKey, JSON.stringify({ suggestions: g.kept, dropped: g.dropped }), { expirationTtl: CV_SUGGEST_TTL });
   return json({ ...base, suggestions: g.kept, dropped: g.dropped, ai_used: true });
 }
