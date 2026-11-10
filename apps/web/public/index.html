@@ -8,7 +8,7 @@
 <script>try{var _t=localStorage.getItem("jp_theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=_t;}catch(e){document.documentElement.dataset.theme="dark";}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"></noscript><!-- font không chặn render (B8: LCP landing) -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"></noscript><!-- font không chặn render (B8: LCP landing) -->
 <script>try{if(localStorage.getItem("jp_token"))document.documentElement.classList.add("jp-in");}catch(e){}</script><style>.jp-in #landingView{display:none}</style>
 <link rel="canonical" href="https://jobpilot-edge.pages.dev/">
 <link rel="alternate" hreflang="vi" href="https://jobpilot-edge.pages.dev/">
@@ -40,6 +40,7 @@
   --jp-ink:var(--ink); --jp-brand:var(--brand);
   --r-lg:12px; --r-md:10px; --r-sm:8px; --r-pill:999px;
   --bw:1px; --off:0px;
+  --f-display:"Be Vietnam Pro","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-head:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -516,6 +517,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .ring-wrap text{ font-family:var(--f-head); }
 .lp-cta h2{ font-weight:600; letter-spacing:-.025em; }
 .lp-lede, .lp-sec .lede{ font-size:1.13rem; }
+.lp-sec h2, .lp-hero h1, .lp-logo, .logo, .lp-nav .brand, #authTitle{ font-family:var(--f-display); }
 
 /* ================= PHASE 2 ================= */
 .flag-chip{ display:inline-flex;align-items:center;font-size:.74rem;font-weight:600;
@@ -607,7 +609,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .app{display:grid;grid-template-columns:1fr;gap:16px;max-width:1120px;margin:0 auto;padding:16px}
   .app main{padding:0;max-width:none;margin:0}
   .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .topbar .logo{font:600 18px var(--f-head)}
+  .topbar .logo{font:600 18px var(--f-display)}
   .topbar .logo em{font-style:normal;color:var(--brand)}
   .topbar .sp{flex:1}
   .topbar .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
@@ -854,7 +856,7 @@ html{scroll-padding-top:96px}
 .lp-mv-arrow{color:var(--muted)}
 .lp-mv-input{flex:1;min-width:12rem;border:1px solid var(--line);border-radius:var(--r-sm);padding:.55rem .8rem;font-size:.88rem;color:var(--muted);background:rgba(var(--ov),.03)}
 .kph{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:.9rem;text-align:center;color:var(--muted);font-size:.88rem}.demo-kbody:has(.demo-kcard) .kph{display:none}
-#lp-scoring{background:linear-gradient(180deg, rgba(var(--ov),.04), rgba(var(--ov),.01))}
+
 
 /* PASS SAU (review Opus T-52 + nav mobile): header 2 hàng ở mobile để không tràn ngang; nền đặc thay backdrop blur để giảm vẽ lại khi cuộn. */
 @media (max-width:640px){
@@ -1033,11 +1035,11 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-chips .vd{ margin:0; }
 .sg-skel{ height:64px; background:var(--line); border:none; opacity:.5; }
 .sg-live-foot{ margin:.9rem 0 0; color:var(--mute); font-size:.85rem; }
-.lp-trust{ list-style:none; margin:1.2rem 0 0; padding:.9rem 1.1rem; display:grid; gap:.45rem; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); font-weight:700; font-size:.95rem; }
+.lp-trust{ list-style:none; margin:1.2rem 0 0; padding:0; display:grid; gap:.45rem; color:var(--muted); font-size:14px; }
 .lp-trust li{ display:flex; align-items:center; gap:.6rem; }
 .lp-trust li::before{ content:""; flex:none; width:10px; height:10px; border-radius:50%; background:var(--mint); border:1px solid var(--line-strong); }
 .sg-why{ margin-top:1.6rem; width:min(760px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:1.1rem 1.2rem; }
-.sg-why h3{ margin:0 0 .2rem; font-size:1.05rem; }
+.sg-why h3{ margin:0 0 .2rem; font-size:1.05rem; text-wrap:balance; }
 .sg-why h3 a{ color:var(--ink); }
 .sg-why .row{ display:flex; justify-content:space-between; gap:1rem; padding:.55rem 0; border-top:var(--bw) dashed var(--line); }
 .sg-why .row span{ color:var(--mute); }
@@ -1051,6 +1053,9 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-left{ text-align:left; align-items:flex-start; }
 .sg-split{ width:100%; max-width:1080px; margin:0 auto; display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:2.5rem; align-items:start; }
 .sg-split-text h2, .sg-split-text .lede{ text-align:left; margin-left:0; max-width:34ch; }
+.sg-split .sg-why, .sg-split-text .sg-formula{ margin-top:0; width:auto; }
+.sg-split-text .sg-formula{ margin-top:1.4rem; }
+.sg-sub{ font-family:var(--f-display); font-weight:600; font-size:1.3rem; margin:3rem 0 .3rem; }
 .sg-split .sg-pair{ margin-top:0; width:auto; grid-template-columns:1fr; }
 @media (max-width:860px){ .sg-split{ grid-template-columns:1fr; gap:1.2rem; } }
 .sg-about{ width:100%; max-width:720px; margin:0 auto 0 max(0px, calc((100% - 1080px) / 2)); }
@@ -1160,7 +1165,6 @@ kbd{border-bottom-width:1px;font-size:.72rem}
   background:radial-gradient(520px 280px at 50% 0%,color-mix(in srgb,var(--brand) 16%,transparent),transparent 70%);
   -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%)}
 .lp-hero .medallion-img{width:44px;height:44px;margin-bottom:1rem}
-.lp-trust{background:none;border:0;padding:0;font-weight:400;color:var(--muted);font-size:14px}
 .lp-trust li::before{width:6px;height:6px}
 .sk.core b{background:var(--mint-ink);color:var(--bg)}
 .brief .bignum em{font-style:normal;color:var(--brand)}
@@ -1344,22 +1348,23 @@ html.fx-on .bg-fx{opacity:1}
     </div>
   </section>
 
-  <section class="lp-sec" id="lp-scoring">
-    <h2 data-en="Every score has a reason">Mỗi điểm đều có lý do</h2>
-    <p class="lede" data-en="This is the explanation JobPilot shows for the top posting above: which skills match, which are missing, and how each part adds up.">Đây là phần giải thích JobPilot hiện cho tin xếp đầu ở trên: kỹ năng nào khớp, kỹ năng nào còn thiếu, từng phần điểm cộng lại ra sao.</p>
-    <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div>
-    <details class="sg-formula">
-      <summary data-en="Full formula">Công thức đầy đủ</summary>
-      <p data-en="<b>Skills</b> (max 50): total weight of the skills you have, divided by the total weight of the skills the posting requires."><b>Kỹ năng</b> (tối đa 50): tổng trọng số kỹ năng bạn có, chia cho tổng trọng số kỹ năng tin yêu cầu.</p>
-      <p data-en="<b>The rest</b> (max 20): location 8, posting freshness 7, seniority 5."><b>Phần còn lại</b> (tối đa 20): khu vực 8, độ mới của tin 7, cấp bậc 5.</p>
-      <p data-en="<b>Total</b> = (skills + the rest) / 70 × 100. 75 and up is a strong match, 50 and up a partial match."><b>Tổng</b> = (kỹ năng + phần còn lại) / 70 × 100. Từ 75 trở lên là khớp mạnh, từ 50 là khớp một phần.</p>
-      <p data-en="A posting that lists fewer than 3 skills is capped at 69, since there is too little information to score it higher.">Tin chỉ ghi dưới 3 kỹ năng thì điểm tối đa 69, vì quá ít thông tin để chấm cao.</p>
-    </details>
-  </section>
-
-<section class="lp-sec" id="lp-demo-scoring">
-  <h2 data-en="Drag the sliders and watch the score change">Kéo thử để thấy điểm thay đổi</h2>
-  <p class="lede" data-en="Change the number of matched skills or the posting's freshness; the number on the right recalculates instantly with the formula above.">Đổi số kỹ năng khớp hoặc độ mới của tin, số bên phải tính lại ngay theo công thức ở trên.</p>
+  <section class="lp-sec sg-left" id="lp-scoring">
+    <div class="sg-split">
+      <div class="sg-split-text">
+        <h2 data-en="Every score has a reason">Mỗi điểm đều có lý do</h2>
+        <p class="lede" data-en="JobPilot explains the score of the top posting above: which skills match, which are missing, and how each part adds up.">JobPilot giải thích điểm của tin xếp đầu ở trên: kỹ năng nào khớp, kỹ năng nào còn thiếu, từng phần cộng lại ra sao.</p>
+      <details class="sg-formula">
+        <summary data-en="Full formula">Công thức đầy đủ</summary>
+        <p data-en="<b>Skills</b> (max 50): total weight of the skills you have, divided by the total weight of the skills the posting requires."><b>Kỹ năng</b> (tối đa 50): tổng trọng số kỹ năng bạn có, chia cho tổng trọng số kỹ năng tin yêu cầu.</p>
+        <p data-en="<b>The rest</b> (max 20): location 8, posting freshness 7, seniority 5."><b>Phần còn lại</b> (tối đa 20): khu vực 8, độ mới của tin 7, cấp bậc 5.</p>
+        <p data-en="<b>Total</b> = (skills + the rest) / 70 × 100. 75 and up is a strong match, 50 and up a partial match."><b>Tổng</b> = (kỹ năng + phần còn lại) / 70 × 100. Từ 75 trở lên là khớp mạnh, từ 50 là khớp một phần.</p>
+        <p data-en="A posting that lists fewer than 3 skills is capped at 69, since there is too little information to score it higher.">Tin chỉ ghi dưới 3 kỹ năng thì điểm tối đa 69, vì quá ít thông tin để chấm cao.</p>
+      </details>
+      </div>
+      <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div>
+    </div>
+    <h3 class="sg-sub" data-en="Drag the sliders and watch the score change">Kéo thử để thấy điểm thay đổi</h3>
+    <p class="sg-mut" data-en="Change the number of matched skills or the posting's freshness; the score on the right recalculates with the formula.">Đổi số kỹ năng khớp hoặc độ mới của tin, điểm bên phải tính lại theo công thức.</p>
   <div class="demo-score">
     <div class="demo-controls">
       <label for="demoScoreMatched"><span data-en="Matched skills:">Số kỹ năng khớp:</span> <output id="demoScoreMatchedVal">6</output></label>
@@ -1387,7 +1392,7 @@ html.fx-on .bg-fx{opacity:1}
       <p class="demo-cap hidden" id="demoScoreCap" data-en="Capped at 69 pts: the posting lists fewer than 3 skills.">Đã chặn ở 69đ: tin ghi dưới 3 kỹ năng.</p>
     </div>
   </div>
-</section>
+  </section>
 
 <section class="lp-sec" id="lp-demo-kanban">
   <h2 data-en="Track every application until you hear back">Theo dõi từng đơn tới khi có kết quả</h2>
@@ -1442,11 +1447,11 @@ html.fx-on .bg-fx{opacity:1}
 <section class="lp-sec" id="lp-faq">
     <h2 data-en="Frequently asked questions">Câu hỏi thường gặp</h2>
     <div class="lp-faq">
-      <details class="lp-card"><summary data-en="Where do the jobs come from?">Job lấy từ đâu?</summary><p data-en="From ITviec and TopDev for Vietnam, plus public remote boards (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), rescanned every 30 minutes. Duplicates and non-tech postings are filtered out before they reach you. You can also paste a link from any other site.">Từ ITviec và TopDev cho thị trường Việt Nam, cộng các bảng việc remote công khai (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), quét lại mỗi 30 phút. Tin trùng và tin không thuộc ngành tech bị lọc trước khi tới bạn. Bạn cũng dán được link từ trang khác.</p></details>
+      <details class="lp-card"><summary data-en="Where do the jobs come from?">Tin lấy từ đâu?</summary><p data-en="From ITviec and TopDev for Vietnam, plus public remote boards (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), rescanned every 30 minutes. Duplicates and non-tech postings are filtered out before they reach you. You can also paste a link from any other site.">Từ ITviec và TopDev cho thị trường Việt Nam, cộng các bảng việc remote công khai (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), quét lại mỗi 30 phút. Tin trùng và tin không thuộc ngành tech bị lọc trước khi tới bạn. Bạn cũng dán được link từ trang khác.</p></details>
       <details class="lp-card"><summary data-en="Where is my CV stored, and who can see it?">CV của tôi được lưu ở đâu, ai xem được?</summary><p data-en="Your CV is only used to extract skills for your profile and is stored on Cloudflare infrastructure. JobPilot never sends it to any employer.">CV chỉ dùng để trích kỹ năng cho hồ sơ của bạn, lưu trên hạ tầng Cloudflare. JobPilot không gửi CV cho nhà tuyển dụng nào.</p></details>
       <details class="lp-card"><summary data-en="Does it cost anything?">Có mất phí không?</summary><p data-en="No. JobPilot runs almost entirely on Cloudflare's free tier. Legitimate employers never charge candidates either.">Không. JobPilot chạy gần như hoàn toàn trên gói miễn phí của Cloudflare. Nhà tuyển dụng thật cũng không bao giờ thu phí ứng viên.</p></details>
       <details class="lp-card"><summary data-en="How is JobPilot different from the AI on ITviec or TopCV?">JobPilot khác gì AI của ITviec, TopCV?</summary><p data-en="A job board's AI scores candidates for employers. JobPilot scores postings for you, tells you plainly which to skip, and never applies on your behalf.">AI của trang tuyển dụng chấm ứng viên cho nhà tuyển dụng. JobPilot chấm tin cho bạn, nói thẳng tin nào nên bỏ qua, và không bao giờ nộp đơn thay bạn.</p></details>
-      <details class="lp-card"><summary data-en="Will JobPilot apply on my behalf?">JobPilot có tự nộp đơn giúp tôi không?</summary><p data-en="No, and it never will. Mass applying gets you treated as spam by employers. JobPilot helps you pick the right postings; you apply yourself.">Không, và sẽ không. Nộp hàng loạt làm nhà tuyển dụng coi là spam. JobPilot giúp bạn chọn đúng tin rồi tự nộp.</p></details>
+      <details class="lp-card"><summary data-en="Will JobPilot apply on my behalf?">JobPilot có tự nộp đơn giúp tôi không?</summary><p data-en="No, and it never will. Mass applying gets you treated as spam by employers. JobPilot helps you pick the right postings; you apply yourself.">Không, và sẽ không. Nộp hàng loạt dễ bị nhà tuyển dụng coi là spam. JobPilot giúp bạn chọn đúng tin rồi tự nộp.</p></details>
     </div>
   </section>
 
