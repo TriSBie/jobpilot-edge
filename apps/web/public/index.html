@@ -1199,6 +1199,29 @@ html.fx-on .bg-fx{opacity:1}
 #qaDlg textarea{width:100%;min-height:7.5rem;resize:vertical;font:inherit;padding:.6rem .7rem;border-radius:var(--r-sm)}
 #qaDlg .qa-row{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;margin-top:.45rem}
 #qaDlg .qa-foot{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.1rem}
+/* Vòng phỏng vấn: bảng native như Nộp nhanh, không thêm chuyển động */
+#ivDlg{width:min(640px,calc(100vw - 32px))}
+#ivDlg h3:focus,#ivDlg h4:focus{outline:none}
+#ivDlg .iv-sub{margin:0;color:var(--muted);font-size:.85rem}
+#ivDlg .iv-list{list-style:none;margin:.8rem 0 0;padding:0}
+#ivDlg .iv{border:1px solid var(--line);border-radius:var(--r-md);padding:12px;margin-top:10px}
+#ivDlg .iv h4{margin:0 0 .6rem;font:600 15px/1.3 var(--f-head);color:var(--ink)}
+#ivDlg .iv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 10px}
+#ivDlg .iv-grid select{width:100%}
+#ivDlg textarea{min-height:2.6rem;resize:vertical}
+#ivDlg .iv-note{margin-top:8px}
+#ivDlg fieldset{border:0;margin:.6rem 0 0;padding:0;min-width:0}
+#ivDlg legend{font-size:.8rem;color:var(--muted);font-weight:500;padding:0;margin-bottom:.2rem}
+#ivDlg .iv-ck .check{display:flex;font-weight:500;gap:10px;margin:0}
+#ivDlg .iv-ck input:checked+span{color:var(--muted);text-decoration:line-through}
+#ivDlg .iv-foot{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-end;margin-top:.6rem}
+#ivDlg .iv-add{display:block;border-top:1px dashed var(--line);margin-top:1rem;padding-top:.8rem}
+#ivDlg .iv-add h4{margin:0 0 .6rem;font:600 15px/1.3 var(--f-head);color:var(--ink)}
+#ivDlg .iv-state{padding:1.4rem 1rem;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-md);margin-top:.8rem}
+#ivDlg .iv-state .skel+.skel{margin-top:8px}
+#ivDlg .iv-state .btn{margin-top:.6rem}
+.kcard .c.iv-line{color:var(--ink)}
+.kcard .iv-btn{min-height:var(--tap)}
 .qa-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px}
 .qa-strip>div:first-child{min-width:0;flex:1 1 220px}
 .qa-strip .qa-act{display:flex;gap:.5rem;flex-wrap:wrap}
@@ -1852,6 +1875,7 @@ html.fx-on .bg-fx{opacity:1}
 </dialog>
 
 <dialog id="qaDlg" aria-labelledby="qaTitle"></dialog>
+<dialog id="ivDlg" aria-labelledby="ivTitle"></dialog>
 
 <!-- ================= COMMAND PALETTE ================= -->
 <div id="palette" class="hidden">
@@ -2509,7 +2533,8 @@ Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)":
 // Chuông: số lấy từ /api/me lúc tải trang và khi quay lại tab; không poll. Mọi chữ từ server đi qua textContent.
 const nf = { items: [], unread: false, open: false, loading: false, error: "", more: false, seq: 0, count: 0, attn: false };
 let jobsPrevSeen, jobsSeenSent = false; // undefined = chưa đọc /api/me trong phiên này
-const NF_IC = { strong_match: "bolt", digest: "brief", bot_broken: "alert" };
+const NF_IC = { strong_match: "bolt", digest: "brief", bot_broken: "alert", interview: "interview", follow_up: "apply" };
+const NF_LABEL = { interview: "Lịch phỏng vấn", follow_up: "Nhắc follow-up" }; // khi server không gửi tiêu đề
 /* icon nét từ sprite <symbol>, thay emoji */
 function svgIc(id, cls){ const NS = "http://www.w3.org/2000/svg", sv = document.createElementNS(NS, "svg"), u = document.createElementNS(NS, "use");
   sv.setAttribute("class", "ic-i" + (cls ? " " + cls : "")); sv.setAttribute("aria-hidden", "true"); u.setAttribute("href", "#" + id); sv.append(u); return sv; }
@@ -2607,7 +2632,7 @@ function nfRender(){
     const ttl = nfEl("span", "nf-ttl");
     if (!n.is_read) ttl.append(nfEl("span", "sr-only", t("Chưa đọc: ")));
     if (NF_IC[n.type]) ttl.append(svgIc(NF_IC[n.type], n.type === "bot_broken" ? "warn" : ""));
-    ttl.append(n.title || "");
+    ttl.append(n.title || (NF_LABEL[n.type] ? t(NF_LABEL[n.type]) : ""));
     row.append(dot, ttl, nfEl("span", "nf-time", nfTime(ts)));
     if (n.body) row.append(nfEl("span", "nf-body", n.body));
     if (n.tg_status === "sent") row.append(nfEl("span", "nf-tg", t("✓ Đã gửi Telegram")));
@@ -2650,6 +2675,9 @@ function nfActivate(n){
   if (n.type === "bot_broken") {
     switchTab("profile");
     later(() => { const d = $("#tgOwn"); if (!d) return; d.open = true; d.scrollIntoView({ block: "center" }); const s = $("summary", d); if (s) s.focus(); });
+  } else if ((n.type === "interview" || n.type === "follow_up") && n.ref_id) {
+    ivPendingApp = String(n.ref_id); // mở sau khi Kanban tải xong đơn
+    switchTab("kanban");
   } else if (n.type === "strong_match" && n.ref_id) {
     switchTab("jobs");
     later(() => nfShowJob(String(n.ref_id)));
@@ -3342,6 +3370,7 @@ async function loadApplications(){
     box.classList.add("xfade");
     renderKanban();
     setTimeout(() => box.classList.remove("xfade"), 240);
+    if (ivPendingApp) { const id = ivPendingApp; ivPendingApp = ""; ivOpen(id); }
   } catch (e) {
     box.innerHTML = `<div class="panel empty">${esc(e.message)}</div>`;
   }
@@ -3411,10 +3440,12 @@ function renderKanban(){
         <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : t("(job đã xoá)"))}</a></div>
         <div class="c">${a.job ? `<span>${esc(a.job.company)}</span>${a.job.location ? `<span>${esc(a.job.location)}</span>` : ""}` : ""}</div>
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
+        ${ivCardLine(a)}
         ${a.note ? `<div class="c">${esc(a.note.replace("[tự đóng: im lặng 14 ngày]", "[" + t("tự đóng: im lặng 14 ngày") + "]"))}</div>` : ""}
         <div class="row">
           <button class="mv" data-move="${esc(a.id)}" data-dir="-1" ${idx === 0 ? "disabled" : ""} title="${t("Chuyển sang cột trước")}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M8 2 L3 6 L8 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button class="mv" data-move="${esc(a.id)}" data-dir="1" ${idx === STAGE_KEYS.length - 1 ? "disabled" : ""} title="${t("Chuyển sang cột sau")}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2 L9 6 L4 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="btn small iv-btn" data-iv="${esc(a.id)}" type="button" aria-label="${esc(t("Vòng phỏng vấn: %s", a.job ? a.job.title : ""))}"><svg class="ic-i" aria-hidden="true"><use href="#interview"/></svg>${t("Vòng")}</button>
           <span class="spacer"></span>
           ${m ? `<span class="score-pill ${esc(m.tier)}">${t("%sđ", Math.round(m.final_score || 0))} ${esc(m.tier)}</span>` : ""}
         </div>
@@ -3428,6 +3459,7 @@ function renderKanban(){
 
   $$("[data-kmore]", box).forEach(b => b.addEventListener("click", () => { kanbanNewAll = true; renderKanban(); }));
   $$("button[data-move]", box).forEach(b => b.addEventListener("click", () => moveApplication(b.dataset.move, Number(b.dataset.dir), b)));
+  $$("button[data-iv]", box).forEach(b => b.addEventListener("click", () => ivOpen(b.dataset.iv, b)));
   // KANBAN DRAG & DROP: keo the sang cot khac (desktop). Nut chevron SVG.
   // Placeholder .kdrop chi mang tinh thi giac (vi tri tha) — thu tu trong cot khong luu xuong backend.
   $$(".kcard", box).forEach(card => {
@@ -3487,6 +3519,189 @@ function renderKanban(){
   });
 }
 
+/* ---------------- Vòng phỏng vấn (T-37): mở từ nút "Vòng" trên thẻ Kanban ---------------- */
+Object.assign(EN, {
+  "Vòng phỏng vấn": "Interview rounds", "Vòng phỏng vấn: %s": "Interview rounds: %s", "Vòng": "Rounds",
+  "Sàng lọc": "Screening", "Bài test": "Test", "Kỹ thuật": "Technical", "HR": "HR", "Offer": "Offer",
+  "Đạt": "Pass", "Trượt": "Fail", "Chờ": "Pending", "Chưa hẹn giờ": "Not scheduled",
+  "Vòng %s/%s · %s": "Round %s/%s · %s", "Vòng %s": "Round %s", "Vòng %s: %s": "Round %s: %s",
+  "Loại vòng": "Round type", "Tên vòng (tuỳ chọn)": "Round name (optional)", "Thời gian": "Date and time", "Kết quả": "Result", "Ghi chú": "Note",
+  "Việc cần chuẩn bị": "Preparation checklist", "Chưa có mục nào.": "No items yet.",
+  "Thêm vòng": "Add round", "Đang thêm…": "Adding…", "Đã thêm vòng.": "Round added.",
+  "Xoá vòng": "Delete round", "Xoá vòng \"%s\"? Checklist và ghi chú của vòng này cũng mất.": "Delete round \"%s\"? Its checklist and note are lost too.", "Đã xoá vòng.": "Round deleted.",
+  "Thêm vào lịch": "Add to calendar", "Chưa có vòng nào": "No rounds yet", "Thêm vòng đầu tiên ở bên dưới.": "Add the first round below.",
+  "Không tải được vòng phỏng vấn": "Couldn't load interview rounds", "Không lưu được: %s": "Couldn't save: %s", "Đã lưu.": "Saved.",
+  "Đang tải vòng phỏng vấn": "Loading interview rounds", "Phỏng vấn %s": "Interview %s",
+  "Lịch phỏng vấn": "Interview scheduled", "Nhắc follow-up": "Follow-up reminder", "Không tìm thấy đơn này trên Kanban.": "This application isn't on the Kanban.",
+});
+const IV_KINDS = [["screen", "Sàng lọc"], ["test", "Bài test"], ["technical", "Kỹ thuật"], ["hr", "HR"], ["offer", "Offer"]];
+const IV_RESULTS = [["pending", "Chờ"], ["pass", "Đạt"], ["fail", "Trượt"]];
+const ivKind = (k) => t((IV_KINDS.find(x => x[0] === k) || [k, k])[1]);
+let ivPendingApp = "";
+const iv = { app: null, rows: [], loading: false, error: "", seq: 0, q: new Map() };
+// "T5 14/11 10:00" (vi) / "Thu 14/11 10:00" (en), giờ máy người dùng
+function ivWhen(ts){
+  const d = new Date(Number(ts) * 1000), p = (n) => String(n).padStart(2, "0");
+  const wd = LANG === "en" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()] : (d.getDay() ? "T" + (d.getDay() + 1) : "CN");
+  return `${wd} ${p(d.getDate())}/${p(d.getMonth() + 1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function ivCardLine(a){
+  const r = a.rounds;
+  if (!r || !r.total) return "";
+  const n = a.next_interview;
+  let txt;
+  if (n) txt = t("Vòng %s/%s · %s", Math.min(r.done + 1, r.total), r.total, n.round_label || ivKind(n.kind)) + (n.scheduled_at ? " · " + ivWhen(n.scheduled_at) : "");
+  else { // ponytail: list chỉ có rounds {done,total}, không có kết quả vòng cuối; hiện "x/y" cho tới khi API trả last_result
+    txt = t("Vòng %s/%s · %s", r.done, r.total, t(r.done >= r.total ? "Xong" : "Chờ"));
+  }
+  return `<div class="c iv-line"><svg class="ic-i" aria-hidden="true"><use href="#interview"/></svg>${esc(txt)}</div>`;
+}
+Object.assign(EN, { "Xong": "Done" });
+// datetime-local <-> unix giây, theo giờ máy
+const ivToLocal = (ts) => { if (!ts) return ""; const d = new Date(ts * 1000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const ivFromLocal = (v) => v ? Math.floor(new Date(v).getTime() / 1000) : 0;
+function ivIcs(r){
+  const z = (ts) => new Date(ts * 1000).toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const x = (s) => String(s || "").replace(/[\\;,]/g, (c) => "\\" + c).replace(/\r?\n/g, "\\n");
+  const job = (iv.app && iv.app.job) || {};
+  const title = t("Phỏng vấn %s", [r.round_label || ivKind(r.kind), job.company].filter(Boolean).join(" · "));
+  const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//JobPilot Edge//VI", "BEGIN:VEVENT", "UID:iv-" + r.id + "@jobpilot-edge",
+    "DTSTAMP:" + z(Math.floor(Date.now() / 1000)), "DTSTART:" + z(r.scheduled_at), "DTEND:" + z(r.scheduled_at + 3600),
+    "SUMMARY:" + x(title), "DESCRIPTION:" + x([job.title, r.note, job.source_url].filter(Boolean).join("\n")), "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  return "data:text/calendar;charset=utf-8," + encodeURIComponent(body);
+}
+function ivRender(focusSel){
+  const d = $("#ivDlg"), a = iv.app, job = (a && a.job) || {};
+  const opt = (list, v) => list.map(([k, l]) => `<option value="${k}"${k === v ? " selected" : ""}>${esc(t(l))}</option>`).join("");
+  let body;
+  if (iv.loading) body = `<div class="iv-state" role="status" aria-busy="true"><span class="sr-only">${t("Đang tải vòng phỏng vấn")}</span><div class="skel" aria-hidden="true"></div><div class="skel" style="width:70%" aria-hidden="true"></div></div>`;
+  else if (iv.error) body = `<div class="iv-state" role="alert"><p style="margin:0">${t("Không tải được vòng phỏng vấn")}: ${esc(iv.error)}</p><button class="btn small" type="button" data-iva="retry">${t("Thử lại")}</button></div>`;
+  else if (!iv.rows.length) body = `<div class="iv-state"><b>${t("Chưa có vòng nào")}</b><p style="margin:.3rem 0 0">${t("Thêm vòng đầu tiên ở bên dưới.")}</p></div>`;
+  else body = `<ol class="iv-list">` + iv.rows.map((r, i) => {
+    const id = esc(r.id), name = r.round_label || ivKind(r.kind);
+    const ck = r.checklist || [];
+    return `<li class="iv" data-row="${id}" aria-labelledby="ivh-${id}">
+      <h4 id="ivh-${id}" tabindex="-1">${esc(t("Vòng %s: %s", i + 1, name))}</h4>
+      <div class="iv-grid">
+        <div><label for="ivk-${id}">${t("Loại vòng")}</label><select id="ivk-${id}" data-f="kind">${opt(IV_KINDS, r.kind)}</select></div>
+        <div><label for="ivl-${id}">${t("Tên vòng (tuỳ chọn)")}</label><input id="ivl-${id}" data-f="round_label" maxlength="80" value="${esc(r.round_label || "")}"></div>
+        <div><label for="ivt-${id}">${t("Thời gian")}</label><input id="ivt-${id}" type="datetime-local" data-f="scheduled_at" value="${ivToLocal(r.scheduled_at)}"></div>
+        <div><label for="ivr-${id}">${t("Kết quả")}</label><select id="ivr-${id}" data-f="result">${opt(IV_RESULTS, r.result || "pending")}</select></div>
+      </div>
+      <div class="iv-note"><label for="ivn-${id}">${t("Ghi chú")}</label><textarea id="ivn-${id}" data-f="note" maxlength="2000">${esc(r.note || "")}</textarea></div>
+      <fieldset class="iv-ck"><legend>${t("Việc cần chuẩn bị")}</legend>
+        ${ck.length ? ck.map((c, j) => `<label class="check"><input type="checkbox" data-ck="${j}"${c.done ? " checked" : ""}><span>${esc(c.text)}</span></label>`).join("") : `<p class="muted small" style="margin:0">${t("Chưa có mục nào.")}</p>`}
+      </fieldset>
+      <div class="iv-foot">
+        ${r.scheduled_at ? `<a class="btn small" href="${ivIcs(r)}" download="phong-van-${id}.ics">${t("Thêm vào lịch")}</a>` : ""}
+        <button class="btn small ghost" type="button" data-iva="del" aria-label="${esc(t("Xoá vòng") + ": " + name)}">${t("Xoá vòng")}</button>
+      </div>
+    </li>`;
+  }).join("") + `</ol>`;
+  d.innerHTML = `<h3 id="ivTitle" tabindex="-1">${t("Vòng phỏng vấn")}</h3>
+    <p class="iv-sub">${esc([job.title, job.company].filter(Boolean).join(" · "))}</p>
+    <div id="ivBody">${body}</div>
+    <form class="iv-add" id="ivAdd" ${iv.loading || iv.error ? "hidden" : ""}>
+      <h4>${t("Thêm vòng")}</h4>
+      <div class="iv-grid">
+        <div><label for="ivAddKind">${t("Loại vòng")}</label><select id="ivAddKind" name="kind">${opt(IV_KINDS, "screen")}</select></div>
+        <div><label for="ivAddLabel">${t("Tên vòng (tuỳ chọn)")}</label><input id="ivAddLabel" name="round_label" maxlength="80"></div>
+        <div><label for="ivAddAt">${t("Thời gian")}</label><input id="ivAddAt" name="scheduled_at" type="datetime-local"></div>
+      </div>
+      <div class="iv-foot"><button class="btn ghost" type="button" data-iva="close">${t("Đóng")}</button><button class="btn primary" type="submit" id="ivAddBtn">${t("Thêm vòng")}</button></div>
+    </form>
+    ${iv.loading || iv.error ? `<div class="iv-foot"><button class="btn ghost" type="button" data-iva="close">${t("Đóng")}</button></div>` : ""}`;
+  if (focusSel) { const f = d.querySelector(focusSel); if (f) f.focus(); }
+}
+async function ivLoad(){
+  const seq = ++iv.seq;
+  iv.loading = true; iv.error = ""; ivRender();
+  try {
+    const r = await api("/api/applications/" + encodeURIComponent(iv.app.id) + "/interviews");
+    if (seq !== iv.seq) return;
+    iv.rows = Array.isArray(r) ? r : [];
+  } catch (e) { if (seq !== iv.seq) return; iv.error = e.message; }
+  iv.loading = false;
+  ivRender(iv.error ? '[data-iva="retry"]' : "#ivTitle");
+}
+// Tóm tắt cho thẻ Kanban, tính lại từ danh sách vòng vừa sửa (không gọi lại cả bảng)
+function ivSyncCard(){
+  const a = iv.app, now = Math.floor(Date.now() / 1000), rows = iv.rows;
+  a.rounds = { done: rows.filter(r => r.result === "pass" || r.result === "fail").length, total: rows.length };
+  const nx = rows.filter(r => r.scheduled_at && r.scheduled_at >= now && (!r.result || r.result === "pending")).sort((x, y) => x.scheduled_at - y.scheduled_at)[0];
+  a.next_interview = nx ? { id: nx.id, kind: nx.kind, round_label: nx.round_label, scheduled_at: nx.scheduled_at } : null;
+}
+// Mỗi vòng một hàng đợi PATCH: bấm nhanh không mất, không khoá nút; checklist gửi trạng thái mới nhất trên máy
+function ivSave(id, patch){
+  const prev = iv.q.get(id) || Promise.resolve();
+  const p = prev.then(() => api("/api/interviews/" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify(patch) }))
+    .then(row => {
+      const r = iv.rows.find(x => x.id === id);
+      if (r && row && !patch.checklist) Object.assign(r, row, { checklist: r.checklist }); // giữ checklist cục bộ, tránh ghi đè lượt bấm đang chờ
+      return row;
+    })
+    .catch(e => { toast(t("Không lưu được: %s", e.message), "err"); throw e; });
+  iv.q.set(id, p.catch(() => {}));
+  return p;
+}
+function ivOpen(appId, opener){
+  const a = (state.applications || []).find(x => String(x.id) === String(appId));
+  if (!a) { toast(t("Không tìm thấy đơn này trên Kanban."), "err"); return; }
+  const d = $("#ivDlg");
+  iv.app = a; iv.rows = []; iv.q = new Map();
+  d.onclick = async (ev) => {
+    const b = ev.target.closest("[data-iva]");
+    if (!b) return;
+    const act = b.dataset.iva;
+    if (act === "close") d.close();
+    else if (act === "retry") ivLoad();
+    else if (act === "del") {
+      const li = b.closest("[data-row]"), r = iv.rows.find(x => String(x.id) === li.dataset.row);
+      const ok = await confirmBox(t("Xoá vòng \"%s\"? Checklist và ghi chú của vòng này cũng mất.", r.round_label || ivKind(r.kind)));
+      if (!ok) { ivRender(`[data-row="${CSS.escape(String(r.id))}"] [data-iva="del"]`); return; }
+      try {
+        await (iv.q.get(r.id) || Promise.resolve());
+        await api("/api/interviews/" + encodeURIComponent(r.id), { method: "DELETE" });
+        iv.rows = iv.rows.filter(x => x !== r); ivSyncCard(); renderKanban();
+        ivRender("#ivTitle"); toast(t("Đã xoá vòng."), "ok");
+      } catch (e) { ivRender(); toast(t("Không lưu được: %s", e.message), "err"); }
+    }
+  };
+  d.onchange = (ev) => {
+    const el = ev.target, li = el.closest("[data-row]");
+    if (!li) return;
+    const r = iv.rows.find(x => String(x.id) === li.dataset.row);
+    if (el.dataset.ck != null) {
+      r.checklist[Number(el.dataset.ck)].done = el.checked;
+      ivSave(r.id, { checklist: r.checklist.map(c => ({ text: c.text, done: c.done })) }).catch(() => {}); // ponytail: lỗi chỉ toast, giữ tích trên máy; lượt bấm sau gửi lại cả checklist. Cần chắc hơn thì tải lại vòng sau lỗi.
+      return;
+    }
+    const f = el.dataset.f;
+    if (!f) return;
+    const v = f === "scheduled_at" ? ivFromLocal(el.value) : el.value;
+    const old = r[f]; r[f] = v;
+    ivSave(r.id, { [f]: v }).then(() => { ivSyncCard(); renderKanban(); if (f === "scheduled_at" || f === "kind" || f === "round_label") ivRender(`#${CSS.escape(el.id)}`); })
+      .catch(() => { r[f] = old; ivRender(`#${CSS.escape(el.id)}`); });
+  };
+  d.onsubmit = async (ev) => {
+    ev.preventDefault();
+    const fm = ev.target, btn = $("#ivAddBtn");
+    const body = { kind: fm.kind.value };
+    if (fm.round_label.value.trim()) body.round_label = fm.round_label.value.trim();
+    if (fm.scheduled_at.value) body.scheduled_at = ivFromLocal(fm.scheduled_at.value);
+    btn.disabled = true; btn.textContent = t("Đang thêm…"); // chặn gửi trùng, chỉ trong lúc tạo
+    try {
+      const row = await api("/api/applications/" + encodeURIComponent(a.id) + "/interviews", { method: "POST", body: JSON.stringify(body) });
+      iv.rows.push(row);
+      if (["new", "saved", "applied"].includes(a.stage)) a.stage = "interview"; // server nâng giai đoạn giống vậy
+      ivSyncCard(); renderKanban();
+      ivRender(`#ivh-${CSS.escape(String(row.id))}`); toast(t("Đã thêm vòng."), "ok");
+    } catch (e) { btn.disabled = false; btn.textContent = t("Thêm vòng"); toast(t("Không lưu được: %s", e.message), "err"); }
+  };
+  d.onclose = () => { iv.seq++; const b = opener && opener.isConnected ? opener : $(`[data-iv="${CSS.escape(String(a.id))}"]`); if (b) b.focus(); }; // thẻ có thể đã vẽ lại
+  d.showModal();
+  ivLoad();
+}
 // FLIP khong optimistic (M08): PATCH truoc, render sau, roi truot the tu vi tri cu sang vi tri moi.
 // Neu PATCH loi, the o yen + toast err (khong can rollback). Reduced-motion thi bo qua hoat hinh.
 function flipKanbanCard(appId, fromRect, fromStage, toStage){
