@@ -67,6 +67,7 @@ const EN = {
   "Khớp đủ để nộp": "Good enough to apply",
   "Nộp nếu bổ sung %s": "Apply if you add %s",
   "Nộp nếu chấp nhận onsite": "Apply if you accept onsite",
+  "Diễn đạt lại theo cách JD dùng": "Rephrased using the JD's wording",
 };
 function tr(lang, vi, ...args) {
   let s = (lang === "en" && EN[vi]) || vi;
@@ -288,6 +289,88 @@ async function handleCvText(request, env, user, profileId) {
   })).sort((a, b) => b.weight - a.weight || a.skill.localeCompare(b.skill));
   await env.KV.put(`cvskills:${profileId}`, JSON.stringify(suggested), { expirationTtl: 86400 });
   return json({ file_id: fileId, text_chars: text.length, suggested_skills: suggested });
+}
+
+// ---------------- CV suggest (T-28) ----------------
+// Gợi ý sửa CV theo JD, CHỈ dùng sự thật đã có trong CV. Guard chạy phía server, không tin prompt.
+const CV_SUGGEST_MAX = 8, CV_SUGGEST_DAILY = 15, CV_SUGGEST_TTL = 7 * 86400;
+const normWs = (s) => String(s).replace(/\s+/g, " ").trim();
+const numsOf = (s) => String(s).match(/\d+(?:[.,]\d+)*/g) || [];
+// Trả { kept, dropped }. Bỏ gợi ý: original không nằm nguyên văn trong CV, thêm skill CV không có, nhắc skill missing, thêm số CV không có.
+function guardSuggestions(raw, cvText, missing, lang) {
+  const cv = normWs(cvText), cvSkills = new Set(extractSkillsFromText(cvText)), cvNums = new Set(numsOf(cvText));
+  const kept = []; let dropped = 0;
+  for (const x of (Array.isArray(raw) ? raw : []).slice(0, 20)) {
+    const original = normWs(x?.original ?? ""), suggested = normWs(x?.suggested ?? "");
+    if (!original || !suggested || original === suggested) continue; // không phải gợi ý, không tính là bịa
+    const ok = original.length >= 10 && suggested.length <= 800 && cv.includes(original)
+      && extractSkillsFromText(suggested).every((k) => cvSkills.has(k))
+      && !missing.some((m) => skillInText(m, suggested))
+      && numsOf(suggested).every((n) => cvNums.has(n));
+    if (!ok) { dropped++; continue; }
+    if (kept.length >= CV_SUGGEST_MAX) continue;
+    kept.push({ id: `s${kept.length + 1}`, section: normWs(x.section || "").slice(0, 40) || null, original, suggested,
+      reason: normWs(x.reason || "").slice(0, 200) || tr(lang, "Diễn đạt lại theo cách JD dùng") });
+  }
+  return { kept, dropped };
+}
+async function aiCvSuggest(env, cvText, jd, matched, missing, lang) {
+  const res = await env.AI.run(CV_SKILL_MODEL, {
+    messages: [
+      { role: "system", content: "You improve a resume for one job description WITHOUT inventing anything. Only reorder, rephrase, move job-relevant facts up, or use the JD's wording for the same thing. Never add a skill, tool, number, year, percentage, team size, employer or achievement that is not already in the resume. Reply with ONLY strict JSON." },
+      { role: "user", content: `Resume:\n${cvText.slice(0, 6000)}\n\nJob description:\n${jd.slice(0, 3000)}\n\nSkills the resume already has that the JD wants: ${matched.join(", ") || "none"}\nSkills the resume does NOT have (NEVER mention these): ${missing.join(", ") || "none"}\n\nReturn {"suggestions":[{"section":"Experience|Summary|Skills|Projects","original":"<exact sentence copied from the resume>","suggested":"<rewrite using only facts in that resume>","reason":"<short reason in ${lang === "en" ? "English" : "Vietnamese"}>"}]} with at most ${CV_SUGGEST_MAX} items. JSON only.` },
+    ],
+    max_tokens: 1500,
+  });
+  const text = typeof res?.response === "string" ? res.response : JSON.stringify(res?.response ?? "");
+  const m = text.match(/\{[\s\S]*\}/);
+  const parsed = m ? JSON.parse(m[0]) : null; // ném khi JSON hỏng → caller coi như AI lỗi
+  if (!parsed || !Array.isArray(parsed.suggestions)) throw new Error("bad_ai_json");
+  return parsed.suggestions;
+}
+async function handleCvSuggest(request, env, user, profileId, lang) {
+  const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first();
+  if (!profile) return json({ error: "profile_not_found" }, 404);
+  const b = await readBody(request);
+  if (b.lang === "en" || b.lang === "vi") lang = b.lang;
+  const job = typeof b.job_id === "string" && await env.DB.prepare("SELECT * FROM jobs WHERE id = ? AND (submitted_by IS NULL OR submitted_by = ?)").bind(b.job_id, user.id).first();
+  if (!job) return json({ error: "job_not_found" }, 404);
+  const file = profile.cv_file_id && await env.DB.prepare("SELECT r2_key FROM files WHERE id = ? AND user_id = ?").bind(profile.cv_file_id, user.id).first();
+  const obj = file && await env.FILES.get(file.r2_key);
+  const cvText = obj ? await obj.text() : "";
+  if (!cvText.trim()) return json({ error: "no_cv" }, 409);
+
+  const { results: ps } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ? ORDER BY weight DESC, skill").bind(profile.id).all();
+  const jdSkills = [...new Set([...JSON.parse(job.skills || "[]").map(canonSkill), ...extractSkillsFromText(jdOf(job))])];
+  const have = [...new Set([...ps.map((p) => p.skill), ...extractSkillsFromText(cvText)])];
+  const haveLow = new Set(have.map((s) => s.toLowerCase()));
+  const matched = jdSkills.filter((s) => haveLow.has(s.toLowerCase()));
+  const missing = jdSkills.filter((s) => !haveLow.has(s.toLowerCase()));
+  const jdLow = jdSkills.map((s) => s.toLowerCase());
+  const rank = (s) => { const i = jdLow.indexOf(s.toLowerCase()); return i < 0 ? 1e6 : i; };
+  const skills_text = have.map((s, i) => [s, i]).sort((x, y) => rank(x[0]) - rank(y[0]) || x[1] - y[1]).map((x) => x[0]).join(", ");
+  const base = { matched, missing, skills_text };
+  // T-62: tắt AI → không gửi CV đi. ponytail: không có gợi ý rule-based; thêm khi có mẫu sửa đơn giản đáng tin.
+  if (user.ai_opt_out || !env.AI) return json({ ...base, suggestions: [], dropped: 0, ai_used: false });
+
+  const cacheKey = `cvsug:${profile.id}:${job.id}:${profile.cv_file_id}:${lang}`;
+  const hit = await env.KV.get(cacheKey);
+  if (hit) {
+    // Lọc lại theo missing hiện tại: kỹ năng hồ sơ có thể đã đổi sau khi cache.
+    const c = JSON.parse(hit), g = guardSuggestions(c.suggestions, cvText, missing, lang);
+    return json({ ...base, suggestions: g.kept, dropped: c.dropped + g.dropped, ai_used: true, cached: true });
+  }
+  // ponytail: đếm KV không nguyên tử (giống ownBotAttempt), bấm dồn dập có thể lố 1-2 lượt.
+  const day = Math.floor(now() / 86400), rlKey = `cvsugrl:${user.id}:${day}`;
+  const n = Number((await env.KV.get(rlKey)) || 0);
+  if (n >= CV_SUGGEST_DAILY) return json({ error: "rate_limited", retry_after: (day + 1) * 86400 - now() }, 429);
+  await env.KV.put(rlKey, String(n + 1), { expirationTtl: 86400 });
+  let raw;
+  try { raw = await aiCvSuggest(env, cvText, jdOf(job) || job.title || "", matched, missing, lang); }
+  catch (e) { console.log("cv-suggest AI failed:", String(e && e.message).slice(0, 80)); return json({ ...base, suggestions: [], dropped: 0, ai_used: false }); }
+  const g = guardSuggestions(raw, cvText, missing, lang);
+  await env.KV.put(cacheKey, JSON.stringify({ suggestions: g.kept, dropped: g.dropped }), { expirationTtl: CV_SUGGEST_TTL });
+  return json({ ...base, suggestions: g.kept, dropped: g.dropped, ai_used: true });
 }
 
 // ---------------- privacy (T-62 + T-24) ----------------
@@ -1644,6 +1727,8 @@ export default {
     }
     const cvMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-text$/);
     if (cvMatch && request.method === "POST") return handleCvText(request, env, user, cvMatch[1]);
+    const sugMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-suggest$/);
+    if (sugMatch && request.method === "POST") return handleCvSuggest(request, env, user, sugMatch[1], lang);
     const cvFileMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-file$/);
     if (cvFileMatch && request.method === "POST") {
       if (+request.headers.get("content-length") > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413);
