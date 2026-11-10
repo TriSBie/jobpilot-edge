@@ -98,6 +98,33 @@ const AUTO_CLOSE_DAYS = 14;
 // T-45: một giới hạn dùng chung cho danh sách /api/jobs và lượt chấm lại; dọn tin quét không thấy > 30 ngày, mỗi lượt cron tối đa 200 tin.
 const JOB_LIST_LIMIT = 300, JOB_RETENTION_DAYS = 30, JOB_CLEAN_BATCH = 200;
 const APP_STAGES = ["new", "saved", "applied", "interview", "offer", "rejected", "archived"]; // khớp STAGES của kanban (index.html)
+// T-37: vòng phỏng vấn. scheduled_at = 0 nghĩa là chưa hẹn giờ (cột NOT NULL từ 0001).
+const IV_KINDS = {
+  screen: ["Sàng lọc", ["Đọc lại JD, ghi 3 điểm khớp với kinh nghiệm của mình", "Chuẩn bị phần giới thiệu bản thân 60 giây", "Chốt mức lương mong muốn và ngày có thể bắt đầu", "Chuẩn bị 2 câu hỏi về team và quy trình làm việc"]],
+  test: ["Bài test", ["Hỏi rõ thời lượng, hình thức và công cụ được dùng", "Ôn cấu trúc dữ liệu và thuật toán cơ bản", "Kiểm tra máy, mạng, IDE trước giờ làm bài", "Đọc kỹ đề, thử các trường hợp biên trước khi nộp"]],
+  technical: ["Phỏng vấn kỹ thuật", ["Ôn lại các dự án trong CV: kiến trúc, vai trò, số liệu", "Ôn các kỹ năng chính trong JD", "Chuẩn bị 1 sự cố đã xử lý: bối cảnh, hành động, kết quả", "Luyện system design ở mức vừa", "Chuẩn bị câu hỏi về stack và cách team review code"]],
+  hr: ["Phỏng vấn HR", ["Tìm hiểu văn hoá, sản phẩm và tin gần đây của công ty", "Chuẩn bị ví dụ STAR về làm việc nhóm và xử lý bất đồng", "Chốt mức lương mong muốn và ngày bắt đầu sớm nhất", "Hỏi về đánh giá, đãi ngộ và các vòng tiếp theo"]],
+  offer: ["Offer", ["Kiểm tra lương gross/net, thưởng và phụ cấp", "Xem bảo hiểm, ngày phép và thời gian thử việc", "So sánh với offer khác và mức mong muốn", "Hỏi rõ hạn trả lời và ngày bắt đầu"]],
+};
+const IV_RESULTS = ["pending", "pass", "fail"];
+// Kiểm từng trường có mặt trong body; trả { error } hoặc { f } chỉ gồm trường hợp lệ đã chuẩn hoá.
+function ivFields(b) {
+  if (!b || typeof b !== "object" || Array.isArray(b)) return { error: "invalid_body" };
+  const f = {}, str = (v, max, empty) => typeof v === "string" && v.trim().length <= max && (empty || v.trim().length > 0);
+  if ("kind" in b) { if (!Object.hasOwn(IV_KINDS, b.kind)) return { error: "invalid_kind" }; f.kind = b.kind; }
+  if ("round_label" in b) { if (!str(b.round_label, 80)) return { error: "invalid_round_label" }; f.round_label = b.round_label.trim(); }
+  if ("note" in b) { if (b.note !== null && !str(b.note, 2000, true)) return { error: "invalid_note" }; f.note = b.note === null ? null : b.note.trim(); }
+  if ("scheduled_at" in b) { if (!Number.isSafeInteger(b.scheduled_at) || b.scheduled_at < 0) return { error: "invalid_scheduled_at" }; f.scheduled_at = b.scheduled_at; }
+  if ("result" in b) { if (!IV_RESULTS.includes(b.result)) return { error: "invalid_result" }; f.result = b.result; }
+  if ("checklist" in b) {
+    const c = b.checklist;
+    if (!Array.isArray(c) || c.length > 30 || !c.every((x) => x && str(x.text, 200) && typeof x.done === "boolean")) return { error: "invalid_checklist" };
+    f.checklist = JSON.stringify(c.map((x) => ({ text: x.text.trim(), done: x.done })));
+  }
+  return { f };
+}
+const ivRow = (r) => r && { ...r, checklist: JSON.parse(r.checklist || "[]") };
+const IV_OWNED = "SELECT a.id FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ?";
 const OWNER_EMAIL = "tribui.it.work@gmail.com";
 // T-88: nguồn đăng ký ?ref — chỉ chữ thường/số/_/-, tối đa 40 ký tự, sai thì null.
 const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
@@ -941,6 +968,22 @@ const MATCH_UPSERT = `INSERT INTO job_matches (job_id, profile_id, rule_score, s
   VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
   ON CONFLICT(job_id, profile_id) DO UPDATE SET rule_score=excluded.rule_score, final_score=excluded.final_score, tier=excluded.tier, matched_skills=excluded.matched_skills, missing_skills=excluded.missing_skills, scored_at=excluded.scored_at`;
 // Khử trùng theo (người dùng, tin): các câu trong batch chạy tuần tự nên NOT EXISTS thấy cả dòng vừa chèn cùng lô.
+// T-37: nhắc trong app (không Telegram). Mỗi (user, type, ref_id) chỉ một lần, như NOTIFY_STRONG. 1 batch = 1 truy vấn D1.
+const OWNER_OF_APP = "JOIN profiles p ON p.id = a.profile_id JOIN users u ON u.id = p.user_id AND u.deleted_at IS NULL JOIN jobs j ON j.id = a.job_id";
+const NOTIFY_DUE = [
+  // vòng phỏng vấn trong ≤ 24h tới (scheduled_at = 0 là chưa hẹn, bị loại vì > now)
+  `INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at)
+   SELECT lower(hex(randomblob(16))), p.user_id, 'interview', 'Sắp phỏng vấn: ' || i.round_label || ' — ' || j.company, j.title, i.id, ?1
+   FROM interviews i JOIN applications a ON a.id = i.application_id ${OWNER_OF_APP}
+   WHERE i.scheduled_at > ?1 AND i.scheduled_at <= ?1 + 86400
+     AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.user_id = p.user_id AND n.type = 'interview' AND n.ref_id = i.id)`,
+  // follow-up đến hạn, mỗi đơn một lần
+  `INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at)
+   SELECT lower(hex(randomblob(16))), p.user_id, 'follow_up', 'Đến hẹn follow-up: ' || j.company, j.title, a.id, ?1
+   FROM applications a ${OWNER_OF_APP}
+   WHERE a.next_follow_up_at IS NOT NULL AND a.next_follow_up_at <= ?1 AND a.stage IN ('applied','interview')
+     AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.user_id = p.user_id AND n.type = 'follow_up' AND n.ref_id = a.id)`,
+];
 const NOTIFY_STRONG = "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?, ?, 'strong_match', ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?)";
 // Một lô queue score = 1 lần chạy Worker: 1 batch đọc (tin, hồ sơ, skills [+ 500 tin mới nhất nếu có rescore]),
 // chấm trong JS, ghi bằng batch, ≤ 1 SELECT users cho Telegram → 3 truy vấn, không tăng theo số hồ sơ hay số tin.
@@ -1807,8 +1850,12 @@ export default {
       const profileId = url.searchParams.get("profile_id");
       if (!profileId) return json({ error: "profile_id_required" }, 400);
       if (!(await ownsProfile(env, user, profileId))) return json({ error: "profile_not_found" }, 404);
+      // T-37: vòng phỏng vấn gói trong cùng 1 truy vấn (subquery theo idx_interviews_app, không N+1).
       const sql = profileId
-        ? `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier
+        ? `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier,
+             (SELECT json_object('id', i.id, 'kind', i.kind, 'round_label', i.round_label, 'scheduled_at', i.scheduled_at) FROM interviews i
+               WHERE i.application_id = a.id AND i.scheduled_at > ? ORDER BY i.scheduled_at LIMIT 1) AS next_iv,
+             (SELECT json_object('done', COALESCE(SUM(i.result IN ('pass','fail')), 0), 'total', COUNT(*)) FROM interviews i WHERE i.application_id = a.id) AS rounds
            FROM applications a JOIN jobs j ON j.id = a.job_id
            LEFT JOIN job_matches m ON m.job_id = a.job_id AND m.profile_id = a.profile_id
            WHERE a.profile_id = ? ORDER BY a.updated_at DESC LIMIT 500`
@@ -1816,8 +1863,8 @@ export default {
            FROM applications a JOIN jobs j ON j.id = a.job_id
            LEFT JOIN job_matches m ON m.job_id = a.job_id AND m.profile_id = a.profile_id
            ORDER BY a.updated_at DESC LIMIT 500`;
-      const { results } = profileId ? await env.DB.prepare(sql).bind(profileId).all() : await env.DB.prepare(sql).all();
       const t = now(), W = 7 * 86400;
+      const { results } = profileId ? await env.DB.prepare(sql).bind(t, profileId).all() : await env.DB.prepare(sql).all();
       const cnt = (st, a, b) => `SUM(CASE WHEN stage = '${st}' AND updated_at >= ${a} AND updated_at < ${b} THEN 1 ELSE 0 END)`;
       const range = (a, b) => `SELECT ${cnt("applied", a, b)} AS applied, ${cnt("interview", a, b)} AS interview, ${cnt("offer", a, b)} AS offer, ${cnt("rejected", a, b)} AS rejected FROM applications WHERE profile_id = ?`;
       const [cur, prev, sil] = await Promise.all([
@@ -1833,6 +1880,8 @@ export default {
         updated_at: r.updated_at,
         job: { id: r.job_id, title: r.title, company: r.company, location: r.location, source_url: r.source_url },
         match: r.final_score !== null && r.final_score !== undefined ? { final_score: r.final_score, tier: r.tier } : null,
+        next_interview: r.next_iv ? JSON.parse(r.next_iv) : null,
+        rounds: r.rounds ? JSON.parse(r.rounds) : { done: 0, total: 0 },
       }));
       // Mặc định trả mảng như trước (SPA cũ/Worker cũ lệch phiên bản vẫn chạy); ?stats=1 mới bọc {items, stats}.
       return json(url.searchParams.get("stats") === "1" ? { items, stats } : items);
@@ -1885,6 +1934,48 @@ export default {
         .bind(uid(), app.id, JSON.stringify({ from: app.stage, to: stage }), now()).run();
       const upd = await env.DB.prepare("SELECT * FROM applications WHERE id = ?").bind(app.id).first();
       return json(upd);
+    }
+
+    // --- vòng phỏng vấn (T-37). Sở hữu: interview → application → profile → user; sai chủ = 404. ---
+    const ivAppMatch = path.match(/^\/api\/applications\/([^/]+)\/interviews$/);
+    if (ivAppMatch && (request.method === "GET" || request.method === "POST")) {
+      const app = await env.DB.prepare("SELECT a.id, a.stage FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE a.id = ? AND p.user_id = ?").bind(ivAppMatch[1], user.id).first();
+      if (!app) return json({ error: "application_not_found" }, 404);
+      if (request.method === "GET") {
+        const { results } = await env.DB.prepare("SELECT * FROM interviews WHERE application_id = ? ORDER BY scheduled_at = 0, scheduled_at, created_at").bind(app.id).all();
+        return json(results.map(ivRow));
+      }
+      const b = await readBody(request);
+      if (!b || typeof b !== "object" || !("kind" in b)) return json({ error: "invalid_kind" }, 400);
+      for (const k of ["result", "checklist"]) delete b[k]; // POST tạo vòng mới: luôn pending + checklist mặc định
+      const { error, f } = ivFields(b);
+      if (error) return json({ error }, 400);
+      const id = uid(), t = now();
+      const res = await env.DB.batch([
+        env.DB.prepare("INSERT INTO interviews (id, application_id, kind, round_label, scheduled_at, result, note, checklist, created_at) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?)")
+          .bind(id, app.id, f.kind, f.round_label || IV_KINDS[f.kind][0], f.scheduled_at || 0, f.note || null, JSON.stringify(IV_KINDS[f.kind][1].map((text) => ({ text, done: false }))), t),
+        // Event chèn trước UPDATE vì UPDATE đổi stage. Chỉ nâng new/saved/applied, không bao giờ hạ.
+        env.DB.prepare("INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT ?, id, 'stage_changed', json_object('from', stage, 'to', 'interview', 'via', 'interview_added'), ? FROM applications WHERE id = ? AND stage IN ('new','saved','applied')").bind(uid(), t, app.id),
+        env.DB.prepare("UPDATE applications SET stage = 'interview', updated_at = ? WHERE id = ? AND stage IN ('new','saved','applied')").bind(t, app.id),
+        env.DB.prepare("SELECT * FROM interviews WHERE id = ?").bind(id),
+      ]);
+      return json(ivRow(res[3].results[0]), 201);
+    }
+    const ivMatch = path.match(/^\/api\/interviews\/([^/]+)$/);
+    if (ivMatch && (request.method === "PATCH" || request.method === "DELETE")) {
+      const iv = await env.DB.prepare(`SELECT id FROM interviews WHERE id = ? AND application_id IN (${IV_OWNED})`).bind(ivMatch[1], user.id).first();
+      if (!iv) return json({ error: "interview_not_found" }, 404);
+      if (request.method === "DELETE") {
+        await env.DB.prepare("DELETE FROM interviews WHERE id = ?").bind(iv.id).run();
+        return json({ ok: true });
+      }
+      const { error, f } = ivFields(await readBody(request));
+      if (error) return json({ error }, 400);
+      const keys = Object.keys(f); // chỉ khoá đã qua ivFields (whitelist), an toàn để ghép tên cột
+      const row = keys.length
+        ? await env.DB.prepare(`UPDATE interviews SET ${keys.map((k) => `${k} = ?`).join(", ")} WHERE id = ? RETURNING *`).bind(...keys.map((k) => f[k]), iv.id).first()
+        : await env.DB.prepare("SELECT * FROM interviews WHERE id = ?").bind(iv.id).first();
+      return json(ivRow(row));
     }
 
     // --- privacy (T-62 + T-24): đồng ý tải CV, tắt AI, xoá CV, xoá tài khoản ---
@@ -2168,6 +2259,7 @@ export default {
           env.DB.prepare(`UPDATE applications SET stage = 'archived', note = COALESCE(note, '') || ' [tự đóng: im lặng 14 ngày]', updated_at = ? WHERE ${silent}`).bind(tn, cutoff, tn),
         ]);
       }
+      try { await env.DB.batch(NOTIFY_DUE.map((q) => env.DB.prepare(q).bind(now()))); } catch (e) { console.log("notify due error", e.message); }
       // Purge (nghĩa vụ xoá dữ liệu) trước enrichJd (tốn subrequest, có thể chạm trần) — S2 review 05/11.
       const { results: gone } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at < ?").bind(now() - DELETE_GRACE).all();
       for (const u of gone) { await purgeUser(env, u.id); console.log("purged user", u.id); }
