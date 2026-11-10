@@ -392,8 +392,8 @@ html[data-theme="dark"]{
 .lp-sec h2 em, .lp-hero h1 em{ font-style:italic; color:#9ba1a8; }
 .lp-sec .lede{ color:var(--muted); max-width:62ch; font-size:1.02rem; line-height:1.65; margin:0 auto; }
 /* Testimonial: marquee chỉ bằng CSS, 2 hàng ngược chiều; bản sao aria-hidden để lặp liền mạch. */
-#lp-testi[hidden]{display:none!important}
 #lp-testi{text-align:center}
+.testi-note{margin:.6rem auto 0;font-size:.85rem;color:var(--muted)}
 .testi{margin-top:2.4rem;display:grid;gap:16px}
 .testi-row{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
 .testi-track{display:flex;width:max-content;animation:testi-x 52s linear infinite}
@@ -1513,9 +1513,10 @@ html.fx-on .bg-fx{opacity:1}
 </section>
 
 <!-- Testimonial: 6 câu dưới đây là MẪU minh hoạ, không phải khách thật. Chủ sản phẩm thay bằng phản hồi thật rồi bỏ thuộc tính hidden. -->
-<section class="lp-sec" id="lp-testi" hidden data-testi-placeholder>
-  <h2 data-en="What developers say">Dev dùng JobPilot nói gì</h2>
-  <p class="lede" data-en="Short notes on the parts people use every day: scoring, skip suggestions, reminders and salary.">Vài nhận xét ngắn về những phần dùng hằng ngày: chấm điểm, gợi ý bỏ qua, nhắc việc và lương.</p>
+<section class="lp-sec" id="lp-testi">
+  <h2 data-en="How developers use JobPilot: examples">Ví dụ cách dev dùng JobPilot</h2>
+  <p class="lede" data-en="Everyday situations it helps with: scoring, skip suggestions, reminders and salary.">Những tình huống hằng ngày JobPilot giúp được: chấm điểm, gợi ý bỏ qua, nhắc việc và lương.</p>
+  <p class="testi-note" data-en="Illustrative examples, not reviews from real users.">Minh hoạ, không phải đánh giá của người dùng thật.</p>
   <div class="testi">
     <div class="testi-row">
       <div class="testi-track">
