@@ -66,7 +66,7 @@ kv.set('session:tokO', 'own'); kv.set('session:tokU', 'usr');
   assert.ok(!/@/.test(f.text.replace(/\s/g, '')) && !f.text.includes('secret'), 'không lộ email');
   const rows = JSON.parse(f.text).rows, fb = rows.find((r) => r.ref === 'fb');
   assert.deepStrictEqual({ ...fb, week: 0 }, { ref: 'fb', week: 0, signups: 2, activated: 1, cv_dropout: 1, profile_no_skills: 1, telegram_linked: 1,
-    d7_eligible: 2, d7_retained: 1, d30_eligible: 2, d30_retained: 1 });
+    d7_eligible: 2, d7_retained: 1, d30_eligible: 2, d30_retained: 1, quick_open: 0, quick_applied: 0 });
   assert.strictEqual(rows.find((r) => r.ref === 'direct').signups, 2 + 0 * 1, 'direct = u3 + a@x');
   assert.strictEqual(rows.find((r) => r.ref === 'direct').d7_eligible, 0, 'cohort mới chưa tính D7');
   console.log('funnel:', JSON.stringify({ queries: used, fb }));

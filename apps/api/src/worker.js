@@ -1552,7 +1552,9 @@ export default {
           SUM(EXISTS (SELECT 1 FROM profiles p WHERE p.user_id = u.id) AND NOT EXISTS (SELECT 1 FROM profiles p JOIN profile_skills s ON s.profile_id = p.id WHERE p.user_id = u.id)) AS profile_no_skills,
           SUM(telegram_chat_id IS NOT NULL) AS telegram_linked,
           SUM(created_at / 86400 + 7 <= ?1) AS d7_eligible, SUM(created_at / 86400 + 7 <= ?1 AND last_active_day >= created_at / 86400 + 7) AS d7_retained,
-          SUM(created_at / 86400 + 30 <= ?1) AS d30_eligible, SUM(created_at / 86400 + 30 <= ?1 AND last_active_day >= created_at / 86400 + 30) AS d30_retained
+          SUM(created_at / 86400 + 30 <= ?1) AS d30_eligible, SUM(created_at / 86400 + 30 <= ?1 AND last_active_day >= created_at / 86400 + 30) AS d30_retained,
+          SUM(EXISTS (SELECT 1 FROM application_events e JOIN applications a ON a.id = e.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = u.id AND e.type = 'quick_apply_open')) AS quick_open,
+          SUM(EXISTS (SELECT 1 FROM application_events e JOIN applications a ON a.id = e.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = u.id AND e.type = 'stage_changed' AND json_extract(e.payload, '$.via') = 'quick_apply')) AS quick_applied
         FROM users u WHERE deleted_at IS NULL GROUP BY ref, week ORDER BY week DESC, ref`).bind(today).all();
       return json({ today, rows: results });
     }
@@ -1819,6 +1821,27 @@ export default {
       ).bind(id, b.profile_id, b.job_id, b.stage || "new", b.note || null, now(), now()).run();
       const row = await env.DB.prepare("SELECT * FROM applications WHERE profile_id = ? AND job_id = ?").bind(b.profile_id, b.job_id).first();
       return json(row, 201);
+    }
+    // Nộp nhanh: JobPilot không nộp hộ. "open" = người dùng mở trang ứng tuyển thật (lưu 'saved' nếu chưa có, không đổi stage cũ);
+    // "applied" = người dùng xác nhận đã nộp: chỉ nâng new/saved/chưa có lên 'applied', không hạ stage cao hơn. 1 batch D1.
+    if (path === "/api/applications/quick" && request.method === "POST") {
+      const b = await readBody(request);
+      if (!(await ownsProfile(env, user, b.profile_id))) return json({ error: "profile_not_found" }, 404);
+      const visible = await env.DB.prepare("SELECT id FROM jobs WHERE id = ? AND (submitted_by IS NULL OR submitted_by = ?)").bind(b.job_id, user.id).first();
+      if (!visible) return json({ error: "job_not_found" }, 404);
+      if (b.action !== "open" && b.action !== "applied") return json({ error: "invalid_action" }, 400);
+      const id = uid(), t = now(), key = [b.profile_id, b.job_id];
+      const ins = (stage) => env.DB.prepare("INSERT INTO applications (id, profile_id, job_id, stage, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO NOTHING").bind(id, ...key, stage, t, t);
+      const sel = env.DB.prepare("SELECT * FROM applications WHERE profile_id = ? AND job_id = ?").bind(...key);
+      const stmts = b.action === "open" ? [ins("saved"),
+        env.DB.prepare("INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT ?, id, 'quick_apply_open', '{}', ? FROM applications WHERE profile_id = ? AND job_id = ?").bind(uid(), t, ...key),
+        sel] : [ins("new"),
+        // Event chèn trước UPDATE vì UPDATE đổi stage; from = null khi hàng vừa được tạo (trước đó chưa có).
+        env.DB.prepare("INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT ?, id, 'stage_changed', json_object('from', CASE WHEN id = ? THEN NULL ELSE stage END, 'to', 'applied', 'via', 'quick_apply'), ? FROM applications WHERE profile_id = ? AND job_id = ? AND stage IN ('new','saved')").bind(uid(), id, t, ...key),
+        env.DB.prepare("UPDATE applications SET stage = 'applied', applied_at = COALESCE(applied_at, ?), next_follow_up_at = COALESCE(next_follow_up_at, ?), updated_at = ? WHERE profile_id = ? AND job_id = ? AND stage IN ('new','saved')").bind(t, t + 7 * 86400, t, ...key),
+        sel];
+      const res = await env.DB.batch(stmts);
+      return json(res[res.length - 1].results[0]);
     }
     const appMatch = path.match(/^\/api\/applications\/([^/]+)$/);
     if (appMatch && request.method === "PATCH") {
