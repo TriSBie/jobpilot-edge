@@ -31,6 +31,11 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"JobPilot Edge","url":"https://jobpilot-edge.pages.dev/","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":["vi","en"],"description":"AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.","offers":{"@type":"Offer","price":"0","priceCurrency":"VND"}}</script>
 <style>
 /* ===== SIGNAL TOKENS (bước 1) — dán nguyên khối 1 từ spec ===== */
+/* CLS: font dự phòng có metric khớp webfont, swap không làm nhảy layout. Số đo bằng canvas measureText trên chuỗi VI */
+@font-face{font-family:"BVP Fallback";src:local("Arial Bold"),local("Arial-BoldMT");font-weight:600 700;size-adjust:99.9%;ascent-override:98.38%;descent-override:26.56%;line-gap-override:0%}
+@font-face{font-family:"Inter Fallback";src:local("Arial"),local("ArialMT");font-weight:100 400;size-adjust:105.36%;ascent-override:92.06%;descent-override:22.78%;line-gap-override:0%}
+@font-face{font-family:"Inter Fallback";src:local("Arial"),local("ArialMT");font-weight:500;size-adjust:107.26%;ascent-override:90.43%;descent-override:22.37%;line-gap-override:0%}
+@font-face{font-family:"Inter Fallback";src:local("Arial Bold"),local("Arial-BoldMT");font-weight:600 900;size-adjust:100.6%;ascent-override:96.42%;descent-override:23.86%;line-gap-override:0%}
 :root{
   --bg:#FFFFFF; --surface:#FFFFFF; --raised:#FAFAFA; --ink:#0A0A0A; --mute:#60646C; --line:rgba(0,0,0,.08);
   --brand:#4F5BD5; --brand-ink:#FFFFFF; --pop:#D43A3A; --pop-ink:#FFFFFF;
@@ -40,9 +45,9 @@
   --jp-ink:var(--ink); --jp-brand:var(--brand);
   --r-lg:12px; --r-md:10px; --r-sm:8px; --r-pill:999px;
   --bw:1px; --off:0px;
-  --f-display:"Be Vietnam Pro","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-head:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-display:"Be Vietnam Pro","BVP Fallback","Inter","Inter Fallback",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-head:"Inter","Inter Fallback",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Inter","Inter Fallback",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   --fs-1:13px; --fs-2:16px; --fs-3:20px; --fs-4:26px; --fs-5:44px;
   --tap:44px; --gap:12px; --pad:18px;
@@ -409,7 +414,7 @@ html[data-theme="dark"]{
 @media (prefers-reduced-motion:reduce){.testi-row,.testi-rev{position:static;width:auto;height:auto;clip:auto;white-space:normal;overflow:visible;-webkit-mask-image:none;mask-image:none}.testi-track{animation:none;width:auto;display:block}.testi-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:0}.testi-group.testi-clone{display:none}.testi-card{width:auto}}
 .lp-hero{ padding-top:clamp(3rem,8vh,5.5rem); }
 .lp-hero h1{ font-family:var(--f-head); font-weight:400; font-size:clamp(2.7rem,6.5vw,4.6rem); line-height:1.06; margin:1.2rem 0 1rem; }
-.lp-hero .sub{ color:var(--muted); max-width:60ch; font-size:1.08rem; line-height:1.65; margin:0 auto; }
+.lp-hero .sub{ color:var(--muted); max-width:37.8em; /* =60ch của Inter; em không đổi khi swap font -> không CLS */ font-size:1.08rem; line-height:1.65; margin:0 auto; }
 .lp-cta{ display:flex; gap:.8rem; margin-top:2rem; flex-wrap:wrap; justify-content:center; }
 .btn.ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
 .btn.big{ padding:.85rem 1.7rem; font-size:1rem; border-radius:999px; }
@@ -1190,9 +1195,25 @@ html[data-theme="dark"]{--spot:rgba(124,140,255,.05)} /* faint #787C84 trên tâ
 html.fx-on .bg-fx{opacity:1}
 /* reveal duy nhất: section landing nhích lên 16px khi vào khung nhìn; luôn nhìn thấy (opacity ≥ .6), chỉ CSS, không JS */
 @media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){
-  #landingView .lp-sec:not(.lp-hero){animation:lp-rise linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
+  #landingView .lp-sec:not(.lp-hero){animation:lp-rise 1ms linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
 }}
 @keyframes lp-rise{from{opacity:.6;transform:translateY(16px)}}
+/* Hero vào trang 1 lần: h1/sub chỉ transform (giữ opacity 1 cho LCP), CTA/trust mờ dần; nền nở nhẹ + parallax theo cuộn (không listener) */
+@media (prefers-reduced-motion:no-preference){
+  .lp-hero>h1,.lp-hero>.sub{animation:hero-rise var(--m-enter) var(--e-out) both}
+  .lp-hero>.medallion-img,.lp-hero>.lp-cta,.lp-hero>.lp-trust{animation:hero-in var(--m-enter) var(--e-out) both}
+  .lp-hero>.sub{animation-delay:60ms}.lp-hero>.lp-cta{animation-delay:120ms}.lp-hero>.lp-trust{animation-delay:180ms}
+  .lp-hero::before{animation:hero-bg 1.2s var(--e-out) both}
+  @supports (animation-timeline:view()){
+    .lp-hero{view-timeline:--hero block}
+    .lp-hero::before{animation:hero-bg 1.2s var(--e-out) both,hero-px 1ms linear both;animation-timeline:auto,--hero;animation-range:normal,exit 0% exit 100%}
+  }
+}
+@keyframes hero-rise{from{transform:translateY(8px)}}
+@keyframes hero-in{from{opacity:0;transform:translateY(8px)}}
+@keyframes hero-bg{from{scale:1.04}}
+@keyframes hero-px{to{translate:0 60px}}
+.testi-off .testi-track{animation-play-state:paused}
 @media (max-width:640px){
   .tabbar-row{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line-strong);color:var(--text)}
   .tabbar-row .tab{color:var(--muted);font-weight:500}
@@ -2397,6 +2418,12 @@ function withViewTransition(update, opts){
     else setTimeout(clear, 1000);
   } else { update(); clear(); }
 }
+/* Băng testimonial chỉ chạy khi trong khung nhìn (không tốn GPU khi đã cuộn qua) */
+(function initTestiIO(){
+  const el = document.querySelector("#lp-testi .testi");
+  if (!el || !("IntersectionObserver" in window)) return;
+  new IntersectionObserver(([e]) => el.classList.toggle("testi-off", !e.isIntersecting)).observe(el);
+})();
 /* Nền theo chuột: 1 listener, rAF + lerp; chỉ ghi --mx/--my lên .bg-fx (không recalc cả trang) */
 (function initBgFx(){
   const fx = document.querySelector(".bg-fx");
