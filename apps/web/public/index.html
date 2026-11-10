@@ -3198,11 +3198,13 @@ document.addEventListener("visibilitychange", () => {
   };
 });
 // Thẻ mời Telegram ở tab Việc làm: hồ sơ ≥3 kỹ năng, chưa liên kết, chưa bấm Để sau.
+const TG_CARD_ON = false;
 function tgCardRender(){
   const box = $("#tgCard"), p = currentProfile();
   if (!box) return;
   let off = false; try { off = !!localStorage.getItem("jp_tg_card_off"); } catch (e) { /* bỏ qua */ }
-  const show = !off && state.user && !state.user.telegram_linked && p && (p.skills || []).length >= 3;
+  // ponytail: tắt tới khi bot Telegram chung có token (prod trả 503); bật lại = đổi TG_CARD_ON thành true.
+  const show = TG_CARD_ON && !off && state.user && !state.user.telegram_linked && p && (p.skills || []).length >= 3;
   box.classList.toggle("hidden", !show);
   if (!show) { box.innerHTML = ""; return; }
   const strong = (state.jobs || []).find(j => j.match && j.match.tier === "strong");
