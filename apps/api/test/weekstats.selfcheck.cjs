@@ -1,7 +1,7 @@
 // Chạy: node apps/api/test/weekstats.selfcheck.cjs apps/api/src/worker.js
 // Kiểm cách tính cửa sổ 7 ngày trong worker.js bằng SQL tương đương trên mock rows (JS thuần).
 const fs = require('fs'), assert = require('assert');
-const src = fs.readFileSync(process.argv[2], 'utf8');
+const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8');
 assert(/const AUTO_CLOSE_DAYS = 14;/.test(src), 'AUTO_CLOSE_DAYS');
 assert(/stage = 'archived'.*\[tự đóng: im lặng 14 ngày\]/.test(src), 'cron UPDATE');
 assert(/INSERT INTO application_events .* FROM applications WHERE \$\{silent\}/.test(src), 'cron event');

@@ -1,7 +1,7 @@
 // Tự kiểm chấm điểm (T-46). Chạy: node apps/api/test/score.selfcheck.cjs apps/api/src/worker.js
 const fs = require('fs');
 const assert = require('assert');
-const src = fs.readFileSync(process.argv[2], 'utf8');
+const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8');
 
 function block(start) {
   const s = src.indexOf(start);

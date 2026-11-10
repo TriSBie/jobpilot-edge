@@ -1,6 +1,6 @@
 // Chạy: node apps/api/test/verdict.selfcheck.cjs apps/api/src/worker.js
 const fs = require('fs'), assert = require('assert');
-const src = fs.readFileSync(process.argv[2], 'utf8');
+const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8');
 const cut = (a) => { const s = src.indexOf(a); let d = 0; for (let j = src.indexOf('{', s); ; j++) { if (src[j] === '{') d++; else if (src[j] === '}' && --d === 0) return src.slice(s, j + 1); } };
 const EN = src.slice(src.indexOf('const EN = {'), src.indexOf('function tr(lang'));
 const { verdictFor } = new Function(EN + cut('function tr(') + cut('function verdictFor') + 'return { verdictFor };')();

@@ -873,6 +873,14 @@ async function tgDecrypt(env, enc, userId) {
   const raw = tgUnb64(enc);
   return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12), additionalData: new TextEncoder().encode(userId) }, await tgKey(env), raw.slice(12)));
 }
+// Thông báo trong app: ghi SAU khi gửi, lỗi chỉ log, không bao giờ ném vào queue handler (ném = retry = gửi Telegram trùng).
+async function notifWrite(fn) {
+  try { await fn(); } catch (e) { console.log("notif write", e.message); }
+}
+// Bot riêng hỏng: 1 dòng bot_broken chưa đọc là đủ, không chèn trùng.
+const notifyBotBroken = (env, userId, code) => notifWrite(() => env.DB.prepare(
+  "INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at) SELECT ?2, ?1, 'bot_broken', 'Bot @' || COALESCE(username, '') || ' ngừng hoạt động', ?3, NULL, ?4 FROM user_bots WHERE user_id = ?1 AND NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = ?1 AND type = 'bot_broken' AND is_read = 0)"
+).bind(userId, uid(), code, now()).run());
 // Gửi bằng bot riêng nếu có token_enc (dòng status 'ok'), không thì bot chung. Giải mã lỗi → 'broken'/key_changed, không gửi. 401 = khách đã thu hồi token → 'broken'.
 async function tgSendFor(env, userId, chatId, html, tokenEnc) {
   let token = null;
@@ -881,12 +889,14 @@ async function tgSendFor(env, userId, chatId, html, tokenEnc) {
     try { token = await tgDecrypt(env, tokenEnc, userId); } catch (_) {
       console.log("telegram: giải mã token bot riêng lỗi", userId);
       await env.DB.prepare("UPDATE user_bots SET status = 'broken', last_error = 'key_changed', checked_at = ? WHERE user_id = ?").bind(now(), userId).run();
+      await notifyBotBroken(env, userId, "key_changed");
       return 0;
     }
   }
   const st = await tgSend(env, chatId, html, token || env.TELEGRAM_BOT_TOKEN);
   if (token && st === 401) {
     await env.DB.prepare("UPDATE user_bots SET status = 'broken', last_error = 'token_revoked', checked_at = ? WHERE user_id = ?").bind(now(), userId).run();
+    await notifyBotBroken(env, userId, "token_revoked");
   }
   return st;
 }
@@ -984,6 +994,7 @@ async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
     const { results } = await env.DB.prepare(`SELECT u.id, u.telegram_chat_id, b.token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.id IN ${IN_JSON}`).bind(JSON.stringify([...new Set(alerts.map((x) => x.p.user_id))])).all();
     chat = new Map(results.map((u) => [u.id, u]));
   } catch (e) { console.log("telegram burst lỗi", e.message); return; }
+  const tgMarks = []; // trạng thái gửi, ghi gộp 1 batch SAU vòng gửi (1 truy vấn/lần chạy, giữ ngân sách D1)
   for (const { job, p, s } of alerts) {
     const { telegram_chat_id: chatId, token_enc: tokenEnc } = chat.get(p.user_id) || {};
     chat.delete(p.user_id); // tin sau của cùng người trong lô đã vướng tgburst, như vòng lặp cũ
@@ -991,9 +1002,12 @@ async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
     try {
       if (await env.KV.get("tgburst:" + p.user_id)) continue;
       await env.KV.put("tgburst:" + p.user_id, "1", { expirationTtl: 3600 });
-      await tgSendFor(env, p.user_id, chatId, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`, tokenEnc);
+      const st = await tgSendFor(env, p.user_id, chatId, `1 tin khớp mạnh mới: ${tgLink(job.source_url, job.title)} — ${tgEsc(job.company)} (${Math.round(s.finalScore)})`, tokenEnc);
+      tgMarks.push(env.DB.prepare("UPDATE notifications SET tg_status = ?, tg_at = ? WHERE user_id = ? AND type = 'strong_match' AND ref_id = ?")
+        .bind(st >= 200 && st < 300 ? "sent" : "failed", now(), p.user_id, job.id));
     } catch (e) { console.log("telegram burst lỗi", e.message); }
   }
+  if (tgMarks.length) await notifWrite(() => env.DB.batch(tgMarks));
 }
 
 // ---------------- ingest ----------------
@@ -1498,9 +1512,11 @@ export default {
       const profiles = [];
       for (const p of results) profiles.push(await profileWithSkills(env, p));
       const ownBot = await env.DB.prepare("SELECT username, status, last_error FROM user_bots WHERE user_id = ?").bind(user.id).first();
+      const nf = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM (SELECT 1 FROM notifications WHERE user_id = ?1 AND is_read = 0 LIMIT 10)) AS n, EXISTS (SELECT 1 FROM notifications WHERE user_id = ?1 AND type = 'bot_broken' AND is_read = 0) AS a").bind(user.id).first();
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
-        telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null }, profiles });
+        telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null,
+        unread_count: nf.n, has_attention: !!nf.a, jobs_seen_at: user.jobs_seen_at ?? null }, profiles });
     }
     if (path === "/api/auth/change-password" && request.method === "POST") { // T-22
       const b = await readBody(request);
@@ -1917,9 +1933,13 @@ export default {
     }
     if (path === "/api/me" && request.method === "PATCH") {
       const b = await readBody(request);
-      if (![0, 1, true, false].includes(b.ai_opt_out)) return json({ error: "invalid_ai_opt_out" }, 400);
-      await env.DB.prepare("UPDATE users SET ai_opt_out = ? WHERE id = ?").bind(b.ai_opt_out ? 1 : 0, user.id).run();
-      return json({ ai_opt_out: b.ai_opt_out ? 1 : 0 });
+      if (b.jobs_seen !== undefined && b.jobs_seen !== true) return json({ error: "invalid_jobs_seen" }, 400);
+      if ((b.ai_opt_out !== undefined || b.jobs_seen !== true) && ![0, 1, true, false].includes(b.ai_opt_out)) return json({ error: "invalid_ai_opt_out" }, 400);
+      const out = {}, stmts = [];
+      if (b.ai_opt_out !== undefined) { out.ai_opt_out = b.ai_opt_out ? 1 : 0; stmts.push(env.DB.prepare("UPDATE users SET ai_opt_out = ? WHERE id = ?").bind(out.ai_opt_out, user.id)); }
+      if (b.jobs_seen) { out.jobs_seen_at = now(); stmts.push(env.DB.prepare("UPDATE users SET jobs_seen_at = ? WHERE id = ?").bind(out.jobs_seen_at, user.id)); } // giờ do server đặt
+      await env.DB.batch(stmts);
+      return json(out);
     }
     if (path === "/api/me" && request.method === "DELETE") {
       const b = await readBody(request);
@@ -1974,8 +1994,24 @@ export default {
       if (pid && !(await ownsProfile(env, user, pid))) return json({ error: "profile_not_found" }, 404);
       return json(await buildDigest(env, user, lang, pid || null));
     }
+    if (path === "/api/notifications/read" && request.method === "POST") {
+      const b = await readBody(request);
+      const ids = b && Array.isArray(b.ids) && b.ids.length >= 1 && b.ids.length <= 50 && b.ids.every((x) => typeof x === "string" && x.length <= 64) ? b.ids : null;
+      if (!ids && !(b && b.all === true)) return json({ error: "invalid_body" }, 400);
+      const [, { results: [c] }] = await env.DB.batch([
+        ids ? env.DB.prepare(`UPDATE notifications SET is_read = 1 WHERE user_id = ? AND id IN ${IN_JSON}`).bind(user.id, JSON.stringify(ids))
+          : env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0").bind(user.id),
+        env.DB.prepare("SELECT COUNT(*) AS n FROM (SELECT 1 FROM notifications WHERE user_id = ? AND is_read = 0 LIMIT 10)").bind(user.id),
+      ]);
+      return json({ ok: true, unread_count: c.n });
+    }
     if (path === "/api/notifications") {
-      const { results } = await env.DB.prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").bind(user.id).all();
+      // Không tham số = như cũ (50 mới nhất). ponytail: con trỏ chỉ theo created_at, dòng trùng giây ở mép trang có thể sót; cần chặt thì thêm id vào con trỏ.
+      const qb = url.searchParams.get("before"), ql = url.searchParams.get("limit");
+      const before = qb === null ? null : Number(qb), limit = ql === null ? 50 : Number(ql);
+      if ((before !== null && !(Number.isInteger(before) && before > 0)) || !(Number.isInteger(limit) && limit >= 1 && limit <= 50)) return json({ error: "invalid_query" }, 400);
+      const { results } = await env.DB.prepare(`SELECT * FROM notifications WHERE user_id = ?${before !== null ? " AND created_at < ?" : ""}${url.searchParams.get("unread") === "1" ? " AND is_read = 0" : ""} ORDER BY created_at DESC LIMIT ${limit}`)
+        .bind(...(before !== null ? [user.id, before] : [user.id])).all();
       return json(results);
     }
 
@@ -2044,7 +2080,13 @@ export default {
           if (u) {
             const digest = await buildDigest(env, u, "vi", null, true);
             const msg = u.telegram_chat_id && formatDigestTg(digest);
-            if (msg) await tgSendFor(env, u.id, u.telegram_chat_id, msg, u.own_token_enc);
+            const st = msg ? await tgSendFor(env, u.id, u.telegram_chat_id, msg, u.own_token_enc) : null;
+            const n = (digest.strong || []).length + (digest.fresh || []).length;
+            if (n) await notifWrite(() => env.DB.batch([
+              env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? AND type = 'digest' AND is_read = 0").bind(u.id),
+              env.DB.prepare("INSERT INTO notifications (id, user_id, type, title, body, ref_id, created_at, tg_status, tg_at) VALUES (?, ?, 'digest', ?, NULL, NULL, ?, ?, ?)")
+                .bind(uid(), u.id, `Bản tin sáng: ${n} tin khớp`, now(), st === null ? null : st >= 200 && st < 300 ? "sent" : "failed", st === null ? null : now()),
+            ]));
           }
         }
         msg.ack();
@@ -2093,6 +2135,7 @@ export default {
     } else if (event.cron === "0 18 * * *") {
       const m = await backupToR2(env);
       console.log("backup", m.date, "subrequests", m.subrequests, "errors", JSON.stringify(m.errors));
+      try { await env.DB.prepare("DELETE FROM notifications WHERE created_at < ?").bind(now() - 90 * 86400).run(); } catch (e) { console.log("notif cleanup error", e.message); }
     }
   },
 
