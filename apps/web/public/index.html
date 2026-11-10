@@ -103,7 +103,7 @@ html[data-theme="dark"]{
   a{ text-underline-offset:3px; }
   .brief .bignum, .score-pill{ font-variant-numeric:tabular-nums; }
   .hidden{display:none!important}
-  dialog{max-width:min(520px,calc(100vw - 32px));border:1px solid var(--line-strong);border-radius:var(--r-lg);background:var(--surface);color:var(--text);padding:1.3rem;box-shadow:var(--off) var(--off) 0 var(--shadow)}
+  dialog{max-width:min(520px,calc(100vw - 32px));border:1px solid var(--line-strong);border-radius:var(--r-lg);background:var(--surface);color:var(--text);padding:1.3rem;box-shadow:var(--pop-shadow)}
   dialog::backdrop{background:rgba(4,5,6,.6)} dialog h3{margin:0 0 .4rem} dialog ul{padding-left:1.2rem;margin:.5rem 0} dialog li{margin:.3rem 0} dialog form{display:flex;gap:.55rem;justify-content:flex-end;margin-top:1rem}
   #lp-privacy dl div{margin:.6rem 0} #lp-privacy dt{font-weight:700} #lp-privacy dd{margin:0;color:var(--muted)}
   .muted{color:var(--muted)} .small{font-size:.85rem}
@@ -228,6 +228,7 @@ html[data-theme="dark"]{
   .submit-row .grow{flex:1;min-width:220px}
   .turnstile{margin-top:.9rem;min-height:65px;display:flex;justify-content:center} /* widget thật 300px cố định; card hẹp (360px) thì tràn vào padding card, không tràn trang */
   .submit-row .turnstile{margin-top:0;flex-basis:100%}
+  .submit-row .turnstile:empty{display:none}
 
   /* ---------- job rows ---------- */
   .jobs-list{display:flex;flex-direction:column;gap:10px}
@@ -282,9 +283,9 @@ html[data-theme="dark"]{
   .mv{min-width:var(--tap);min-height:var(--tap);border-radius:50%;border:var(--bw) solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:13px;line-height:1;cursor:pointer}@media (hover:hover) and (pointer:fine){
   .mv:hover:not(:disabled){border-color:var(--ink)}}
   .mv:disabled{opacity:.35;cursor:default}
-  .score-pill{white-space:nowrap;font-size:12px;font-weight:700;border-radius:var(--r-pill);padding:3px 9px;border:var(--bw) solid var(--line);background:transparent;color:var(--mute)}
+  .score-pill{white-space:nowrap;font-size:12px;font-weight:500;border-radius:var(--r-pill);padding:3px 9px;border:var(--bw) solid var(--line);background:transparent;color:var(--mute)}
   .score-pill.strong{background:var(--mint);color:var(--mint-ink);border-color:transparent}
-  .score-pill.partial{border-color:var(--ink);color:var(--ink)}
+  .score-pill.partial{background:var(--sun);color:var(--sun-ink);border-color:transparent}
   .kmore{min-height:var(--tap);border-radius:var(--r-pill);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:500 13px var(--f-body);cursor:pointer}
   @media (max-width:640px){
     .kanban{grid-template-columns:repeat(7,85vw);scroll-snap-type:x mandatory}
@@ -339,7 +340,7 @@ html[data-theme="dark"]{
     animation:pal-box-in var(--m-base) var(--e-out) both;
   }
   /* theo theme: hộp tối cố định làm chữ ink/muted chìm ở light (sel item không đọc được) */
-  .pal-box{background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--off) var(--off) 0 var(--shadow)}
+  .pal-box{background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--pop-shadow)}
   .pal-item{min-height:var(--tap);color:var(--text)}
   .pal-item>span:first-child{min-width:0}
   .pal-item .hint{flex:none;white-space:nowrap;color:var(--mute)}
@@ -467,7 +468,7 @@ html[data-theme="dark"]{
 /* ================= AUTH (v3) ================= */
 .auth-tabs{ display:flex; gap:.4rem; padding:.35rem; border:1px solid var(--line); border-radius:999px; margin-bottom:1.2rem; background:rgba(var(--ov),.03); }
 .auth-tabs button{ flex:1; border:0; background:transparent; color:var(--muted); padding:.55rem 1rem; border-radius:999px; cursor:pointer; font:inherit; font-size:.95rem; }
-.auth-tabs button.active{ background:var(--brand); color:var(--brand-ink); font-weight:700; }
+.auth-tabs button.active{ background:var(--raised); color:var(--text); font-weight:500; box-shadow:var(--soft), inset 0 0 0 1px var(--line-strong); }
 .pw-meter{ height:6px; border-radius:var(--r-pill); background:rgba(var(--ov),.08); overflow:hidden; margin-top:.5rem; }
 .pw-meter i{ display:block; height:100%; width:0; border-radius:var(--r-pill); background:#e5534b; transition:width var(--m-base) var(--e-out), background var(--m-base) var(--e-out); }
 .pw-hint{ font-size:.8rem; color:var(--muted); margin-top:.35rem; min-height:1em; }
@@ -548,23 +549,19 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .lp-foot{ align-items:center; }
 .lp-foot a, html[data-theme="light"] .lp-foot a{ color:var(--text); text-decoration:underline; }
 
-/* ================= TYPOGRAPHY: Unbounded + Manrope (Signal) ================= */
-.lp-hero h1{ font-weight:600; font-size:clamp(3rem,7vw,5.3rem); line-height:1.03; letter-spacing:-.03em; }
-.lp-sec h2{ font-weight:600; letter-spacing:-.025em; }
+/* ================= TYPOGRAPHY: Inter (UI REFRESH) ================= */
 .lp-hero h1 em, .lp-sec h2 em, .login-in h1 em{ font-style:normal;
   background:var(--brand);
   -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
-.lp-card .n{ font-style:normal; font-weight:700; }
-.lp-card h3, .lp-step h3{ font-family:var(--f-head); font-weight:600; letter-spacing:-.01em; }
+.lp-card .n{ font-style:normal; font-weight:600; }
 .lp-formula{ font-family:var(--f-head); }
 .lp-logo, .logo{ font-family:var(--f-head); letter-spacing:-.01em; }
 .lp-logo i, .logo i{ font-style:normal; }
 .login-in h1{ font-weight:600; letter-spacing:-.02em; }
-.brief .bignum{ font-weight:700; letter-spacing:-.02em; }
+.brief .bignum{ font-weight:600; letter-spacing:-.02em; }
 .brief h3{ font-family:var(--f-head); letter-spacing:-.01em; }
-.page-title{ font-family:var(--f-head); font-weight:700; letter-spacing:-.02em; }
 .ring-wrap text{ font-family:var(--f-head); }
-.lp-cta h2{ font-weight:700; letter-spacing:-.025em; }
+.lp-cta h2{ font-weight:600; letter-spacing:-.025em; }
 .lp-lede, .lp-sec .lede{ font-size:1.13rem; }
 
 /* ================= PHASE 2 ================= */
@@ -603,12 +600,12 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .chip.on{border-color:var(--ink)}
   #jobsContainer .chip.off{color:var(--mute)}
   #jobsContainer .chip.flag{border-color:var(--pop)}
-  .vd{display:inline-block;margin:6px 0 2px;padding:2px 10px;border:2px solid transparent;border-radius:var(--r-pill);font-size:13px;font-weight:700}
+  .vd{display:inline-block;margin:6px 0 2px;padding:2px 10px;border:1px solid transparent;border-radius:var(--r-pill);font-size:13px;font-weight:700}
   .vd.apply{background:var(--mint);color:var(--mint-ink)} .vd.apply_if{background:var(--sun);color:var(--sun-ink)} .vd.skip{background:transparent;border-color:var(--mute);color:var(--mute)}
   #jobsContainer .chip.flag.sun{border-color:var(--sun)}
   #jobsContainer .chip.flag.mute{border-color:var(--line);color:var(--mute)}
   #jobsContainer .chip.src{background:var(--bg);color:var(--mute)}
-  .card{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--off) var(--off) 0 var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),6) * 45ms)}
+  .card{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--soft);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),6) * 45ms)}
   .card .ttl{font:600 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
   .card .ttl a{color:inherit;text-decoration:none}@media (hover:hover) and (pointer:fine){
   .card .ttl a:hover{text-decoration:underline}}
@@ -637,7 +634,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .btn:not(.primary),.toolbar .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
   #jobsContainer .btn.p,.toolbar .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
   #jobsContainer .btn.sm,.toolbar .btn.sm{min-height:36px;padding:0 14px;font-size:13px}
-  #jobsContainer .btn:active,.toolbar .btn:active{transform:translate(2px,2px)}
+  #jobsContainer .btn:active,.toolbar .btn:active{transform:scale(.98)}
   #jobsContainer .btn:disabled,.toolbar .btn:disabled{opacity:.45;cursor:not-allowed}
   @media (max-width:640px){
     .list{grid-template-columns:1fr}
@@ -663,7 +660,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .topbar .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
   .topbar .btn.sm{min-height:36px;padding:0 14px;font-size:13px}
   .topbar .btn.ghost{background:transparent;color:var(--brand);border-color:transparent}
-  .topbar .btn:active{transform:translate(2px,2px)}
+  .topbar .btn:active{transform:scale(.98)}
   .tabbar-row{display:flex;gap:8px;flex-wrap:wrap}
   .tabbar-row .tab{width:auto}
   .src-status{display:flex;align-items:center;gap:.45rem;font-size:.78rem;color:var(--faint);padding:.5rem 0}
@@ -695,12 +692,11 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .alert-item .meta{font-size:13px;font-weight:500}
   .alert-item .alert-btns{display:flex;gap:8px;flex-wrap:wrap}
   .alert .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:0 14px;border-radius:var(--r-pill);font:500 13px var(--f-body);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer}
-  .alert .btn:active{transform:translate(2px,2px)}
+  .alert .btn:active{transform:scale(.98)}
   .alert .btn.ink{background:var(--ink);border-color:var(--ink);color:var(--surface)}
   .alert .btn.ghost{background:transparent;color:var(--sun-ink);border-color:transparent}
-  .toast{display:inline-flex;align-items:center;gap:10px;min-height:var(--tap);background:var(--ink);color:var(--surface);border:none;border-radius:var(--r-md);padding:12px 16px;font-weight:700;box-shadow:6px 6px 0 var(--brand)}
+  .toast{display:inline-flex;align-items:center;gap:10px;min-height:var(--tap);background:var(--ink);color:var(--surface);border:none;border-radius:var(--r-md);padding:12px 16px;font-weight:500;box-shadow:var(--pop-shadow)}
   .toast.ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint);flex:none}
-  .toast.err{box-shadow:6px 6px 0 var(--pop)}
   .toast.err::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pop);flex:none}
   .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;align-self:stretch;min-width:var(--tap);margin:-12px -16px -12px 0;padding:0 16px 0 8px}
   .tabbar-row .tab:focus-visible,.toast-x:focus-visible{outline-color:var(--sun)} /* outline brand chìm trên nền ink */@media (hover:hover) and (pointer:fine){
@@ -732,7 +728,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #tab-profile .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
   #tab-profile .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}@media (hover:hover) and (pointer:fine){
   #tab-profile .btn.ghost:hover{color:var(--ink)}}
-  #tab-profile .btn:active{transform:translate(2px,2px)}
+  #tab-profile .btn:active{transform:scale(.98)}
   #tab-profile button:focus-visible{outline:none;box-shadow:var(--focus)}
   .skill{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;padding:8px 0;border-bottom:var(--bw) dashed var(--line)}
   .skill b{font:600 15px var(--f-head);color:var(--ink);overflow-wrap:anywhere}
@@ -771,7 +767,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #tab-profile .tile .num{font:600 26px/1.15 var(--f-head);color:var(--brand);font-variant-numeric:tabular-nums}
   #tab-profile .tile span{display:block;font-weight:600;margin-top:4px;text-wrap:balance}
   #tab-profile .tile small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
-  #tab-profile .bench-note{border:2px dashed var(--line);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
+  #tab-profile .bench-note{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
   #tab-profile .bench-card{container-type:inline-size}
   /* bộ lọc: 1 cột khi thẻ hẹp, 2 hàng (vị trí+cấp bậc / khu vực+nút) ở giữa, 1 hàng khi rộng */
   #tab-profile .bench-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center}
@@ -782,7 +778,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 
   /* ===== KANBAN DRAG & DROP (desktop, HTML5) ===== */
   .kcard[draggable="true"]{cursor:grab}
-  .kcard.dragging{opacity:.45;cursor:grabbing;transform:scale(1.02);box-shadow:var(--off) var(--off) 0 var(--shadow)}
+  .kcard.dragging{opacity:.45;cursor:grabbing;transform:scale(1.02);box-shadow:var(--pop-shadow)}
   .kcol.drop-target{outline:2px dashed var(--brand);outline-offset:-2px}
 
   /* ===== LOGO CHROME MARK (header landing) ===== */
@@ -808,7 +804,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .kcol.col-flash{animation:col-flash var(--m-enter) var(--e-out)}
   @keyframes count-bump{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
   .kcol-head .count.count-bump{animation:count-bump var(--m-slow) var(--e-out)}
-  .kdrop{border:2px dashed var(--brand);border-radius:var(--r-md);background:rgba(45,75,255,.06)}
+  .kdrop{border:1px dashed var(--brand);border-radius:var(--r-md);background:rgba(45,75,255,.06)}
   
   
   #jobsContainer.no-anim .card,#jobsContainer.no-anim .job{animation:none}
@@ -981,7 +977,7 @@ html{scroll-padding-top:96px}
 .lp-mv-chip{border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;font-size:.82rem;color:var(--muted);background:rgba(var(--ov),.03)}
 .lp-mv-arrow{color:var(--muted)}
 .lp-mv-input{flex:1;min-width:12rem;border:1px solid var(--line);border-radius:var(--r-sm);padding:.55rem .8rem;font-size:.88rem;color:var(--muted);background:rgba(var(--ov),.03)}
-.kph{border:1.5px dashed var(--line-strong);border-radius:var(--r-md);padding:.9rem;text-align:center;color:var(--muted);font-size:.88rem}.demo-kbody:has(.demo-kcard) .kph{display:none}
+.kph{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:.9rem;text-align:center;color:var(--muted);font-size:.88rem}.demo-kbody:has(.demo-kcard) .kph{display:none}
 #lp-scoring{background:linear-gradient(180deg, rgba(var(--ov),.04), rgba(var(--ov),.01))}
 #lp-compare h2{font-size:clamp(2.1rem,4.8vw,3.3rem)}
 @media (max-width:640px){ .rv-slide{transform:translateY(12px)} .lp-mini-vis{gap:.4rem} }
@@ -1060,7 +1056,6 @@ html[data-theme="light"] .job::after{ box-shadow:0 14px 32px rgba(13,20,36,.12);
 .tile::after{ box-shadow:0 14px 30px rgba(0,0,0,.18); }
 button.chip::after{ box-shadow:0 8px 20px rgba(0,0,0,.16); }
 .demo-kcard::after{ box-shadow:0 12px 28px rgba(0,0,0,.16); }
-.card::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:var(--off) var(--off) 0 var(--shadow); }
 .kcard::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 10px 24px rgba(0,0,0,.18); opacity:0; transition:opacity var(--dur-card) var(--ease-out); }
 html[data-theme="light"] .kcard::after{ box-shadow:0 10px 24px rgba(13,20,36,.12); }
 /* M1 — spotlight: glow + vòng sáng theo chuột, chỉ opacity (JS ghi --mx/--my, chỉ pointer:fine) */
@@ -1128,10 +1123,9 @@ body:has(#landingView:not(.hidden)){ background:var(--bg); }
 /* App: nền phẳng như landing; chưa có hồ sơ thì giấu bộ lọc và ô dán link. */
 body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:var(--bg); }
 #tab-jobs.no-profile .toolbar, #tab-jobs.no-profile #submitForm{ display:none; }
-/* Morning brief theo đúng ngôn ngữ thẻ của app: viền mực, bóng cứng, không gradient, nhãn viết thường. */
+/* Morning brief: hairline + bóng mềm như thẻ app. */
 .brief{ padding:0; background:none; animation:none; }
-.brief-in{ background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--off) var(--off) 0 var(--shadow); }
-html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--off) var(--off) 0 var(--shadow); }
+.brief-in{ background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--soft); }
 .brief .lbl{ text-transform:none; letter-spacing:0; font-size:.9rem; font-weight:700; color:var(--mute); }
 #landingView .lp-card::before, #landingView .lp-card::after, #landingView .lp-cta::before{ content:none !important; }
 #landingView .lp-sec{ background:none; }
@@ -1151,9 +1145,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 #landingView .lp-links a{ color:var(--ink); }
 #landingView .lp-links a:hover{ color:var(--brand); }
 /* 2 chỗ nhấn: khung tin thật + nút chính. */
-#landingView .btn.primary{ background:var(--brand); color:var(--brand-ink); border:1px solid var(--line-strong); box-shadow:4px 4px 0 var(--shadow); }
-#landingView .btn.primary:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--shadow); }
-.sg-live{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--off) var(--off) 0 var(--shadow); padding:1.1rem 1.2rem; }
+.sg-live{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--soft); padding:1.1rem 1.2rem; }
 .sg-live-head{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
 .sg-live-head b{ font-family:var(--f-head); font-size:1.05rem; }
 .sg-dot{ width:10px; height:10px; border-radius:50%; background:var(--mint); border:1px solid var(--line-strong); flex:none; }
@@ -1161,7 +1153,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .sg-center{ text-align:center; margin-top:1rem; }
 .sg-live-who{ margin:.5rem 0 .9rem; color:var(--mute); font-size:.92rem; }
 .sg-live-who b{ color:var(--ink); }
-.sg-try{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--off) var(--off) 0 var(--shadow); padding:1.1rem 1.2rem; }
+.sg-try{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--soft); padding:1.1rem 1.2rem; }
 .sg-try fieldset{ border:0; margin:.6rem 0; padding:0; min-width:0; }
 .sg-try legend{ font-weight:700; padding:0; margin-bottom:.4rem; }
 .sg-try-sk{ display:flex; flex-wrap:wrap; gap:.4rem; }
@@ -1180,7 +1172,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .sg-job a:hover{ text-decoration:underline; }
 .sg-job .sg-meta{ grid-column:1; color:var(--mute); font-size:.84rem; }
 .sg-job .sg-chips{ grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:.35rem; }
-.sg-job .score-pill{ grid-row:1 / span 2; grid-column:2; align-self:start; font-size:.95rem; padding:.3rem .7rem; border-color:var(--ink); }
+.sg-job .score-pill{ grid-row:1 / span 2; grid-column:2; align-self:start; font-size:.95rem; padding:.3rem .7rem; }
 .sg-chip{ font-size:.78rem; font-weight:600; border-radius:var(--r-pill); padding:.15rem .55rem; border:var(--bw) solid var(--line); color:var(--mute); }
 .sg-chip.ok{ border-color:var(--ink); color:var(--ink); }
 .sg-chip.warn{ border-color:var(--sun); color:var(--ink); }
@@ -1222,7 +1214,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .sg-box h3{ margin:0 0 .5rem; font-size:1rem; }
 .sg-box p{ margin:0; color:var(--mute); line-height:1.6; }
 @media (max-width:640px){
-  .sg-live{ box-shadow:4px 4px 0 var(--shadow); padding:.9rem; }
+  .sg-live{ padding:.9rem; }
   .sg-why, .sg-formula, .sg-box{ padding:.9rem; }
 }
 /* ===== Thông báo: chuông + bảng; tin mới ở tab Việc làm ===== */
@@ -1232,7 +1224,7 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 .nf-bell svg{width:18px;height:18px}
 .nf-badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:var(--r-pill);background:var(--brand);color:var(--brand-ink);font:700 11px/16px var(--f-body);text-align:center;border:2px solid var(--bg)}
 .nf-badge.attn{background:#d43a3a;color:#fff}
-.nf-panel{position:absolute;right:0;top:calc(100% + 8px);width:380px;max-height:min(560px,calc(100vh - 96px));display:flex;flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--off) var(--off) 0 var(--shadow);z-index:120;overflow:hidden}
+.nf-panel{position:absolute;right:0;top:calc(100% + 8px);width:380px;max-height:min(560px,calc(100vh - 96px));display:flex;flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--pop-shadow);z-index:120;overflow:hidden}
 .nf-head{display:flex;align-items:center;gap:6px;padding:10px 8px 6px 16px}
 .nf-head h2{margin:0;flex:1;font:600 16px var(--f-head)}
 .topbar .nf-head .btn{padding:0 10px}
@@ -1269,15 +1261,13 @@ html[data-theme="light"] .brief-in{ background:var(--surface); box-shadow:var(--
 #jobsContainer .chip.new{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:700}
 .new-pill{display:inline-flex;align-items:center;gap:8px;min-height:var(--tap);padding:0 16px;margin:0 0 12px;border-radius:var(--r-pill);border:var(--bw) solid var(--brand);background:var(--surface);color:var(--brand);font:500 14px var(--f-body);cursor:pointer}
 .new-pill[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
-.card.nf-hl{box-shadow:0 0 0 3px var(--brand),var(--off) var(--off) 0 var(--shadow)}
+.card.nf-hl{box-shadow:var(--focus)}
 /* ===== UI REFRESH: SaaS tối giản (Inter, viền hairline, 1 accent indigo) ===== */
 body{font-feature-settings:"cv11","ss01"}
 .score,.score-pill,.brief .bignum,kbd,#tab-profile .tile .num,.sg-why .total,.lp-card .n,.lp-tour-step .n,.bench-stat b,.demo-final b,.why .row .n,.ring-wrap text,.nf-badge,.lp-formula,.sg-formula,.lp-step .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
 kbd{border-bottom-width:1px;font-size:.72rem}
 /* bề mặt: hairline + bóng mềm, không bóng lệch */
 .card,.kcard,.brief-in,.sg-live,.sg-try,#tab-profile .tile,#landingView .demo-kcard{border-color:var(--line);box-shadow:var(--soft)}
-dialog,.pal-box,.nf-panel{border-color:var(--line-strong);box-shadow:var(--pop-shadow)}
-.kcard.dragging{box-shadow:var(--pop-shadow)}
 .input,select.input{border-color:var(--line-strong);font-weight:400}
 /* nút: primary là pill sáng trên nền tối (pill đen trên nền sáng); hover dùng accent */
 .btn.primary,#landingView .btn.primary{background:var(--ink);color:var(--bg);border:1px solid transparent;box-shadow:none;font-weight:500}
@@ -1294,14 +1284,11 @@ dialog,.pal-box,.nf-panel{border-color:var(--line-strong);box-shadow:var(--pop-s
 .why .row .n.g,html[data-theme="dark"] .why .row .n.g{color:var(--mint-ink)}
 .why .row .n.y,html[data-theme="dark"] .why .row .n.y,html[data-theme="dark"] .kcard .c.due{color:var(--sun-ink)}
 .kcard.warn,.sg-chip.warn,#jobsContainer .chip.flag.sun{border-color:var(--sun-ink)}
-.vd{font-weight:500;border-width:1px}
+.vd{font-weight:500}
 .toast.ok::before,.lp-trust li::before,.sg-dot{background:var(--mint-ink);border:0}
 .alert{border:1px solid var(--line)}
 .alert b{font-weight:600}
-/* toast: đảo màu, không bóng lệch */
-.toast,.toast.err{box-shadow:var(--pop-shadow);font-weight:500}
 .toast-x:focus-visible{outline-color:currentColor}
-.card.nf-hl{box-shadow:var(--focus)}
 /* chữ: tiêu đề 500–600, chữ lớn khít -0.02em */
 .page-title{font-weight:600;letter-spacing:-.02em}
 .lp-nav .brand{font-weight:600}
@@ -1328,6 +1315,16 @@ dialog,.pal-box,.nf-panel{border-color:var(--line-strong);box-shadow:var(--pop-s
 .brief .bignum em{font-style:normal;color:var(--brand)}
 html[data-theme] .lp-shot{background:var(--surface);border:1px solid var(--line);box-shadow:var(--pop-shadow)}
 /* tab bar mobile: nền mờ + hairline thay pill mực */
+
+/* cuộn mượt cho anchor/nav; quầng sáng theo chuột (chỉ transform, tắt ở touch/reduced-motion) */
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+:root{--spot:rgba(79,91,213,.035)}
+html[data-theme="dark"]{--spot:rgba(124,140,255,.05)} /* faint #787C84 trên tâm quầng: 4.55:1 (≥AA); .08 chỉ 4.40 */
+.bg-fx{position:fixed;left:0;top:0;z-index:-1;width:1200px;height:1200px;margin:-600px 0 0 -600px;pointer-events:none;opacity:0;transition:opacity .6s;
+  background:radial-gradient(closest-side,var(--spot),transparent);transform:translate3d(var(--mx,50vw),var(--my,30vh),0);will-change:transform}
+html.fx-on .bg-fx{opacity:1}
+.lp-hero::before{-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%),radial-gradient(260px circle at var(--hx,-999px) var(--hy,-999px),#000,transparent 75%);
+  mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%),radial-gradient(260px circle at var(--hx,-999px) var(--hy,-999px),#000,transparent 75%)}
 @media (max-width:640px){
   .tabbar-row{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line-strong);color:var(--text)}
   .tabbar-row .tab{color:var(--muted);font-weight:500}
@@ -1339,6 +1336,7 @@ html[data-theme] .lp-shot{background:var(--surface);border:1px solid var(--line)
 </style>
 </head>
 <body>
+<div class="bg-fx" aria-hidden="true"></div>
 <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
   <!-- JobPilot Edge icon system. 24-grid, stroke 2.5, round caps/joins, currentColor.
        15 items = 16 symbols (chevron counts as one item, two symbols). -->
@@ -2402,6 +2400,51 @@ function withViewTransition(update, opts){
     else setTimeout(clear, 1000);
   } else { update(); clear(); }
 }
+/* Nền theo chuột: 1 listener, rAF + lerp; ghi --mx/--my lên .bg-fx (không recalc cả trang) và --hx/--hy lên hero để lưới sáng dưới con trỏ */
+(function initBgFx(){
+  const fx = document.querySelector(".bg-fx"), hero = document.querySelector(".lp-hero");
+  if (!fx || !matchMedia("(hover: hover) and (pointer: fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.documentElement.classList.add("fx-on");
+  let tx = innerWidth / 2, ty = innerHeight * .3, x = tx, y = ty, raf = 0;
+  function frame(){
+    x += (tx - x) * .18; y += (ty - y) * .18;
+    const r = hero && hero.offsetParent ? hero.getBoundingClientRect() : null; // đọc trước, ghi sau: không ép layout
+    fx.style.setProperty("--mx", x.toFixed(1) + "px"); fx.style.setProperty("--my", y.toFixed(1) + "px");
+    if (r) { hero.style.setProperty("--hx", (x - r.left - (r.width - Math.min(1100, innerWidth)) / 2).toFixed(1) + "px"); hero.style.setProperty("--hy", (y - r.top).toFixed(1) + "px"); }
+    raf = Math.abs(tx - x) + Math.abs(ty - y) > .5 ? requestAnimationFrame(frame) : 0;
+  }
+  addEventListener("pointermove", (e) => { if (e.pointerType !== "mouse") return; tx = e.clientX; ty = e.clientY; if (!raf) raf = requestAnimationFrame(frame); }, { passive: true });
+})();
+/* Cuộn quán tính nhẹ cho bánh xe chuột (kiểu Lenis). Bỏ qua: touch, reduced-motion, ctrl (zoom), trong vùng tự cuộn, trackpad.
+   Ai khác cuộn trang (anchor, phím, kéo thanh cuộn, scrollIntoView) thì frame sau tự dừng và lấy lại vị trí thật. */
+(function initWheel(){
+  if (!matchMedia("(pointer: fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let target = 0, cur = 0, last = 0, raf = 0;
+  const inScroller = (el) => {
+    for (; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+      if (el.matches("textarea,select,dialog,[contenteditable],.nf-panel,#palette")) return true;
+      const st = getComputedStyle(el);
+      if (/auto|scroll/.test(st.overflowY) && el.scrollHeight > el.clientHeight + 1) return true; // vùng tự cuộn giữ hành vi gốc
+    }
+    return false;
+  };
+  function step(){
+    if (Math.abs(scrollY - last) > 2) { raf = 0; return; }
+    cur += (target - cur) * .16;
+    if (Math.abs(target - cur) < .5) cur = target;
+    window.scrollTo({ top: cur, behavior: "instant" }); last = scrollY;
+    raf = cur === target ? 0 : requestAnimationFrame(step);
+  }
+  addEventListener("wheel", (e) => {
+    // ponytail: trackpad đoán bằng delta pixel nhỏ (<40); chuột Windows/Chrome = 100/nấc. Lệch thì chỉ mất làm mượt, không hỏng cuộn.
+    if (e.ctrlKey || e.defaultPrevented || Math.abs(e.deltaX) > Math.abs(e.deltaY) || (e.deltaMode === 0 && Math.abs(e.deltaY) < 40) || inScroller(e.target)) return;
+    e.preventDefault();
+    if (!raf) target = cur = last = scrollY;
+    const d = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
+    target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, target + d));
+    if (!raf) raf = requestAnimationFrame(step);
+  }, { passive: false });
+})();
 /* MOTION-ALL M1 — spotlight: 1 listener delegated, rAF-throttle, chỉ pointer:fine, không reduced-motion, loại .kcard */
 (function initSpotlight(){
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -2427,7 +2470,7 @@ function showLanding(){
     $("#authView").classList.add("hidden");
     $("#appView").classList.add("hidden");
     $("#landingView").classList.remove("hidden");
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
     focusEl("#landingView .lp-hero h1");
     initLandingFx();
   }, { sharedBrand: true });
@@ -2437,7 +2480,7 @@ function showAuth(mode){
     $("#landingView").classList.add("hidden");
     $("#appView").classList.add("hidden");
     $("#authView").classList.remove("hidden");
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
     focusEl("#authTitle");
     setAuthMode(mode || "login");
   }, { sharedBrand: true });
@@ -2447,7 +2490,7 @@ function showApp(){
     $("#landingView").classList.add("hidden");
     $("#authView").classList.add("hidden");
     $("#appView").classList.remove("hidden");
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
     focusEl("#appView section:not(.hidden) h2");
   }, { sharedBrand: true });
 }
