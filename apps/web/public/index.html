@@ -299,25 +299,25 @@ html[data-theme="dark"]{
   .card-p h3 .gray{color:var(--faint);font-weight:500}
   .field{margin-top:.95rem} .field:first-of-type{margin-top:0}
   /* Hồ sơ: 1 cột < 1024, 2 cột từ 1024 (Kỹ năng cao nhất chiếm cột phải, Benchmark xếp dưới Thông tin hồ sơ ở cột trái) */
-  #tab-profile .page-sub{max-width:60ch}
+  :is(#tab-profile,#tab-account) .page-sub{max-width:60ch}
   @media (min-width:1024px){
-    #tab-profile .pf-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr} /* #id: thắng rule .pf-grid 1 cột (SIGNAL 6) nằm phía dưới */
+    :is(#tab-profile,#tab-account) .pf-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr} /* #id: thắng rule .pf-grid 1 cột (SIGNAL 6) nằm phía dưới */
     .pf-grid>:nth-child(2){grid-column:2;grid-row:1/span 2}
     .pf-grid>:nth-child(3){grid-column:1;grid-row:2}
   }
-  #tab-profile .field{margin-top:0} #tab-profile .field+.field{margin-top:16px}
+  :is(#tab-profile,#tab-account) .field{margin-top:0} :is(#tab-profile,#tab-account) .field+.field{margin-top:16px}
   #tgOwn{margin-top:14px} #tgOwn summary{cursor:pointer;padding:10px 0;font:600 14px/1.3 var(--f-body);color:var(--ink)}
   #tgOwn p{margin:.2rem 0 0} #tgOwnStatus{min-height:1.2em;margin-top:.6rem!important;color:var(--ink);overflow-wrap:anywhere} #tgOwnActions{margin-top:.5rem}
   #tgOwn label{display:block;margin:10px 0 6px;font:600 13px/1.3 var(--f-body);color:var(--mute)}
-  #tab-profile .field label,#tab-profile .pf-sep>label{font:600 13px/1.3 var(--f-body);color:var(--mute);margin:0 0 6px}
-  #tab-profile .field small{display:block;margin-top:6px;font:500 12px/1.4 var(--f-body);color:var(--mute)}
-  #tab-profile .field .chips{margin:0 0 8px;gap:8px}
-  #tab-profile .input::placeholder{color:var(--mute);opacity:1}
+  :is(#tab-profile,#tab-account) .field label,:is(#tab-profile,#tab-account) .pf-sep>label{font:600 13px/1.3 var(--f-body);color:var(--mute);margin:0 0 6px}
+  :is(#tab-profile,#tab-account) .field small{display:block;margin-top:6px;font:500 12px/1.4 var(--f-body);color:var(--mute)}
+  :is(#tab-profile,#tab-account) .field .chips{margin:0 0 8px;gap:8px}
+  :is(#tab-profile,#tab-account) .input::placeholder{color:var(--mute);opacity:1}
   .inline-row .grow:has(#newProfileName){flex:999 1 200px} #createProfileBtn{flex:1 0 auto}
   .inline-row{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
   .inline-row .grow{flex:1;min-width:150px}
   #cvStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
-  #tab-profile .draft-field{border-color:var(--brand)}
+  :is(#tab-profile,#tab-account) .draft-field{border-color:var(--brand)}
   #cvDraftStatus{font-size:.86rem;color:var(--muted);margin-top:.6rem;min-height:1.2em}
 
   /* ---------- toasts ---------- */
@@ -672,19 +672,19 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 
   /* ===== SIGNAL BƯỚC 6 — Hồ sơ & CV: 3 khối, chip khu vực, 5 vạch trọng số ===== */
   .pf-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
-  #tab-profile .card-p{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-lg);box-shadow:none;min-width:0}
-  #tab-profile .card-p h3{font:600 18px/1.3 var(--f-head);color:var(--ink)}
-  #tab-profile .pf-sep{border-top:var(--bw) dashed var(--line);margin-top:1.2rem;padding-top:1rem}
-  #tab-profile .chip{min-height:var(--tap);padding:0 16px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:var(--bw) solid transparent;background:transparent;cursor:pointer}
-  #tab-profile .chip::before{content:none}
-  #tab-profile .chip.on{background:var(--mint);color:var(--mint-ink)}
-  #tab-profile .chip.off{border-color:var(--line);color:var(--mute)}
-  #tab-profile .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink)}
-  #tab-profile .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-  #tab-profile .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}@media (hover:hover) and (pointer:fine){
-  #tab-profile .btn.ghost:hover{color:var(--ink)}}
-  #tab-profile .btn:active{transform:scale(.98)}
-  #tab-profile button:focus-visible{outline:none;box-shadow:var(--focus)}
+  :is(#tab-profile,#tab-account) .card-p{background:var(--surface);border:var(--bw) solid var(--line);border-radius:var(--r-lg);box-shadow:none;min-width:0}
+  :is(#tab-profile,#tab-account) .card-p h3{font:600 18px/1.3 var(--f-head);color:var(--ink)}
+  :is(#tab-profile,#tab-account) .pf-sep{border-top:var(--bw) dashed var(--line);margin-top:1.2rem;padding-top:1rem}
+  :is(#tab-profile,#tab-account) .chip{min-height:var(--tap);padding:0 16px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:var(--bw) solid transparent;background:transparent;cursor:pointer}
+  :is(#tab-profile,#tab-account) .chip::before{content:none}
+  :is(#tab-profile,#tab-account) .chip.on{background:var(--mint);color:var(--mint-ink)}
+  :is(#tab-profile,#tab-account) .chip.off{border-color:var(--line);color:var(--mute)}
+  :is(#tab-profile,#tab-account) .btn{min-height:var(--tap);padding:0 18px;border-radius:var(--r-pill);font:500 14px var(--f-body);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink)}
+  :is(#tab-profile,#tab-account) .btn.p{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+  :is(#tab-profile,#tab-account) .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}@media (hover:hover) and (pointer:fine){
+  :is(#tab-profile,#tab-account) .btn.ghost:hover{color:var(--ink)}}
+  :is(#tab-profile,#tab-account) .btn:active{transform:scale(.98)}
+  :is(#tab-profile,#tab-account) button:focus-visible{outline:none;box-shadow:var(--focus)}
   .skill{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;padding:8px 0;border-bottom:var(--bw) dashed var(--line)}
   .skill b{font:600 15px var(--f-head);color:var(--ink);overflow-wrap:anywhere}
   .skill .wbar{grid-column:1/-1}
@@ -718,18 +718,18 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .sug-foot{position:sticky;bottom:0;padding:10px 0 2px;background:var(--surface)}
 
   /* ===== SIGNAL BƯỚC 6B — bổ sung: benchmark tile ===== */
-  #tab-profile .tile{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-md);padding:14px}
-  #tab-profile .tile .num{font:600 26px/1.15 var(--f-head);color:var(--brand);font-variant-numeric:tabular-nums}
-  #tab-profile .tile span{display:block;font-weight:600;margin-top:4px;text-wrap:balance}
-  #tab-profile .tile small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
-  #tab-profile .bench-note{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
-  #tab-profile .bench-card{container-type:inline-size}
+  :is(#tab-profile,#tab-account) .tile{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-md);padding:14px}
+  :is(#tab-profile,#tab-account) .tile .num{font:600 26px/1.15 var(--f-head);color:var(--brand);font-variant-numeric:tabular-nums}
+  :is(#tab-profile,#tab-account) .tile span{display:block;font-weight:600;margin-top:4px;text-wrap:balance}
+  :is(#tab-profile,#tab-account) .tile small{display:block;color:var(--mute);font-weight:600;margin-top:4px}
+  :is(#tab-profile,#tab-account) .bench-note{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:12px 14px;color:var(--mute);font-size:13px;margin-top:12px}
+  :is(#tab-profile,#tab-account) .bench-card{container-type:inline-size}
   /* bộ lọc: 1 cột khi thẻ hẹp, 2 hàng (vị trí+cấp bậc / khu vực+nút) ở giữa, 1 hàng khi rộng */
-  #tab-profile .bench-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center}
-  #tab-profile .bench-row .grow{min-width:0}
-  #tab-profile .bench-row .btn{justify-self:start}
-  @container (min-width:312px){ #tab-profile .bench-row{grid-template-columns:minmax(0,1fr) max-content} #tab-profile .bench-row .btn{justify-self:stretch} }
-  @container (min-width:700px){ #tab-profile .bench-row{grid-template-columns:minmax(0,1fr) max-content minmax(0,1fr) max-content} }
+  :is(#tab-profile,#tab-account) .bench-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center}
+  :is(#tab-profile,#tab-account) .bench-row .grow{min-width:0}
+  :is(#tab-profile,#tab-account) .bench-row .btn{justify-self:start}
+  @container (min-width:312px){ :is(#tab-profile,#tab-account) .bench-row{grid-template-columns:minmax(0,1fr) max-content} :is(#tab-profile,#tab-account) .bench-row .btn{justify-self:stretch} }
+  @container (min-width:700px){ :is(#tab-profile,#tab-account) .bench-row{grid-template-columns:minmax(0,1fr) max-content minmax(0,1fr) max-content} }
 
   /* ===== KANBAN DRAG & DROP (desktop, HTML5) ===== */
   .kcard[draggable="true"]{cursor:grab}
@@ -1075,7 +1075,18 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 }
 /* ===== Thông báo: chuông + bảng; tin mới ở tab Việc làm ===== */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-.nf-wrap{position:relative;display:inline-flex}
+.nf-wrap,.acct-wrap{position:relative;display:inline-flex}
+.acct-btn{font:600 15px/1 var(--f-body);text-transform:uppercase}
+.acct-menu{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;max-width:calc(100vw - 24px);display:grid;padding:6px;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--pop-shadow);z-index:120}
+.acct-email{margin:0 0 4px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mute);overflow-wrap:anywhere}
+.acct-menu button{min-height:var(--tap);padding:0 10px;text-align:left;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink);font:500 14px var(--f-body)}
+.acct-menu button:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--brand)}
+@media (hover:hover) and (pointer:fine){ .acct-menu button:hover{background:rgba(var(--ov),.06)} }
+#tab-account .acct-groups{display:grid;gap:1.2rem;max-width:720px}
+#tab-account h3+.pf-sep{border-top:0;margin-top:.6rem;padding-top:0}
+#tab-account .acct-danger{margin-top:1.2rem;border-color:var(--red)}
+#tab-account .acct-danger h3{color:var(--red)}
+.neg-box summary{cursor:pointer;padding:10px 0;font:600 15px/1.3 var(--f-body);color:var(--ink)}
 .nf-bell{position:relative;cursor:pointer}
 .nf-bell svg{width:18px;height:18px}
 .nf-badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:var(--r-pill);background:var(--brand);color:var(--brand-ink);font:700 11px/16px var(--f-body);text-align:center;border:2px solid var(--bg)}
@@ -1122,10 +1133,10 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .card.nf-hl{box-shadow:var(--focus)}
 /* ===== UI REFRESH: SaaS tối giản (Inter, viền hairline, 1 accent indigo) ===== */
 body{font-feature-settings:"cv11","ss01"}
-.score,.score-pill,.brief .bignum,kbd,#tab-profile .tile .num,.sg-why .total,.lp-card .n,.bench-stat b,.demo-final b,.why .row .n,.ring-wrap text,.nf-badge,.lp-formula,.sg-formula,.lp-step .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
+.score,.score-pill,.brief .bignum,kbd,:is(#tab-profile,#tab-account) .tile .num,.sg-why .total,.lp-card .n,.bench-stat b,.demo-final b,.why .row .n,.ring-wrap text,.nf-badge,.lp-formula,.sg-formula,.lp-step .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:0}
 kbd{border-bottom-width:1px;font-size:.72rem}
 /* bề mặt: hairline + bóng mềm, không bóng lệch */
-.card,.kcard,.brief-in,.sg-live,.sg-try,#tab-profile .tile,#landingView .demo-kcard{border-color:var(--line);box-shadow:var(--soft)}
+.card,.kcard,.brief-in,.sg-live,.sg-try,:is(#tab-profile,#tab-account) .tile,#landingView .demo-kcard{border-color:var(--line);box-shadow:var(--soft)}
 .input,select.input{border-color:var(--line-strong);font-weight:400}
 /* nút: primary là pill sáng trên nền tối (pill đen trên nền sáng); hover dùng accent */
 .btn.primary,#landingView .btn.primary{background:var(--ink);color:var(--bg);border:1px solid transparent;box-shadow:none;font-weight:500}
@@ -1517,11 +1528,11 @@ html.fx-on .bg-fx{opacity:1}
         <dl>
           <div><dt data-en="What we store">Dữ liệu lưu</dt><dd data-en="Email, name, a salted password hash (never the password itself); your profile (target roles, level, locations, minimum salary) and skills; the text extracted from your CV (and the original PDF if you upload one); application cards and notes; daily digests and notifications. For product statistics: the invite link you came from (the &lt;code&gt;?ref=&lt;/code&gt; code, if any) and the last day you were active (a date, not a time; no IP address, no tracking scripts).">Email, họ tên, mật khẩu đã băm kèm salt (không bao giờ lưu mật khẩu gốc); hồ sơ (vị trí mục tiêu, cấp bậc, khu vực, lương tối thiểu) và kỹ năng; văn bản trích từ CV (và file PDF gốc nếu bạn tải lên); thẻ ứng tuyển và ghi chú; digest hằng ngày và thông báo. Để thống kê sản phẩm: mã link mời bạn dùng khi vào (<code>?ref=</code>, nếu có) và ngày hoạt động gần nhất (chỉ ngày, không giờ; không lưu IP, không dùng script theo dõi).</dd></div>
           <div><dt data-en="Where">Lưu ở đâu</dt><dd data-en="On Cloudflare: D1 (database), R2 (CV files), KV (login sessions and CV skill suggestions). These servers are outside Vietnam.">Trên Cloudflare: D1 (cơ sở dữ liệu), R2 (file CV), KV (phiên đăng nhập và gợi ý kỹ năng từ CV). Máy chủ đặt ngoài Việt Nam.</dd></div>
-          <div><dt data-en="What AI reads">AI đọc gì</dt><dd data-en="Only when you analyze a CV: Cloudflare Workers AI (Llama 4 Scout 17B) reads up to the first 6,000 characters of the CV text to suggest skills. Nothing else is sent to AI. Turn it off with &quot;Enter skills myself, do not use AI&quot; in the Profile tab; then only the built-in skill catalog is used.">Chỉ khi bạn bấm phân tích CV: Workers AI của Cloudflare (Llama 4 Scout 17B) đọc tối đa 6.000 ký tự đầu của văn bản CV để gợi ý kỹ năng. Không gửi gì khác cho AI. Tắt được bằng công tắc "Tự nhập kỹ năng, không dùng AI" trong tab Hồ sơ; khi đó chỉ dùng danh mục kỹ năng có sẵn.</dd></div>
+          <div><dt data-en="What AI reads">AI đọc gì</dt><dd data-en="Only when you analyze a CV: Cloudflare Workers AI (Llama 4 Scout 17B) reads up to the first 6,000 characters of the CV text to suggest skills. Nothing else is sent to AI. Turn it off with &quot;Enter skills myself, do not use AI&quot; in Account settings; then only the built-in skill catalog is used.">Chỉ khi bạn bấm phân tích CV: Workers AI của Cloudflare (Llama 4 Scout 17B) đọc tối đa 6.000 ký tự đầu của văn bản CV để gợi ý kỹ năng. Không gửi gì khác cho AI. Tắt được bằng công tắc "Tự nhập kỹ năng, không dùng AI" trong Cài đặt tài khoản; khi đó chỉ dùng danh mục kỹ năng có sẵn.</dd></div>
           <div><dt data-en="How long">Giữ bao lâu</dt><dd data-en="Login session: 30 days. CV skill suggestions: 24 hours. CV files and your account: until you delete them. After you delete your account, you have 7 days to restore it; then everything is permanently erased.">Phiên đăng nhập: 30 ngày. Gợi ý kỹ năng từ CV: 24 giờ. File CV và tài khoản: đến khi bạn xoá. Sau khi xoá tài khoản, bạn có 7 ngày để khôi phục; sau đó mọi dữ liệu bị xoá hẳn.</dd></div>
           <div><dt data-en="Telegram">Telegram</dt><dd data-en="Telegram only receives job titles and links, never your CV.">Telegram chỉ nhận tiêu đề tin và link, không nhận CV.</dd></div>
           <div><dt data-en="Sharing">Chia sẻ</dt><dd data-en="Nothing is shared with employers or any third party. Job postings shown to you are public data from the job boards.">Không chia sẻ với nhà tuyển dụng hay bất kỳ bên thứ ba nào. Tin tuyển dụng hiện cho bạn là dữ liệu công khai từ các bảng việc.</dd></div>
-          <div><dt data-en="Your rights">Quyền của bạn</dt><dd data-en="View and export your data; delete your CV (Skills card); turn AI off; delete your account (bottom of the Profile tab). Questions or requests: <a href=&quot;mailto:tribui.it.work@gmail.com&quot;>tribui.it.work@gmail.com</a>.">Xem và xuất dữ liệu; xoá CV (thẻ Kỹ năng); tắt AI; xoá tài khoản (cuối tab Hồ sơ). Thắc mắc hoặc yêu cầu: <a href="mailto:tribui.it.work@gmail.com">tribui.it.work@gmail.com</a>.</dd></div>
+          <div><dt data-en="Your rights">Quyền của bạn</dt><dd data-en="View and export your data; delete your CV (Skills card); turn AI off; delete your account (Account settings, from your avatar). Questions or requests: <a href=&quot;mailto:tribui.it.work@gmail.com&quot;>tribui.it.work@gmail.com</a>.">Xem và xuất dữ liệu; xoá CV (thẻ Kỹ năng); tắt AI; xoá tài khoản (Cài đặt tài khoản, mở từ ảnh đại diện). Thắc mắc hoặc yêu cầu: <a href="mailto:tribui.it.work@gmail.com">tribui.it.work@gmail.com</a>.</dd></div>
         </dl>
       </details>
     </div>
@@ -1636,7 +1647,12 @@ html.fx-on .bg-fx{opacity:1}
           <div id="nfList" class="nf-list"></div>
         </div><span id="nfLive" class="sr-only" aria-live="polite"></span></span>
       <button class="theme-toggle lang-toggle" data-lang-toggle type="button" title="EN / VI">EN</button><button class="theme-toggle" data-theme-toggle title="Đổi giao diện sáng / tối" aria-label="Đổi giao diện sáng tối" data-en-title="Switch light / dark theme" data-en-aria-label="Toggle light or dark theme"><span class="ic-moon">☾</span><span class="ic-sun">☀</span></button>
-      <button id="logoutBtn" class="btn sm ghost" type="button" data-en="Log out">Đăng xuất</button>
+      <span class="acct-wrap"><button id="acctBtn" class="theme-toggle acct-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="acctMenu" aria-label="Tài khoản" data-en-aria-label="Account"><span id="acctInitial" aria-hidden="true"></span></button>
+        <div id="acctMenu" class="acct-menu hidden" role="menu" aria-labelledby="acctBtn">
+          <p id="acctEmail" class="acct-email"></p>
+          <button id="acctSettingsBtn" type="button" role="menuitem" data-en="Account settings">Cài đặt tài khoản</button>
+          <button id="logoutBtn" type="button" role="menuitem" data-en="Log out">Đăng xuất</button>
+        </div></span>
     </div>
     <nav class="tabbar-row">
       <button class="tab active" data-tab="jobs" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Jobs<span id="jobsNewBadge" class="alert-badge hidden"></span>'><svg class="ic-svg" aria-hidden="true"><use href="#jobs"/></svg>Việc làm<span id="jobsNewBadge" class="alert-badge hidden"></span></button>
@@ -1760,6 +1776,67 @@ html.fx-on .bg-fx{opacity:1}
                 <button id="createProfileBtn" class="btn" type="button" data-en="Create profile">Tạo hồ sơ</button> <button id="cloneProfileBtn" class="btn" type="button" data-en="Clone current profile">Nhân bản hồ sơ hiện tại</button>
               </div>
             </div>
+          </section>
+
+          <section class="card-p">
+            <h3 data-en="Skills">Kỹ năng</h3>
+            <div id="currentSkills"></div>
+            <div class="pf-sep">
+              <label data-en="Add a skill manually" for="manualSkill">Thêm kỹ năng thủ công</label>
+              <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka" data-en-placeholder="e.g. Kafka">
+              <div class="inline-row" style="margin-top:8px">
+                <div id="manualWeight" class="wbar" role="group" aria-label="Trọng số kỹ năng mới" data-en-aria-label="New skill weight" data-value="3"></div>
+                <button data-en="Add" id="addSkillBtn" class="btn" type="button">Thêm</button>
+              </div>
+            </div>
+            <div class="pf-sep">
+              <label data-en="Or upload a CV for AI extraction (PDF, TXT or MD)" for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
+              <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
+              <div class="inline-row" style="margin-top:.9rem">
+                <button data-en="Analyze CV" id="cvUploadBtn" class="btn" type="button">Phân tích CV</button>
+                <button id="cvDeleteBtn" class="btn ghost hidden" type="button" data-en="Delete uploaded CV">Xoá CV đã tải lên</button>
+              </div>
+              <div id="cvStatus"></div>
+              <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
+                <label data-en="Suggested skills (tick to keep, set weight 1 to 5)">Kỹ năng gợi ý (tích chọn, đặt trọng số 1 đến 5)</label>
+                <div id="suggestedList"></div>
+                <div class="sug-foot"><button data-en="Save selected skills" id="confirmSkillsBtn" class="btn p" type="button">Lưu kỹ năng đã chọn</button></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card-p bench-card">
+          <h3 data-en="Salary benchmark">Benchmark lương</h3>
+          <p data-en="Computed from salaries listed in the jobs we have collected. With fewer than 5 matching posts, it only says the data is thin." class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Dưới 5 tin khớp thì chỉ báo dữ liệu còn mỏng.</p>
+          <div class="inline-row bench-row">
+            <div class="grow"><input id="benchRole" name="jp-bench-role" autocomplete="off" class="input" type="text" placeholder="Vị trí, vd backend" data-en-placeholder="Role, e.g. backend"></div>
+            <select id="benchLevel" class="input" title="Cấp bậc" data-en-title="Level">
+              <option data-en="All levels" value="">Mọi cấp bậc</option>
+              <option value="junior">Junior</option>
+              <option value="middle">Middle</option>
+              <option value="senior">Senior</option>
+            </select>
+            <div class="grow"><input id="benchLoc" name="jp-bench-area" autocomplete="off" class="input" type="text" placeholder="Khu vực, vd HCM" data-en-placeholder="Location, e.g. HCM"></div>
+            <button data-en="View benchmark" id="benchBtn" class="btn p" type="button">Xem benchmark</button>
+          </div>
+          <div id="benchResult" style="margin-top:.8rem"></div>
+          <details class="pf-sep neg-box">
+            <summary data-en="Negotiation scripts">Kịch bản đàm phán</summary>
+            <div class="neg-script"><b data-en="1. Asked for your expected salary first">1. Bị hỏi lương mong muốn trước</b><p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
+            <div class="neg-script"><b data-en="2. Offer below expectations">2. Offer thấp hơn kỳ vọng</b><p data-en="&quot;I am very excited about this role. This figure is below the range I am considering based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
+            <div class="neg-script"><b data-en="3. Competing offer / counter-offer">3. Có offer khác / counter-offer</b><p data-en="&quot;I have another offer at a higher level, but I would rather join you because of the product and the team. If you can get close to that figure, I will sign right away.&quot;">"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
+            <div class="neg-script"><b data-en="4. Asking about the company range">4. Muốn hỏi lại range của công ty</b><p data-en="&quot;Before I answer, I would like to understand the salary range, review cycle and bonus structure better, so I can evaluate total compensation, not just base salary.&quot;">"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng, để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
+          </details>
+        </section>
+        </div>
+      </section>
+      <!-- ===== TÀI KHOẢN (mở từ menu ảnh đại diện, không có trên tabbar) ===== -->
+      <section id="tab-account" class="hidden">
+        <h2 id="acctTitle" class="page-title" tabindex="-1" data-en="Account">Tài khoản</h2>
+        <p class="page-sub" data-en="Connections, privacy, your data and security, in one place.">Kết nối, quyền riêng tư, dữ liệu và bảo mật, gom một chỗ.</p>
+        <div class="acct-groups">
+        <section class="card-p" data-acct-group aria-labelledby="acctH1">
+          <h3 id="acctH1" data-en="Connections">Kết nối</h3>
             <div class="pf-sep" id="tgBox">
               <label data-en="Telegram">Telegram</label>
               <div id="tgIdle"><button id="tgLinkBtn" class="btn p" type="button" data-en="Get updates on Telegram">Nhận tin qua Telegram</button></div>
@@ -1783,67 +1860,20 @@ html.fx-on .bg-fx{opacity:1}
                 <div id="tgOwnActions" class="inline-row hidden"><button id="tgOwnCheckBtn" class="btn" type="button" data-en="Check again">Kiểm tra lại</button> <button id="tgOwnRemoveBtn" class="btn" type="button" data-en="Remove own bot">Gỡ bot riêng</button></div>
               </details>
             </div>
-          </section>
-
-          <section class="card-p">
-            <h3 data-en="Skills">Kỹ năng</h3>
-            <div id="currentSkills"></div>
-            <div class="pf-sep">
-              <label data-en="Add a skill manually" for="manualSkill">Thêm kỹ năng thủ công</label>
-              <input id="manualSkill" class="input" type="text" placeholder="VD: Kafka" data-en-placeholder="e.g. Kafka">
-              <div class="inline-row" style="margin-top:8px">
-                <div id="manualWeight" class="wbar" role="group" aria-label="Trọng số kỹ năng mới" data-en-aria-label="New skill weight" data-value="3"></div>
-                <button data-en="Add" id="addSkillBtn" class="btn" type="button">Thêm</button>
-              </div>
-            </div>
-            <div class="pf-sep">
-              <label class="check" style="margin-bottom:.8rem"><input id="aiOptOut" type="checkbox"> <span data-en="Enter skills myself, do not use AI">Tự nhập kỹ năng, không dùng AI</span></label>
-              <label data-en="Or upload a CV for AI extraction (PDF, TXT or MD)" for="cvFile">Hoặc tải CV để AI trích xuất (PDF, TXT hoặc MD)</label>
-              <input id="cvFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
-              <div class="inline-row" style="margin-top:.9rem">
-                <button data-en="Analyze CV" id="cvUploadBtn" class="btn" type="button">Phân tích CV</button>
-                <button id="cvDeleteBtn" class="btn ghost hidden" type="button" data-en="Delete uploaded CV">Xoá CV đã tải lên</button>
-              </div>
-              <div id="cvStatus"></div>
-              <div id="suggestedWrap" class="hidden" style="margin-top:1rem">
-                <label data-en="Suggested skills (tick to keep, set weight 1 to 5)">Kỹ năng gợi ý (tích chọn, đặt trọng số 1 đến 5)</label>
-                <div id="suggestedList"></div>
-                <div class="sug-foot"><button data-en="Save selected skills" id="confirmSkillsBtn" class="btn p" type="button">Lưu kỹ năng đã chọn</button></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="card-p bench-card">
-          <h3 data-en="Salary benchmark">Benchmark lương</h3>
-          <p data-en="Computed from salaries listed in the jobs we have collected. When data is thin, a market reference table is shown instead." class="muted small" style="margin:.2rem 0 .8rem">Tính từ lương ghi trong tin tuyển hệ thống đã gom. Chưa đủ dữ liệu sẽ hiện bảng tham khảo thị trường.</p>
-          <div class="inline-row bench-row">
-            <div class="grow"><input id="benchRole" class="input" type="text" placeholder="Vị trí, vd backend" data-en-placeholder="Role, e.g. backend"></div>
-            <select id="benchLevel" class="input" title="Cấp bậc" data-en-title="Level">
-              <option data-en="All levels" value="">Mọi cấp bậc</option>
-              <option value="junior">Junior</option>
-              <option value="middle">Middle</option>
-              <option value="senior">Senior</option>
-            </select>
-            <div class="grow"><input id="benchLoc" class="input" type="text" placeholder="Khu vực, vd HCM" data-en-placeholder="Location, e.g. HCM"></div>
-            <button data-en="View benchmark" id="benchBtn" class="btn p" type="button">Xem benchmark</button>
-          </div>
-          <div id="benchResult" style="margin-top:.8rem"></div>
-          <div class="pf-sep">
-            <label data-en="Your data" for="exportBtn">Dữ liệu của bạn</label>
+        </section>
+        <section class="card-p" data-acct-group aria-labelledby="acctH2">
+          <h3 id="acctH2" data-en="AI &amp; privacy">AI &amp; quyền riêng tư</h3>
+          <label class="check" style="margin-bottom:.8rem"><input id="aiOptOut" type="checkbox"> <span data-en="Enter skills myself, do not use AI">Tự nhập kỹ năng, không dùng AI</span></label>
+          <p class="muted small" style="margin:0" data-en="AI only reads your CV when you press Analyze CV. <a href=&quot;#lp-privacy&quot; data-privacy>Read the data policy</a>.">AI chỉ đọc CV khi bạn bấm Phân tích CV. <a href="#lp-privacy" data-privacy>Đọc chính sách dữ liệu</a>.</p>
+        </section>
+        <section class="card-p" data-acct-group aria-labelledby="acctH3">
+          <h3 id="acctH3" data-en="Your data">Dữ liệu của bạn</h3>
             <button data-en="Download my data" id="exportBtn" class="btn" type="button">Tải dữ liệu của tôi</button>
             <p class="muted small" style="margin:.4rem 0 0" data-en="A JSON file with your profiles, applications, interviews and notifications.">File JSON gồm hồ sơ, đơn ứng tuyển, phỏng vấn và thông báo của bạn.</p>
-          </div>
-          <div class="pf-sep">
-            <h3 data-en="Negotiation scripts" style="font-size:1rem">Kịch bản đàm phán</h3>
-            <div class="neg-script"><b data-en="1. Asked for your expected salary first">1. Bị hỏi lương mong muốn trước</b><p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
-            <div class="neg-script"><b data-en="2. Offer below expectations">2. Offer thấp hơn kỳ vọng</b><p data-en="&quot;I am very excited about this role. This figure is below the range I am considering based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
-            <div class="neg-script"><b data-en="3. Competing offer / counter-offer">3. Có offer khác / counter-offer</b><p data-en="&quot;I have another offer at a higher level, but I would rather join you because of the product and the team. If you can get close to that figure, I will sign right away.&quot;">"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
-            <div class="neg-script"><b data-en="4. Asking about the company range">4. Muốn hỏi lại range của công ty</b><p data-en="&quot;Before I answer, I would like to understand the salary range, review cycle and bonus structure better, so I can evaluate total compensation, not just base salary.&quot;">"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng, để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
-          </div>
         </section>
-        </div>
-        <section class="card-p" style="margin-top:1.2rem">
-          <h3 data-en="Change password">Đổi mật khẩu</h3>
+        <section class="card-p" data-acct-group aria-labelledby="acctH4">
+          <h3 id="acctH4" data-en="Security">Bảo mật</h3>
+          <p style="margin:.4rem 0 0;font-weight:600" data-en="Change password">Đổi mật khẩu</p>
           <p class="muted small" style="margin:.2rem 0 .8rem" data-en="You stay logged in here; every other device is logged out.">Bạn vẫn đăng nhập ở máy này; các thiết bị khác bị đăng xuất.</p>
           <div class="field">
             <label for="cpCurrent" data-en="Current password">Mật khẩu hiện tại</label>
@@ -1855,8 +1885,9 @@ html.fx-on .bg-fx{opacity:1}
           </div>
           <button id="cpBtn" class="btn" type="button" style="margin-top:.9rem" data-en="Change password">Đổi mật khẩu</button>
         </section>
-        <section class="card-p" style="margin-top:1.2rem">
-          <h3 data-en="Delete account">Xoá tài khoản</h3>
+        <section class="card-p acct-danger" data-acct-group aria-labelledby="acctH5">
+          <h3 id="acctH5" data-en="Danger zone">Vùng nguy hiểm</h3>
+          <p style="margin:.4rem 0 0;font-weight:600" data-en="Delete account">Xoá tài khoản</p>
           <p class="muted small" style="margin:.2rem 0 .8rem" data-en="Your account is marked for deletion right away and you are logged out. Within 7 days you can restore it by logging in again; after that your profiles, CV, skills, application cards and account are permanently erased.">Tài khoản được đánh dấu xoá ngay và bạn bị đăng xuất. Trong 7 ngày bạn có thể khôi phục bằng cách đăng nhập lại; sau đó hồ sơ, CV, kỹ năng, thẻ ứng tuyển và tài khoản bị xoá hẳn.</p>
           <div class="field">
             <label for="delAccountPw" data-en="Enter your password to confirm">Nhập mật khẩu để xác nhận</label>
@@ -1864,6 +1895,7 @@ html.fx-on .bg-fx{opacity:1}
           </div>
           <button id="delAccountBtn" class="btn" type="button" style="margin-top:.9rem" data-en="Delete account">Xoá tài khoản</button>
         </section>
+        </div>
       </section>
     </main>
     <div class="src-status"><span class="dot"></span><span id="sourceStatus" data-en="Job sources: checking…">Nguồn job: đang kiểm tra…</span></div>
@@ -1876,7 +1908,7 @@ html.fx-on .bg-fx{opacity:1}
   <ul class="small">
     <li data-en="The text is extracted right in your browser.">Văn bản được trích ngay trên trình duyệt của bạn.</li>
     <li data-en="That text is sent and stored on Cloudflare R2 (servers outside Vietnam).">Văn bản đó được gửi lên và lưu ở Cloudflare R2 (máy chủ ngoài Việt Nam).</li>
-    <li data-en="Cloudflare Workers AI reads it to suggest skills. You can turn this off in the Profile tab.">Workers AI của Cloudflare đọc để gợi ý kỹ năng. Tắt được trong tab Hồ sơ.</li>
+    <li data-en="Cloudflare Workers AI reads it to suggest skills. You can turn this off in Account settings.">Workers AI của Cloudflare đọc để gợi ý kỹ năng. Tắt được trong Cài đặt tài khoản.</li>
     <li data-en="It is never shared with employers.">Không chia sẻ với nhà tuyển dụng.</li>
     <li data-en="You can delete it at any time from the Skills card.">Bạn xoá được bất cứ lúc nào trong thẻ Kỹ năng.</li>
   </ul>
@@ -2221,6 +2253,7 @@ Object.assign(EN, {
   // Palette
   "Đi tới: Việc làm": "Go to: Jobs",
   "Đi tới: Kanban": "Go to: Kanban",
+  "Tài khoản %s": "Account %s",
   "Đi tới: Hồ sơ & CV": "Go to: Profile & CV",
   "Quét job mới từ ITviec + TopDev": "Scan new jobs from ITviec + TopDev",
   "hành động": "action",
@@ -2634,7 +2667,7 @@ function nfRender(){
       if (state.user && !state.user.telegram_linked) {
         const a = nfEl("button", "nf-link", t("Bật Telegram để nhận tin khớp mạnh ngay"));
         a.type = "button";
-        a.addEventListener("click", () => { nfClose(false); switchTab("profile"); setTimeout(() => { const b = $("#tgLinkBtn"); if (b && !b.closest(".hidden")) { b.scrollIntoView({ block: "center" }); b.focus(); } }, 80); });
+        a.addEventListener("click", () => { nfClose(false); openAccount("#tgLinkBtn"); });
         st.append(a);
       }
       box.append(st);
@@ -2695,7 +2728,7 @@ function nfActivate(n){
   nfClose(false);
   const later = (fn) => setTimeout(fn, 80); // sau view transition của switchTab
   if (n.type === "bot_broken") {
-    switchTab("profile");
+    switchTab("account");
     later(() => { const d = $("#tgOwn"); if (!d) return; d.open = true; d.scrollIntoView({ block: "center" }); const s = $("summary", d); if (s) s.focus(); });
   } else if ((n.type === "interview" || n.type === "follow_up") && n.ref_id) {
     ivPendingApp = String(n.ref_id); // mở sau khi Kanban tải xong đơn
@@ -2790,6 +2823,9 @@ async function boot(){
   const me = await api("/api/me");
   state.user = me.user;
   $("#aiOptOut").checked = !!me.user.ai_opt_out;
+  $("#acctEmail").textContent = me.user.email || "";
+  $("#acctInitial").textContent = (me.user.email || me.user.name || "?").trim().charAt(0) || "?";
+  $("#acctBtn").setAttribute("aria-label", t("Tài khoản %s", me.user.email || ""));
   tgShow(me.user.telegram_linked ? "tgDone" : "tgIdle");
   tgOwnRender(me.user.telegram_bot || null);
   nfBadge(me.user.unread_count, me.user.has_attention);
@@ -2858,7 +2894,7 @@ async function loadFunnel(){
 function switchTab(t){
   withViewTransition(() => {
     $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
-    const panels = { jobs: $("#tab-jobs"), kanban: $("#tab-kanban"), profile: $("#tab-profile") };
+    const panels = { jobs: $("#tab-jobs"), kanban: $("#tab-kanban"), profile: $("#tab-profile"), account: $("#tab-account") };
     const show = panels[t];
     Object.keys(panels).forEach(k => { const p = panels[k]; if (p) p.classList.toggle("hidden", k !== t); });
     if (show) {
@@ -2869,6 +2905,33 @@ function switchTab(t){
   if (t === "jobs") markJobsSeen();
 }
 $$(".tab").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
+// Tài khoản: chỉ mở từ menu ảnh đại diện (không có trên tabbar). sel = phần tử cần focus sau khi mở.
+function openAccount(sel){
+  acctMenu(false);
+  switchTab("account");
+  setTimeout(() => { const el = sel && $(sel); if (el && !el.closest(".hidden")) { el.scrollIntoView({ block: "center" }); el.focus(); } else { window.scrollTo({ top: 0, behavior: "instant" }); $("#acctTitle").focus(); } }, 80);
+}
+let acctOpen = false;
+function acctMenu(open, restore){
+  if (!open && !acctOpen) return;
+  acctOpen = open;
+  $("#acctMenu").classList.toggle("hidden", !open);
+  $("#acctBtn").setAttribute("aria-expanded", String(open));
+  if (open) $("#acctSettingsBtn").focus(); else if (restore) $("#acctBtn").focus();
+}
+$("#acctBtn").addEventListener("click", () => acctMenu(!acctOpen, true));
+$("#acctSettingsBtn").addEventListener("click", () => openAccount());
+document.addEventListener("keydown", (e) => {
+  if (!acctOpen) return;
+  if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); acctMenu(false, true); return; }
+  if (e.key === "Tab") { acctMenu(false); return; }
+  if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+    const f = $$("#acctMenu [role=menuitem]"), i = f.indexOf(document.activeElement);
+    e.preventDefault(); e.stopImmediatePropagation();
+    f[e.key === "Home" ? 0 : e.key === "End" ? f.length - 1 : (i + (e.key === "ArrowDown" ? 1 : f.length - 1)) % f.length].focus();
+  }
+}, true);
+document.addEventListener("click", (e) => { if (acctOpen && !e.target.closest(".acct-wrap")) acctMenu(false); });
 
 /* ---------------- Digest (Morning brief) ---------------- */
 function animateCountUps(root){
@@ -3373,8 +3436,7 @@ function tgCardRender(){
     const b = ev.target.closest("[data-tgc]");
     if (!b) return;
     if (b.dataset.tgc === "later") { try { localStorage.setItem("jp_tg_card_off", "1"); } catch (e) { /* bỏ qua */ } tgCardRender(); return; }
-    switchTab("profile");
-    setTimeout(() => { const l = $("#tgLinkBtn"); if (l && !l.closest(".hidden")) { l.scrollIntoView({ block: "center" }); l.focus(); } }, 80);
+    openAccount("#tgLinkBtn");
   };
 }
 
@@ -3450,7 +3512,6 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.": "No clear salary is listed, so it is hard to compare with the market.",
   "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật.": "The JD lists too many skills; usually a wish list, not real requirements.",
   "Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s": "From %s posts with a listed salary (%s VND, %s USD converted at %s), sources: %s",
-  "Chưa đủ tin ghi lương cho vị trí này (%s/5), dưới đây là tham khảo": "Not enough posts with a salary for this role (%s/5), below is a reference",
   "%sđ": "%s pts", "Xem thêm %s": "Show %s more", "Trống": "Empty",
   "Đã chuyển sang: %s": "Moved to: %s",
   "Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.": "Follow-up recorded. Next reminder in 7 days.",
@@ -3462,12 +3523,10 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Đã tạo hồ sơ mới.": "New profile created.",
   "Nhập tên hồ sơ mới trước đã.": "Enter a name for the new profile first.",
   "Đã tạo và chuyển sang hồ sơ: %s": "Created and switched to profile: %s",
-  "QA / Kiểm thử": "QA / Testing", "AI Engineer (2–4 năm)": "AI Engineer (2–4 yrs)",
-  "trung vị tham khảo": "reference median", "trung vị tham khảo, khoảng 30 đến 60tr": "reference median, range 30M to 60M",
+  "Dữ liệu còn mỏng: mới %s tin có ghi lương khớp (cần ít nhất 5), nên chưa đưa ra con số. Chỉ nên xem như tham khảo.": "Data is thin: only %s matching posts list a salary (at least 5 needed), so no figures are shown. Treat this as a reference only.",
   "Khoảng trung vị (min–max)": "Median range (min–max)", "Trung vị điểm giữa": "Median midpoint", "Khoảng P25–P75": "P25–P75 range",
   "Dựa trên %s tin tuyển có ghi lương trong hệ thống.": "Based on %s job posts with a listed salary.",
   "Chưa đủ dữ liệu lương trong hệ thống (mới %s tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.": "Not enough salary data yet (only %s posts list a salary). Below is a market reference; it recomputes as more posts with salaries arrive.",
-  "Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.": "Source: ITviec/TopDev 2025–2026 reports, secondary summary. Check the original PDFs before relying on it officially.",
   "Trọng số %s/5": "Weight %s/5", "%s, trọng số %s/5": "%s, weight %s/5", "+%s kỹ năng": "+%s skills",
   "%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xóa.": "%s skills · %s core (weight 4–5). Tap a skill to edit or remove it.", "Trọng số %s": "Weight for %s", "Xóa %s": "Remove %s", "Xóa": "Remove",
   "Chưa có hồ sơ.": "No profile yet.",
@@ -4052,11 +4111,6 @@ $("#createProfileBtn").addEventListener("click", async () => {
 });
 
 /* ---------------- Benchmark lương (Phase 2) ---------------- */
-const BENCH_REF = [
-  { role: "Backend", median: 37.8, note: "trung vị tham khảo" },
-  { role: "QA / Kiểm thử", median: 31.2, note: "trung vị tham khảo" },
-  { role: "AI Engineer (2–4 năm)", median: 45, note: "trung vị tham khảo, khoảng 30 đến 60tr" },
-];
 async function loadBenchmark(){
   const role = $("#benchRole").value.trim();
   const level = $("#benchLevel").value;
@@ -4082,11 +4136,7 @@ async function loadBenchmark(){
       </div>
       <p class="muted small" style="margin:0">${esc(t("Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s", d.count, d.samples_vnd, d.samples_usd, (d.usd_vnd || 25500).toLocaleString(LANG === "en" ? "en-US" : "vi-VN"), Object.keys(d.sources || {}).join(", ")))}</p>`;
     } else {
-      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 .6rem">${t("Chưa đủ tin ghi lương cho vị trí này (%s/5), dưới đây là tham khảo", d.count)}</p>
-      <div class="bench-grid">
-        ${BENCH_REF.map(r => `<div class="tile"><div class="num">${mil(String(r.median))}</div><span>${esc(t(r.role))}</span><small>${esc(t(r.note))}</small></div>`).join("")}
-      </div>
-      <div class="bench-note">${t("Nguồn: báo cáo ITviec/TopDev 2025–2026, tổng hợp thứ cấp. Đối chiếu PDF gốc trước khi dùng làm căn cứ chính thức.")}</div>`;
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 0">${esc(t("Dữ liệu còn mỏng: mới %s tin có ghi lương khớp (cần ít nhất 5), nên chưa đưa ra con số. Chỉ nên xem như tham khảo.", d.count))}</p>`;
     }
     if (benchSkelShown && box.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
   } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
@@ -4717,7 +4767,7 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "3") switchTab("profile");
 });
 
-$("#logoutBtn").addEventListener("click", () => logout(true));
+$("#logoutBtn").addEventListener("click", () => { acctMenu(false); logout(true); });
 
 /* ---------------- Theme sáng / tối ---------------- */
 $$("[data-theme-toggle]").forEach(b => b.addEventListener("click", () => {
