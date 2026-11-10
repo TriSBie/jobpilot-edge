@@ -92,7 +92,7 @@ html[data-theme="dark"]{
   a{color:var(--brand);text-decoration:none}@media (hover:hover) and (pointer:fine){
   a:hover{text-decoration:underline}}
   button{font:inherit;cursor:pointer;color:inherit}
-  ::selection{background:rgba(45,75,255,.35)}
+  ::selection{background:color-mix(in srgb,var(--brand) 35%,transparent)}
   /* DE-SLOP 2026-10-30 (rebase): browser surfaces themed from palette */
   ::-webkit-scrollbar{ width:10px; height:10px; }
   ::-webkit-scrollbar-track{ background:transparent; }
@@ -105,7 +105,7 @@ html[data-theme="dark"]{
   .hidden{display:none!important}
   dialog{max-width:min(520px,calc(100vw - 32px));border:1px solid var(--line-strong);border-radius:var(--r-lg);background:var(--surface);color:var(--text);padding:1.3rem;box-shadow:var(--pop-shadow)}
   dialog::backdrop{background:rgba(4,5,6,.6)} dialog h3{margin:0 0 .4rem} dialog ul{padding-left:1.2rem;margin:.5rem 0} dialog li{margin:.3rem 0} dialog form{display:flex;gap:.55rem;justify-content:flex-end;margin-top:1rem}
-  #lp-privacy dl div{margin:.6rem 0} #lp-privacy dt{font-weight:700} #lp-privacy dd{margin:0;color:var(--muted)}
+  #lp-privacy dl div{margin:.6rem 0} #lp-privacy dt{font-weight:700} #lp-privacy dd{margin:0;color:var(--muted);text-wrap:pretty}
   .muted{color:var(--muted)} .small{font-size:.85rem}
   .spacer{flex:1}
 
@@ -322,7 +322,7 @@ html[data-theme="dark"]{
   /* ---------- toasts ---------- */
   #toasts{position:fixed;right:18px;bottom:18px;z-index:200;display:flex;flex-direction:column;gap:.5rem;max-width:min(92vw,380px)}
   .toast{
-    background:rgba(18,19,22,.92);backdrop-filter:blur(10px);color:var(--text);
+    background:var(--raised);color:var(--text);
     border:1px solid var(--line-strong);border-radius:var(--r-md);padding:.7rem .95rem;font-size:.9rem;
     box-shadow:0 12px 32px rgba(0,0,0,.45);animation:toast-in var(--m-base) var(--e-out) both;
   }
@@ -362,7 +362,7 @@ html[data-theme="dark"]{
   @media (max-width: 860px){
     .shell{grid-template-columns:1fr}
     .side{position:sticky;top:0;z-index:50;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;
-      border-right:none;border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(12px);padding:10px 12px}
+      border-right:none;border-bottom:1px solid var(--line);background:var(--bg);padding:10px 12px}
     .brand{padding:0 .4rem 0 0}
     .nav-label{display:none}
     .tab{width:auto}
@@ -378,7 +378,7 @@ html[data-theme="dark"]{
 
 /* ================= LANDING (v3) ================= */
 .lp-nav{ position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:1rem;
-  padding:.8rem clamp(1rem,4vw,2.5rem); background:color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter:blur(14px);
+  padding:.8rem clamp(1rem,4vw,2.5rem); background:var(--bg);
   border-bottom:1px solid var(--line); }
 .lp-nav .brand{ font:600 18px var(--f-head); letter-spacing:-.01em; }
 .lp-nav .brand span{ color:var(--brand); }
@@ -504,7 +504,6 @@ html[data-theme="light"] .brief-in{ background:#ffffff; box-shadow:inset 0 1px 0
 html[data-theme="light"] .lp-formula{ color:var(--text); }
 html[data-theme="light"] .auth-note{ color:#7c4a03; }
 html[data-theme="light"] .lp-shot{ box-shadow:0 30px 80px rgba(13,20,36,.18); }
-html[data-theme="light"] ::selection{ background:rgba(45,75,255,.28); }
 
 /* Nút gạt theme */
 .lang-toggle{ width:auto; padding:0 10px; font:500 12px/1 var(--f-body); letter-spacing:.04em; }
@@ -551,8 +550,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 
 /* ================= TYPOGRAPHY: Inter (UI REFRESH) ================= */
 .lp-hero h1 em, .lp-sec h2 em, .login-in h1 em{ font-style:normal;
-  background:var(--brand);
-  -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent; }
+  color:var(--brand); }
 .lp-card .n{ font-style:normal; font-weight:600; }
 .lp-formula{ font-family:var(--f-head); }
 .lp-logo, .logo{ font-family:var(--f-head); letter-spacing:-.01em; }
@@ -873,7 +871,7 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
 .demo-explain{color:var(--muted);font-size:.92rem;line-height:1.6}
 .demo-cap{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:.7rem 1rem;font-size:.9rem;color:var(--muted)}
 #demo-cmdk-btn{margin-bottom:.9rem}
-#demo-palette{position:fixed;inset:0;z-index:300;display:grid;justify-items:center;align-items:start;padding:12vh 1rem 1rem;background:rgba(4,5,6,.6);backdrop-filter:blur(6px)}
+#demo-palette{position:fixed;inset:0;z-index:300;display:grid;justify-items:center;align-items:start;padding:12vh 1rem 1rem;background:rgba(4,5,6,.6)}
 .demo-pal-box{width:100%;max-width:560px;border-radius:var(--r-lg);overflow:hidden;background:rgba(16,17,20,.96);border:1px solid var(--line-strong);box-shadow:0 30px 80px rgba(0,0,0,.6);animation:demo-frame-in 200ms cubic-bezier(0.4,0,0.2,1) both}
 .demo-pal-box input{border:none;background:transparent;font-size:1.02rem;padding:1rem 1.15rem;box-shadow:none}
 .demo-pal-box input:focus{box-shadow:none;border:none}
@@ -985,7 +983,7 @@ html{scroll-padding-top:96px}
 
 /* PASS SAU (review Opus T-52 + nav mobile): header 2 hàng ở mobile để không tràn ngang; nền đặc thay backdrop blur để giảm vẽ lại khi cuộn. */
 @media (max-width:640px){
-  .lp-nav{flex-wrap:wrap;row-gap:.6rem;padding:.7rem 1rem;background:var(--surface);backdrop-filter:none}
+  .lp-nav{flex-wrap:wrap;row-gap:.6rem;padding:.7rem 1rem;background:var(--surface)}
   .lp-nav [data-auth]{flex:1 1 0}
   html{scroll-padding-top:124px}
 }
@@ -1129,7 +1127,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .brief .lbl{ text-transform:none; letter-spacing:0; font-size:.9rem; font-weight:700; color:var(--mute); }
 #landingView .lp-card::before, #landingView .lp-card::after, #landingView .lp-cta::before{ content:none !important; }
 #landingView .lp-sec{ background:none; }
-#landingView .lp-nav{ background:var(--bg); backdrop-filter:none; border-bottom:var(--bw) solid var(--line); }
+#landingView .lp-nav{ background:var(--bg); border-bottom:var(--bw) solid var(--line); }
 #landingView h1 em{ color:var(--brand); font-style:normal; }
 #landingView .lp-hero .medallion-img{ box-shadow:none; }
 /* Thẻ: viền phẳng, bo vừa phải, không bóng (bóng cứng chỉ dành cho 2 chỗ nhấn bên dưới). */
@@ -1149,7 +1147,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-live-head{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
 .sg-live-head b{ font-family:var(--f-head); font-size:1.05rem; }
 .sg-dot{ width:10px; height:10px; border-radius:50%; background:var(--mint); border:1px solid var(--line-strong); flex:none; }
-.sg-mut{ color:var(--mute); font-size:.88rem; }
+.sg-mut{ color:var(--mute); font-size:.88rem; text-wrap:pretty; }
 .sg-center{ text-align:center; margin-top:1rem; }
 .sg-live-who{ margin:.5rem 0 .9rem; color:var(--mute); font-size:.92rem; }
 .sg-live-who b{ color:var(--ink); }
@@ -1182,8 +1180,6 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .lp-trust{ list-style:none; margin:1.2rem 0 0; padding:.9rem 1.1rem; display:grid; gap:.45rem; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); font-weight:700; font-size:.95rem; }
 .lp-trust li{ display:flex; align-items:center; gap:.6rem; }
 .lp-trust li::before{ content:""; flex:none; width:10px; height:10px; border-radius:50%; background:var(--mint); border:1px solid var(--line-strong); }
-.sg-strip{ text-align:center; color:var(--mute); font-weight:700; font-size:.92rem; margin:1.2rem auto 0; padding:0 1rem; }
-.sg-strip b{ color:var(--ink); }
 .sg-why{ margin-top:1.6rem; width:min(760px,100%); text-align:left; background:var(--surface); border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:1.1rem 1.2rem; }
 .sg-why h3{ margin:0 0 .2rem; font-size:1.05rem; }
 .sg-why h3 a{ color:var(--ink); }
@@ -1207,7 +1203,7 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-log{ margin:1.4rem 0 0; display:grid; gap:.7rem; }
 .sg-log div{ display:grid; grid-template-columns:7.5rem minmax(0,1fr); gap:1rem; align-items:baseline; }
 .sg-log dt{ color:var(--mute); font-size:.9rem; font-variant-numeric:tabular-nums; }
-.sg-log dd{ margin:0; max-width:60ch; line-height:1.6; }
+.sg-log dd{ margin:0; max-width:60ch; line-height:1.6; text-wrap:pretty; }
 @media (max-width:640px){ .sg-log div{ grid-template-columns:1fr; gap:.15rem; } }
 .sg-pair{ margin-top:1.6rem; width:min(860px,100%); display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:1rem; text-align:left; }
 .sg-box{ border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:1.1rem 1.2rem; background:var(--surface); }
@@ -1240,6 +1236,8 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .nf-dot{width:8px;height:8px;border-radius:50%;align-self:center}
 .nf-row.unread .nf-dot{background:var(--brand)}
 .nf-ttl{font-weight:500;overflow-wrap:anywhere}
+.ic-i{width:1em;height:1em;vertical-align:-.15em;margin-right:.35em;flex:none}
+.ic-i.warn{color:var(--pop)} .ic-i.ok{color:var(--mint-ink)}
 .nf-row.unread .nf-ttl{font-weight:700}
 .nf-time{font-size:12px;color:var(--mute);white-space:nowrap}
 .nf-body,.nf-tg{grid-column:2/4;font-size:13px;color:var(--mute);overflow-wrap:anywhere}
@@ -1307,8 +1305,6 @@ kbd{border-bottom-width:1px;font-size:.72rem}
     linear-gradient(var(--line) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/56px 56px;
   -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000 30%,transparent 75%)}
 .lp-hero .medallion-img{width:44px;height:44px;margin-bottom:1rem}
-.lp-eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0;padding:4px 12px 4px 10px;border:1px solid var(--line-strong);border-radius:var(--r-pill);background:color-mix(in srgb,var(--surface) 70%,transparent);color:var(--muted);font-size:13px;font-weight:500}
-.lp-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand)}
 .lp-trust{background:none;border:0;padding:0;font-weight:400;color:var(--muted);font-size:14px}
 .lp-trust li::before{width:6px;height:6px}
 .sk.core b{background:var(--mint-ink);color:var(--bg)}
@@ -1387,6 +1383,17 @@ html.fx-on .bg-fx{opacity:1}
     <circle cx="12" cy="12" r="9"/>
     <path d="M9 9l6 6M15 9l-6 6"/>
   </symbol>
+  <symbol id="bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 3L5 14h6l-1 7 8-11h-6l1-7z"/>
+  </symbol>
+  <symbol id="alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.3 4.2L2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/>
+    <path d="M12 10v4M12 17.5h.01"/>
+  </symbol>
+  <symbol id="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <path d="M8 12.5l2.7 2.7L16 9.8"/>
+  </symbol>
   <symbol id="archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M4 8h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/>
     <path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
@@ -1442,7 +1449,6 @@ html.fx-on .bg-fx{opacity:1}
   
     <section class="lp-sec lp-hero">
     <svg class="medallion-img" width="74" height="74" viewBox="0 0 64 64" aria-hidden="true"><use href="#mark-journey"/></svg>
-    <p class="lp-eyebrow" data-en="New jobs scored every 30 minutes">Tin mới chấm điểm mỗi 30 phút</p>
     <h1 data-en="Apply less, land more">Nộp ít hơn, đúng hơn</h1>
     <p class="sub" data-en="JobPilot reads new postings from 6 sources (ITviec, TopDev, We Work Remotely, Remotive, Remote OK and HN Who's Hiring) every 30 minutes, scores each one against the skills in your CV and spells out why it got that score. You only apply where you truly fit. Built for developers in Vietnam.">JobPilot đọc tin mới từ 6 nguồn (ITviec, TopDev, We Work Remotely, Remotive, Remote OK và HN Who's Hiring) mỗi 30 phút, chấm từng tin theo kỹ năng trong CV của bạn và ghi rõ vì sao ra số điểm đó. Bạn chỉ nộp chỗ thật sự hợp. Dành cho lập trình viên ở Việt Nam.</p>
     <div class="lp-cta">
@@ -1480,8 +1486,6 @@ html.fx-on .bg-fx{opacity:1}
       <p class="sg-live-foot" data-en="Click a posting to open the original page. Sign up and JobPilot scores against your own CV.">Bấm vào tin để mở trang gốc. Đăng ký để JobPilot chấm theo CV của chính bạn.</p>
     </div>
   </section>
-
-<p class="sg-strip" id="sgStrip" data-en="6 sources, rescanned every 30 minutes.">6 nguồn, quét lại mỗi 30 phút.</p>
 
   <section class="lp-sec" id="lp-scoring">
     <h2 data-en="Every score has a reason">Mỗi điểm đều có lý do</h2>
@@ -2741,11 +2745,12 @@ $("#tgUnlinkBtn").addEventListener("click", async () => {
 const TG_OWN_ERR = { invalid_token_format: "Token không đúng định dạng (dạng 123456:ABC…)", token_rejected: "Telegram từ chối token này", bot_in_use: "Bot này đã được tài khoản khác dùng", webhook_failed: "Không đăng ký được webhook, thử lại", too_many_attempts: "Thử quá nhiều lần, đợi 1 giờ", own_bot_disabled: "Tính năng bot riêng chưa bật trên hệ thống", token_revoked: "Token đã bị thu hồi, hãy dán token mới", webhook_mismatch: "Webhook không còn trỏ về JobPilot, bấm Kiểm tra lại hoặc dán lại token", check_failed: "Không kiểm tra được bot, thử lại sau", own_bot_not_configured: "Chưa có bot riêng", key_changed: "Hệ thống đã đổi khoá, hãy dán lại token" };
 const tgOwnErr = (code) => TG_OWN_ERR[code] ? t(TG_OWN_ERR[code]) : (code || t("Lỗi không rõ"));
 // b: {username|bot_username, status, last_error} | null
+function tgSay(text, ic){ const el = $("#tgOwnStatus"); el.textContent = text; if (ic && text) el.prepend(svgIc(ic, ic === "alert" ? "warn" : "ok")); }
 function tgOwnRender(b){
   const name = b && (b.username || b.bot_username);
   const on = !!(b && (b.configured !== false) && name);
   $("#tgOwnActions").classList.toggle("hidden", !on);
-  $("#tgOwnStatus").textContent = !on ? "" : b.status === "broken" ? t("⚠ Bot riêng lỗi: %s", tgOwnErr(b.last_error)) : t("✅ Đang dùng @%s", name);
+  tgSay(!on ? "" : b.status === "broken" ? t("Bot riêng lỗi: %s", tgOwnErr(b.last_error)) : t("Đang dùng @%s", name), on && (b.status === "broken" ? "alert" : "check"));
   if (on && b.status === "broken") $("#tgOwn").open = true;
 }
 async function tgOwnRun(fn, focusEl){
@@ -2753,7 +2758,7 @@ async function tgOwnRun(fn, focusEl){
   els.forEach(el => { el.disabled = true; });
   $("#tgOwnStatus").textContent = t("Đang kiểm tra…");
   try { await fn(); }
-  catch (e) { $("#tgOwnStatus").textContent = "⚠ " + tgOwnErr(e.message); focusEl = $("#tgOwnToken"); }
+  catch (e) { tgSay(tgOwnErr(e.message), "alert"); focusEl = $("#tgOwnToken"); }
   finally { $("#tgOwnToken").value = ""; els.forEach(el => { el.disabled = false; }); }
   const f = typeof focusEl === "function" ? focusEl() : focusEl;
   if (f && !f.closest(".hidden")) f.focus();
@@ -2761,7 +2766,7 @@ async function tgOwnRun(fn, focusEl){
 $("#tgOwnForm").addEventListener("submit", (ev) => {
   ev.preventDefault();
   const token = $("#tgOwnToken").value.trim();
-  if (!/^\d+:[\w-]{20,}$/.test(token)) { $("#tgOwnToken").value = ""; $("#tgOwnStatus").textContent = "⚠ " + tgOwnErr("invalid_token_format"); $("#tgOwnToken").focus(); return; }
+  if (!/^\d+:[\w-]{20,}$/.test(token)) { $("#tgOwnToken").value = ""; tgSay(tgOwnErr("invalid_token_format"), "alert"); $("#tgOwnToken").focus(); return; }
   tgOwnRun(async () => {
     const r = await api("/api/me/telegram/bot", { method: "PUT", body: JSON.stringify({ token }) });
     tgShow("tgIdle"); // bot mới làm mất liên kết chat
@@ -2776,12 +2781,15 @@ $("#tgOwnRemoveBtn").addEventListener("click", () => tgOwnRun(async () => {
   await api("/api/me/telegram/bot", { method: "DELETE" });
   tgShow("tgIdle"); tgOwnRender(null);
 }, $("#tgOwnToken")));
-Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)": "Invalid token format (looks like 123456:ABC…)", "Telegram từ chối token này": "Telegram rejected this token", "Bot này đã được tài khoản khác dùng": "This bot is already used by another account", "Không đăng ký được webhook, thử lại": "Couldn't register the webhook, try again", "Thử quá nhiều lần, đợi 1 giờ": "Too many attempts, wait 1 hour", "Tính năng bot riêng chưa bật trên hệ thống": "Own bot isn't enabled on this system yet", "Token đã bị thu hồi, hãy dán token mới": "The token was revoked, paste a new one", "Lỗi không rõ": "Unknown error", "Webhook không còn trỏ về JobPilot, bấm Kiểm tra lại hoặc dán lại token": "The webhook no longer points to JobPilot, press Check again or paste the token again", "Không kiểm tra được bot, thử lại sau": "Couldn't check the bot, try again later", "Chưa có bot riêng": "No own bot yet", "Hệ thống đã đổi khoá, hãy dán lại token": "The system key changed, paste the token again", "⚠ Bot riêng lỗi: %s": "⚠ Own bot error: %s", "✅ Đang dùng @%s": "✅ Using @%s", "Đang kiểm tra…": "Checking…" });
+Object.assign(EN, { "Token không đúng định dạng (dạng 123456:ABC…)": "Invalid token format (looks like 123456:ABC…)", "Telegram từ chối token này": "Telegram rejected this token", "Bot này đã được tài khoản khác dùng": "This bot is already used by another account", "Không đăng ký được webhook, thử lại": "Couldn't register the webhook, try again", "Thử quá nhiều lần, đợi 1 giờ": "Too many attempts, wait 1 hour", "Tính năng bot riêng chưa bật trên hệ thống": "Own bot isn't enabled on this system yet", "Token đã bị thu hồi, hãy dán token mới": "The token was revoked, paste a new one", "Lỗi không rõ": "Unknown error", "Webhook không còn trỏ về JobPilot, bấm Kiểm tra lại hoặc dán lại token": "The webhook no longer points to JobPilot, press Check again or paste the token again", "Không kiểm tra được bot, thử lại sau": "Couldn't check the bot, try again later", "Chưa có bot riêng": "No own bot yet", "Hệ thống đã đổi khoá, hãy dán lại token": "The system key changed, paste the token again", "Bot riêng lỗi: %s": "Own bot error: %s", "Đang dùng @%s": "Using @%s", "Đang kiểm tra…": "Checking…" });
 /* ---------------- Thông báo (chuông) + tin mới ---------------- */
 // Chuông: số lấy từ /api/me lúc tải trang và khi quay lại tab; không poll. Mọi chữ từ server đi qua textContent.
 const nf = { items: [], unread: false, open: false, loading: false, error: "", more: false, seq: 0, count: 0, attn: false };
 let jobsPrevSeen, jobsSeenSent = false; // undefined = chưa đọc /api/me trong phiên này
-const NF_IC = { strong_match: "⚡", digest: "📰", bot_broken: "⚠" };
+const NF_IC = { strong_match: "bolt", digest: "brief", bot_broken: "alert" };
+/* icon nét từ sprite <symbol>, thay emoji */
+function svgIc(id, cls){ const NS = "http://www.w3.org/2000/svg", sv = document.createElementNS(NS, "svg"), u = document.createElementNS(NS, "use");
+  sv.setAttribute("class", "ic-i" + (cls ? " " + cls : "")); sv.setAttribute("aria-hidden", "true"); u.setAttribute("href", "#" + id); sv.append(u); return sv; }
 const nfEl = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 function nfBadge(n, attention){
   n = Math.max(0, Number(n) || 0);
@@ -2852,7 +2860,7 @@ function nfRender(){
     if (nf.error) box.append(retry());
     else {
       const st = nfEl("div", "nf-state");
-      st.append(nfEl("p", "", nf.unread ? t("Không còn thông báo chưa đọc") : t("Bạn đã xem hết 🎉")));
+      st.append(nfEl("p", "", nf.unread ? t("Không còn thông báo chưa đọc") : t("Bạn đã xem hết")));
       if (state.user && !state.user.telegram_linked) {
         const a = nfEl("button", "nf-link", t("Bật Telegram để nhận tin khớp mạnh ngay"));
         a.type = "button";
@@ -2875,7 +2883,8 @@ function nfRender(){
     const dot = nfEl("span", "nf-dot"); dot.setAttribute("aria-hidden", "true");
     const ttl = nfEl("span", "nf-ttl");
     if (!n.is_read) ttl.append(nfEl("span", "sr-only", t("Chưa đọc: ")));
-    ttl.append((NF_IC[n.type] ? NF_IC[n.type] + " " : "") + (n.title || ""));
+    if (NF_IC[n.type]) ttl.append(svgIc(NF_IC[n.type], n.type === "bot_broken" ? "warn" : ""));
+    ttl.append(n.title || "");
     row.append(dot, ttl, nfEl("span", "nf-time", nfTime(ts)));
     if (n.body) row.append(nfEl("span", "nf-body", n.body));
     if (n.tg_status === "sent") row.append(nfEl("span", "nf-tg", t("✓ Đã gửi Telegram")));
@@ -2989,7 +2998,7 @@ function markJobsSeen(){
   jobsSeenSent = true;
   api("/api/me", { method: "PATCH", body: JSON.stringify({ jobs_seen: true }) }).catch(() => { jobsSeenSent = false; });
 }
-Object.assign(EN, { "Thông báo": "Notifications", "Thông báo, %s chưa đọc": "Notifications, %s unread", "vừa xong": "just now", "%s phút trước": "%s min ago", "%s giờ trước": "%s h ago", "Hôm nay": "Today", "Hôm qua": "Yesterday", "Cũ hơn": "Earlier", "Không tải được thông báo": "Couldn't load notifications", "Thử lại": "Retry", "Bạn đã xem hết 🎉": "You're all caught up 🎉", "Không còn thông báo chưa đọc": "No unread notifications", "Bật Telegram để nhận tin khớp mạnh ngay": "Turn on Telegram to get strong matches right away", "Chưa đọc: ": "Unread: ", "✓ Đã gửi Telegram": "✓ Sent to Telegram", "✕ Gửi Telegram lỗi": "✕ Telegram send failed", "Tải thêm": "Load more", "Không đánh dấu đã đọc được, thử lại sau": "Couldn't mark as read, try again later", "Tin này không có trong danh sách hiện tại, thử bỏ bộ lọc": "This job isn't in the current list, try clearing filters", "Đã đánh dấu tất cả là đã đọc": "All marked as read", "%s tin mới": "%s new jobs", "%s tin mới · Xem": "%s new · View", "Chỉ tin mới (%s) · Bỏ lọc": "New only (%s) · Clear" });
+Object.assign(EN, { "Thông báo": "Notifications", "Thông báo, %s chưa đọc": "Notifications, %s unread", "vừa xong": "just now", "%s phút trước": "%s min ago", "%s giờ trước": "%s h ago", "Hôm nay": "Today", "Hôm qua": "Yesterday", "Cũ hơn": "Earlier", "Không tải được thông báo": "Couldn't load notifications", "Thử lại": "Retry", "Bạn đã xem hết": "You're all caught up", "Không còn thông báo chưa đọc": "No unread notifications", "Bật Telegram để nhận tin khớp mạnh ngay": "Turn on Telegram to get strong matches right away", "Chưa đọc: ": "Unread: ", "✓ Đã gửi Telegram": "✓ Sent to Telegram", "✕ Gửi Telegram lỗi": "✕ Telegram send failed", "Tải thêm": "Load more", "Không đánh dấu đã đọc được, thử lại sau": "Couldn't mark as read, try again later", "Tin này không có trong danh sách hiện tại, thử bỏ bộ lọc": "This job isn't in the current list, try clearing filters", "Đã đánh dấu tất cả là đã đọc": "All marked as read", "%s tin mới": "%s new jobs", "%s tin mới · Xem": "%s new · View", "Chỉ tin mới (%s) · Bỏ lọc": "New only (%s) · Clear" });
 /* ---------------- Boot / profiles ---------------- */
 // T-86: kỹ năng khách chọn ở landing → hồ sơ thật qua API sẵn có, xong thì xoá.
 async function createTryProfile(){
@@ -4649,7 +4658,6 @@ Object.assign(EN, {
   "1 ngày trước": "1 day ago",
   "%s ngày trước": "%s days ago",
   "cập nhật %s": "updated %s",
-  "Đang theo dõi<b> %s </b>tin từ 6 nguồn,<b> %s </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> %s</b>.": "Tracking<b> %s </b>postings from 6 sources,<b> %s </b>new in the last 24 hours. Last scan at<b> %s</b>.",
   "Chưa có tin nào, quay lại sau ít phút.": "No postings yet. Check back in a few minutes.",
   "%sđ": "%s pts",
   "thiếu %s": "missing %s",
@@ -4936,8 +4944,6 @@ if (LANG === "en") {
     const jobs = d.jobs || [], st = d.stats || {};
     $("#sgLiveMeta").textContent = st.last_scan ? t("cập nhật %s", hhmm(st.last_scan)) : "";
     if (LANG === "en" && d.profile && d.profile.label) $("#sgLiveProfile").textContent = d.profile.label; // VI giữ câu tĩnh; EN lấy nhãn Worker trả theo Accept-Language
-    // Space quanh số nằm trong <b> để khoảng cách luôn hiển thị rõ.
-    $("#sgStrip").innerHTML = t("Đang theo dõi<b> %s </b>tin từ 6 nguồn,<b> %s </b>tin mới trong 24 giờ. Quét gần nhất lúc<b> %s</b>.", st.jobs || 0, st.new_24h || 0, esc(hhmm(st.last_scan)));
     if (!jobs.length) { box.innerHTML = '<li class="sg-mut">' + t("Chưa có tin nào, quay lại sau ít phút.") + '</li>'; return; }
     box.innerHTML = jobs.map(j => `<li class="sg-job">
       <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
