@@ -5368,7 +5368,7 @@ const lpMotion = (() => {
     requestAnimationFrame(step);
   };
   const cio = IO && !RM ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { cio.unobserve(e.target); run(e.target); } }), { threshold: 0.35 }) : null;
-  const count = (root) => root && root.querySelectorAll("[data-countup]:not([data-cu])").forEach((el) => { el.dataset.cu = 1; cio ? cio.observe(el) : run(el); });
+  const count = (root) => root && root.querySelectorAll("[data-countup]:not([data-cu])").forEach((el) => { el.dataset.cu = 1; el.setAttribute("aria-label", nf.format(Number(el.dataset.countup) || 0)); cio ? cio.observe(el) : run(el); });
   return { at, stagger, count };
 })();
 

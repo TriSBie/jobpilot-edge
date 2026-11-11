@@ -13,6 +13,7 @@ assert.equal((src.match(/lp-sec sg-left lp-chapter/g) || []).length, 3);
 assert(!/transition:\s*all/.test(src), "còn transition:all");
 assert(/\.lp-dots i\{animation:lp-dot 3s steps\(1,end\)[^}]*paused/.test(src), "lưới chấm phải mặc định paused");
 assert(src.includes('html.rv #landingView .lp-sec:not(.lp-hero)>*:not(.in){opacity:0'), "fallback .in");
+assert(src.includes('el.setAttribute("aria-label", nf.format(Number(el.dataset.countup) || 0)); cio ? cio.observe(el) : run(el)'),"count-up phải gắn aria-label giá trị cuối trước khi chạy");
 // mọi :hover trong khối landing mới nằm trong gate
 for (const l of src.split("\n")) if (/#landingView[^{]*:hover\{/.test(l)) assert(/hover:hover/.test(l), "hover không gate: " + l.trim());
 console.log("landing motion selfcheck OK");
