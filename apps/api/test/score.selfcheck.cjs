@@ -19,6 +19,7 @@ const code = [
   block('function normLoc'),
 src.match(/const jdOf.*/)[0],
   src.match(/const REGION_LOCK.*/)[0],
+  src.match(/const JD_REGION_LOCK.*/)[0],
   block('function fitBreakdown'),
   block('function scoreJob'),
   'return { scoreJob };',
@@ -48,6 +49,18 @@ for (const [location, want] of [['Remote (US only)', 0], ['Remote (Europe / US E
   assert.equal(loc(location), want, location);
 }
 assert.ok(run('Backend Developer (Java)', 'Remote (US only)').finalScore <= 74, 'remote US only → không strong');
+// Kiểm thử người dùng: "chỉ nhận ở châu Âu" từng được 74 (không khớp khoá vùng). Ghi ở địa điểm hoặc trong JD đều phải khoá.
+const locJ = (location, jd_text) => fitBreakdown(P, { title: 'Backend Developer', location, jd_text, posted_at: 1793346000 });
+for (const [l, jd] of [['Remote (chỉ nhận ở châu Âu)', ''], ['Remote (European Union)', ''], ['Remote', 'We are hiring in Europe only.'], ['Remote', 'Candidates must be based in the EU.'],
+  ['Remote', 'Chỉ nhận ứng viên tại châu Âu'], ['Remote', 'Open to candidates from the UK only'], ['Remote', 'This is a US-only role.']]) {
+  const f = locJ(l, jd); assert.equal(f.location, 0, `${l} | ${jd}`); assert.ok(f.locationArg, `${l} | ${jd}: thiếu tên vùng`);
+}
+// JD chỉ nhắc tên vùng (không "only/based in") → không khoá; có Vietnam/APAC → không khoá.
+for (const [l, jd] of [['Remote', 'We work with clients in Europe and the US.'], ['Remote', 'Our team is spread across Europe.'], ['Remote', 'HQ based in the US, we hire anywhere.'], ['Remote (APAC)', 'EU only']])
+  assert.equal(locJ(l, jd).location, 8, `${l} | ${jd}`);
+// Onsite có JD "EU only" không đổi (khoá vùng chỉ áp cho remote).
+assert.equal(locJ('Ho Chi Minh', 'EU only').location, 8);
+console.log('region lock (châu Âu, JD) OK');
 for (const [title, loc, skills, ok, why] of cases) {
   const r = run(title, loc, skills);
   console.log(String(r.finalScore).padStart(3), r.tier.padEnd(8), '|', why);

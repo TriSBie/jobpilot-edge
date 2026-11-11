@@ -10,16 +10,16 @@ const migDir = path.join(path.dirname(workerPath), '..', '..', '..', 'db', 'migr
 
 const db = new DatabaseSync(':memory:');
 for (const f of fs.readdirSync(migDir).sort()) db.exec(fs.readFileSync(path.join(migDir, f), 'utf8'));
-const exec = (sql, args) => { const st = db.prepare(sql); return /^\s*(SELECT|WITH)/i.test(sql) ? st.all(...args) : (st.run(...args), []); };
+const exec = (sql, args) => { const st = db.prepare(sql); return /^\s*(SELECT|WITH)|\bRETURNING\b/i.test(sql) ? st.all(...args) : (st.run(...args), []); };
 const stmt = (sql, args = []) => ({
   sql, args, bind: (...a) => stmt(sql, a),
   all: async () => ({ results: exec(sql, args) }), first: async () => exec(sql, args)[0] || null, run: async () => (exec(sql, args), { success: true }),
 });
-const kv = new Map(), scoreMsgs = [];
+const kv = new Map(), scoreMsgs = [], files = new Map();
 const env = {
   DB: { prepare: (sql) => stmt(sql), batch: async (list) => list.map((s) => ({ results: exec(s.sql, s.args) })) },
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); } },
-  FILES: { delete: async () => {} },
+  FILES: { delete: async () => {}, put: async (k, v) => { files.set(k, v); }, get: async (k) => (files.has(k) ? { text: async () => String(files.get(k)) } : null) },
   Q_SCORE: { send: async (b) => { scoreMsgs.push(b); }, sendBatch: async (ms) => { for (const m of ms) scoreMsgs.push(m.body); } },
   USER_HUB: { idFromName: (n) => n, get: () => ({ fetch: async () => new Response('{}') }) },
 };
@@ -106,6 +106,47 @@ globalThis.fetch = async (u, init) => {
   assert.ok(!JSON.stringify(sample).includes('java-backend-99'), 'landing không lộ job dán tay');
   scoreMsgs.push({ kind: 'rescore_profile', profileId: 'pB' }); await scoreAll();
   assert.strictEqual(q('SELECT COUNT(*) c FROM job_matches WHERE profile_id = ? AND job_id = ?', 'pB', aId)[0].c, 0, 'rescore B không chấm job của A');
+
+  // 7. Kiểm thử người dùng: /api/jobs phân trang, gọn trường; không tham số → mảng như cũ.
+  for (let i = 0; i < 7; i++) db.prepare("INSERT INTO jobs (id, source_id, source_url, title, company, skills, jd_text, content_hash, first_seen_at, created_at) VALUES (?, 'src-itviec', ?, ?, 'Co', '[\"Java\"]', ?, ?, ?, ?)").run(`pg${i}`, `https://itviec.com/it-jobs/pg-${i}`, `Java Dev ${i}`, 'x'.repeat(5000), `hpg${i}`, T - i, T);
+  const legacy = await call('B', 'GET', '/api/jobs?profile_id=pB');
+  assert.ok(Array.isArray(legacy.body), 'không tham số phân trang → mảng (tương thích)');
+  const p1 = await call('B', 'GET', '/api/jobs?profile_id=pB&limit=3');
+  assert.strictEqual(p1.status, 200);
+  assert.deepStrictEqual([p1.body.items.length, p1.body.total, p1.body.offset, p1.body.limit, p1.body.next_offset], [3, legacy.body.length, 0, 3, 3]);
+  assert.ok(!('jd_text' in p1.body.items[0]) && 'jd_len' in p1.body.items[0], 'không trả JD thô');
+  const seen = []; let off = 0;
+  while (off !== null) { const pg = await call('B', 'GET', `/api/jobs?profile_id=pB&limit=3&offset=${off}`); seen.push(...pg.body.items.map((j) => j.id)); off = pg.body.next_offset; }
+  assert.deepStrictEqual(seen, legacy.body.map((j) => j.id), 'đi hết các trang = đúng thứ tự danh sách cũ, không trùng/thiếu');
+  const pjd = (await call('B', 'GET', `/api/jobs?profile_id=pB&limit=100`)).body.items.find((j) => j.id === 'pg0');
+  assert.strictEqual(pjd.jd_len, 5000, 'jd_len vẫn đúng khi phân trang');
+  const sf = await call('B', 'GET', '/api/jobs?limit=2&source=itviec');
+  assert.ok(sf.body.items.every((j) => j.source === 'src-itviec') && sf.body.total === 7, 'lọc chạy trước khi cắt trang');
+  for (const bad of ['limit=0', 'limit=101', 'limit=abc', 'offset=-1', 'offset=1.5']) assert.strictEqual((await call('B', 'GET', `/api/jobs?${bad}`)).status, 400, bad);
+  r.jobsPage = { total: p1.body.total, pages: Math.ceil(p1.body.total / 3) };
+
+  // 8. Benchmark: số chính chỉ VNĐ; USD tách riêng, không kéo trung vị.
+  const sal = [['20 - 30 triệu', 'b1'], ['30 - 40 triệu', 'b2'], ['40 - 50 triệu', 'b3'], ['$8,000 - $10,000/month', 'b4'], ['$120k - $150k', 'b5']];
+  for (const [t, id] of sal) db.prepare("INSERT INTO jobs (id, source_id, source_url, title, company, salary_text, content_hash, first_seen_at, created_at) VALUES (?, 'src-topdev', ?, 'Backend Dev', 'Co', ?, ?, ?, ?)").run(id, `https://topdev.vn/detail-jobs/${id}`, t, `h${id}`, T, T);
+  const bm = (await call('B', 'GET', '/api/benchmark')).body;
+  assert.deepStrictEqual([bm.count, bm.samples_vnd, bm.samples_usd, bm.currency, bm.median_mid], [3, 3, 2, 'VND', 35e6], 'trung vị mặc định chỉ từ tin VNĐ');
+  assert.deepStrictEqual([bm.usd.count, bm.usd.currency, bm.usd.median_min, bm.usd.median_max], [2, 'USD', 10000, 12500], 'USD/tháng riêng, năm quy ra tháng');
+  r.benchmark = { vnd_median: bm.median_mid, usd_median: bm.usd.median_mid };
+
+  // 9. CV: lưu CV (cv-text, cv-file) chỉ sau khi đồng ý; lưu xong thì cv-suggest không còn no_cv.
+  db.prepare("UPDATE users SET ai_opt_out = 1 WHERE id = 'B'").run();
+  const cvText = 'Backend developer. Java, Spring Boot, PostgreSQL. Built payment APIs for 3 years at Acme. '.repeat(3);
+  assert.strictEqual((await call('B', 'POST', '/api/profiles/pB/cv-text', { text: cvText, filename: 'cv.pdf' })).status, 403, 'chưa đồng ý → không lưu CV');
+  assert.strictEqual((await worker.fetch(new Request('https://api.test/api/profiles/pB/cv-file', { method: 'POST', headers: { Authorization: 'Bearer tokB' }, body: 'x' }), env, {})).status, 403);
+  assert.strictEqual(files.size, 0, 'không có file nào được ghi khi chưa đồng ý');
+  assert.strictEqual((await call('B', 'POST', '/api/profiles/pB/cv-suggest', { job_id: 'shared' })).body.error, 'no_cv');
+  assert.ok((await call('B', 'POST', '/api/me/consent', { kind: 'cv' })).body.consent_cv_at);
+  const up = await call('B', 'POST', '/api/profiles/pB/cv-text', { text: cvText, filename: 'cv.pdf' });
+  assert.strictEqual(up.status, 200, JSON.stringify(up.body));
+  assert.strictEqual(q("SELECT cv_file_id FROM profiles WHERE id = 'pB'")[0].cv_file_id, up.body.file_id, 'hồ sơ gắn CV vừa lưu');
+  const sug = await call('B', 'POST', '/api/profiles/pB/cv-suggest', { job_id: 'shared' });
+  assert.notStrictEqual(sug.body && sug.body.error, 'no_cv', 'đã lưu CV → cv-suggest không còn báo chưa có CV');
+  r.cv = { before_consent: 403, after: up.status, suggest: sug.status };
 
   // 6. Xoá hẳn tài khoản A: job dán tay của A đi theo, FK không chặn.
   db.exec('PRAGMA foreign_keys = ON');
