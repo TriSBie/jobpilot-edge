@@ -39,14 +39,14 @@ const CORS = {
 // i18n: tiếng Việt là nguồn; chỉ dịch chuỗi trả về client theo Accept-Language.
 // ponytail: chỉ có "en"; thêm ngôn ngữ thì đổi EN thành map theo lang.
 const EN = {
-  "Job không ghi địa điểm": "Job has no location",
+  "Tin không ghi địa điểm": "Job has no location",
   "Địa điểm khớp với hồ sơ": "Location matches your profile",
   "Bạn chấp nhận Remote, job này làm onsite": "You accept Remote; this job is onsite",
   "Remote nhưng chỉ nhận ứng viên ở %s": "Remote but only hires in %s",
   "Địa điểm không khớp với hồ sơ": "Location does not match your profile",
   "Cấp bậc phù hợp": "Level fits",
-  "Job này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
-  "Job này thiên về junior hơn cấp bậc của bạn": "This job leans more junior than your level",
+  "Tin này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
+  "Tin này thiên về junior hơn cấp bậc của bạn": "This job leans more junior than your level",
   "JD yêu cầu %s năm kinh nghiệm": "JD requires %s years of experience",
   "Tin cũ %s ngày": "Posted %s days ago",
   "Đăng trùng / đăng lại": "Duplicate / reposted",
@@ -55,6 +55,8 @@ const EN = {
   "Đăng lại %s lần": "Reposted (%s)",
   "Treo %s ngày": "Open for %s days",
   "Không ghi lương": "No salary listed",
+  "Tin ghi chung Việt Nam": "Listed as Vietnam (no city)",
+  "Hồ sơ chưa ghi cấp bậc": "Your profile has no level set",
   "Backend Java · 3 năm · Hồ Chí Minh / Remote": "Backend Java · 3 yrs · Ho Chi Minh City / Remote",
   "%s strong match mới, %s việc cần follow-up": "%s new strong matches, %s items to follow up",
   "Tính từ lương ghi trong tin tuyển hệ thống đã gom; tin 'Thương lượng' không tính. Lọc theo tiêu đề tin tuyển nên chỉ là ước tính.":
@@ -636,14 +638,19 @@ async function fetchRemotive() {
     jdText: stripTags(j.description || "").slice(0, JD_MAX),
   }));
 }
+// A8: RemoteOK trả UTF-8 bị giải mã latin1 ("â\u0080\u0094" thay "—"): ghép lại byte rồi giải UTF-8; chuỗi đã có ký tự >0xFF thì giữ nguyên.
+function fixMojibake(s) {
+  if (typeof s !== "string" || !/[ÃÂâ][\x80-\xBF]/.test(s) || /[^\x00-\xFF]/.test(s)) return s;
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(s, (c) => c.charCodeAt(0))); } catch { return s; }
+}
 async function fetchRemoteOK() {
   const d = await fetchJSON("https://remoteok.com/api");
   return (Array.isArray(d) ? d : []).filter((j) => j && j.position && j.url).map((j) => ({
-    title: j.position, company: j.company || "", location: `Remote (${j.location || "Worldwide"})`,
+    title: fixMojibake(j.position), company: fixMojibake(j.company || ""), location: `Remote (${j.location || "Worldwide"})`,
     url: j.url, postedAt: toISODate(j.date),
     salaryText: j.salary_min && j.salary_max ? `$${Math.round(j.salary_min / 1e3)}k - $${Math.round(j.salary_max / 1e3)}k/năm` : null,
     skills: filterTechTags(j.tags || []),
-    jdText: stripTags(j.description || "").slice(0, JD_MAX),
+    jdText: stripTags(fixMojibake(j.description || "")).slice(0, JD_MAX),
   }));
 }
 // HN "Ask HN: Who is hiring?" (thread tháng) qua Algolia API keyless. Mỗi comment gốc là 1 tin,
@@ -753,6 +760,14 @@ function extractJd(html, sourceId) {
   if (sourceId === "src-topdev") {
     const m = html.match(/\\?"description\\?":\\?"((?:[^"\\]|\\.)*?)\\?"[,}]/);
     if (m) t = stripTags(stripTags(decodeUnicodeEscapes(m[1]).replace(/\\n/g, " ").replace(/\\"/g, '"').replace(/\\\//g, "/")));
+  }
+  // A1: ITviec bọc JD trong <section class='job-content'>: cắt tới </section>, không thì "việc làm liên quan" cuối trang lọt vào skill.
+  if (t.length < 200) {
+    const m = html.match(/<section[^>]*(?:job-content|job-description|jd-content)[^>]*>/i);
+    if (m) { // đếm <section> lồng bên trong để dừng đúng </section> của chính khối JD
+      const re = /<(\/?)section\b[^>]*>/gi; re.lastIndex = m.index + m[0].length;
+      for (let depth = 1, x; (x = re.exec(html)); ) if ((depth += x[1] ? -1 : 1) === 0) { t = stripTags(html.slice(m.index + m[0].length, x.index)); break; }
+    }
   }
   if (t.length < 200) {
     const m = html.match(/<(div|section)[^>]*(?:job-content|job-description|jd-content)[^>]*>([\s\S]*)/i);
@@ -877,7 +892,7 @@ function fitBreakdown(profile, job) {
   const jobLocTitle = `${jobLoc} ${normLoc(job.title)}`;
   let location = 0, locationWhy = "", locationArg;
   const jdLock = /remote/.test(jobLocTitle) ? normLoc(jdOf(job).slice(0, 3000)).replace(/\s+/g, " ").match(JD_REGION_LOCK) : null;
-  if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
+  if (!jobLoc) { location = 4; locationWhy = "Tin không ghi địa điểm"; }
   // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
   // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
   // T-77: tiêu đề cũng có thể ghi khoá vùng ("U.S. Based Remote Contractor"), xét chung với địa điểm.
@@ -887,6 +902,8 @@ function fitBreakdown(profile, job) {
     locationArg = (REGION_LOCK.test(jobLoc) ? (String(job.location).match(/\(([^)]*)\)/) || [, job.location])[1] : (jobLocTitle.match(REGION_LOCK) || jdLock)[0]).trim().slice(0, 40); // HN hay nhét cả câu vào ngoặc
   }
   else if (/remote/.test(jobLoc) || locs.some((l) => jobLoc.includes(l) || l.includes(jobLoc))) { location = 8; locationWhy = "Địa điểm khớp với hồ sơ"; }
+  // A4: TopDev không ghi thành phố → "Vietnam"; hồ sơ ở thành phố VN thì chỉ khớp một phần, không phải lệch.
+  else if (/^viet ?nam$/.test(jobLoc.trim()) && locs.some((l) => VN_CITY_RE.test(l))) { location = 5; locationWhy = "Tin ghi chung Việt Nam"; }
   else if (locs.some((l) => /remote/.test(l))) { location = 6; locationWhy = "Bạn chấp nhận Remote, job này làm onsite"; }
   else { location = 0; locationWhy = "Địa điểm không khớp với hồ sơ"; }
   const refTs = job.posted_at || job.first_seen_at || now();
@@ -896,12 +913,13 @@ function fitBreakdown(profile, job) {
   const titleAndJd = `${job.title || ""} ${jdOf(job).slice(0, 500)}`.toLowerCase();
   const seniorish = /(senior|\bsr\b|lead|principal|staff|manager|architect|expert|trưởng|cao cấp)/.test(titleAndJd);
   const juniorish = /(junior|fresher|intern|thực tập)/.test(titleAndJd);
-  const lvl = (profile.level || "").toLowerCase();
+  const lvl = String(profile.level || "").toLowerCase().trim().replace(/^mid$/, "middle");
   // T-76: tin ghi nhiều cấp ("Mid/Sr", "Expert/Senior/Middle") mà có cấp của hồ sơ thì không lệch.
   const mentionsMine = /middle/.test(lvl) ? /\b(?:middle|mid|intermediate)\b/.test(titleAndJd)
     : /junior|fresher/.test(lvl) ? /\b(?:junior|jr|fresher|intern)\b|thực tập/.test(titleAndJd)
     : /senior/.test(lvl) ? seniorish : false;
-  let level = 5, levelWhy = "Cấp bậc phù hợp";
+  // A3: hồ sơ chưa ghi cấp bậc = chưa biết (4), không coi là khớp (5).
+  let level = lvl ? 5 : 4, levelWhy = lvl ? "Cấp bậc phù hợp" : "Hồ sơ chưa ghi cấp bậc";
   // Số năm kinh nghiệm JD đòi (lấy cận dưới của khoảng; lấy max các lần nhắc).
   let years = 0;
   for (const re of [/(\d{1,2})\s*(?:[-–]\s*\d{1,2}\s*)?\+?\s*(?:years?|yrs?|năm)[^.\n]{0,25}?(?:experience|kinh nghiệm)/gi,
@@ -915,8 +933,8 @@ function fitBreakdown(profile, job) {
   const tooJunior = years >= (/middle/.test(lvl) ? 7 : 4) && /junior|fresher|middle/.test(lvl);
   let levelArg;
   if (tooJunior) { level = 2; levelWhy = "JD yêu cầu %s năm kinh nghiệm"; levelArg = years; }
-  else if (seniorish && /middle|junior|fresher/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
-  else if (juniorish && /senior/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
+  else if (seniorish && /middle|junior|fresher/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Tin này thiên về senior hơn cấp bậc của bạn"; }
+  else if (juniorish && /senior/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Tin này thiên về junior hơn cấp bậc của bạn"; }
   return { location, locationWhy, locationArg, levelArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
@@ -941,7 +959,7 @@ function scoreJob(profile, profileSkills, job) {
   // Bằng chứng mỏng (job khai < 3 skills) thì không cho lên strong.
   if (jobSkills.length < 3) finalScore = Math.min(finalScore, 69);
   // Lệch cấp bậc hoặc khác khu vực thì không cho lên strong, dù kỹ năng khớp hết (T-46).
-  if (fb.level < 5 || fb.location === 0) finalScore = Math.min(finalScore, 74);
+  if (fb.level <= 2 || fb.location === 0) finalScore = Math.min(finalScore, 74);
   const tier = finalScore >= 75 ? "strong" : finalScore >= 50 ? "partial" : "weak";
   return { rule, semantic: null, finalScore, tier, matched, missing, jobSkills };
 }
@@ -1236,11 +1254,15 @@ async function ensureSources(env) {
 // Cổng liên quan theo tiêu đề: loại tin phi kỹ thuật (HR/Sales/Kế toán...)
 // mà tìm kiếm từ khoá của TopDev hay trả lẫn vào.
 const TITLE_TECH = /(developer|engineer|backend|back-end|fullstack|full-stack|software|java|node|devops|\bqa\b|tester|data|mobile|android|ios|frontend|front-end|programmer|lập trình|kỹ sư|công nghệ)/i;
+// A2: tin ngành khác dùng chữ "kỹ sư" (xây dựng, cơ điện, SMT...), chỉ chặn khi tiêu đề không có từ IT mạnh.
+// ponytail: hai danh sách cứng; ngành mới lọt (hoặc tin IT bị chặn) thì thêm từ vào.
+const TITLE_IT_STRONG = /(developer|software|programmer|lập trình|phần mềm|dữ liệu|cloud|bảo mật|an toàn thông tin|kiểm thử|brse|\berp\b|\bmes\b|devops|data|backend|back-end|frontend|front-end|fullstack|full-stack|mobile|\bqa\b|tester|\bai\b|embedded)/i;
+const TITLE_NON_IT = /(cấp thoát nước|\bsmt\b|năng lượng|điện nhẹ|xây dựng|cơ khí|cơ điện|thi công|kết cấu|\bqs\b|shop ?drawing|dây chuyền|sản xuất)/i;
 const TITLE_BLOCK = /(human resource|\bhr\b|recruit|talent acquisition|sales|marketing|accountant|kế toán|nhân sự|tuyển dụng|business development|customer service|support|administrator|designer|content|seo|admin\b)/i;
 // T-07: nhóm này chặn kể cả khi có "engineer" (Sales Engineer, Engineering Manager, Data Entry...).
 const TITLE_HARD_BLOCK = /(\bsales\b|pre-?sales|\bsupport\b|\bcontent\b|\bmanager\b|data entry)/i;
 function titleGate(title) {
-  if (!TITLE_TECH.test(title || "") || TITLE_HARD_BLOCK.test(title || "")) return false;
+  if (!TITLE_TECH.test(title || "") || TITLE_HARD_BLOCK.test(title || "") || (TITLE_NON_IT.test(title || "") && !TITLE_IT_STRONG.test(title || ""))) return false;
   if (TITLE_BLOCK.test(title || "") && !/\b(?:developer|engineer|programmer)\b/i.test(title)) return false;
   return true;
 }
@@ -1491,7 +1513,8 @@ export default {
     try {
     const url = new URL(request.url);
     const path = url.pathname;
-    const lang = /^en/i.test(request.headers.get("accept-language") || "") ? "en" : "vi";
+    const qlang = url.searchParams.get("lang"); // A9: web gửi ?lang để cache không trộn VI/EN
+    const lang = qlang === "en" || qlang === "vi" ? qlang : /^en/i.test(request.headers.get("accept-language") || "") ? "en" : "vi";
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
     if (path === "/api/health") {
@@ -1526,8 +1549,6 @@ export default {
         { skill: "Java", weight: 5 }, { skill: "Spring Boot", weight: 5 }, { skill: "PostgreSQL", weight: 3 },
         { skill: "Docker", weight: 3 }, { skill: "REST APIs", weight: 3 }, { skill: "Git", weight: 2 },
       ];
-      // Lọc chặt hơn titleGate: "kỹ sư"/"công nghệ" cho lọt cả tin xây dựng (T-07 chưa sửa).
-      const DEV_TITLE = /(developer|engineer|backend|back-end|fullstack|full-stack|software|programmer|lập trình|devops|frontend|front-end)/i;
       const scored = results.map((j) => {
         const job = { ...j, skills: JSON.parse(j.skills || "[]"), jd_text: "" };
         const s = scoreJob(sampleProfile, sampleSkills, job);
@@ -1539,11 +1560,11 @@ export default {
         return {
           title: j.title, company: j.company, location: j.location, source: j.source_id, url: j.source_url,
           salary: j.salary_text, age_days: f.ageDays, score: s.finalScore, tier: s.tier,
-          rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level },
+          rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level, location_why: tr(lang, f.locationWhy, f.locationArg), level_why: tr(lang, f.levelWhy, f.levelArg) },
           matched: s.matched, missing: s.missing.slice(0, 6), capped: s.jobSkills.length < 3,
           flags, verdict: v.verdict, verdict_why: v.why,
         };
-      }).filter((x) => x.matched.length > 0 && DEV_TITLE.test(x.title))
+      }).filter((x) => x.matched.length > 0 && titleGate(x.title))
         // Ưu tiên tin đúng cấp bậc hồ sơ mẫu, rồi mới tới điểm (chỉ là thứ tự hiển thị).
         .sort((a, b) => ((a.verdict === "skip") - (b.verdict === "skip")) || (b.fit.level - a.fit.level) || (b.score - a.score));
       const stats = await env.DB.prepare(
@@ -1557,6 +1578,7 @@ export default {
         jobs: scored.slice(0, isTry ? 10 : 5), stats,
       });
       res.headers.set("cache-control", "public, max-age=300");
+      res.headers.set("vary", "Accept-Language");
       if (isTry && typeof caches !== "undefined") (ctx && ctx.waitUntil(caches.default.put(cacheKey, res.clone())));
       return res;
     }
@@ -1888,23 +1910,14 @@ export default {
       if (modes) rows = rows.filter((r) => modes.includes(r.work_mode));
       if (qh === "1") rows = rows.filter((r) => r.salary_vnd_max !== null);
       if (minSalary !== null) rows = rows.filter((r) => r.salary_vnd_max === null || r.salary_vnd_max >= minSalary * 1e6);
-      const total = rows.length;
-      if (paged) {
-        rows = rows.slice(offset, offset + limit);
-        if (rows.length) { // jd_text là cột nặng nhất: chỉ đọc cho tin trong trang
-          const { results: jds } = await env.DB.prepare(`SELECT id, jd_text FROM jobs WHERE id IN (${rows.map(() => "?").join(",")})`).bind(...rows.map((r) => r.id)).all();
-          const jdMap = new Map(jds.map((x) => [x.id, x.jd_text]));
-          rows = rows.map((r) => ({ ...r, jd_text: jdMap.get(r.id) ?? null }));
-        }
-      }
-      const out = rows.map((r) => {
+      const explain = (r) => {
         const skillsArr = JSON.parse(r.skills || "[]");
         const flags = postingFlags({ ...r, skillCount: skillsArr.length, dup: (keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r)) }, now(), lang);
         const risk = flags.filter((f) => f.type !== "duplicate").length;
         let fit = null, ruleDetail = null;
         const hasMatch = r.final_score !== null && r.final_score !== undefined;
         if (prof && hasMatch) {
-          fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: jdOf(r) });
+          fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: jdOf(r) || r.jd_head || "" });
           fit.locationWhy = tr(lang, fit.locationWhy, fit.locationArg); fit.levelWhy = tr(lang, fit.levelWhy, fit.levelArg);
           const matched = JSON.parse(r.matched_skills || "[]");
           const missing = JSON.parse(r.missing_skills || "[]");
@@ -1915,6 +1928,24 @@ export default {
           ruleDetail = { matched: matchedW, missing: missingW, total_weight: totalW, rule_score: r.rule_score, capped: jobSkillCount < 3 };
         }
         const vd = hasMatch ? verdictFor({ tier: r.tier, rule_detail: ruleDetail }, fit, flags, risk, lang) : null;
+        return { skillsArr, flags, risk, fit, ruleDetail, hasMatch, vd };
+      };
+      // A4: tin "skip" xếp sau apply/apply_if, trước tin chưa chấm (sort ổn định, giữ thứ tự điểm trong mỗi nhóm), trước khi phân trang.
+      // Nhãn tính ở JS (cần fitBreakdown) nên không làm bằng ORDER BY. ponytail: bản phân trang xét trên jd_head 600 ký tự;
+      // khoá vùng nằm sâu hơn trong JD thì nhãn trang có thể là skip mà vẫn đứng trên. Lưu verdict vào job_matches khi chấm nếu cần chặt.
+      const explained = new Map(); // N1: dùng lại ở out; bản phân trang tính lại cho tin trong trang vì vừa nạp jd_text đầy đủ
+      if (prof) rows = rows.map((r) => { const e = explain(r); explained.set(r.id, e); const v = e.vd; return [r, !v ? 2 : v.verdict === "skip" ? 1 : 0]; }).sort((a, b) => a[1] - b[1]).map((x) => x[0]); // tin chưa chấm vẫn cuối
+      const total = rows.length;
+      if (paged) {
+        rows = rows.slice(offset, offset + limit);
+        if (rows.length) { // jd_text là cột nặng nhất: chỉ đọc cho tin trong trang
+          const { results: jds } = await env.DB.prepare(`SELECT id, jd_text FROM jobs WHERE id IN (${rows.map(() => "?").join(",")})`).bind(...rows.map((r) => r.id)).all();
+          const jdMap = new Map(jds.map((x) => [x.id, x.jd_text]));
+          rows = rows.map((r) => ({ ...r, jd_text: jdMap.get(r.id) ?? null }));
+        }
+      }
+      const out = rows.map((r) => {
+        const { skillsArr, flags, risk, fit, ruleDetail, hasMatch, vd } = (!paged && explained.get(r.id)) || explain(r);
         return {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
@@ -1970,7 +2001,7 @@ export default {
           } catch (e) { /* giữ jd rỗng nếu fetch lỗi */ }
         }
         job = await upsertJob(env, sourceType === "manual" ? null : src?.id || null, {
-          title: title || "Job không tiêu đề", company, location: str(b.location, 200),
+          title: title || "Tin không tiêu đề", company, location: str(b.location, 200),
           url: link, jdText, skills: extractSkillsFromText(jdText),
           postedAt: null, salaryText: str(b.salary_text, 100) || null,
         }, user.id);
@@ -2329,6 +2360,7 @@ export default {
       }
       const stats = (vs) => {
         const srt = (f) => vs.map(f).sort((a, b) => a - b), mids = srt((v) => (v.min + v.max) / 2);
+        if (vs.length < 5) return { count: vs.length, median_min: null, median_max: null, p25_mid: null, median_mid: null, p75_mid: null }; // A7: <5 mẫu không ra trung vị
         return { count: vs.length, median_min: pct(srt((v) => v.min), 0.5), median_max: pct(srt((v) => v.max), 0.5), p25_mid: pct(mids, 0.25), median_mid: pct(mids, 0.5), p75_mid: pct(mids, 0.75) };
       };
       return json({

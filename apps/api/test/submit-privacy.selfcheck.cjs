@@ -126,11 +126,11 @@ globalThis.fetch = async (u, init) => {
   r.jobsPage = { total: p1.body.total, pages: Math.ceil(p1.body.total / 3) };
 
   // 8. Benchmark: số chính chỉ VNĐ; USD tách riêng, không kéo trung vị.
-  const sal = [['20 - 30 triệu', 'b1'], ['30 - 40 triệu', 'b2'], ['40 - 50 triệu', 'b3'], ['$8,000 - $10,000/month', 'b4'], ['$120k - $150k', 'b5']];
+  const sal = [['20 - 30 triệu', 'b1'], ['30 - 40 triệu', 'b2'], ['40 - 50 triệu', 'b3'], ['25 - 35 triệu', 'b6'], ['35 - 45 triệu', 'b7'], ['$8,000 - $10,000/month', 'b4'], ['$120k - $150k', 'b5']];
   for (const [t, id] of sal) db.prepare("INSERT INTO jobs (id, source_id, source_url, title, company, salary_text, content_hash, first_seen_at, created_at) VALUES (?, 'src-topdev', ?, 'Backend Dev', 'Co', ?, ?, ?, ?)").run(id, `https://topdev.vn/detail-jobs/${id}`, t, `h${id}`, T, T);
   const bm = (await call('B', 'GET', '/api/benchmark')).body;
-  assert.deepStrictEqual([bm.count, bm.samples_vnd, bm.samples_usd, bm.currency, bm.median_mid], [3, 3, 2, 'VND', 35e6], 'trung vị mặc định chỉ từ tin VNĐ');
-  assert.deepStrictEqual([bm.usd.count, bm.usd.currency, bm.usd.median_min, bm.usd.median_max], [2, 'USD', 10000, 12500], 'USD/tháng riêng, năm quy ra tháng');
+  assert.deepStrictEqual([bm.count, bm.samples_vnd, bm.samples_usd, bm.currency, bm.median_mid], [5, 5, 2, 'VND', 35e6], 'trung vị mặc định chỉ từ tin VNĐ');
+  assert.deepStrictEqual([bm.usd.count, bm.usd.currency, bm.usd.median_min, bm.usd.median_max], [2, 'USD', null, null], 'USD tách riêng; A7: <5 mẫu không ra trung vị');
   r.benchmark = { vnd_median: bm.median_mid, usd_median: bm.usd.median_mid };
 
   // 9. CV: lưu CV (cv-text, cv-file) chỉ sau khi đồng ý; lưu xong thì cv-suggest không còn no_cv.
