@@ -818,6 +818,21 @@ function monthlyVND(p) {
   const f = (p.currency === "USD" ? USD_VND : 1) / (p.period === "year" ? 12 : 1);
   return { min: p.min * f, max: p.max * f };
 }
+// /api/jobs: lương VNĐ/tháng (cùng parser + tỉ giá với benchmark) và hình thức làm việc, suy ra lúc đọc.
+// ponytail: tính lúc đọc trên ≤ JOB_LIST_LIMIT tin; khi danh sách lớn hơn, lưu thành cột bằng migration và lọc trong SQL.
+function salaryVND(text) {
+  const p = parseSalary(text);
+  if (!p) return { min: null, max: null };
+  const v = monthlyVND(p);
+  return { min: Math.round(v.min), max: Math.round(v.max) };
+}
+const VN_CITY_RE = /\b(?:ho chi minh|hcm|sai gon|saigon|ha noi|hanoi|da nang|hai phong|can tho|binh duong|dong nai|bac ninh|hue|nha trang)\b/;
+function workMode(location, title, jd) {
+  const t = normLoc(`${location || ""} ${title || ""} ${String(jd || "").slice(0, 600)}`);
+  if (/\bhybrid\b|linh hoat/.test(t)) return "hybrid";
+  if (/\bremote\b|tu xa/.test(t)) return "remote";
+  return VN_CITY_RE.test(normLoc(location)) ? "onsite" : null;
+}
 // Cờ rủi ro tin ảo từ lịch sử quét. row: posted_at, first_seen_at, last_seen_at, repost_count, salary_text, skillCount, dup.
 function postingFlags(row, nowTs, lang) {
   const flags = [];
@@ -1822,7 +1837,12 @@ export default {
       const paged = ql !== null || qo !== null;
       const limit = ql === null ? 50 : Number(ql), offset = qo === null ? 0 : Number(qo);
       if (!(Number.isInteger(limit) && limit >= 1 && limit <= 100) || !(Number.isInteger(offset) && offset >= 0)) return json({ error: "invalid_query" }, 400);
-      const cols = paged ? "j.id, j.source_id, j.source_url, j.title, j.company, j.location, j.salary_text, j.skills, j.posted_at, j.first_seen_at, j.last_seen_at, j.repost_count" : "j.*";
+      const MODES = ["remote", "hybrid", "onsite"];
+      const qm = url.searchParams.get("mode"), qs = url.searchParams.get("min_salary"), qh = url.searchParams.get("has_salary");
+      const modes = qm === null ? null : qm.split(",").map((x) => x.trim()).filter(Boolean);
+      const minSalary = qs === null ? null : Number(qs);
+      if ((modes && (!modes.length || modes.some((x) => !MODES.includes(x)))) || (qs !== null && !/^\d{1,4}$/.test(qs)) || (qh !== null && qh !== "1" && qh !== "0")) return json({ error: "invalid_query" }, 400);
+      const cols = paged ? "j.id, j.source_id, j.source_url, j.title, j.company, j.location, j.salary_text, j.skills, j.posted_at, j.first_seen_at, j.last_seen_at, j.repost_count, substr(j.jd_text, 1, 600) AS jd_head" : "j.*";
       let rows;
       if (profileId) {
         const { results } = await env.DB.prepare(
@@ -1859,6 +1879,10 @@ export default {
       if (tier) rows = rows.filter((r) => r.final_score !== null && r.final_score !== undefined && r.tier === tier);
       if (source) rows = rows.filter((r) => (r.source_id || "").includes(source));
       if (q) rows = rows.filter((r) => `${r.title} ${r.company}`.toLowerCase().includes(q));
+      rows = rows.map((r) => { const sv = salaryVND(r.salary_text); return { ...r, salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, r.jd_head ?? r.jd_text) }; });
+      if (modes) rows = rows.filter((r) => modes.includes(r.work_mode));
+      if (qh === "1") rows = rows.filter((r) => r.salary_vnd_max !== null);
+      if (minSalary !== null) rows = rows.filter((r) => r.salary_vnd_max === null || r.salary_vnd_max >= minSalary * 1e6);
       const total = rows.length;
       if (paged) {
         rows = rows.slice(offset, offset + limit);
@@ -1889,6 +1913,7 @@ export default {
         return {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
+          salary_vnd_min: r.salary_vnd_min, salary_vnd_max: r.salary_vnd_max, work_mode: r.work_mode,
           skills: skillsArr, jd_len: jdOf(r).length,
           posted_at: r.posted_at, first_seen_at: r.first_seen_at,
           flags, risk,
