@@ -25,10 +25,10 @@ async function open(browser, w, { token = "lab", jobsMode = "ok", consent = true
     if (u.pathname === "/api/me") return send({ user: { id: "u1", name: "Minh", email: "qa@lab.vn", consent_cv_at: consent ? 1 : null }, profiles: [profile] });
     if (u.pathname === "/api/jobs") {
       if (st.jobsFail-- > 0) return r.abort("internetdisconnected");
-      const cur = u.searchParams.get("cursor");
-      if (!cur) return send({ items: Array.from({ length: 50 }, (_, i) => job(i + 1)), next_cursor: "c2" });
+      const off = Number(u.searchParams.get("offset") || 0);
+      if (!off) return send({ items: Array.from({ length: 50 }, (_, i) => job(i + 1)), total: 60, offset: 0, limit: 50, next_offset: 50 });
       if (st.moreFail-- > 0) return send({ error: "server_error" }, 500);
-      return send({ items: Array.from({ length: 10 }, (_, i) => job(i + 51)), next_cursor: null });
+      return send({ items: Array.from({ length: 10 }, (_, i) => job(i + 51)), total: 60, offset: 50, limit: 50, next_offset: null });
     }
     if (u.pathname === "/api/profiles/p1/cv-text") return send({ file_id: "f1", suggested_skills: [] });
     if (u.pathname === "/api/profiles/p1" && req.method() === "PATCH") return send({ ...profile, ...JSON.parse(body) });
@@ -44,7 +44,7 @@ async function open(browser, w, { token = "lab", jobsMode = "ok", consent = true
 (async () => {
   const browser = await chromium.launch({ channel: "chrome" });
   const shots = [];
-  const shot = async (page, name, sel) => { if (sel) await page.$eval(sel, (e) => e.scrollIntoView({ block: "center" })); const f = path.join(OUT, name + ".png"); await page.screenshot({ path: f }); shots.push(f); };
+  const shot = async (page, name, sel) => { if (sel) await page.$eval(sel, (e) => e.scrollIntoView({ block: "center", behavior: "instant" })); const f = path.join(OUT, name + ".png"); await page.screenshot({ path: f }); shots.push(f); };
   for (const w of [1280, 390]) {
     // ---- 1. Đăng ký: chưa có token thì không gửi được; xác minh xong mới gửi, token đúng; lỗi thì reset và khoá lại ----
     {
@@ -91,7 +91,7 @@ async function open(browser, w, { token = "lab", jobsMode = "ok", consent = true
       await shot(page, `jobs-more-error-${w}`, "#loadMoreJobs");
       await page.click("#loadMoreJobs");
       await waitFor(async () => (await page.$$eval("#jobsContainer .card", (x) => x.length)) === 60, "không nối trang 2");
-      assert(calls.some((c) => /cursor=c2/.test(c) && /limit=50/.test(c)));
+      assert(calls.some((c) => /offset=50/.test(c) && /limit=50/.test(c)));
       assert.equal(await page.$("#loadMoreJobs"), null, "hết trang thì không còn nút");
       assert.equal(await page.evaluate(() => document.activeElement.textContent), "Job 51", "focus về job đầu của trang mới");
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "tràn ngang");

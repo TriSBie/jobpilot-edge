@@ -2018,7 +2018,7 @@ const state = {
   profiles: [],
   profileId: localStorage.getItem("jp_profile") || "",
   jobs: [],
-  jobsVisible: 20, jobsCursor: null, jobsMore: "", // jobsMore: "" | "loading" | thông báo lỗi
+  jobsVisible: 20, jobsNext: null, jobsMore: "", // jobsMore: "" | "loading" | thông báo lỗi
   expandedChips: new Set(),
   applications: [],
   suggested: [],
@@ -3117,7 +3117,7 @@ async function loadJobs(){
     const r = await api("/api/jobs?" + qs.toString());
     if (seq !== jobsSeq) { clearTimeout(jobsSkelTimer); return; } // bộ lọc đổi trong lúc tải: bỏ kết quả cũ
     state.jobs = Array.isArray(r) ? r : (r.items || []);
-    state.jobsCursor = Array.isArray(r) ? null : (r.next_cursor || null);
+    state.jobsNext = Array.isArray(r) ? null : r.next_offset ?? null;
     state.jobsQs = qs.toString(); state.jobsMore = "";
     state.jobsVisible = 20;
     clearTimeout(jobsSkelTimer);
@@ -3132,22 +3132,22 @@ async function loadJobs(){
   }
 }
 let jobsSeq = 0;
-// Trang kế từ máy chủ (cursor của Lin, fix/api-usertest). bad_cursor: tải lại từ trang 1.
+// Trang kế từ máy chủ: offset=next_offset (null = hết). invalid_query (offset lệch sau khi dữ liệu đổi): tải lại từ trang 1.
 async function loadMoreJobs(){
-  if (!state.jobsCursor || state.jobsMore === "loading") return;
+  if (state.jobsNext == null || state.jobsMore === "loading") return;
   const seq = jobsSeq, from = $$("#jobsContainer .card").length; // jobsVisible có thể đã vượt độ dài danh sách
   state.jobsMore = "loading"; renderJobs();
-  const qs = new URLSearchParams(state.jobsQs); qs.set("cursor", state.jobsCursor);
+  const qs = new URLSearchParams(state.jobsQs); qs.set("offset", String(state.jobsNext));
   try {
     const r = await api("/api/jobs?" + qs.toString());
     if (seq !== jobsSeq) return;
     const have = new Set(state.jobs.map(j => String(j.id)));
     state.jobs = state.jobs.concat((Array.isArray(r) ? r : (r.items || [])).filter(j => !have.has(String(j.id))));
-    state.jobsCursor = Array.isArray(r) ? null : (r.next_cursor || null);
+    state.jobsNext = Array.isArray(r) ? null : r.next_offset ?? null;
     state.jobsMore = ""; state.jobsVisible = from + 50;
   } catch (e) {
     if (seq !== jobsSeq) return;
-    if (e.message === "bad_cursor") { loadJobs(); return; }
+    if (e.message === "invalid_query") { loadJobs(); return; }
     state.jobsMore = /^[a-z_]+$/.test(e.message) ? t("Không tải thêm được job.") : e.message; // mã lỗi thô thì đổi sang câu dễ hiểu
   }
   renderJobs(); focusJobAt(from);
@@ -3195,8 +3195,8 @@ function renderJobs(){
   const newCount = jobsNewRender();
   if (state.filters.onlyNew) list = list.filter(isNewJob);
   const newPill = newCount || state.filters.onlyNew ? `<button class="new-pill" id="jobsNewPill" type="button" aria-pressed="${state.filters.onlyNew}">${state.filters.onlyNew ? t("Chỉ tin mới (%s) · Bỏ lọc", newCount) : t("%s tin mới · Xem", newCount)}</button>` : "";
-  if (cnt) cnt.textContent = list.length ? t("%s tin", list.length + (state.jobsCursor ? "+" : "")) : "";
-  if (!list.length && state.jobsCursor && !state.jobsMore) { loadMoreJobs(); return; } // trang đã tải bị bộ lọc phía client ẩn hết: lấy trang kế
+  if (cnt) cnt.textContent = list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
+  if (!list.length && state.jobsNext != null && !state.jobsMore) { loadMoreJobs(); return; } // trang đã tải bị bộ lọc phía client ẩn hết: lấy trang kế
   if (!list.length) {
     box.innerHTML = newPill + '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     jobsNewPillBind(box);
@@ -3222,7 +3222,7 @@ function renderJobs(){
   const visible = Math.min(state.jobsVisible || 20, list.length);
   const page = list.slice(0, visible);
   const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s job còn lại)", list.length - visible)}</button></div>`
-    : !state.jobsCursor ? ""
+    : state.jobsNext == null ? ""
     : state.jobsMore === "loading" ? `<div class="loadmore" role="status"><button class="btn" id="loadMoreJobs" type="button" disabled><span class="spinner"></span> ${t("Đang tải thêm job...")}</button></div>`
     : state.jobsMore ? `<div class="loadmore" role="alert" style="flex-direction:column;align-items:center;gap:.5rem"><span class="muted small">${esc(state.jobsMore)}</span><button class="btn" id="loadMoreJobs" type="button">${t("Thử lại")}</button></div>`
     : `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm job")}</button></div>`;
@@ -3636,7 +3636,8 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Tin còn mở từ 3 tuần trở lên. Vị trí khó tuyển hoặc chưa thật sự gấp.": "Open for 3 weeks or more. A hard role to fill, or not truly urgent.",
   "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.": "No clear salary is listed, so it is hard to compare with the market.",
   "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật.": "The JD lists too many skills; usually a wish list, not real requirements.",
-  "Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s": "From %s posts with a listed salary (%s VND, %s USD converted at %s), sources: %s",
+  "Từ %s tin VNĐ, nguồn: %s": "From %s VND posts, sources: %s",
+  "Tin trả USD (%s tin): trung vị %s": "USD-paid posts (%s): median %s", "$%s/tháng": "$%s/month",
   "%sđ": "%s pts", "Xem thêm %s": "Show %s more", "Trống": "Empty",
   "Đã chuyển sang: %s": "Moved to: %s",
   "Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.": "Follow-up recorded. Next reminder in 7 days.",
@@ -4255,15 +4256,17 @@ async function loadBenchmark(){
     clearTimeout(benchSkelTimer);
     const mil = (x) => LANG === "en" ? x + "M" : x.replace(".", ",") + "tr"; // 37.8 → "37,8tr" | "37.8M"
     const fmt = (v) => v == null ? "—" : mil((v / 1e6).toFixed(1).replace(/\.0$/, ""));
+    const u = d.usd || {}; // tin remote trả USD: tách riêng, không trộn vào trung vị VNĐ
+    const usdLine = u.count > 0 && u.median_mid != null ? `<p class="muted small" style="margin:.4rem 0 0">${esc(t("Tin trả USD (%s tin): trung vị %s", u.count, t("$%s/tháng", Math.round(u.median_mid).toLocaleString("en-US"))))}</p>` : "";
     if (d.count >= 5) {
       box.innerHTML = `<div class="bench-grid">
         <div class="tile"><div class="num">${fmt(d.median_min)} – ${fmt(d.median_max)}</div><span>${t("Khoảng trung vị (min–max)")}</span></div>
         <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>${t("Trung vị điểm giữa")}</span></div>
         <div class="tile"><div class="num">${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</div><span>${t("Khoảng P25–P75")}</span></div>
       </div>
-      <p class="muted small" style="margin:0">${esc(t("Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s", d.count, d.samples_vnd, d.samples_usd, (d.usd_vnd || 25500).toLocaleString(LANG === "en" ? "en-US" : "vi-VN"), Object.keys(d.sources || {}).join(", ")))}</p>`;
+      <p class="muted small" style="margin:0">${esc(t("Từ %s tin VNĐ, nguồn: %s", d.count, Object.keys(d.sources || {}).join(", ")))}</p>` + usdLine;
     } else {
-      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 0">${esc(t("Dữ liệu còn mỏng: mới %s tin có ghi lương khớp (cần ít nhất 5), nên chưa đưa ra con số. Chỉ nên xem như tham khảo.", d.count))}</p>`;
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 0">${esc(t("Dữ liệu còn mỏng: mới %s tin có ghi lương khớp (cần ít nhất 5), nên chưa đưa ra con số. Chỉ nên xem như tham khảo.", d.count))}</p>` + usdLine;
     }
     if (benchSkelShown && box.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
   } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
