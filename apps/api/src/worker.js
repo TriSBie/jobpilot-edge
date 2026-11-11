@@ -826,12 +826,17 @@ function salaryVND(text) {
   const v = monthlyVND(p);
   return { min: Math.round(v.min), max: Math.round(v.max) };
 }
-const VN_CITY_RE = /\b(?:ho chi minh|hcm|sai gon|saigon|ha noi|hanoi|da nang|hai phong|can tho|binh duong|dong nai|bac ninh|hue|nha trang)\b/;
-function workMode(location, title, jd) {
-  const t = normLoc(`${location || ""} ${title || ""} ${String(jd || "").slice(0, 600)}`);
-  if (/\bhybrid\b|linh hoat/.test(t)) return "hybrid";
-  if (/\bremote\b|tu xa/.test(t)) return "remote";
-  return VN_CITY_RE.test(normLoc(location)) ? "onsite" : null;
+const VN_CITY_RE = /\b(?:ho chi minh|hcmc?|hn|sai gon|saigon|ha noi|hanoi|da nang|hai phong|can tho|binh duong|dong nai|bac ninh|hue|nha trang)\b/;
+// Nguồn chỉ đăng tin remote (HN đã lọc REMOTE lúc quét): mặc định remote, trừ khi ghi hybrid.
+const REMOTE_SOURCES = new Set(["src-wwr", "src-remotive", "src-remoteok", "src-hn"]);
+const HYBRID_RE = /\bhybrid\b|linh hoat/, REMOTE_RE = /\bremote\b(?! sensing)|tu xa|work from home|\bwfh\b|worldwide|anywhere/;
+// ponytail: đoán theo từ khoá; JD chỉ dùng cho hybrid ở tin VN (JD hay nhắc "remote" kiểu 'không remote'). Sai nhiều thì cho AI gắn nhãn lúc quét.
+function workMode(location, title, jd, sourceId) {
+  const lt = normLoc(`${location || ""} ${title || ""}`), j = normLoc(String(jd || "").slice(0, 600));
+  if (HYBRID_RE.test(lt) || HYBRID_RE.test(j)) return "hybrid";
+  if (REMOTE_SOURCES.has(sourceId) || REMOTE_RE.test(lt)) return "remote";
+  if (VN_CITY_RE.test(normLoc(location))) return "onsite";
+  return REMOTE_RE.test(j) ? "remote" : null;
 }
 // Cờ rủi ro tin ảo từ lịch sử quét. row: posted_at, first_seen_at, last_seen_at, repost_count, salary_text, skillCount, dup.
 function postingFlags(row, nowTs, lang) {
@@ -1879,7 +1884,7 @@ export default {
       if (tier) rows = rows.filter((r) => r.final_score !== null && r.final_score !== undefined && r.tier === tier);
       if (source) rows = rows.filter((r) => (r.source_id || "").includes(source));
       if (q) rows = rows.filter((r) => `${r.title} ${r.company}`.toLowerCase().includes(q));
-      rows = rows.map((r) => { const sv = salaryVND(r.salary_text); return { ...r, salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, r.jd_head ?? r.jd_text) }; });
+      rows = rows.map((r) => { const sv = salaryVND(r.salary_text); return { ...r, salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, r.jd_head ?? r.jd_text, r.source_id) }; });
       if (modes) rows = rows.filter((r) => modes.includes(r.work_mode));
       if (qh === "1") rows = rows.filter((r) => r.salary_vnd_max !== null);
       if (minSalary !== null) rows = rows.filter((r) => r.salary_vnd_max === null || r.salary_vnd_max >= minSalary * 1e6);

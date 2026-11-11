@@ -9,7 +9,7 @@ const migDir = path.join(path.dirname(workerPath), '..', '..', '..', 'db', 'migr
 const src = fs.readFileSync(workerPath, 'utf8').replace(/\r\n/g, '\n');
 
 // 1. hàm thuần: parse lương (cùng parser + tỉ giá benchmark) và nhận diện hình thức
-const pure = new Function(['USD_VND', 'parseSalary', 'monthlyVND', 'salaryVND', 'normLoc', 'VN_CITY_RE', 'workMode']
+const pure = new Function(['USD_VND', 'parseSalary', 'monthlyVND', 'salaryVND', 'normLoc', 'VN_CITY_RE', 'REMOTE_SOURCES', 'HYBRID_RE', 'workMode']
   .map((n) => src.match(new RegExp(`\\n(const ${n} =[^\\n]*\\n|function ${n}\\([\\s\\S]*?\\n\\}\\n)`))[1]).join('\n')
   + '\nreturn { salaryVND, workMode, USD_VND };')();
 const { salaryVND, workMode, USD_VND } = pure;
@@ -25,6 +25,16 @@ assert.strictEqual(workMode('Hà Nội', 'Dev (làm từ xa)', ''), 'remote');
 assert.strictEqual(workMode('Hà Nội', 'Java Dev', 'Office in Cau Giay'), 'onsite');
 assert.strictEqual(workMode('Vietnam', 'Java Dev', ''), null);
 assert.strictEqual(workMode('', 'Java Dev', ''), null);
+// QA F2/F3: nguồn remote không ghi chữ remote; tin onsite VN có chữ remote trong JD/tiêu đề
+assert.strictEqual(workMode('Worldwide', 'Backend', '', 'src-remoteok'), 'remote');
+assert.strictEqual(workMode('Asia', 'Backend', '', 'src-remotive'), 'remote');
+assert.strictEqual(workMode('Anywhere in the World', 'Backend', ''), 'remote');
+assert.strictEqual(workMode('Ho Chi Minh', 'Java Dev', 'We do not offer remote work'), 'onsite');
+assert.strictEqual(workMode('Ho Chi Minh', 'Java Dev', 'Thỉnh thoảng họp remote'), 'onsite');
+assert.strictEqual(workMode('Ha Noi', 'Remote Sensing Data Engineer', ''), 'onsite');
+assert.strictEqual(workMode('HCMC', 'Java Dev', ''), 'onsite');
+assert.strictEqual(workMode('Ho Chi Minh', 'Java Dev (Work from home)', ''), 'remote');
+assert.strictEqual(workMode('Remote', 'Dev', 'Hybrid: 2 days in office', 'src-hn'), 'hybrid');
 console.log('jobs-filters parse/mode OK');
 
 // 2. route thật trên SQLite trong RAM
