@@ -1778,7 +1778,7 @@ html.fx-on .bg-fx{opacity:1}
         <p data-en="Skills in your profile drive how jobs are scored. Upload a CV for AI extraction, or add skills by hand." class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
           <section class="card-p">
             <h3 data-en="Create a profile from your CV">Tạo hồ sơ từ CV</h3>
-            <p class="muted small" style="margin:.2rem 0 .8rem" data-en="No profile yet? Upload your CV and we pre-fill the form below as a draft for you to check before saving. This button reads the CV in your browser and does not upload it; only what you save in the profile goes to the server. (The Analyze CV button in the Skills card does upload the CV text to Cloudflare R2.) Salary is not inferred, enter it yourself.">Chưa có hồ sơ? Tải CV lên, hệ thống điền sẵn form bên dưới dạng nháp để bạn kiểm tra rồi mới lưu. Nút này đọc CV ngay trên trình duyệt và không tải CV lên; chỉ phần bạn bấm Lưu hồ sơ mới gửi lên máy chủ. (Nút Phân tích CV ở thẻ Kỹ năng thì có gửi văn bản CV lên Cloudflare R2.) Lương không suy ra từ CV, bạn tự điền.</p>
+            <p class="muted small" style="margin:.2rem 0 .8rem" data-en="No profile yet? Upload your CV and we pre-fill the form below as a draft for you to check before saving. This button reads the CV in your browser. When you press Save profile, the CV text is stored on Cloudflare R2 so CV suggestions can use it; you can delete it in the Skills card. Salary is not inferred, enter it yourself.">Chưa có hồ sơ? Tải CV lên, hệ thống điền sẵn form bên dưới dạng nháp để bạn kiểm tra rồi mới lưu. Nút này đọc CV ngay trên trình duyệt. Khi bạn bấm Lưu hồ sơ, văn bản CV được lưu lên Cloudflare R2 để dùng cho Gợi ý sửa CV; xoá được ở thẻ Kỹ năng. Lương không suy ra từ CV, bạn tự điền.</p>
             <label for="cvDraftFile" data-en="Upload CV (PDF, TXT or MD)">Tải CV (PDF, TXT hoặc MD)</label>
             <input id="cvDraftFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
             <button id="cvDraftBtn" class="btn" type="button" style="margin-top:.9rem" data-en="Fill profile from CV">Điền hồ sơ từ CV</button>
@@ -2018,7 +2018,7 @@ const state = {
   profiles: [],
   profileId: localStorage.getItem("jp_profile") || "",
   jobs: [],
-  jobsVisible: 20,
+  jobsVisible: 20, jobsNext: null, jobsMore: "", // jobsMore: "" | "loading" | thông báo lỗi
   expandedChips: new Set(),
   applications: [],
   suggested: [],
@@ -2227,7 +2227,7 @@ Object.assign(EN, {
   "Mật khẩu tối đa 128 ký tự.": "Password must be at most 128 characters.",
   "Hãy nhập mật khẩu.": "Enter a password.",
   "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.": "Too many failed attempts. Wait 10 minutes and try again.",
-  "Không tải được bước xác minh, tải lại trang.": "Could not load the verification step, reload the page.",
+  "Xác minh chưa xong. Đợi ô xác minh báo thành công rồi bấm lại.": "Verification is not finished. Wait for the check to show success, then press again.",
   "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.": "Too many sign-ups from this network. Try again in an hour.",
   "Bạn đã thêm 20 job trong 1 giờ, thử lại sau.": "You added 20 jobs in the last hour. Try again later.",
   "Link cần bắt đầu bằng http:// hoặc https://.": "The link must start with http:// or https://.",
@@ -2296,6 +2296,7 @@ Object.assign(EN, {
   "Mới nhất: %s": "Newest: %s",
   "Thiếu nhiều nhất: %s": "Most missing: %s",
   "Xem thêm (%s job còn lại)": "Show more (%s remaining)",
+  "Xem thêm job": "Show more jobs", "Đang tải thêm job...": "Loading more jobs...", "Không tải thêm được job.": "Could not load more jobs.",
   "Thu gọn": "Show less",
   "Đổi giai đoạn ứng tuyển": "Change application stage",
   "Vì sao điểm này?": "Why this score?",
@@ -2341,6 +2342,7 @@ Object.assign(EN, { // chuỗi từ bản gộp Muse 30/10 (CV draft, nhân bả
   "Đã đọc %s ký tự. Đang suy ra hồ sơ...": "Read %s characters. Inferring profile...",
   "Đã điền nháp hồ sơ từ CV, kiểm tra lại rồi bấm Lưu hồ sơ.": "Draft profile filled from your CV. Check it, then press Save profile.",
   "Điền hồ sơ từ CV": "Fill profile from CV",
+  "Đã lưu hồ sơ nhưng chưa lưu được CV: %s": "Profile saved, but the CV was not stored: %s",
   "Chưa có hồ sơ, bấm Lưu hồ sơ trước, rồi quay lại bấm nút này.": "No profile yet. Press Save profile first, then come back to this button.",
   "Chưa chọn kỹ năng nào.": "No skills selected.", "Các kỹ năng đã chọn đều đã có trong hồ sơ.": "All selected skills are already in the profile.",
   "Đã lưu %s kỹ năng mới vào hồ sơ.": "Saved %s new skills to the profile.",
@@ -2358,7 +2360,7 @@ const AUTH_ERR = {
   missing_password: "Hãy nhập mật khẩu.",
   invalid_reset_token: "Link đặt lại mật khẩu không đúng hoặc đã hết hạn — nhờ quản trị viên gửi link mới.",
   too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
-  turnstile_failed: "Không tải được bước xác minh, tải lại trang.",
+  turnstile_failed: "Xác minh chưa xong. Đợi ô xác minh báo thành công rồi bấm lại.",
   too_many_registrations: "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.",
   too_many_submissions: "Bạn đã thêm 20 job trong 1 giờ, thử lại sau.",
   invalid_url: "Link cần bắt đầu bằng http:// hoặc https://.",
@@ -2376,20 +2378,36 @@ function turnstileLoad(){ // chỉ nạp khi form cần; onload gọi lại rend
   if (tsLoading) return; tsLoading = true;
   const s = document.createElement("script");
   s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback"; s.async = true;
-  s.onerror = () => { tsLoading = false; };
+  s.onerror = () => { tsLoading = false; tsWanted.forEach(id => tsSetReady(id, true)); }; // không tải được: mở nút để máy chủ báo lỗi rõ
   document.head.appendChild(s);
+}
+/* Nút gửi bị khoá tới khi widget gọi callback có token. Trước đây nút bấm được ngay: getResponse() trả "" khi widget còn
+   đang xác minh, máy chủ trả turnstile_failed, rồi widget mới báo "Thành công" nhưng lỗi cũ vẫn nằm trên form. */
+const TS_FORM = { loginTurnstile: ["#loginBtn", "#loginError"], registerTurnstile: ["#registerBtn", "#registerError"], submitTurnstile: ["#submitBtn", null] };
+const tsReady = {};
+function tsSetReady(id, ok){
+  tsReady[id] = ok;
+  const [btnSel, errSel] = TS_FORM[id] || [];
+  const btn = btnSel && $(btnSel);
+  if (btn && !btn.querySelector(".spinner")) btn.disabled = !ok; // đang gửi thì để handler tự mở
+  const err = errSel && $(errSel);
+  if (ok && err && err.textContent === t(AUTH_ERR.turnstile_failed)) err.textContent = ""; // xác minh xong thì gỡ lỗi xác minh cũ
 }
 function turnstileRender(id){
   tsWanted.add(id);
+  if (tsWidgets[id] === undefined && !tsReady[id]) tsSetReady(id, false);
   if (!window.turnstile) turnstileLoad();
   if (tsWidgets[id] !== undefined || !window.turnstile) return;
-  tsWidgets[id] = turnstile.render("#" + id, { sitekey: TURNSTILE_SITE_KEY, theme: document.documentElement.dataset.theme === "light" ? "light" : "dark", language: LANG });
+  tsWidgets[id] = turnstile.render("#" + id, { sitekey: TURNSTILE_SITE_KEY, theme: document.documentElement.dataset.theme === "light" ? "light" : "dark", language: LANG,
+    callback: () => tsSetReady(id, true), "expired-callback": () => tsSetReady(id, false), "error-callback": () => tsSetReady(id, false), "timeout-callback": () => tsSetReady(id, false) });
 }
 window.onloadTurnstileCallback = () => tsWanted.forEach(turnstileRender);
 function turnstileToken(id){ return window.turnstile && tsWidgets[id] !== undefined ? turnstile.getResponse(tsWidgets[id]) : undefined; }
-function turnstileReset(id){ if (window.turnstile && tsWidgets[id] !== undefined) turnstile.reset(tsWidgets[id]); }
+// Token chỉ dùng được 1 lần: reset sau mỗi lần gửi, nút khoá lại tới khi widget cấp token mới (callback).
+function turnstileReset(id){ if (window.turnstile && tsWidgets[id] !== undefined) { tsReady[id] = false; turnstile.reset(tsWidgets[id]); } }
+const tsDone = (id, btn, label) => { btn.textContent = label; btn.disabled = tsWidgets[id] !== undefined && !tsReady[id]; };
 function turnstileRerender(){ // đổi theme: widget không đổi theme tại chỗ nên gỡ rồi render lại
-  Object.keys(tsWidgets).forEach(id => { turnstile.remove(tsWidgets[id]); delete tsWidgets[id]; });
+  Object.keys(tsWidgets).forEach(id => { turnstile.remove(tsWidgets[id]); delete tsWidgets[id]; tsReady[id] = false; });
   tsWanted.forEach(turnstileRender);
 }
 
@@ -2553,7 +2571,7 @@ $("#loginForm").addEventListener("submit", async (ev) => {
     else err.textContent = authErr(e);
   } finally {
     turnstileReset("loginTurnstile");
-    btn.disabled = false; btn.textContent = t("Đăng nhập");
+    tsDone("loginTurnstile", btn, t("Đăng nhập"));
   }
 });
 
@@ -2573,7 +2591,7 @@ $("#registerForm").addEventListener("submit", async (ev) => {
     err.textContent = authErr(e);
   } finally {
     turnstileReset("registerTurnstile");
-    btn.disabled = false; btn.textContent = t("Tạo tài khoản");
+    tsDone("registerTurnstile", btn, t("Tạo tài khoản"));
   }
 });
 
@@ -3093,8 +3111,14 @@ async function loadJobs(){
   if (state.filters.tier) qs.set("tier", state.filters.tier);
   if (state.filters.source) qs.set("source", state.filters.source);
   if (state.filters.q) qs.set("q", state.filters.q);
+  qs.set("limit", "50");
+  const seq = ++jobsSeq;
   try {
-    state.jobs = await api("/api/jobs?" + qs.toString());
+    const r = await api("/api/jobs?" + qs.toString());
+    if (seq !== jobsSeq) { clearTimeout(jobsSkelTimer); return; } // bộ lọc đổi trong lúc tải: bỏ kết quả cũ
+    state.jobs = Array.isArray(r) ? r : (r.items || []);
+    state.jobsNext = Array.isArray(r) ? null : r.next_offset ?? null;
+    state.jobsQs = qs.toString(); state.jobsMore = "";
     state.jobsVisible = 20;
     clearTimeout(jobsSkelTimer);
     box.classList.add("xfade");
@@ -3102,9 +3126,33 @@ async function loadJobs(){
     setTimeout(() => box.classList.remove("xfade"), 240);
   } catch (e) {
     clearTimeout(jobsSkelTimer);
-    box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+    if (seq !== jobsSeq) return;
+    box.innerHTML = `<div class="empty" role="alert"><p style="margin:0 0 .8rem">${esc(e.message)}</p><button class="btn" id="jobsRetryBtn" type="button">${t("Thử lại")}</button></div>`;
+    $("#jobsRetryBtn").addEventListener("click", loadJobs);
   }
 }
+let jobsSeq = 0;
+// Trang kế từ máy chủ: offset=next_offset (null = hết). invalid_query (offset lệch sau khi dữ liệu đổi): tải lại từ trang 1.
+async function loadMoreJobs(){
+  if (state.jobsNext == null || state.jobsMore === "loading") return;
+  const seq = jobsSeq, from = $$("#jobsContainer .card").length; // jobsVisible có thể đã vượt độ dài danh sách
+  state.jobsMore = "loading"; renderJobs();
+  const qs = new URLSearchParams(state.jobsQs); qs.set("offset", String(state.jobsNext));
+  try {
+    const r = await api("/api/jobs?" + qs.toString());
+    if (seq !== jobsSeq) return;
+    const have = new Set(state.jobs.map(j => String(j.id)));
+    state.jobs = state.jobs.concat((Array.isArray(r) ? r : (r.items || [])).filter(j => !have.has(String(j.id))));
+    state.jobsNext = Array.isArray(r) ? null : r.next_offset ?? null;
+    state.jobsMore = ""; state.jobsVisible = from + 50;
+  } catch (e) {
+    if (seq !== jobsSeq) return;
+    if (e.message === "invalid_query") { loadJobs(); return; }
+    state.jobsMore = /^[a-z_]+$/.test(e.message) ? t("Không tải thêm được job.") : e.message; // mã lỗi thô thì đổi sang câu dễ hiểu
+  }
+  renderJobs(); focusJobAt(from);
+}
+function focusJobAt(i){ const a = $$("#jobsContainer .card .ttl a")[i]; if (a) a.focus(); else { const b = $("#loadMoreJobs"); if (b) b.focus(); } }
 
 const FLAG_CLS = { reposted: "", stale: "", duplicate: "", long_open: " sun", salary_hidden: " sun", bloated: " mute" };
 const FLAG_WHY = {
@@ -3147,7 +3195,8 @@ function renderJobs(){
   const newCount = jobsNewRender();
   if (state.filters.onlyNew) list = list.filter(isNewJob);
   const newPill = newCount || state.filters.onlyNew ? `<button class="new-pill" id="jobsNewPill" type="button" aria-pressed="${state.filters.onlyNew}">${state.filters.onlyNew ? t("Chỉ tin mới (%s) · Bỏ lọc", newCount) : t("%s tin mới · Xem", newCount)}</button>` : "";
-  if (cnt) cnt.textContent = list.length ? t("%s tin", list.length) : "";
+  if (cnt) cnt.textContent = list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
+  if (!list.length && state.jobsNext != null && !state.jobsMore) { loadMoreJobs(); return; } // trang đã tải bị bộ lọc phía client ẩn hết: lấy trang kế
   if (!list.length) {
     box.innerHTML = newPill + '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     jobsNewPillBind(box);
@@ -3172,7 +3221,11 @@ function renderJobs(){
   // P0 — phân trang "Xem thêm": hiện 20 job đầu, bấm để hiện thêm
   const visible = Math.min(state.jobsVisible || 20, list.length);
   const page = list.slice(0, visible);
-  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s job còn lại)", list.length - visible)}</button></div>` : "";
+  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s job còn lại)", list.length - visible)}</button></div>`
+    : state.jobsNext == null ? ""
+    : state.jobsMore === "loading" ? `<div class="loadmore" role="status"><button class="btn" id="loadMoreJobs" type="button" disabled><span class="spinner"></span> ${t("Đang tải thêm job...")}</button></div>`
+    : state.jobsMore ? `<div class="loadmore" role="alert" style="flex-direction:column;align-items:center;gap:.5rem"><span class="muted small">${esc(state.jobsMore)}</span><button class="btn" id="loadMoreJobs" type="button">${t("Thử lại")}</button></div>`
+    : `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm job")}</button></div>`;
   box.innerHTML = newPill + sumHTML + '<div class="list">' + page.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
@@ -3241,7 +3294,11 @@ function renderJobs(){
   $$("[data-cvs-for]", box).forEach(b => b.addEventListener("click", () => cvsOpen(b.dataset.cvsFor, b)));
   tgCardRender();
   const lm = $("#loadMoreJobs", box);
-  if (lm) lm.addEventListener("click", () => { state.jobsVisible = (state.jobsVisible || 20) + 20; renderJobs(); });
+  if (lm) lm.addEventListener("click", () => {
+    const from = visible;
+    if (list.length > visible) { state.jobsVisible = visible + 20; renderJobs(); focusJobAt(from); }
+    else loadMoreJobs();
+  });
   jobsNewPillBind(box);
 }
 
@@ -3531,7 +3588,7 @@ $("#submitForm").addEventListener("submit", async (ev) => {
     toast(t(AUTH_ERR[e.message] || e.message), "err");
   } finally {
     turnstileReset("submitTurnstile");
-    btn.disabled = false; btn.textContent = t("Thêm job");
+    tsDone("submitTurnstile", btn, t("Thêm job"));
   }
 });
 
@@ -3579,7 +3636,8 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Tin còn mở từ 3 tuần trở lên. Vị trí khó tuyển hoặc chưa thật sự gấp.": "Open for 3 weeks or more. A hard role to fill, or not truly urgent.",
   "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.": "No clear salary is listed, so it is hard to compare with the market.",
   "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật.": "The JD lists too many skills; usually a wish list, not real requirements.",
-  "Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s": "From %s posts with a listed salary (%s VND, %s USD converted at %s), sources: %s",
+  "Từ %s tin VNĐ, nguồn: %s": "From %s VND posts, sources: %s",
+  "Tin trả USD (%s tin): trung vị %s": "USD-paid posts (%s): median %s", "$%s/tháng": "$%s/month",
   "%sđ": "%s pts", "Xem thêm %s": "Show %s more", "Trống": "Empty",
   "Đã chuyển sang: %s": "Moved to: %s",
   "Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.": "Follow-up recorded. Next reminder in 7 days.",
@@ -4132,6 +4190,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       if (i >= 0) state.profiles[i] = updated;
       renderProfileSelect();
       fillProfileForm();
+      await storeDraftCv(updated);
       if (updated.rescore_queued === false) toast(t("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
       else { toast(t("Đã lưu hồ sơ. Đang chấm lại điểm các job..."), "ok"); startRescoringWatch(); }
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
@@ -4140,6 +4199,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       state.profiles.push(created);
       state.profileId = created.id;
       localStorage.setItem("jp_profile", created.id);
+      await storeDraftCv(created);
       renderProfileSelect(); fillProfileForm(); renderCurrentSkills();
       toast(t("Đã tạo hồ sơ mới."), "ok");
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);    }
@@ -4196,15 +4256,17 @@ async function loadBenchmark(){
     clearTimeout(benchSkelTimer);
     const mil = (x) => LANG === "en" ? x + "M" : x.replace(".", ",") + "tr"; // 37.8 → "37,8tr" | "37.8M"
     const fmt = (v) => v == null ? "—" : mil((v / 1e6).toFixed(1).replace(/\.0$/, ""));
+    const u = d.usd || {}; // tin remote trả USD: tách riêng, không trộn vào trung vị VNĐ
+    const usdLine = u.count > 0 && u.median_mid != null ? `<p class="muted small" style="margin:.4rem 0 0">${esc(t("Tin trả USD (%s tin): trung vị %s", u.count, t("$%s/tháng", Math.round(u.median_mid).toLocaleString("en-US"))))}</p>` : "";
     if (d.count >= 5) {
       box.innerHTML = `<div class="bench-grid">
         <div class="tile"><div class="num">${fmt(d.median_min)} – ${fmt(d.median_max)}</div><span>${t("Khoảng trung vị (min–max)")}</span></div>
         <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>${t("Trung vị điểm giữa")}</span></div>
         <div class="tile"><div class="num">${fmt(d.p25_mid)} – ${fmt(d.p75_mid)}</div><span>${t("Khoảng P25–P75")}</span></div>
       </div>
-      <p class="muted small" style="margin:0">${esc(t("Từ %s tin có ghi lương (%s VNĐ, %s USD quy đổi %s), nguồn: %s", d.count, d.samples_vnd, d.samples_usd, (d.usd_vnd || 25500).toLocaleString(LANG === "en" ? "en-US" : "vi-VN"), Object.keys(d.sources || {}).join(", ")))}</p>`;
+      <p class="muted small" style="margin:0">${esc(t("Từ %s tin VNĐ, nguồn: %s", d.count, Object.keys(d.sources || {}).join(", ")))}</p>` + usdLine;
     } else {
-      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 0">${esc(t("Dữ liệu còn mỏng: mới %s tin có ghi lương khớp (cần ít nhất 5), nên chưa đưa ra con số. Chỉ nên xem như tham khảo.", d.count))}</p>`;
+      box.innerHTML = `<p class="muted small" style="margin:.2rem 0 0">${esc(t("Dữ liệu còn mỏng: mới %s tin có ghi lương khớp (cần ít nhất 5), nên chưa đưa ra con số. Chỉ nên xem như tham khảo.", d.count))}</p>` + usdLine;
     }
     if (benchSkelShown && box.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) { box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "ease-out" }); }
   } catch (e) { clearTimeout(benchSkelTimer); box.innerHTML = `<div class="muted small">${esc(e.message)}</div>`; }
@@ -4625,6 +4687,7 @@ $("#cvDraftBtn").addEventListener("click", async () => {
     if (!text) throw new Error(t("Không trích xuất được nội dung từ file này."));
     $("#cvDraftStatus").textContent = t("Đã đọc %s ký tự. Đang suy ra hồ sơ...", text.length.toLocaleString(LANG === "en" ? "en-US" : "vi-VN"));
     const d = parseCvDraft(text);
+    state.cvDraftText = text.length >= 100 ? { text, filename: file.name } : null; // lưu lên khi bấm Lưu hồ sơ (cv-text < 100 ký tự bị từ chối)
     state.cvDraftSkills = d.skills;
     fillDraftForm(d);
     renderDraftSkills();
@@ -4664,6 +4727,16 @@ $("#cvDraftConfirmBtn").addEventListener("click", async () => {
   finally { btn.disabled = false; }
 });
 
+/* CV của bản nháp: lưu văn bản qua cv-text (đặt cv_file_id) để Gợi ý sửa CV có CV. Lỗi không chặn việc lưu hồ sơ. */
+async function storeDraftCv(p){
+  const d = state.cvDraftText;
+  if (!d || !p || !(state.user && state.user.consent_cv_at)) return;
+  state.cvDraftText = null;
+  try {
+    const r = await api("/api/profiles/" + encodeURIComponent(p.id) + "/cv-text", { method: "POST", body: JSON.stringify(d) });
+    p.cv_file_id = r.file_id; renderCurrentSkills();
+  } catch (e) { toast(t("Đã lưu hồ sơ nhưng chưa lưu được CV: %s", authErr(e)), "err"); }
+}
 /* Khi user bấm Lưu hồ sơ, bản nháp đã được chốt, gỡ dấu nháp khỏi form. */
 $("#profileForm").addEventListener("submit", () => { clearDraftMarks(); });
 
