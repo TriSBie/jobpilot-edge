@@ -8,10 +8,10 @@ const URL0 = "file:///" + path.resolve(__dirname, "../public/index.html").replac
 const API = "https://jobpilot-api.tribui-it-work.workers.dev";
 const profile = { id: "p1", name: "Backend", level: "senior", locations: [], skills: [{ skill: "Java", weight: 5 }] };
 const MODES = ["remote", "hybrid", "onsite", null];
-// 70 job: (i-1)%4 quyết định hình thức; i%3: 0 = VNĐ, 1 = chỉ salary_text USD, 2 = không lương ("Thương lượng")
+// 70 job: (i-1)%4 quyết định hình thức; i%3: 0 = VNĐ, 1 = USD (API quy VNĐ, thẻ vẫn hiện salary_text gốc), 2 = không lương ("Thương lượng")
 const jobs = Array.from({ length: 70 }, (_, k) => { const i = k + 1, s = i % 3;
   return { id: "j" + i, title: "Job " + i, company: "Acme", source: "itviec", source_url: "https://example.com/" + i, work_mode: MODES[(i - 1) % 4],
-    salary_vnd_min: s === 0 ? (10 + i) * 1e6 : null, salary_vnd_max: s === 0 ? (20 + i) * 1e6 : null, salary_text: s === 0 ? "" : s === 1 ? "1,500 - 2,500 USD" : "Thương lượng",
+    salary_vnd_min: s === 0 ? (10 + i) * 1e6 : s === 1 ? 38250000 : null, salary_vnd_max: s === 0 ? (20 + i) * 1e6 : s === 1 ? 63750000 : null, salary_text: s === 0 ? "" : s === 1 ? "1,500 - 2,500 USD" : "Thương lượng",
     match: { final_score: 90 - (i % 50), tier: "strong", matched_skills: ["Java"], missing_skills: [] }, application: null }; });
 function serve(q){
   const mode = q.get("mode"), ms = q.get("min_salary"), has = q.get("has_salary") === "1";
@@ -53,7 +53,7 @@ const count = (page) => page.textContent("#jobsCount");
     // Thẻ: badge + lương VNĐ, USD giữ salary_text, "Thương lượng" không hiện
     const card = (id) => page.textContent(`[data-job-id="${id}"]`);
     assert.match(await card("j3"), /13–23 triệu\/tháng/); assert.match(await card("j3"), /Onsite/);
-    assert.match(await card("j1"), /1,500 - 2,500 USD/); assert.match(await card("j1"), /Remote/);
+    assert.match(await card("j1"), /1,500 - 2,500 USD/); assert.doesNotMatch(await card("j1"), /triệu/, "USD: không hiện số quy đổi"); assert.match(await card("j1"), /Remote/);
     assert.doesNotMatch(await card("j2"), /Thương lượng/);
     assert.doesNotMatch(await card("j4"), /Remote|Hybrid|Onsite/, "work_mode null: không badge");
     // Chip hình thức: bàn phím, aria-pressed, gửi mode, tải lại trang 1

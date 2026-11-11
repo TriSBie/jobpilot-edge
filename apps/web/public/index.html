@@ -3608,15 +3608,17 @@ $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.ta
 // Bộ lọc hình thức + lương: lọc ở server (trước phân trang), giữ trong URL để tải lại vẫn còn.
 const MODE_LABEL = { remote: "Remote", hybrid: "Hybrid", onsite: "Onsite" };
 const MODES = Object.keys(MODE_LABEL);
-// Lương: salary_vnd_* (VNĐ/tháng) -> "15–25 triệu/tháng"; không có thì salary_text; "Thương lượng"/ẩn sau đăng nhập thì không hiện gì.
+// Lương: tin trả USD giữ nguyên salary_text gốc ("$1500 - $2500"); còn lại salary_vnd_* (VNĐ/tháng) -> "15–25 triệu/tháng";
+// không có thì salary_text; "Thương lượng"/ẩn sau đăng nhập thì không hiện gì.
 function jobSalary(j){
+  const s = String(j.salary_text || "").trim();
+  if (/\$|usd/i.test(s) && /\d/.test(s)) return s;
   const m = (v) => (Number(v) / 1e6).toLocaleString(LANG === "en" ? "en-US" : "vi-VN", { maximumFractionDigits: 1 });
   const lo = j.salary_vnd_min, hi = j.salary_vnd_max;
   if (lo && hi) return lo === hi ? t("%s triệu/tháng", m(lo)) : t("%s–%s triệu/tháng", m(lo), m(hi));
   if (lo) return t("Từ %s triệu/tháng", m(lo));
   if (hi) return t("Tới %s triệu/tháng", m(hi));
-  const s = String(j.salary_text || "").trim();
-  return !s || /thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|sign in|log ?in|đăng nhập/i.test(s) ? "" : s;
+  return /thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|sign in|log ?in|đăng nhập/i.test(s) ? "" : s;
 }
 const jobsServerFiltered = () => !!(state.filters.mode.length || state.filters.minSal || state.filters.hasSal);
 function jobsFiltersToUrl(){
