@@ -39,14 +39,14 @@ const CORS = {
 // i18n: tiếng Việt là nguồn; chỉ dịch chuỗi trả về client theo Accept-Language.
 // ponytail: chỉ có "en"; thêm ngôn ngữ thì đổi EN thành map theo lang.
 const EN = {
-  "Job không ghi địa điểm": "Job has no location",
+  "Tin không ghi địa điểm": "Job has no location",
   "Địa điểm khớp với hồ sơ": "Location matches your profile",
   "Bạn chấp nhận Remote, job này làm onsite": "You accept Remote; this job is onsite",
   "Remote nhưng chỉ nhận ứng viên ở %s": "Remote but only hires in %s",
   "Địa điểm không khớp với hồ sơ": "Location does not match your profile",
   "Cấp bậc phù hợp": "Level fits",
-  "Job này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
-  "Job này thiên về junior hơn cấp bậc của bạn": "This job leans more junior than your level",
+  "Tin này thiên về senior hơn cấp bậc của bạn": "This job leans more senior than your level",
+  "Tin này thiên về junior hơn cấp bậc của bạn": "This job leans more junior than your level",
   "JD yêu cầu %s năm kinh nghiệm": "JD requires %s years of experience",
   "Tin cũ %s ngày": "Posted %s days ago",
   "Đăng trùng / đăng lại": "Duplicate / reposted",
@@ -892,7 +892,7 @@ function fitBreakdown(profile, job) {
   const jobLocTitle = `${jobLoc} ${normLoc(job.title)}`;
   let location = 0, locationWhy = "", locationArg;
   const jdLock = /remote/.test(jobLocTitle) ? normLoc(jdOf(job).slice(0, 3000)).replace(/\s+/g, " ").match(JD_REGION_LOCK) : null;
-  if (!jobLoc) { location = 4; locationWhy = "Job không ghi địa điểm"; }
+  if (!jobLoc) { location = 4; locationWhy = "Tin không ghi địa điểm"; }
   // Remote khoá vùng (T-60): tên vùng/múi giờ không gồm Việt Nam, so trên chuỗi đã normLoc (lowercase).
   // ponytail: danh sách cứng; thiếu vùng thì thêm vào đây, đổi sang bảng vùng khi nguồn mới ghi kiểu khác.
   // T-77: tiêu đề cũng có thể ghi khoá vùng ("U.S. Based Remote Contractor"), xét chung với địa điểm.
@@ -933,8 +933,8 @@ function fitBreakdown(profile, job) {
   const tooJunior = years >= (/middle/.test(lvl) ? 7 : 4) && /junior|fresher|middle/.test(lvl);
   let levelArg;
   if (tooJunior) { level = 2; levelWhy = "JD yêu cầu %s năm kinh nghiệm"; levelArg = years; }
-  else if (seniorish && /middle|junior|fresher/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Job này thiên về senior hơn cấp bậc của bạn"; }
-  else if (juniorish && /senior/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Job này thiên về junior hơn cấp bậc của bạn"; }
+  else if (seniorish && /middle|junior|fresher/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Tin này thiên về senior hơn cấp bậc của bạn"; }
+  else if (juniorish && /senior/.test(lvl) && !mentionsMine) { level = 2; levelWhy = "Tin này thiên về junior hơn cấp bậc của bạn"; }
   return { location, locationWhy, locationArg, levelArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
@@ -2001,7 +2001,7 @@ export default {
           } catch (e) { /* giữ jd rỗng nếu fetch lỗi */ }
         }
         job = await upsertJob(env, sourceType === "manual" ? null : src?.id || null, {
-          title: title || "Job không tiêu đề", company, location: str(b.location, 200),
+          title: title || "Tin không tiêu đề", company, location: str(b.location, 200),
           url: link, jdText, skills: extractSkillsFromText(jdText),
           postedAt: null, salaryText: str(b.salary_text, 100) || null,
         }, user.id);

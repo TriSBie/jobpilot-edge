@@ -93,5 +93,8 @@ const src = fs.readFileSync(workerPath, 'utf8');
     assert(!VI.test(visible), 'A9 còn tiếng Việt: ' + visible);
   }
   assert(VI.test(JSON.stringify((await get('/api/public/sample?lang=vi', { 'accept-language': 'en-US' })).body.jobs.map((j) => j.flags))), 'A9: lang=vi thắng Accept-Language');
+  // Wording: lý do điểm hiển thị cho người dùng nói "tin", không nói "Job".
+  assert(!/"Job (không|này|đã)[^"]*"/.test(src), 'còn chuỗi lý do bắt đầu bằng "Job"');
+  assert(m.fitBreakdown({ level: 'middle', locations: ['Hà Nội'] }, { title: 'Java Dev', location: '', jd_text: '', posted_at: T }).locationWhy === 'Tin không ghi địa điểm', 'locationWhy wording');
   console.log('scoring-data selfcheck OK');
 })().catch((e) => { console.error(e); process.exit(1); });
