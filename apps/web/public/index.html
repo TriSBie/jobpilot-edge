@@ -1462,7 +1462,7 @@ html.fx-on .bg-fx{opacity:1}
       </select>
     </div>
     <div class="demo-result">
-      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong">strong</span></div>
+      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong" data-en="strong">mạnh</span></div>
       <dl class="demo-break">
         <div><dt data-en="skills">kỹ năng</dt><dd id="demoScoreRule">37,5 / 50</dd></div>
         <div><dt data-en="location">khu vực</dt><dd>8 / 8</dd></div>
@@ -5177,7 +5177,7 @@ if (LANG === "en") {
     dq("#demoScoreFreshVal").textContent = fresh + " / 7";
     dq("#demoScoreFit").textContent = fit + " / 20";
     var tierEl = dq("#demoScoreTier");
-    tierEl.textContent = tier;
+    tierEl.textContent = t(TIER_VI[tier]);
     tierEl.className = "badge" + (tier === "weak" ? "" : " " + tier);
     dq("#demoScoreCap").classList.toggle("hidden", !capped);
     dq("#demoScoreExplain").textContent = t("Khớp %s/%s kỹ năng (kỹ năng %s) + phần còn lại %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, mức %s", m, req, fmtVN(rule), fit, fresh, fin, t(TIER_VI[tier])) +

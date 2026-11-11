@@ -15,6 +15,7 @@ item("A9 lang param", () => { has('"/api/public/sample?lang=" + LANG'); has("lev
 item("B data claim", () => { no(/máy chủ của bạn/); has("Không bán dữ liệu, không chia sẻ CV, xoá được bất cứ lúc nào."); });
 item("B tin/nộp", () => { no(/Đã apply/); no(/"[^"\n]*[à-ỹđ][^"\n]*\b[Jj]ob\b[^"\n]*"\s*:/, "khoá EN tiếng Việt còn chữ job"); has('label: "Đã nộp" }'); has('key: "applied"'); });
 item("B explain", () => { has("Khớp %s/%s kỹ năng (kỹ năng %s) + phần còn lại %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, mức %s"); no(/rule %s\) \+ fit/); has('strong: "mạnh", partial: "một phần", weak: "yếu"'); });
+item("D3 tier badge", () => { has("tierEl.textContent = t(TIER_VI[tier]);"); no(/tierEl.textContent = tier;/); has('class="badge strong" data-en="strong">mạnh<'); });
 item("B xoá", () => no(/xóa|Xóa/));
 item("B about", () => { no(/sg-log/); has('<p class="sg-about-note" data-en='); no(/sg-about-note hidden/); });
 item("B testimonial", () => no(/testi/));
