@@ -980,10 +980,10 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 /* Thẻ: viền phẳng, bo vừa phải, không bóng (bóng cứng chỉ dành cho 2 chỗ nhấn bên dưới). */
 #landingView .lp-card, #landingView .demo-controls, #landingView .demo-result{ background:var(--surface); border:var(--bw) solid var(--line); border-radius:var(--r-md); box-shadow:none; }
 /* Cột kanban là vùng nền, không phải thẻ, để thẻ việc không thành "thẻ trong thẻ". */
-#landingView .lp-card:hover{ transform:none; }
+@media (hover:hover) and (pointer:fine){ #landingView .lp-card:hover{ transform:none; } }
 /* Tương phản AA: link landing dùng màu mực, nút chính chữ trắng trên brand phẳng. */
 #landingView .lp-links a{ color:var(--ink); }
-#landingView .lp-links a:hover{ color:var(--brand); }
+@media (hover:hover) and (pointer:fine){ #landingView .lp-links a:hover{ color:var(--brand); } }
 /* 2 chỗ nhấn: khung tin thật + nút chính. */
 .sg-live{ margin-top:2.4rem; width:min(820px,100%); text-align:left; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); box-shadow:var(--soft); padding:1.1rem 1.2rem; }
 .sg-live-head{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
@@ -1180,11 +1180,35 @@ html[data-theme="dark"]{--spot:rgba(124,140,255,.05)} /* faint #787C84 trên tâ
 .bg-fx{position:fixed;left:0;top:0;z-index:-1;width:1200px;height:1200px;margin:-600px 0 0 -600px;pointer-events:none;opacity:0;transition:opacity .6s;
   background:radial-gradient(closest-side,var(--spot),transparent);transform:translate3d(var(--mx,50vw),var(--my,30vh),0);will-change:transform}
 html.fx-on .bg-fx{opacity:1}
-/* reveal duy nhất: section landing nhích lên 16px khi vào khung nhìn; luôn nhìn thấy (opacity ≥ .6), chỉ CSS, không JS */
-@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){
-  #landingView .lp-sec:not(.lp-hero){animation:lp-rise 1ms linear both;animation-timeline:view();animation-range:entry 0% entry 35%}
-}}
-@keyframes lp-rise{from{opacity:.6;transform:translateY(16px)}}
+/* Reveal: con trực tiếp của section mờ + nhích 12px, ease (.16,1,.3,1). Có animation-timeline: CSS thuần theo khung nhìn.
+   Không có (Firefox): JS gắn html.rv, IO thêm .in 1 lần, stagger 70ms trần 420ms. Không JS/IO = luôn hiện. */
+@media (prefers-reduced-motion:no-preference){
+  @supports (animation-timeline:view()){
+    html:not(.rv) #landingView .lp-sec:not(.lp-hero)>*{animation:lp-rise 1ms cubic-bezier(.16,1,.3,1) both;animation-timeline:view();animation-range:entry 0% entry 40%}
+  }
+  html.rv #landingView .lp-sec:not(.lp-hero)>*{transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1);transition-delay:calc(var(--i,0) * 70ms)}
+  html.rv #landingView .lp-sec:not(.lp-hero)>*:not(.in){opacity:0;transform:translateY(12px)}
+}
+@keyframes lp-rise{from{opacity:0;transform:translateY(12px)}}
+/* Nhịp chương (scoring / kanban / lương): H2 trái 40% mờ, mô tả phải 60%, mockup full width bên dưới, ~200px giữa chương */
+.lp-chapter{padding-top:clamp(6rem,15vw,12.5rem)}
+.lp-chapter .sg-split{grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:start;margin-bottom:clamp(2rem,4vw,3rem)}
+.lp-chapter .sg-split h2{color:var(--muted);margin-bottom:0}
+.lp-chapter .sg-split .lede{color:var(--text);max-width:60ch;margin-top:0}
+.lp-chapter>.lp-frame{position:relative;max-width:1080px;margin:0 auto}
+.lp-chapter>.lp-frame:not(.lp-frame-wide){max-width:880px}
+@media (max-width:899px){.lp-chapter .sg-split{grid-template-columns:1fr;gap:1rem}}
+/* Chuyển động đặc trưng duy nhất: lưới 5×5 chấm bật/tắt rời rạc, chu kỳ 3s; dừng khi khuất (IO bỏ .on) và khi reduced-motion */
+.lp-dots{position:absolute;right:12px;top:12px;display:grid;grid-template-columns:repeat(5,6px);gap:5px;padding:10px;border-radius:12px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.lp-dots i{width:6px;height:6px;border-radius:50%;background:var(--brand);opacity:.25}
+.lp-dots i:nth-child(3n+1){opacity:.9}
+@media (prefers-reduced-motion:no-preference){
+  .lp-dots i{animation:lp-dot 3s steps(1,end) calc(var(--d,0) * 120ms) infinite paused}
+  .lp-dots.on i{animation-play-state:running}
+}
+@keyframes lp-dot{0%{opacity:.2}12%{opacity:1}36%{opacity:.2}}
+@media (max-width:640px){.lp-dots{position:static;width:max-content;margin:8px 8px 8px auto}}
 /* Hero vào trang 1 lần: h1/sub chỉ transform (giữ opacity 1 cho LCP), CTA/trust mờ dần; nền nở nhẹ + parallax theo cuộn (không listener) */
 @media (prefers-reduced-motion:no-preference){
   .lp-hero>h1,.lp-hero>.sub{animation:hero-rise var(--m-enter) var(--e-out) both}
@@ -1402,7 +1426,7 @@ html.fx-on .bg-fx{opacity:1}
         <div class="sg-try-row">
           <label><span data-en="Level">Cấp bậc</span><select id="tryLevel" class="input"><option value="fresher">Fresher</option><option value="junior">Junior</option><option value="middle" selected>Middle</option><option value="senior">Senior</option></select></label>
           <label><span data-en="Location">Khu vực</span><select id="tryLoc" class="input"><option value="Hồ Chí Minh" data-en="Ho Chi Minh City">Hồ Chí Minh</option><option value="Hà Nội" data-en="Hanoi">Hà Nội</option><option value="Đà Nẵng" data-en="Da Nang">Đà Nẵng</option><option value="Remote">Remote</option></select></label>
-          <button class="btn primary" type="submit" data-en="Show jobs">Xem tin</button>
+          <button class="btn" type="submit" data-en="Show jobs">Xem tin</button>
         </div>
       </form>
       <p id="tryMsg" class="sg-mut" role="status"></p>
@@ -1421,11 +1445,13 @@ html.fx-on .bg-fx{opacity:1}
     </div>
   </section>
 
-  <section class="lp-sec sg-left" id="lp-scoring">
+  <section class="lp-sec sg-left lp-chapter" id="lp-scoring">
     <div class="sg-split">
       <div class="sg-split-text">
         <p class="lp-eyebrow" data-en="Scoring">Chấm điểm</p>
         <h2 data-en="Every score has a reason">Mỗi điểm đều có lý do</h2>
+      </div>
+      <div>
         <p class="lede" data-en="Each posting gets a breakdown: which skills match, which are missing, and how the parts add up.">Mỗi tin có bảng điểm: kỹ năng nào khớp, kỹ năng nào thiếu, từng phần cộng lại ra sao.</p>
         <ul class="lp-facts">
           <li data-en="Skills up to 50 points, the rest up to 20">Kỹ năng tối đa 50 điểm, phần còn lại 20</li>
@@ -1433,8 +1459,8 @@ html.fx-on .bg-fx{opacity:1}
           <li data-en="Postings with fewer than 3 skills cap at 69">Tin ghi dưới 3 kỹ năng tối đa 69 điểm</li>
         </ul>
       </div>
-      <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-scoring-dark.webp" width="1066" height="892" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng điểm 86 của một tin, kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: the 86-point breakdown of a posting, with matched skills, missing skills and each score part"><img class="lp-shot shot-light" src="assets/shot-scoring-light.webp" width="1066" height="892" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng điểm 86 của một tin, kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: the 86-point breakdown of a posting, with matched skills, missing skills and each score part"></figure>
     </div>
+    <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-scoring-dark.webp" width="1066" height="892" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng điểm 86 của một tin, kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: the 86-point breakdown of a posting, with matched skills, missing skills and each score part"><img class="lp-shot shot-light" src="assets/shot-scoring-light.webp" width="1066" height="892" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng điểm 86 của một tin, kỹ năng khớp, kỹ năng thiếu và điểm từng phần" data-en-alt="JobPilot screenshot: the 86-point breakdown of a posting, with matched skills, missing skills and each score part"><div class="lp-dots" aria-hidden="true"><i style="--d:0"></i><i style="--d:2"></i><i style="--d:4"></i><i style="--d:6"></i><i style="--d:0"></i><i style="--d:3"></i><i style="--d:5"></i><i style="--d:7"></i><i style="--d:1"></i><i style="--d:3"></i><i style="--d:6"></i><i style="--d:0"></i><i style="--d:2"></i><i style="--d:4"></i><i style="--d:6"></i><i style="--d:1"></i><i style="--d:3"></i><i style="--d:5"></i><i style="--d:7"></i><i style="--d:1"></i><i style="--d:4"></i><i style="--d:6"></i><i style="--d:0"></i><i style="--d:2"></i><i style="--d:4"></i></div></figure>
     <div class="lp-below">
     <h3 class="sg-sub" data-en="A real posting today">Tin thật hôm nay</h3>
     <div class="sg-why" id="sgWhy"><p class="sg-mut" data-en="Loading real postings…">Đang tải tin thật…</p></div>
@@ -1478,27 +1504,31 @@ html.fx-on .bg-fx{opacity:1}
   </div>
   </section>
 
-<section class="lp-sec sg-left" id="lp-demo-kanban">
+<section class="lp-sec sg-left lp-chapter" id="lp-demo-kanban">
   <div class="sg-split lp-feat-head">
     <div class="sg-split-text">
       <p class="lp-eyebrow" data-en="Tracking">Theo dõi đơn</p>
       <h2 data-en="Track every application">Theo dõi từng đơn</h2>
-      <p class="lede" data-en="Every posting you care about becomes a card, from New to Offer.">Mỗi tin bạn quan tâm thành một thẻ, từ Mới tới Offer.</p>
     </div>
+    <div>
+      <p class="lede" data-en="Every posting you care about becomes a card, from New to Offer.">Mỗi tin bạn quan tâm thành một thẻ, từ Mới tới Offer.</p>
     <ul class="lp-facts">
       <li data-en="A follow-up reminder 7 days after you apply">Nhắc follow-up 7 ngày sau khi nộp</li>
       <li data-en="A warning when an application goes quiet">Cảnh báo khi đơn im lặng quá lâu</li>
       <li data-en="Interview rounds noted right on the card">Ghi vòng phỏng vấn ngay trên thẻ</li>
     </ul>
+    </div>
   </div>
   <figure class="lp-frame lp-frame-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã nộp, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã nộp, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"></figure>
 </section>
 
-<section class="lp-sec sg-left" id="lp-salary">
+<section class="lp-sec sg-left lp-chapter" id="lp-salary">
   <div class="sg-split">
     <div class="sg-split-text">
       <p class="lp-eyebrow" data-en="Salary">Lương</p>
       <h2 data-en="Know the pay range first">Biết khung lương trước</h2>
+    </div>
+    <div>
       <p class="lede" data-en="Many postings say &quot;negotiable&quot;. JobPilot works out the range from live postings that do list pay.">Nhiều tin ghi "thỏa thuận". JobPilot tính khoảng lương từ chính các tin đang tuyển có ghi lương.</p>
       <ul class="lp-facts">
         <li data-en="Median and P25 to P75 by role and level">Trung vị và P25 đến P75 theo vị trí, cấp bậc</li>
@@ -1506,8 +1536,8 @@ html.fx-on .bg-fx{opacity:1}
         <li data-en="Suggested lines for the two hardest moments">Gợi ý câu nói cho hai lúc khó mở lời nhất</li>
       </ul>
     </div>
-    <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-salary-dark.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"><img class="lp-shot shot-light" src="assets/shot-salary-light.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"></figure>
   </div>
+  <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-salary-dark.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"><img class="lp-shot shot-light" src="assets/shot-salary-light.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"></figure>
   <div class="sg-pair lp-split-after">
     <div class="sg-box">
       <h3 data-en="When they ask your expected salary first">Khi bị hỏi lương mong muốn trước</h3>
@@ -5315,6 +5345,33 @@ if (LANG === "en") {
   });
 })();
 
+/* Chuyển động landing: reveal dự phòng (khi thiếu animation-timeline), lưới chấm chỉ chạy khi thấy, đếm số [data-countup]. */
+const lpMotion = (() => {
+  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches, IO = "IntersectionObserver" in window;
+  const nf = new Intl.NumberFormat("vi-VN");
+  // giá trị ở thời điểm k∈[0,1], ease-out cubic; làm tròn để không nhảy số lẻ
+  const at = (target, k) => Math.round(target * (1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3)));
+  const stagger = (i) => Math.min(i * 70, 420);
+  const land = document.getElementById("landingView");
+  if (land && !RM && IO && !CSS.supports("animation-timeline: view()")) {
+    document.documentElement.classList.add("rv");
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -60px 0px" });
+    land.querySelectorAll(".lp-sec:not(.lp-hero)").forEach((sec) => [...sec.children].forEach((el, i) => { el.style.setProperty("--i", stagger(i) / 70); io.observe(el); }));
+  }
+  const dots = land && land.querySelector(".lp-dots");
+  if (dots && !RM && IO) new IntersectionObserver((es) => dots.classList.toggle("on", es[0].isIntersecting)).observe(dots);
+  const run = (el) => {
+    const n = Number(el.dataset.countup) || 0;
+    if (RM) { el.textContent = nf.format(n); return; }
+    const t0 = performance.now();
+    const step = (t) => { const k = (t - t0) / 1200; el.textContent = nf.format(at(n, k)); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
+  const cio = IO && !RM ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { cio.unobserve(e.target); run(e.target); } }), { threshold: 0.35 }) : null;
+  const count = (root) => root && root.querySelectorAll("[data-countup]:not([data-cu])").forEach((el) => { el.dataset.cu = 1; el.setAttribute("aria-label", nf.format(Number(el.dataset.countup) || 0)); cio ? cio.observe(el) : run(el); });
+  return { at, stagger, count };
+})();
+
 /* PROTO signal-real-data: nạp tin thật cho landing */
 (function loadLandingSample(){
   const box = document.getElementById("sgLiveJobs");
@@ -5329,7 +5386,7 @@ if (LANG === "en") {
     if (!jobs.length) { box.innerHTML = '<li class="sg-mut">' + t("Chưa có tin nào, quay lại sau ít phút.") + '</li>'; return; }
     box.innerHTML = jobs.map(j => `<li class="sg-job">
       <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
-      <span class="score-pill ${esc(j.tier)}">${t("%sđ", Math.round(j.score))}</span>
+      <span class="score-pill ${esc(j.tier)}">${t("%sđ", `<span data-countup="${Math.round(j.score)}">${Math.round(j.score)}</span>`)}</span>
       <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}, ${esc(ago(j.age_days))}${j.salary ? ", " + esc(t(j.salary)) : ""}</span>
       <span class="sg-chips">${j.verdict ? `<span class="vd ${esc(j.verdict)}">${j.verdict === "apply" ? t("Nên nộp") : j.verdict === "skip" ? t("Bỏ qua") : esc(j.verdict_why)}</span>` : ""}${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}${(j.missing || []).slice(0, 3).map(x => `<span class="sg-chip">${t("thiếu %s", esc(x))}</span>`).join("")}${(j.flags || []).filter(f => f.type !== "duplicate").slice(0, 1).map(f => `<span class="sg-chip warn">${esc(f.label)}</span>`).join("")}</span>
     </li>`).join("");
@@ -5339,7 +5396,8 @@ if (LANG === "en") {
       <div class="row"><span>${t("Kỹ năng khớp")}${top.matched.length ? ": " + esc(top.matched.join(", ")) : ""}</span><b>${LANG === "en" ? top.rule : String(top.rule).replace(".", ",")} / 50</b></div>
       <div class="row"><span>${t("Còn thiếu")}</span><b>${top.missing.length ? esc(top.missing.join(", ")) : t("không")}</b></div>
       <div class="row"><span>${t("Khu vực / độ mới / cấp bậc")}</span><b>${f.location}/8 · ${f.freshness}/7 · ${f.level}/5</b></div>
-      <div class="row"><span>${t("Tổng: (kỹ năng + phần còn lại) / 70 × 100")}${top.capped ? t(" · tin ghi dưới 3 kỹ năng nên tối đa 69") : ""}</span><b class="total">${Math.round(top.score)}</b></div>`;
+      <div class="row"><span>${t("Tổng: (kỹ năng + phần còn lại) / 70 × 100")}${top.capped ? t(" · tin ghi dưới 3 kỹ năng nên tối đa 69") : ""}</span><b class="total" data-countup="${Math.round(top.score)}">${Math.round(top.score)}</b></div>`;
+    lpMotion.count(document.getElementById("landingView"));
   }).catch(() => {
     box.innerHTML = '<li class="sg-mut">' + t("Không tải được tin lúc này. Thử tải lại trang.") + '</li>';
     $("#sgWhy").innerHTML = '<p class="sg-mut">' + t("Không tải được ví dụ.") + '</p>';
