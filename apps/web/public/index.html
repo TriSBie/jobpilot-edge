@@ -3,32 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JobPilot Edge — Săn việc, có hệ thống</title>
-<meta name="description" content="AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.">
+<title>JobPilot — Chấm điểm việc làm IT theo CV của bạn, miễn phí</title>
+<meta name="description" content="Gom tin IT từ ITviec, TopDev và các trang remote, chấm khớp với CV kèm lý do, theo dõi đơn ứng tuyển và khung lương. Miễn phí cho lập trình viên Việt Nam.">
 <script>try{var _t=localStorage.getItem("jp_theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=_t;}catch(e){document.documentElement.dataset.theme="dark";}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"></noscript><!-- font không chặn render (B8: LCP landing) -->
 <script>try{if(localStorage.getItem("jp_token"))document.documentElement.classList.add("jp-in");}catch(e){}</script><style>.jp-in #landingView{display:none}</style>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="canonical" href="https://jobpilot-edge.pages.dev/">
 <link rel="alternate" hreflang="vi" href="https://jobpilot-edge.pages.dev/">
-<link rel="alternate" hreflang="en" href="https://jobpilot-edge.pages.dev/?lang=en">
 <link rel="alternate" hreflang="x-default" href="https://jobpilot-edge.pages.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="JobPilot Edge">
-<meta property="og:title" content="JobPilot Edge — Săn việc, có hệ thống">
-<meta property="og:description" content="AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.">
+<meta property="og:title" content="JobPilot — Chấm điểm việc làm IT theo CV của bạn, miễn phí">
+<meta property="og:description" content="Gom tin IT từ ITviec, TopDev và các trang remote, chấm khớp với CV kèm lý do, theo dõi đơn ứng tuyển và khung lương. Miễn phí cho lập trình viên Việt Nam.">
 <meta property="og:url" content="https://jobpilot-edge.pages.dev/">
 <meta property="og:image" content="https://jobpilot-edge.pages.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="vi_VN">
-<meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="JobPilot Edge — Săn việc, có hệ thống">
-<meta name="twitter:description" content="AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.">
+<meta name="twitter:title" content="JobPilot — Chấm điểm việc làm IT theo CV của bạn, miễn phí">
+<meta name="twitter:description" content="Gom tin IT từ ITviec, TopDev và các trang remote, chấm khớp với CV kèm lý do, theo dõi đơn ứng tuyển và khung lương. Miễn phí cho lập trình viên Việt Nam.">
 <meta name="twitter:image" content="https://jobpilot-edge.pages.dev/og.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"JobPilot Edge","url":"https://jobpilot-edge.pages.dev/","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":["vi","en"],"description":"AI copilot săn việc cho dev Việt: gom job đa nguồn, chấm khớp CV–JD, kanban ứng tuyển, digest mỗi sáng.","offers":{"@type":"Offer","price":"0","priceCurrency":"VND"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"JobPilot","url":"https://jobpilot-edge.pages.dev/","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"vi","description":"Gom tin IT từ ITviec, TopDev và các trang remote, chấm khớp với CV kèm lý do, theo dõi đơn ứng tuyển và khung lương. Miễn phí cho lập trình viên Việt Nam.","offers":{"@type":"Offer","price":"0","priceCurrency":"VND"}}</script>
 <style>
 /* ===== SIGNAL TOKENS (bước 1) — dán nguyên khối 1 từ spec ===== */
 /* CLS: font dự phòng có metric khớp webfont, swap không làm nhảy layout. Số đo bằng canvas measureText trên chuỗi VI */
@@ -397,21 +396,6 @@ html[data-theme="dark"]{
 .lp-sec h2 em, .lp-hero h1 em{ font-style:italic; color:#9ba1a8; }
 .lp-sec .lede{ color:var(--muted); max-width:62ch; font-size:1.02rem; line-height:1.65; margin:0 auto; }
 /* Testimonial: marquee chỉ bằng CSS, 2 hàng ngược chiều; bản sao aria-hidden để lặp liền mạch. */
-#lp-testi{text-align:center}
-.testi-note{margin:.6rem auto 0;font-size:.85rem;color:var(--muted)}
-.testi{margin-top:2.4rem;display:grid;gap:16px}
-.testi-row{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
-.testi-track{display:flex;width:max-content;animation:testi-x 52s linear infinite}
-.testi-rev .testi-track{animation-direction:reverse;animation-duration:58s}
-.testi-row:hover .testi-track,.testi-row:focus-within .testi-track{animation-play-state:paused}
-.testi-group{display:flex;gap:16px;padding:0 16px 0 0;margin:0;list-style:none}
-.testi-card{width:340px;flex:none;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:16px}
-.testi-q{margin:0;font:400 15px/1.6 var(--f-body);color:var(--text);text-wrap:pretty}
-.testi-who{display:flex;align-items:center;gap:10px;font:400 13px var(--f-body);color:var(--muted)}
-.testi-av{width:32px;height:32px;flex:none;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;font:500 12px var(--f-body);color:var(--text)}
-@keyframes testi-x{to{transform:translateX(-50%)}}
-@media (max-width:640px){.testi-card{width:280px}.testi-rev{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.testi-rev .testi-track{animation:none}}
-@media (prefers-reduced-motion:reduce){.testi-row,.testi-rev{position:static;width:auto;height:auto;clip:auto;white-space:normal;overflow:visible;-webkit-mask-image:none;mask-image:none}.testi-track{animation:none;width:auto;display:block}.testi-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:0}.testi-group.testi-clone{display:none}.testi-card{width:auto}}
 .lp-hero{ padding-top:clamp(3rem,8vh,5.5rem); }
 .lp-hero h1{ font-family:var(--f-head); font-weight:400; font-size:clamp(2.7rem,6.5vw,4.6rem); line-height:1.06; margin:1.2rem 0 1rem; }
 .lp-hero .sub{ color:var(--muted); max-width:37.8em; /* =60ch của Inter; em không đổi khi swap font -> không CLS */ font-size:1.08rem; line-height:1.65; margin:0 auto; }
@@ -1055,11 +1039,6 @@ body, html[data-theme="light"] body, html[data-theme="dark"] body{ background:va
 .sg-about{ width:100%; max-width:720px; margin:0 auto 0 max(0px, calc((100% - 1080px) / 2)); }
 .sg-about h2{ text-align:left; margin-left:0; }
 .sg-about-note{ color:var(--mute); max-width:60ch; line-height:1.65; border-left:var(--bw) solid var(--line); padding-left:1rem; }
-.sg-log{ margin:1.4rem 0 0; display:grid; gap:.7rem; }
-.sg-log div{ display:grid; grid-template-columns:7.5rem minmax(0,1fr); gap:1rem; align-items:baseline; }
-.sg-log dt{ color:var(--mute); font-size:.9rem; font-variant-numeric:tabular-nums; }
-.sg-log dd{ margin:0; max-width:60ch; line-height:1.6; text-wrap:pretty; }
-@media (max-width:640px){ .sg-log div{ grid-template-columns:1fr; gap:.15rem; } }
 .sg-pair{ margin-top:1.6rem; width:min(860px,100%); display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:1rem; text-align:left; }
 .sg-box{ border:var(--bw) solid var(--line); border-radius:var(--r-md); padding:1.1rem 1.2rem; background:var(--surface); }
 .sg-box h3{ margin:0 0 .5rem; font-size:1rem; }
@@ -1221,7 +1200,6 @@ html.fx-on .bg-fx{opacity:1}
 @keyframes hero-in{from{opacity:0;transform:translateY(8px)}}
 @keyframes hero-bg{from{scale:1.04}}
 @keyframes hero-px{to{translate:0 60px}}
-.testi-off .testi-track{animation-play-state:paused}
 @media (max-width:640px){
   .tabbar-row{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line-strong);color:var(--text)}
   .tabbar-row .tab{color:var(--muted);font-weight:500}
@@ -1484,7 +1462,7 @@ html.fx-on .bg-fx{opacity:1}
       </select>
     </div>
     <div class="demo-result">
-      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong">strong</span></div>
+      <div class="demo-final"><b id="demoScoreFinal">79</b><span id="demoScoreTier" class="badge strong" data-en="strong">mạnh</span></div>
       <dl class="demo-break">
         <div><dt data-en="skills">kỹ năng</dt><dd id="demoScoreRule">37,5 / 50</dd></div>
         <div><dt data-en="location">khu vực</dt><dd>8 / 8</dd></div>
@@ -1512,7 +1490,7 @@ html.fx-on .bg-fx{opacity:1}
       <li data-en="Interview rounds noted right on the card">Ghi vòng phỏng vấn ngay trên thẻ</li>
     </ul>
   </div>
-  <figure class="lp-frame lp-frame-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã apply, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"></figure>
+  <figure class="lp-frame lp-frame-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã nộp, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã nộp, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"></figure>
 </section>
 
 <section class="lp-sec sg-left" id="lp-salary">
@@ -1541,38 +1519,10 @@ html.fx-on .bg-fx{opacity:1}
   </div>
 </section>
 
-<!-- Testimonial: 6 câu dưới đây là MẪU minh hoạ, không phải khách thật. Chủ sản phẩm thay bằng phản hồi thật rồi bỏ thuộc tính hidden. -->
-<section class="lp-sec" id="lp-testi">
-  <h2 data-en="A day of job hunting with JobPilot">Một ngày tìm việc với JobPilot</h2>
-  <p class="lede" data-en="Everyday situations it helps with: scoring, skip suggestions, reminders and salary.">Những tình huống hằng ngày JobPilot giúp được: chấm điểm, gợi ý bỏ qua, nhắc việc và lương.</p>
-  <p class="testi-note" data-en="Illustrative examples, not reviews from real users.">Minh hoạ, không phải đánh giá của người dùng thật.</p>
-  <div class="testi">
-    <div class="testi-row">
-      <div class="testi-track">
-        <ul class="testi-group"><li class="testi-card"><p class="testi-q" data-en="I can see why a job scores 82: Java and Spring match, Kafka is missing. No need to read the whole JD to know if it fits.">Thấy rõ vì sao một tin được 82 điểm: khớp Java, Spring, thiếu Kafka. Đỡ phải đọc cả JD mới biết có hợp không.</p><div class="testi-who"><span class="testi-av">BE</span><span data-en="Backend dev, 3 years">Backend dev, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="Skip suggestions stop me from wasting time on jobs that ask for 8 years of experience.">Gợi ý bỏ qua giúp mình không phí thời gian vào những tin yêu cầu 8 năm kinh nghiệm.</p><div class="testi-who"><span class="testi-av">FE</span><span data-en="Frontend dev, 2 years">Frontend dev, 2 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The 7-day follow-up reminder is exactly what I kept forgetting when tracking in a spreadsheet.">Nhắc follow-up sau 7 ngày là thứ mình hay quên nhất khi tự theo dõi bằng bảng tính.</p><div class="testi-who"><span class="testi-av">FS</span><span data-en="Fullstack dev, 4 years">Fullstack dev, 4 năm</span></div></li></ul>
-        <ul class="testi-group testi-clone" aria-hidden="true"><li class="testi-card"><p class="testi-q" data-en="I can see why a job scores 82: Java and Spring match, Kafka is missing. No need to read the whole JD to know if it fits.">Thấy rõ vì sao một tin được 82 điểm: khớp Java, Spring, thiếu Kafka. Đỡ phải đọc cả JD mới biết có hợp không.</p><div class="testi-who"><span class="testi-av">BE</span><span data-en="Backend dev, 3 years">Backend dev, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="Skip suggestions stop me from wasting time on jobs that ask for 8 years of experience.">Gợi ý bỏ qua giúp mình không phí thời gian vào những tin yêu cầu 8 năm kinh nghiệm.</p><div class="testi-who"><span class="testi-av">FE</span><span data-en="Frontend dev, 2 years">Frontend dev, 2 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The 7-day follow-up reminder is exactly what I kept forgetting when tracking in a spreadsheet.">Nhắc follow-up sau 7 ngày là thứ mình hay quên nhất khi tự theo dõi bằng bảng tính.</p><div class="testi-who"><span class="testi-av">FS</span><span data-en="Fullstack dev, 4 years">Fullstack dev, 4 năm</span></div></li></ul>
-      </div>
-    </div>
-    <div class="testi-row testi-rev">
-      <div class="testi-track">
-        <ul class="testi-group"><li class="testi-card"><p class="testi-q" data-en="The salary range on each job tells me what to ask for before the interview.">Khoảng lương đi kèm từng tin giúp mình biết nên đề xuất bao nhiêu trước buổi phỏng vấn.</p><div class="testi-who"><span class="testi-av">MB</span><span data-en="Mobile dev, 5 years">Mobile dev, 5 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The kanban board is tidy; I drag a card and see which round I am in with each company.">Bảng kanban gọn, kéo thả trạng thái nhanh, nhìn một lần là biết đang ở vòng nào với công ty nào.</p><div class="testi-who"><span class="testi-av">QA</span><span data-en="QA engineer, 3 years">QA engineer, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="I like that the score comes with concrete reasons, not a number from nowhere.">Mình thích việc điểm được giải thích bằng lý do cụ thể, không phải một con số không rõ nguồn.</p><div class="testi-who"><span class="testi-av">DO</span><span data-en="DevOps engineer, 6 years">DevOps engineer, 6 năm</span></div></li></ul>
-        <ul class="testi-group testi-clone" aria-hidden="true"><li class="testi-card"><p class="testi-q" data-en="The salary range on each job tells me what to ask for before the interview.">Khoảng lương đi kèm từng tin giúp mình biết nên đề xuất bao nhiêu trước buổi phỏng vấn.</p><div class="testi-who"><span class="testi-av">MB</span><span data-en="Mobile dev, 5 years">Mobile dev, 5 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The kanban board is tidy; I drag a card and see which round I am in with each company.">Bảng kanban gọn, kéo thả trạng thái nhanh, nhìn một lần là biết đang ở vòng nào với công ty nào.</p><div class="testi-who"><span class="testi-av">QA</span><span data-en="QA engineer, 3 years">QA engineer, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="I like that the score comes with concrete reasons, not a number from nowhere.">Mình thích việc điểm được giải thích bằng lý do cụ thể, không phải một con số không rõ nguồn.</p><div class="testi-who"><span class="testi-av">DO</span><span data-en="DevOps engineer, 6 years">DevOps engineer, 6 năm</span></div></li></ul>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="lp-sec sg-left" id="lp-about">
   <div class="sg-about">
     <h2 data-en="Why JobPilot exists">Vì sao có JobPilot</h2>
-    <!-- TODO(Kriss): bỏ class "hidden" và điền 3-4 câu của anh vào đoạn dưới. Giữ ngắn, nói thật. -->
-    <p class="sg-about-note hidden"></p>
-    <p class="sg-mut" data-en="Recent changes.">Nhật ký thay đổi gần đây.</p>
-    <dl class="sg-log">
-      <div><dt>30/10/2026</dt><dd data-en="Homepage now shows real postings scanned today; illustrations removed. Postings at a different seniority or location no longer count as a &quot;strong match&quot;.">Trang chủ hiện tin thật quét trong ngày, bỏ ảnh minh hoạ. Tin lệch cấp bậc hoặc khác khu vực không còn được chấm "khớp mạnh".</dd></div>
-      <div><dt>30/10/2026</dt><dd data-en="Failed logins limited to 5 per 10 minutes, even under a burst of simultaneous requests.">Giới hạn đăng nhập sai 5 lần trong 10 phút, kể cả khi bị dồn nhiều yêu cầu cùng lúc.</dd></div>
-      <div><dt>29/10/2026</dt><dd data-en="Signal UI: bold card borders, hard shadows, bottom tab bar on mobile.">Giao diện Signal: thẻ viền đậm, bóng cứng, thanh tab dưới đáy trên điện thoại.</dd></div>
-    </dl>
+    <p class="sg-about-note" data-en="JobPilot started as a personal tool: reading dozens of postings a day to find the few that actually fit is slow and tiring. It gathers IT postings in one place, scores each one against your CV and says why. It never applies on your behalf; you decide where to apply.">JobPilot bắt đầu từ một công cụ cá nhân: đọc vài chục tin mỗi ngày để tìm vài tin thật sự hợp vừa chậm vừa mệt. JobPilot gom tin IT về một chỗ, chấm từng tin theo CV của bạn và nói rõ lý do. Nó không bao giờ nộp đơn thay bạn; bạn quyết định nộp ở đâu.</p>
   </div>
 </section>
 
@@ -1694,7 +1644,7 @@ html.fx-on .bg-fx{opacity:1}
 
     </div>
     <a class="auth-back" href="#" id="authBack" data-en="← Back to overview">← Về trang giới thiệu</a>
-    <p class="login-foot" data-en="Runs on Cloudflare Edge. Your data, on your server.">Chạy trên Cloudflare Edge. Dữ liệu của bạn, ở máy chủ của bạn.</p>
+    <p class="login-foot" data-en="We never sell your data or share your CV. Delete it any time.">Không bán dữ liệu, không chia sẻ CV, xoá được bất cứ lúc nào.</p>
   </div>
 </div>
 
@@ -1756,7 +1706,7 @@ html.fx-on .bg-fx{opacity:1}
           <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )" data-en-placeholder="Search title, company…  ( / )"></div>
           <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText" data-en="Rescoring…">Đang chấm lại…</span></span>
           <button id="refreshJobsBtn" class="btn sm" type="button" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Refresh'><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Làm mới</button>
-          <button id="scanBtn" class="btn sm p" type="button" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Scan new jobs'><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Quét job mới</button>
+          <button id="scanBtn" class="btn sm p" type="button" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Scan new jobs'><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Quét tin mới</button>
         </div>
 
         <div class="jf2" role="group" aria-label="Lọc theo hình thức và lương" data-en-aria-label="Filter by work mode and salary">
@@ -1775,8 +1725,8 @@ html.fx-on .bg-fx{opacity:1}
         <div id="tgCard" class="qa-strip hidden"></div>
 
         <form id="submitForm" class="submit-row">
-          <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link job từ bất kỳ trang nào để thêm thủ công…" data-en-placeholder="Paste a job link from any site to add it manually…"></div>
-          <button id="submitBtn" class="btn small" type="submit" data-en="Add job">Thêm job</button>
+          <div class="grow"><input id="submitUrl" type="url" placeholder="Dán link tin từ bất kỳ trang nào để thêm thủ công…" data-en-placeholder="Paste a job link from any site to add it manually…"></div>
+          <button id="submitBtn" class="btn small" type="submit" data-en="Add job">Thêm tin</button>
           <div id="submitTurnstile" class="turnstile"></div>
         </form>
 
@@ -1786,7 +1736,7 @@ html.fx-on .bg-fx{opacity:1}
       <!-- ===== TAB: KANBAN ===== -->
       <section id="tab-kanban" class="hidden">
         <h2 data-en="Application pipeline" class="page-title">Pipeline ứng tuyển</h2>
-        <p data-en="Only jobs you move here from the Jobs tab appear in this board. Use the arrows on a card to move it between stages." class="page-sub">Chỉ những tin bạn chủ động đổi giai đoạn ở tab Việc làm mới vào bảng này. Dùng nút mũi tên trên thẻ để chuyển giai đoạn.</p>
+        <p data-en="Only jobs you move here from the Jobs tab appear in this board. Change the stage with the dropdown on each card." class="page-sub">Chỉ những tin bạn chủ động đổi giai đoạn ở tab Việc làm mới vào bảng này. Đổi giai đoạn bằng ô chọn trên thẻ.</p>
         <div id="alertsStrip"></div>
         <div id="kanbanContainer"></div>
       </section>
@@ -1901,7 +1851,7 @@ html.fx-on .bg-fx{opacity:1}
             <summary data-en="Negotiation scripts">Kịch bản đàm phán</summary>
             <div class="neg-script"><b data-en="1. Asked for your expected salary first">1. Bị hỏi lương mong muốn trước</b><p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc là mình cùng khoảng trước khi đưa con số cụ thể."</p></div>
             <div class="neg-script"><b data-en="2. Offer below expectations">2. Offer thấp hơn kỳ vọng</b><p data-en="&quot;I am very excited about this role. This figure is below the range I am considering based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Em rất hứng thú với vị trí này. Mức này thấp hơn khoảng em đang cân nhắc dựa trên thị trường và kinh nghiệm. Anh/chị có linh hoạt được tới khoảng đó không?"</p></div>
-            <div class="neg-script"><b data-en="3. Competing offer / counter-offer">3. Có offer khác / counter-offer</b><p data-en="&quot;I have another offer at a higher level, but I would rather join you because of the product and the team. If you can get close to that figure, I will sign right away.&quot;">"Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
+            <div class="neg-script"><b data-en="3. Competing offer / counter-offer">3. Có offer khác / counter-offer</b><p data-en="Only use this when you really have another offer: &quot;I have another offer at a higher level, but I would rather join you because of the product and the team. If you can get close to that figure, I will sign right away.&quot;">Chỉ dùng khi bạn thật sự có offer khác: "Em đang có một offer khác ở mức cao hơn, nhưng em ưu tiên bên mình vì sản phẩm và team. Nếu bên mình lên được gần mức đó, em ký ngay."</p></div>
             <div class="neg-script"><b data-en="4. Asking about the company range">4. Muốn hỏi lại range của công ty</b><p data-en="&quot;Before I answer, I would like to understand the salary range, review cycle and bonus structure better, so I can evaluate total compensation, not just base salary.&quot;">"Trước khi trả lời, em muốn hiểu rõ hơn về phạm vi lương, chu kỳ review và thưởng, để đánh giá tổng thu nhập, không chỉ lương cứng."</p></div>
           </details>
         </section>
@@ -1975,7 +1925,7 @@ html.fx-on .bg-fx{opacity:1}
         </div>
       </section>
     </main>
-    <div class="src-status"><span class="dot"></span><span id="sourceStatus" data-en="Job sources: checking…">Nguồn job: đang kiểm tra…</span></div>
+    <div class="src-status"><span class="dot"></span><span id="sourceStatus" data-en="Job sources: checking…">Nguồn tin: đang kiểm tra…</span></div>
     <details id="funnelBox" class="hidden muted small" style="margin:.6rem 1rem"><summary data-en="Beta funnel (owner)">Funnel beta (owner)</summary><div id="funnelOut" style="overflow-x:auto"></div></details>
   </div>
 </div>
@@ -2010,7 +1960,7 @@ html.fx-on .bg-fx{opacity:1}
 <!-- ================= COMMAND PALETTE ================= -->
 <div id="palette" class="hidden">
   <div class="pal-box">
-    <input id="paletteInput" type="text" placeholder="Gõ để tìm job, chuyển tab, ra lệnh…" data-en-placeholder="Type to find a job, switch tab or run a command…" autocomplete="off">
+    <input id="paletteInput" type="text" placeholder="Gõ để tìm tin, chuyển tab, ra lệnh…" data-en-placeholder="Type to find a job, switch tab or run a command…" autocomplete="off">
     <div id="paletteList"></div>
   </div>
 </div>
@@ -2023,7 +1973,7 @@ const TURNSTILE_SITE_KEY = "0x4AAAAAAF5goUyMJQ__Pibr"; // widget "jobpilot" (hos
 const STAGES = [
   { key: "new",       label: "Mới" },
   { key: "saved",     label: "Đã lưu" },
-  { key: "applied",   label: "Đã apply" },
+  { key: "applied",   label: "Đã nộp" },
   { key: "interview", label: "Phỏng vấn" },
   { key: "offer",     label: "Offer" },
   { key: "rejected",  label: "Từ chối" },
@@ -2168,7 +2118,7 @@ function startRescoringWatch(){
   rescoreStarted = Date.now();
   const pill = $("#rescoringPill"), txt = $("#rescoringText");
   if (!pill || !txt) return;
-  const tick = () => { txt.textContent = t("Đang chấm lại %s job… %s giây", rescoreCount, Math.floor((Date.now() - rescoreStarted) / 1000)); };
+  const tick = () => { txt.textContent = t("Đang chấm lại %s tin… %s giây", rescoreCount, Math.floor((Date.now() - rescoreStarted) / 1000)); };
   tick();
   pill.classList.remove("hidden");
   rescoreTimer = setInterval(tick, 1000);
@@ -2223,10 +2173,10 @@ function currentProfile(){
 /* ---------------- Auth + Landing ---------------- */
 /* i18n B: auth, app shell, jobs, palette. Khóa = câu tiếng Việt y hệt trong code. */
 Object.assign(EN, {
-  "JobPilot Edge — Săn việc, có hệ thống": "JobPilot Edge — Job hunting, systematically",
+  "JobPilot — Chấm điểm việc làm IT theo CV của bạn, miễn phí": "JobPilot — IT jobs scored against your CV, free",
   "Đóng": "Close",
   "Thủ công": "Manual",
-  "Đang chấm lại %s job… %s giây": "Rescoring %s jobs… %ss",
+  "Đang chấm lại %s tin… %s giây": "Rescoring %s jobs… %ss",
   "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.": "Could not reach the server. Check your connection and try again.",
   "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.": "Your session has expired. Please log in again.",
   "Lỗi %s": "Error %s",
@@ -2249,7 +2199,7 @@ Object.assign(EN, {
   "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.": "Too many failed attempts. Wait 10 minutes and try again.",
   "Xác minh chưa xong. Đợi ô xác minh báo thành công rồi bấm lại.": "Verification is not finished. Wait for the check to show success, then press again.",
   "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.": "Too many sign-ups from this network. Try again in an hour.",
-  "Bạn đã thêm 20 job trong 1 giờ, thử lại sau.": "You added 20 jobs in the last hour. Try again later.",
+  "Bạn đã thêm 20 tin trong 1 giờ, thử lại sau.": "You added 20 jobs in the last hour. Try again later.",
   "Link cần bắt đầu bằng http:// hoặc https://.": "The link must start with http:// or https://.",
   "CV tối đa 5 MB.": "CV must be 5 MB or smaller.",
   "Nội dung CV quá dài (tối đa 200.000 ký tự).": "CV text is too long (200,000 characters max).",
@@ -2275,14 +2225,14 @@ Object.assign(EN, {
   " — cần tối thiểu 8 ký tự": ", needs at least 8 characters",
   // App shell
   "(Chưa có hồ sơ)": "(No profile yet)",
-  "Nguồn job ổn định": "Job sources healthy",
-  "Nguồn job có lỗi": "Job sources have errors",
+  "Nguồn tin ổn định": "Job sources healthy",
+  "Nguồn tin có lỗi": "Job sources have errors",
   // Stages (STAGES giữ tiếng Việt, dịch lúc render)
-  "Mới": "New", "Đã lưu": "Saved", "Đã apply": "Applied", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
+  "Mới": "New", "Đã lưu": "Saved", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
   // Brief
-  "Job khớp mạnh mới sáng nay": "New strong matches this morning",
+  "Tin khớp mạnh mới sáng nay": "New strong matches this morning",
   "%sđ": "%s pts",
-  "Chưa có job khớp mạnh mới trong 24h.": "No new strong matches in the last 24h.",
+  "Chưa có tin khớp mạnh mới trong 24h.": "No new strong matches in the last 24h.",
   "Cần follow-up": "Follow-ups due",
   "hạn %s": "due %s",
   "Không có việc nào tới hạn. Tuyệt.": "Nothing due. Nice.",
@@ -2297,7 +2247,7 @@ Object.assign(EN, {
   "Xem tin đã chấm": "See scored jobs",
   "Tin từ ITviec và TopDev được chấm theo hồ sơ của bạn ngay sau đó.": "Jobs from ITviec and TopDev are scored against your profile right after.",
   "Quy tắc": "Rules",
-  ", trên tổng %s job yêu cầu": ", out of %s the job requires",
+  ", trên tổng %s kỹ năng tin yêu cầu": ", out of %s the job requires",
   "Chưa khớp kỹ năng nào": "No skills matched yet",
   "Địa điểm": "Location",
   "Độ tươi": "Freshness",
@@ -2307,47 +2257,47 @@ Object.assign(EN, {
   "Cấp bậc": "Level",
   "Điểm cuối": "Final score",
   "(quy tắc + fit) / 70 × 100": "(rules + fit) / 70 × 100",
-  ". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).": ". This job lists fewer than 3 skills, so the score is capped at 69 (thin evidence).",
+  ". Tin này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).": ". This job lists fewer than 3 skills, so the score is capped at 69 (thin evidence).",
   "%s tin": "%s jobs",
-  "Chưa có job nào khớp bộ lọc.": "No jobs match these filters.",
-  "Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.": "Try <b>Scan new jobs</b> or loosen the filters.",
-  "Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.": "New jobs are scanned every 30 minutes. Try loosening the filters.",
-  "job": "jobs", "khớp mạnh": "strong", "một phần": "partial", "khớp yếu": "weak", "chưa chấm": "unscored",
+  "Chưa có tin nào khớp bộ lọc.": "No jobs match these filters.",
+  "Thử bấm <b>Quét tin mới</b> hoặc nới lỏng bộ lọc nhé.": "Try <b>Scan new jobs</b> or loosen the filters.",
+  "Hệ thống tự quét tin mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.": "New jobs are scanned every 30 minutes. Try loosening the filters.",
+  "%s/%s tin": "%s/%s jobs", "khớp mạnh": "strong", "một phần": "partial", "khớp yếu": "weak", "chưa chấm": "unscored",
   "Mới nhất: %s": "Newest: %s",
   "Thiếu nhiều nhất: %s": "Most missing: %s",
-  "Xem thêm (%s job còn lại)": "Show more (%s remaining)",
-  "Xem thêm job": "Show more jobs", "Đang tải thêm job...": "Loading more jobs...", "Không tải thêm được job.": "Could not load more jobs.",
+  "Xem thêm (%s tin còn lại)": "Show more (%s jobs left)",
+  "Xem thêm tin": "Show more jobs", "Đang tải thêm tin...": "Loading more jobs...", "Không tải thêm được tin.": "Could not load more jobs.",
   "Thu gọn": "Show less",
   "Đổi giai đoạn ứng tuyển": "Change application stage",
   "Vì sao điểm này?": "Why this score?",
   "Ẩn giải thích": "Hide explanation",
   "Đã chuyển sang giai đoạn: %s": "Moved to stage: %s",
-  "Hãy dán link job trước đã.": "Paste a job link first.",
+  "Hãy dán link tin trước đã.": "Paste a job link first.",
   "Đang thêm...": "Adding...",
-  "Đã thêm job, hệ thống sẽ chấm điểm ngay.": "Job added. It will be scored shortly.",
-  "Thêm job": "Add job",
+  "Đã thêm tin, hệ thống sẽ chấm điểm ngay.": "Job added. It will be scored shortly.",
+  "Thêm tin": "Add job",
   "Đang xếp hàng...": "Queuing...",
-  "Đã xếp hàng quét %s lượt. Job mới sẽ hiện sau ~25 giây.": "Queued %s scan runs. New jobs will show in about 25 seconds.",
-  "Quét job mới": "Scan new jobs",
+  "Đã xếp hàng quét %s lượt. Tin mới sẽ hiện sau ~25 giây.": "Queued %s scan runs. New jobs will show in about 25 seconds.",
+  "Quét tin mới": "Scan new jobs",
   // Palette
   "Đi tới: Việc làm": "Go to: Jobs",
   "Đi tới: Kanban": "Go to: Kanban",
   "Tài khoản %s": "Account %s",
   "Đi tới: Hồ sơ & CV": "Go to: Profile & CV",
-  "Quét job mới từ ITviec + TopDev": "Scan new jobs from ITviec + TopDev",
+  "Quét tin mới từ ITviec + TopDev": "Scan new jobs from ITviec + TopDev",
   "hành động": "action",
   "Làm mới dữ liệu": "Refresh data",
   "Chuyển hồ sơ: %s": "Switch profile: %s",
   "hồ sơ": "profile",
-  "Không tìm thấy lệnh hay job nào khớp.": "No matching command or job.",
+  "Không tìm thấy lệnh hay tin nào khớp.": "No matching command or job.",
   // Theme
   "Đã chuyển sang giao diện sáng.": "Switched to light theme.",
   "Đã chuyển sang giao diện tối.": "Switched to dark theme.",
 });
-document.title = t("JobPilot Edge — Săn việc, có hệ thống");
+document.title = t("JobPilot — Chấm điểm việc làm IT theo CV của bạn, miễn phí");
 Object.assign(EN, { // chuỗi từ bản gộp Muse 30/10 (CV draft, nhân bản, chấm lại bằng hồ sơ khác)
   "Tải CV lên để điền sẵn dạng nháp, hoặc khai vị trí, cấp bậc và khu vực bằng tay.": "Upload a CV to pre-fill a draft, or enter role, level and location by hand.",
-  "Chấm lại job này bằng hồ sơ khác": "Rescore this job with another profile",
+  "Chấm lại tin này bằng hồ sơ khác": "Rescore this job with another profile",
   "Chấm bằng hồ sơ khác…": "Score with another profile…",
   "%s tháng": "%s months", "%s năm": "%s years",
   "tên “%s”": "name “%s”", "tên": "name", "vị trí “%s”": "role “%s”", "vị trí": "role", "cấp bậc": "level", "suy từ": "from", "khu vực “%s”": "location “%s”", "khu vực": "location",
@@ -2382,7 +2332,7 @@ const AUTH_ERR = {
   too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
   turnstile_failed: "Xác minh chưa xong. Đợi ô xác minh báo thành công rồi bấm lại.",
   too_many_registrations: "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.",
-  too_many_submissions: "Bạn đã thêm 20 job trong 1 giờ, thử lại sau.",
+  too_many_submissions: "Bạn đã thêm 20 tin trong 1 giờ, thử lại sau.",
   invalid_url: "Link cần bắt đầu bằng http:// hoặc https://.",
   file_too_large: "CV tối đa 5 MB.",
   text_too_long: "Nội dung CV quá dài (tối đa 200.000 ký tự).",
@@ -2456,12 +2406,6 @@ function withViewTransition(update, opts){
     else setTimeout(clear, 1000);
   } else { update(); clear(); }
 }
-/* Băng testimonial chỉ chạy khi trong khung nhìn (không tốn GPU khi đã cuộn qua) */
-(function initTestiIO(){
-  const el = document.querySelector("#lp-testi .testi");
-  if (!el || !("IntersectionObserver" in window)) return;
-  new IntersectionObserver(([e]) => el.classList.toggle("testi-off", !e.isIntersecting)).observe(el);
-})();
 /* Nền theo chuột: 1 listener, rAF + lerp; chỉ ghi --mx/--my lên .bg-fx (không recalc cả trang) */
 (function initBgFx(){
   const fx = document.querySelector(".bg-fx");
@@ -2978,7 +2922,7 @@ async function loadSourceStatus(){
     if (Array.isArray(rows) && rows.length) {
       const ok = rows.every(r => (r.last_status || "ok") === "ok");
       $("#sourceStatus").textContent =
-        t(ok ? "Nguồn job ổn định" : "Nguồn job có lỗi") + " · " +
+        t(ok ? "Nguồn tin ổn định" : "Nguồn tin có lỗi") + " · " +
         rows.map(r => `${srcLabel(r.type)} ${fmtDateTime(r.last_run_at)}`).join(" · ");
     }
   } catch (e) { /* trạng thái nguồn là phụ */ }
@@ -3070,13 +3014,13 @@ async function loadDigest(){
     strip.innerHTML = `
     <div class="brief"><div class="brief-in">
       <div>
-        <span class="lbl">${t("Job khớp mạnh mới sáng nay")}</span>
+        <span class="lbl">${t("Tin khớp mạnh mới sáng nay")}</span>
         <div class="bignum"><em data-count="${sc}">0</em></div>
         ${strong.slice(0, 3).map(j =>
           `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
            <span class="muted">${esc(j.company)}, ${t("%sđ", Math.round(j.final_score || 0))}</span></div>`).join("") || (d.fresh || []).slice(0, 3).map(j =>
           `<div class="fu-item"><a href="${esc(j.source_url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
-           <span class="muted">${esc(j.company)}, ${t("%sđ", Math.round(j.final_score || 0))}</span></div>`).join("") || `<div class="fu-item muted">${t("Chưa có job khớp mạnh mới trong 24h.")}</div>`}
+           <span class="muted">${esc(j.company)}, ${t("%sđ", Math.round(j.final_score || 0))}</span></div>`).join("") || `<div class="fu-item muted">${t("Chưa có tin khớp mạnh mới trong 24h.")}</div>`}
       </div>
       <div>
         <span class="lbl">${t("Cần follow-up")}</span>
@@ -3173,7 +3117,7 @@ async function loadMoreJobs(){
   } catch (e) {
     if (seq !== jobsSeq) return;
     if (e.message === "invalid_query") { loadJobs(); return; }
-    state.jobsMore = /^[a-z_]+$/.test(e.message) ? t("Không tải thêm được job.") : e.message; // mã lỗi thô thì đổi sang câu dễ hiểu
+    state.jobsMore = /^[a-z_]+$/.test(e.message) ? t("Không tải thêm được tin.") : e.message; // mã lỗi thô thì đổi sang câu dễ hiểu
   }
   renderJobs(); focusJobAt(from);
 }
@@ -3205,7 +3149,7 @@ function explainBlock(job, m){
   <div class="row"><div><b>${t("Độ tươi")}</b><br><span>${t("Tin đăng %s ngày trước", fb.ageDays)}</span></div><span class="n${nCls(fb.freshness, 7)}">${fb.freshness} / 7</span></div>
   <div class="row"><div><b>${t("Cấp bậc")}</b><br><span>${esc(fb.levelWhy)}</span></div><span class="n${nCls(fb.level, 5)}">${fb.level} / 5</span></div>` : "";
   const jdRow = `<div class="row"><div><span>${job.jd_len > 0 ? t("Đã đọc mô tả công việc (%s ký tự)", job.jd_len) : t("Chấm theo tag kỹ năng của nguồn, chưa có mô tả")}</span></div></div>`;
-  const finalRow = `<div class="row"><div><b>${t("Điểm cuối")}</b><br><span>${t("(quy tắc + fit) / 70 × 100")}${rd && rd.capped ? t(". Job này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).") : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
+  const finalRow = `<div class="row"><div><b>${t("Điểm cuối")}</b><br><span>${t("(quy tắc + fit) / 70 × 100")}${rd && rd.capped ? t(". Tin này khai dưới 3 kỹ năng nên điểm tối đa 69 (bằng chứng mỏng).") : ""}</span></div><span class="n">${Math.round(m.final_score)}</span></div>`;
   return `<div class="why" id="explain-${esc(job.id)}"><div class="why-in"><div class="why-body">${sigRow}${jdRow}${ruleRow}${fitRows}${finalRow}${job.verdict_why ? `<div class="row"><div><b>${t("Kết luận")}</b><br><span>${esc(job.verdict_why)}</span></div></div>` : ""}</div></div></div>`;
 }
 
@@ -3227,13 +3171,13 @@ function renderJobs(){
   $("#salHint").textContent = state.filters.hasSal && state.jobsTotal != null ? t("%s tin có ghi lương. Phần lớn tin ITviec ẩn lương sau đăng nhập nên số này nhỏ.", state.jobsTotal) : "";
   if (!list.length && state.jobsNext != null && !state.jobsMore) { loadMoreJobs(); return; } // trang đã tải bị bộ lọc phía client ẩn hết: lấy trang kế
   if (!list.length && jobsServerFiltered()) {
-    box.innerHTML = newPill + `<div class="empty"><p style="margin:0 0 .8rem">${t("Không có job khớp bộ lọc")}</p><button class="btn" id="jobsClearFilters" type="button">${t("Xoá bộ lọc")}</button></div>`;
+    box.innerHTML = newPill + `<div class="empty"><p style="margin:0 0 .8rem">${t("Không có tin khớp bộ lọc")}</p><button class="btn" id="jobsClearFilters" type="button">${t("Xoá bộ lọc")}</button></div>`;
     $("#jobsClearFilters").addEventListener("click", () => { jobsClearFilters(); const b = $('.jf2 [data-mode]'); if (b) b.focus(); });
     jobsNewPillBind(box);
     return;
   }
   if (!list.length) {
-    box.innerHTML = newPill + '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
+    box.innerHTML = newPill + '<div class="empty">' + t("Chưa có tin nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét tin mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét tin mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     jobsNewPillBind(box);
     return;
   }
@@ -3252,15 +3196,17 @@ function renderJobs(){
     if (!isNaN(d) && d > newest) newest = d;
   });
   const topMiss = Object.entries(missCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const sumHTML = `<div class="jobsum"><div><span><b>${list.length}</b> ${t("job")}</span><span><b>${strong}</b> ${t("khớp mạnh")}</span><span><b>${partial}</b> ${t("một phần")}</span><span><b>${weak}</b> ${t("khớp yếu")}</span>${unscored ? `<span><b>${unscored}</b> ${t("chưa chấm")}</span>` : ""}${newest ? `<span>${t("Mới nhất: %s", fmtDate(newest))}</span>` : ""}</div>${topMiss.length ? `<div class="miss">${t("Thiếu nhiều nhất: %s", topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", "))}</div>` : ""}</div>`;
+  const jobsTotalShown = state.jobsTotal != null && !clientFiltered ? state.jobsTotal : list.length + (state.jobsNext != null ? "+" : "");
+  const sumHTML = `<div class="jobsum"><div><span>${t("%s/%s tin", `<b>${list.length}</b>`, `<b>${jobsTotalShown}</b>`)}</span><span><b>${strong}</b> ${t("khớp mạnh")}</span><span><b>${partial}</b> ${t("một phần")}</span><span><b>${weak}</b> ${t("khớp yếu")}</span>${unscored ? `<span><b>${unscored}</b> ${t("chưa chấm")}</span>` : ""}${newest ? `<span>${t("Mới nhất: %s", fmtDate(newest))}</span>` : ""}</div>${topMiss.length ? `<div class="miss">${t("Thiếu nhiều nhất: %s", topMiss.map(([s, n]) => `${esc(s)} (${n})`).join(", "))}</div>` : ""}</div>`;
   // P0 — phân trang "Xem thêm": hiện 20 job đầu, bấm để hiện thêm
   const visible = Math.min(state.jobsVisible || 20, list.length);
   const page = list.slice(0, visible);
-  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s job còn lại)", list.length - visible)}</button></div>`
+  const jobsLeft = (state.jobsTotal != null && !clientFiltered ? state.jobsTotal : list.length) - visible;
+  const moreHTML = list.length > visible ? `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm (%s tin còn lại)", jobsLeft)}</button></div>`
     : state.jobsNext == null ? ""
-    : state.jobsMore === "loading" ? `<div class="loadmore" role="status"><button class="btn" id="loadMoreJobs" type="button" disabled><span class="spinner"></span> ${t("Đang tải thêm job...")}</button></div>`
+    : state.jobsMore === "loading" ? `<div class="loadmore" role="status"><button class="btn" id="loadMoreJobs" type="button" disabled><span class="spinner"></span> ${t("Đang tải thêm tin...")}</button></div>`
     : state.jobsMore ? `<div class="loadmore" role="alert" style="flex-direction:column;align-items:center;gap:.5rem"><span class="muted small">${esc(state.jobsMore)}</span><button class="btn" id="loadMoreJobs" type="button">${t("Thử lại")}</button></div>`
-    : `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${t("Xem thêm job")}</button></div>`;
+    : `<div class="loadmore"><button class="btn" id="loadMoreJobs" type="button">${jobsLeft > 0 ? t("Xem thêm (%s tin còn lại)", jobsLeft) : t("Xem thêm tin")}</button></div>`;
   box.innerHTML = newPill + sumHTML + '<div class="list">' + page.map((job, i) => {
     const m = job.match || null;
     const app = job.application || null;
@@ -3287,7 +3233,7 @@ function renderJobs(){
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
           </select>
-          ${state.profiles.length > 1 ? `<select class="input" style="width:170px" data-rescore-for="${esc(job.id)}" title="${t("Chấm lại job này bằng hồ sơ khác")}">
+          ${state.profiles.length > 1 ? `<select class="input" style="width:170px" data-rescore-for="${esc(job.id)}" title="${t("Chấm lại tin này bằng hồ sơ khác")}">
             <option value="">${t("Chấm bằng hồ sơ khác…")}</option>
             ${state.profiles.filter(x => x.id !== state.profileId).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}
           </select>` : ""}
@@ -3371,9 +3317,9 @@ async function changeJobStage(jobId, stage, selEl){
 Object.assign(EN, {
   "Nộp nhanh": "Quick apply", "Kỹ năng khớp": "Matched skills", "Kỹ năng còn thiếu": "Missing skills", "Không có": "None",
   "Đoạn giới thiệu": "Short intro", "Lấy từ hồ sơ của bạn, sửa thoải mái trước khi dán.": "Built from your profile. Edit it before pasting.",
-  "Copy giới thiệu": "Copy intro", "Copy danh sách kỹ năng": "Copy skill list", "Mở trang nộp": "Open application page", "Đã nộp": "I applied", "Chưa": "Not yet",
+  "Copy giới thiệu": "Copy intro", "Copy danh sách kỹ năng": "Copy skill list", "Mở trang nộp": "Open application page", "Đã nộp": "Applied", "Chưa": "Not yet",
   "Đã copy.": "Copied.", "Không copy được, hãy chọn chữ rồi copy tay.": "Couldn't copy. Select the text and copy it manually.",
-  "Bạn đã nộp đơn cho %s chưa?": "Did you apply to %s?", "Đã chuyển sang Đã apply, nhắc theo dõi sau 7 ngày": "Moved to Applied. Follow-up reminder in 7 days",
+  "Bạn đã nộp đơn cho %s chưa?": "Did you apply to %s?", "Đã chuyển sang Đã nộp, nhắc theo dõi sau 7 ngày": "Moved to Applied. Follow-up reminder in 7 days",
   "Xin chào, tôi là %s.": "Hi, I'm %s.", "Tôi đang ở cấp %s.": "I'm at %s level.", "Tôi có kinh nghiệm với %s.": "I have experience with %s.",
   "Tôi muốn ứng tuyển vị trí %s tại %s.": "I'd like to apply for the %s role at %s.", "Tôi muốn ứng tuyển vị trí %s.": "I'd like to apply for the %s role.",
   "Không tìm thấy hồ sơ.": "Profile not found.", "Tin này không còn.": "This job is no longer available.",
@@ -3416,7 +3362,7 @@ async function qaAction(job, action){
 async function qaApplied(job){
   const row = await qaAction(job, "applied");
   if (!row) return false;
-  toast(t("Đã chuyển sang Đã apply, nhắc theo dõi sau 7 ngày"), "ok");
+  toast(t("Đã chuyển sang Đã nộp, nhắc theo dõi sau 7 ngày"), "ok");
   renderJobs();
   loadApplications();
   return true;
@@ -3656,7 +3602,7 @@ $("#filterMinSal").addEventListener("input", debounce((e) => {
   state.filters.minSal = v; jobsFiltersChanged();
 }, 400));
 $("#filterHasSal").addEventListener("change", (e) => { state.filters.hasSal = e.target.checked; jobsFiltersChanged(); });
-Object.assign(EN, { "Không có job khớp bộ lọc": "No jobs match these filters", "Xoá bộ lọc": "Clear filters",
+Object.assign(EN, { "Không có tin khớp bộ lọc": "No jobs match these filters", "Xoá bộ lọc": "Clear filters",
   "%s tin có ghi lương. Phần lớn tin ITviec ẩn lương sau đăng nhập nên số này nhỏ.": "%s jobs list a salary. Most ITviec jobs hide pay behind a login, so this number is small.",
   "Nhập số nguyên từ 1 đến 1000 (triệu/tháng).": "Enter a whole number from 1 to 1000 (million VND/month).",
   "Bộ lọc không hợp lệ. Kiểm tra lại lương tối thiểu.": "Invalid filter. Check the minimum salary.",
@@ -3667,19 +3613,19 @@ $("#submitForm").addEventListener("focusin", () => turnstileRender("submitTurnst
 $("#submitForm").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const url = $("#submitUrl").value.trim();
-  if (!url) { toast(t("Hãy dán link job trước đã."), "err"); return; }
+  if (!url) { toast(t("Hãy dán link tin trước đã."), "err"); return; }
   const btn = $("#submitBtn");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang thêm...");
   try {
     await api("/api/jobs/submit", { method: "POST", body: JSON.stringify({ url, turnstile_token: turnstileToken("submitTurnstile") }) });
     $("#submitUrl").value = "";
-    toast(t("Đã thêm job, hệ thống sẽ chấm điểm ngay."), "ok");
+    toast(t("Đã thêm tin, hệ thống sẽ chấm điểm ngay."), "ok");
     setTimeout(loadJobs, 1500);
   } catch (e) {
     toast(t(AUTH_ERR[e.message] || e.message), "err");
   } finally {
     turnstileReset("submitTurnstile");
-    tsDone("submitTurnstile", btn, t("Thêm job"));
+    tsDone("submitTurnstile", btn, t("Thêm tin"));
   }
 });
 
@@ -3690,12 +3636,12 @@ $("#scanBtn").addEventListener("click", async () => {
     const r = await api("/api/admin/ingest/run", {
       method: "POST", body: JSON.stringify({ sources: ["topdev", "itviec"] }),
     });
-    toast(t("Đã xếp hàng quét %s lượt. Job mới sẽ hiện sau ~25 giây.", r && r.queued ? r.queued : ""), "ok");
+    toast(t("Đã xếp hàng quét %s lượt. Tin mới sẽ hiện sau ~25 giây.", r && r.queued ? r.queued : ""), "ok");
     setTimeout(async () => { await loadJobs(); await loadDigest(); await loadSourceStatus(); }, 25000);
   } catch (e) {
     toast(e.message, "err");
   } finally {
-    btn.disabled = false; btn.innerHTML = '<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>' + esc(t("Quét job mới"));
+    btn.disabled = false; btn.innerHTML = '<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>' + esc(t("Quét tin mới"));
   }
 });
 
@@ -3709,7 +3655,7 @@ Object.assign(EN, {
   "Kỹ năng khớp: %s/%s điểm, tính theo trọng số kỹ năng tin yêu cầu": "Matched skills: %s/%s points, weighted by the skills the posting asks for",
 });
 Object.assign(EN, { // Kanban + Hồ sơ & CV
-  "Mới": "New", "Đã lưu": "Saved", "Đã apply": "Applied", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
+  "Mới": "New", "Đã lưu": "Saved", "Phỏng vấn": "Interview", "Từ chối": "Rejected", "Lưu trữ": "Archived",
   "Chưa có hồ sơ nào.": "No profile yet.",
   "Chưa có đơn nào. Ở tab Việc làm, đổi giai đoạn của một tin để đưa vào đây.": "No applications yet. In the Jobs tab, change a posting's stage to add it here.",
   "Quá hạn follow-up (%s)": "Follow-up overdue (%s)",
@@ -3718,7 +3664,7 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Im lặng từ 7 ngày hoặc quá hạn follow-up bạn đặt": "Silent for 7+ days or past the follow-up date you set",
   "Đã follow-up": "Followed up", "Nhắc sau 3 ngày": "Remind in 3 days",
   " và %s đơn khác": " and %s more", "Mở Kanban": "Open Kanban",
-  "Follow-up: %s": "Follow-up: %s", "(job đã xoá)": "(job deleted)",
+  "Follow-up: %s": "Follow-up: %s", "(tin đã xoá)": "(job deleted)",
   "Chuyển sang cột trước": "Move to previous stage", "Chuyển sang cột sau": "Move to next stage",
   "Tín hiệu tin": "Posting signals",
   "Lần cuối hệ thống thấy tin này đã lâu, hoặc tin đăng đã quá 30 ngày. Có thể đã tuyển xong.": "We have not seen this post in a while, or it was posted over 30 days ago. It may already be filled.",
@@ -3728,15 +3674,15 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Tin không ghi mức lương rõ ràng, nên khó so với mặt bằng thị trường.": "No clear salary is listed, so it is hard to compare with the market.",
   "JD liệt kê quá nhiều kỹ năng, thường là danh sách mong muốn chứ không phải yêu cầu thật.": "The JD lists too many skills; usually a wish list, not real requirements.",
   "Từ %s tin VNĐ, nguồn: %s": "From %s VND posts, sources: %s",
-  "Tin trả USD (%s tin): trung vị %s": "USD-paid posts (%s): median %s", "$%s/tháng": "$%s/month",
-  "%sđ": "%s pts", "Xem thêm %s": "Show %s more", "Trống": "Empty",
+  "Tin trả USD (%s tin): trung vị %s": "USD-paid posts (%s): median %s", "Tin trả USD: chưa đủ tin để tính (cần ≥5)": "USD-paid posts: not enough to calculate (need ≥5)", "$%s/tháng": "$%s/month",
+  "%sđ": "%s pts", "mạnh": "strong", "yếu": "weak", "Xem thêm %s": "Show %s more", "Trống": "Empty",
   "Đã chuyển sang: %s": "Moved to: %s",
   "Đã ghi nhận follow-up. Hẹn nhắc lại sau 7 ngày.": "Follow-up recorded. Next reminder in 7 days.",
   "Đã hẹn nhắc sau 3 ngày.": "Reminder set for 3 days from now.",
   "Đã chuyển sang Lưu trữ.": "Moved to Archived.",
   "%s ₫/tháng": "%s VND/month", "Chỉ nhập số, đơn vị ₫/tháng": "Numbers only, in VND/month",
   "Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau.": "Profile saved, but rescoring failed. Try saving again later.",
-  "Đã lưu hồ sơ. Đang chấm lại điểm các job...": "Profile saved. Rescoring jobs...",
+  "Đã lưu hồ sơ. Đang chấm lại điểm các tin...": "Profile saved. Rescoring jobs...",
   "Đã tạo hồ sơ mới.": "New profile created.",
   "Nhập tên hồ sơ mới trước đã.": "Enter a name for the new profile first.",
   "Đã tạo và chuyển sang hồ sơ: %s": "Created and switched to profile: %s",
@@ -3745,11 +3691,11 @@ Object.assign(EN, { // Kanban + Hồ sơ & CV
   "Dựa trên %s tin tuyển có ghi lương trong hệ thống.": "Based on %s job posts with a listed salary.",
   "Chưa đủ dữ liệu lương trong hệ thống (mới %s tin có ghi lương). Dưới đây là mức tham khảo thị trường; hệ thống sẽ tự tính lại khi có thêm tin ghi lương.": "Not enough salary data yet (only %s posts list a salary). Below is a market reference; it recomputes as more posts with salaries arrive.",
   "Trọng số %s/5": "Weight %s/5", "%s, trọng số %s/5": "%s, weight %s/5", "+%s kỹ năng": "+%s skills",
-  "%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xóa.": "%s skills · %s core (weight 4–5). Tap a skill to edit or remove it.", "Trọng số %s": "Weight for %s", "Xóa %s": "Remove %s", "Xóa": "Remove",
+  "%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xoá.": "%s skills · %s core (weight 4–5). Tap a skill to edit or remove it.", "Trọng số %s": "Weight for %s", "Xoá %s": "Remove %s", "Xoá": "Remove",
   "Chưa có hồ sơ.": "No profile yet.",
   "Chưa có kỹ năng nào. Tải CV lên hoặc thêm thủ công bên dưới.": "No skills yet. Upload a CV or add them manually below.",
   "Đã lưu kỹ năng nhưng chưa chấm lại được điểm, thử lưu lại sau.": "Skills saved, but rescoring failed. Try saving again later.",
-  "Đã đổi trọng số %s: %s/5": "Weight for %s set to %s/5", "Đã xóa kỹ năng: %s": "Removed skill: %s",
+  "Đã đổi trọng số %s: %s/5": "Weight for %s set to %s/5", "Đã xoá kỹ năng: %s": "Removed skill: %s",
   "Nhập tên kỹ năng trước đã.": "Enter a skill name first.", "Đã thêm kỹ năng: %s": "Added skill: %s",
   "Lưu %s kỹ năng đã chọn": "Save %s selected skills",
   "Không tải được thư viện PDF.js. Kiểm tra mạng rồi thử lại.": "Could not load PDF.js. Check your connection and try again.",
@@ -3844,7 +3790,7 @@ function renderKanban(){
       const warn = warnById.get(a.id);
       const due = warn || (a.next_follow_up_at ? t("Follow-up: %s", fmtDate(a.next_follow_up_at)) : "");
       return `<div class="kcard${warn ? " warn" : ""}" draggable="true" data-app="${esc(a.id)}">
-        <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : t("(job đã xoá)"))}</a></div>
+        <div class="t"><a draggable="false" href="${esc(a.job ? a.job.source_url : "#")}" target="_blank" rel="noopener">${esc(a.job ? a.job.title : t("(tin đã xoá)"))}</a></div>
         <div class="c">${a.job ? `<span>${esc(a.job.company)}</span>${a.job.location ? `<span>${esc(a.job.location)}</span>` : ""}` : ""}</div>
         ${due ? `<div class="c due">${esc(due)}</div>` : ""}
         ${ivCardLine(a)}
@@ -4283,7 +4229,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       fillProfileForm();
       await storeDraftCv(updated);
       if (updated.rescore_queued === false) toast(t("Đã lưu hồ sơ nhưng chưa chấm lại được điểm, thử lưu lại sau."), "err");
-      else { toast(t("Đã lưu hồ sơ. Đang chấm lại điểm các job..."), "ok"); startRescoringWatch(); }
+      else { toast(t("Đã lưu hồ sơ. Đang chấm lại điểm các tin..."), "ok"); startRescoringWatch(); }
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);
     } else {
       const created = await api("/api/profiles", { method: "POST", body: JSON.stringify(payload) });
@@ -4348,8 +4294,9 @@ async function loadBenchmark(){
     const mil = (x) => LANG === "en" ? x + "M" : x.replace(".", ",") + "tr"; // 37.8 → "37,8tr" | "37.8M"
     const fmt = (v) => v == null ? "—" : mil((v / 1e6).toFixed(1).replace(/\.0$/, ""));
     const u = d.usd || {}; // tin remote trả USD: tách riêng, không trộn vào trung vị VNĐ
-    const usdLine = u.count > 0 && u.median_mid != null ? `<p class="muted small" style="margin:.4rem 0 0">${esc(t("Tin trả USD (%s tin): trung vị %s", u.count, t("$%s/tháng", Math.round(u.median_mid).toLocaleString("en-US"))))}</p>` : "";
-    if (d.count >= 5) {
+    const usdLine = u.count >= 5 && u.median_mid != null ? `<p class="muted small" style="margin:.4rem 0 0">${esc(t("Tin trả USD (%s tin): trung vị %s", u.count, t("$%s/tháng", Math.round(u.median_mid).toLocaleString("en-US"))))}</p>`
+      : u.count > 0 ? `<p class="muted small" style="margin:.4rem 0 0">${esc(t("Tin trả USD: chưa đủ tin để tính (cần ≥5)"))}</p>` : "";
+    if (d.count >= 5 && d.median_mid != null) {
       box.innerHTML = `<div class="bench-grid">
         <div class="tile"><div class="num">${fmt(d.median_min)} – ${fmt(d.median_max)}</div><span>${t("Khoảng trung vị (min–max)")}</span></div>
         <div class="tile"><div class="num">${fmt(d.median_mid)}</div><span>${t("Trung vị điểm giữa")}</span></div>
@@ -4400,16 +4347,16 @@ function renderCurrentSkills(){
     return;
   }
   if (skUi.pid !== p.id) skUi = { pid: p.id, sel: -1, all: false };
-  // Chip gọn, nặng trước; bấm chip mới mở thanh trọng số + nút Xóa cho đúng kỹ năng đó.
+  // Chip gọn, nặng trước; bấm chip mới mở thanh trọng số + nút Xoá cho đúng kỹ năng đó.
   const order = skills.map((_, i) => i).sort((a, b) => skills[b].weight - skills[a].weight);
   const shown = skUi.all ? order : order.slice(0, SK_FOLD), sel = skills[skUi.sel];
   const chip = (i) => { const s = skills[i], w = Number(s.weight);
     return `<button type="button" class="sk${w >= 4 ? " core" : w <= 2 ? " low" : ""}" data-pick="${i}" aria-pressed="${i === skUi.sel}" aria-label="${t("%s, trọng số %s/5", esc(s.skill), w)}">${esc(s.skill)}<b aria-hidden="true">${w}</b></button>`; };
-  box.innerHTML = `<p class="muted small">${t("%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xóa.", skills.length, skills.filter(s => s.weight >= 4).length)}</p>
+  box.innerHTML = `<p class="muted small">${t("%s kỹ năng · %s cốt lõi (trọng số 4–5). Bấm một kỹ năng để sửa hoặc xoá.", skills.length, skills.filter(s => s.weight >= 4).length)}</p>
     <div class="sk-list">${shown.map(chip).join("")}${order.length > SK_FOLD ? `<button type="button" class="sk more" data-more aria-expanded="${skUi.all}">${skUi.all ? t("Thu gọn") : t("+%s kỹ năng", order.length - SK_FOLD)}</button>` : ""}</div>
     ${sel ? `<div class="skill" data-i="${skUi.sel}"><b>${esc(sel.skill)}</b>
      <div class="wbar" role="group" aria-label="${t("Trọng số %s", esc(sel.skill))}">${weightBars(Number(sel.weight))}</div>
-     <button type="button" class="btn ghost" data-del aria-label="${t("Xóa %s", esc(sel.skill))}">${t("Xóa")}</button></div>` : ""}`;
+     <button type="button" class="btn ghost" data-del aria-label="${t("Xoá %s", esc(sel.skill))}">${t("Xoá")}</button></div>` : ""}`;
 }
 const SK_FOLD = 12;
 let skUi = { pid: null, sel: -1, all: false };
@@ -4424,7 +4371,7 @@ async function saveSkills(p, list, okMsg){
   await refreshProfiles();
   tgCardRender();
 }
-// Thêm/đổi trọng số/xóa MỘT kỹ năng. Xếp hàng tuần tự: bấm nhanh không bị nuốt, không gửi danh sách cũ đè lên server.
+// Thêm/đổi trọng số/xoá MỘT kỹ năng. Xếp hàng tuần tự: bấm nhanh không bị nuốt, không gửi danh sách cũ đè lên server.
 // State lấy từ phản hồi (không qua refreshProfiles vốn nuốt lỗi); lỗi thì báo, các thao tác sau vẫn chạy.
 let skillQ = Promise.resolve(), skillPending = 0;
 // Còn thao tác chưa lưu mà rời/tải lại trang thì trình duyệt hỏi lại (hộp thoại chuẩn, không thêm chuỗi).
@@ -4468,7 +4415,7 @@ $("#currentSkills").addEventListener("click", async (ev) => {
   const w = Number(b.dataset.w);
   if (w && w === Number(cur.weight)) return;
   if (!w) skUi.sel = -1;
-  await skillOp(p, w ? "POST" : "DELETE", cur.skill, w, w ? t("Đã đổi trọng số %s: %s/5", cur.skill, w) : t("Đã xóa kỹ năng: %s", cur.skill));
+  await skillOp(p, w ? "POST" : "DELETE", cur.skill, w, w ? t("Đã đổi trọng số %s: %s/5", cur.skill, w) : t("Đã xoá kỹ năng: %s", cur.skill));
   const np = currentProfile();
   if (w && np) skUi.sel = (np.skills || []).findIndex(s => s.skill === cur.skill); // vị trí đổi sau khi sắp lại theo trọng số
   renderCurrentSkills();
@@ -4504,7 +4451,7 @@ $("#addSkillBtn").addEventListener("click", async () => {
   const skill = $("#manualSkill").value.trim();
   if (!skill) { toast(t("Nhập tên kỹ năng trước đã."), "err"); return; }
   const weight = Number($("#manualWeight").dataset.value) || 3;
-  $("#manualSkill").value = ""; // xóa ngay để gõ kỹ năng tiếp; nút không khóa, thao tác được xếp hàng
+  $("#manualSkill").value = ""; // xoá ngay để gõ kỹ năng tiếp; nút không khóa, thao tác được xếp hàng
   skillOp(p, "POST", skill, weight, t("Đã thêm kỹ năng: %s", skill));
 });
 
@@ -4912,7 +4859,7 @@ function paletteCommands(q){
   push(t("Đi tới: Việc làm"), "tab", () => switchTab("jobs"));
   push(t("Đi tới: Kanban"), "tab", () => switchTab("kanban"));
   push(t("Đi tới: Hồ sơ & CV"), "tab", () => switchTab("profile"));
-  if (state.user && state.user.is_owner) push(t("Quét job mới từ ITviec + TopDev"), t("hành động"), () => $("#scanBtn").click());
+  if (state.user && state.user.is_owner) push(t("Quét tin mới từ ITviec + TopDev"), t("hành động"), () => $("#scanBtn").click());
   push(t("Làm mới dữ liệu"), t("hành động"), () => { loadJobs(); loadDigest(); loadApplications(); });
   state.profiles.forEach(p => {
     if (p.id !== state.profileId) push(t("Chuyển hồ sơ: %s", p.name), t("hồ sơ"), async () => {
@@ -4939,7 +4886,7 @@ function renderPalette(){
   palette.items = paletteCommands($("#paletteInput").value);
   palette.sel = Math.min(palette.sel, Math.max(0, palette.items.length - 1));
   if (!palette.items.length) {
-    list.innerHTML = `<div class="pal-empty">${t("Không tìm thấy lệnh hay job nào khớp.")}</div>`;
+    list.innerHTML = `<div class="pal-empty">${t("Không tìm thấy lệnh hay tin nào khớp.")}</div>`;
     return;
   }
   list.innerHTML = palette.items.map((c, i) =>
@@ -5130,21 +5077,21 @@ $("#restoreBtn").addEventListener("click", async () => {
 <script>
 /* i18n landing + <head> (zone A). Key = exact Vietnamese string in this script. */
 Object.assign(EN, {
-  "Khớp %s/%s kỹ năng (rule %s) + fit %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, tier %s": "Matched %s/%s skills (rule %s) + fit %s (location 8 + freshness %s + seniority 5) = %s pts, tier %s",
+  "Khớp %s/%s kỹ năng (kỹ năng %s) + phần còn lại %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, mức %s": "Matched %s/%s skills (skills %s) + the rest %s (location 8 + freshness %s + seniority 5) = %s pts, tier %s",
   " (đã chặn 69 vì bằng chứng dưới 3 kỹ năng).": " (capped at 69: fewer than 3 skills as evidence).",
-  "Tìm job Backend Java": "Find Backend Java jobs",
+  "Tìm tin Backend Java": "Find Backend Java jobs",
   "Nhảy tới tab Việc làm": "Go to the Jobs tab",
   "Nhảy tới tab Kanban": "Go to the Kanban tab",
-  "Quét job mới": "Scan for new jobs",
+  "Quét tin mới": "Scan for new jobs",
   "Đổi hồ sơ": "Switch profile",
   "Xem Morning brief": "View the Morning brief",
   "Tính điểm khớp thử": "Try the match score",
   "Mở kanban demo": "Open the kanban demo",
-  "Xem nguồn job": "View job sources",
+  "Xem nguồn tin": "View job sources",
   "Tạo tài khoản miễn phí": "Create a free account",
   "Không có lệnh demo nào khớp.": "No demo command matches.",
   "Đây là bản demo — đăng nhập để dùng thật.": "This is a demo. Log in to use the real thing.",
-  "hôm nay": "today",
+  "hôm nay": "today", "Hồ Chí Minh": "Ho Chi Minh City", "Hà Nội": "Hanoi", "Đà Nẵng": "Da Nang", "Thương lượng": "Negotiable", "Thoả thuận": "Negotiable",
   "1 ngày trước": "1 day ago",
   "%s ngày trước": "%s days ago",
   "cập nhật %s": "updated %s",
@@ -5161,8 +5108,8 @@ Object.assign(EN, {
   "Không tải được ví dụ.": "Couldn't load the example.",
 });
 if (LANG === "en") {
-  document.title = "JobPilot Edge: job hunting, with a system";
-  $('meta[name="description"]').content = "AI job-hunting copilot for developers in Vietnam: jobs from multiple sources, CV-to-JD match scores, an application kanban, a digest every morning.";
+  document.title = "JobPilot — IT jobs scored against your CV, free";
+  $('meta[name="description"]').content = "IT jobs from ITviec, TopDev and remote boards, matched to your CV with reasons, plus application tracking and salary ranges. Free for developers in Vietnam.";
 }
 /* ================= LANDING DEMO — ĐỢT 2 (P1) ================= */
 /* State cục bộ, demo-only. Handler demo riêng, không đụng dữ liệu thật, không gọi API. */
@@ -5216,7 +5163,8 @@ if (LANG === "en") {
   function fmtVN(n){ var s = (Math.round(n * 10) / 10).toString(); return LANG === "en" ? s : s.replace(".", ","); }
   function demoScoreUpdate(){
     if (!mEl || !rEl || !fEl) return;
-    var m = Number(mEl.value), req = Number(rEl.value), fresh = Number(fEl.value);
+    var req = Number(rEl.value), fresh = Number(fEl.value);
+    mEl.max = req; var m = Math.min(Number(mEl.value), req); mEl.value = m; // khớp không vượt số kỹ năng yêu cầu
     dq("#demoScoreMatchedVal").textContent = m;
     dq("#demoScoreRequiredVal").textContent = req;
     var rule = Math.min(50, m / req * 50);
@@ -5224,15 +5172,15 @@ if (LANG === "en") {
     var raw = Math.round((rule + fit) / 70 * 100);
     var capped = (m < 3 || req < 3) && raw > 69;
     var fin = capped ? 69 : raw;
-    var tier = fin >= 75 ? "strong" : fin >= 50 ? "partial" : "weak";
+    var tier = fin >= 75 ? "strong" : fin >= 50 ? "partial" : "weak", TIER_VI = { strong: "mạnh", partial: "một phần", weak: "yếu" };
     dq("#demoScoreRule").textContent = fmtVN(rule) + " / 50";
     dq("#demoScoreFreshVal").textContent = fresh + " / 7";
     dq("#demoScoreFit").textContent = fit + " / 20";
     var tierEl = dq("#demoScoreTier");
-    tierEl.textContent = tier;
+    tierEl.textContent = t(TIER_VI[tier]);
     tierEl.className = "badge" + (tier === "weak" ? "" : " " + tier);
     dq("#demoScoreCap").classList.toggle("hidden", !capped);
-    dq("#demoScoreExplain").textContent = t("Khớp %s/%s kỹ năng (rule %s) + fit %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, tier %s", m, req, fmtVN(rule), fit, fresh, fin, tier) +
+    dq("#demoScoreExplain").textContent = t("Khớp %s/%s kỹ năng (kỹ năng %s) + phần còn lại %s (khu vực 8 + độ mới %s + cấp bậc 5) = %sđ, mức %s", m, req, fmtVN(rule), fit, fresh, fin, t(TIER_VI[tier])) +
       (capped ? t(" (đã chặn 69 vì bằng chứng dưới 3 kỹ năng).") : ".");
     var finalEl = dq("#demoScoreFinal");
     var from = Number(finalEl.dataset.prev || fin);
@@ -5257,15 +5205,15 @@ if (LANG === "en") {
      (state.token rỗng), nên mock này không phá palette thật. Mock CHỈ mở khi
      landingView đang hiển thị; khi đã đăng nhập, landingView hidden nên mock im lặng. */
   var DEMO_PAL = [
-    { label: t("Tìm job Backend Java"), hint: "demo" },
+    { label: t("Tìm tin Backend Java"), hint: "demo" },
     { label: t("Nhảy tới tab Việc làm"), hint: "demo" },
     { label: t("Nhảy tới tab Kanban"), hint: "demo" },
-    { label: t("Quét job mới"), hint: "demo" },
+    { label: t("Quét tin mới"), hint: "demo" },
     { label: t("Đổi hồ sơ"), hint: "demo" },
     { label: t("Xem Morning brief"), hint: "demo" },
     { label: t("Tính điểm khớp thử"), hint: "demo" },
     { label: t("Mở kanban demo"), hint: "demo" },
-    { label: t("Xem nguồn job"), hint: "demo" },
+    { label: t("Xem nguồn tin"), hint: "demo" },
     { label: t("Tạo tài khoản miễn phí"), hint: "demo" }
   ];
   var demoPalOpen = false, demoPalSel = 0, demoPalItems = DEMO_PAL.slice();
@@ -5340,7 +5288,7 @@ if (LANG === "en") {
   if (!form) return;
   const msg = $("#tryMsg"), list = $("#tryJobs"), save = $("#trySave");
   const picked = () => $$("input[name=trySk]:checked", form).map(i => i.value);
-  const loc = (s) => [...new Set(String(s || "").split(",").map(x => x.trim()).filter(Boolean))].join(", ");
+  const loc = (s) => [...new Set(String(s || "").split(",").map(x => t(x.trim().replace(/^\/\s*/, ""))).filter(Boolean))].join(", ");
   form.addEventListener("change", e => {
     if (e.target.name === "trySk" && picked().length > 8) { e.target.checked = false; msg.textContent = t("Tối đa 8 kỹ năng."); }
   });
@@ -5351,14 +5299,14 @@ if (LANG === "en") {
     const level = $("#tryLevel").value, location = $("#tryLoc").value;
     msg.textContent = t("Đang chấm điểm…");
     try {
-      const qs = new URLSearchParams({ skills: skills.join(","), level, location });
+      const qs = new URLSearchParams({ skills: skills.join(","), level, location, lang: LANG });
       const r = await fetch(API_BASE + "/api/public/try?" + qs, { headers: { "Accept-Language": LANG } });
       if (!r.ok) throw new Error(r.status);
       const jobs = (await r.json()).jobs || [];
       msg.textContent = jobs.length ? "" : t("Chưa có tin nào khớp, thử thêm kỹ năng khác.");
       list.innerHTML = jobs.map(j => `<li class="sg-job"><a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
         <span class="score-pill ${esc(j.tier)}">${t("%sđ", Math.round(j.score))}</span>
-        <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}${j.salary ? ", " + esc(j.salary) : ""}</span>
+        <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}${j.salary ? ", " + esc(t(j.salary)) : ""}</span>
         <span class="sg-chips">${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}</span></li>`).join("");
       try { localStorage.setItem("jp_try", JSON.stringify({ skills, level, location })); } catch (_) { /* bỏ qua */ }
       save.classList.toggle("hidden", !jobs.length);
@@ -5371,9 +5319,9 @@ if (LANG === "en") {
   const box = document.getElementById("sgLiveJobs");
   if (!box) return;
   const ago = (d) => d == null ? "" : d <= 0 ? t("hôm nay") : d === 1 ? t("1 ngày trước") : t("%s ngày trước", d);
-  const loc = (s) => [...new Set(String(s || "").split(",").map(x => x.trim()).filter(Boolean))].join(", ");
+  const loc = (s) => [...new Set(String(s || "").split(",").map(x => t(x.trim().replace(/^\/\s*/, ""))).filter(Boolean))].join(", ");
   const hhmm = (ts) => ts ? new Date(ts * 1000).toLocaleTimeString(LANG === "en" ? "en-GB" : "vi-VN", { hour: "2-digit", minute: "2-digit" }) : "";
-  fetch(API_BASE + "/api/public/sample", { headers: { "Accept-Language": LANG } }).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
+  fetch(API_BASE + "/api/public/sample?lang=" + LANG, { headers: { "Accept-Language": LANG } }).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => {
     const jobs = d.jobs || [], st = d.stats || {};
     $("#sgLiveMeta").textContent = st.last_scan ? t("cập nhật %s", hhmm(st.last_scan)) : "";
     if (LANG === "en" && d.profile && d.profile.label) $("#sgLiveProfile").textContent = d.profile.label; // VI giữ câu tĩnh; EN lấy nhãn Worker trả theo Accept-Language
@@ -5381,7 +5329,7 @@ if (LANG === "en") {
     box.innerHTML = jobs.map(j => `<li class="sg-job">
       <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.title)}</a>
       <span class="score-pill ${esc(j.tier)}">${t("%sđ", Math.round(j.score))}</span>
-      <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}, ${esc(ago(j.age_days))}${j.salary ? ", " + esc(j.salary) : ""}</span>
+      <span class="sg-meta"><b>${esc(j.company)}</b><br>${esc(loc(j.location))}, ${esc(ago(j.age_days))}${j.salary ? ", " + esc(t(j.salary)) : ""}</span>
       <span class="sg-chips">${j.verdict ? `<span class="vd ${esc(j.verdict)}">${j.verdict === "apply" ? t("Nên nộp") : j.verdict === "skip" ? t("Bỏ qua") : esc(j.verdict_why)}</span>` : ""}${(j.matched || []).map(x => `<span class="sg-chip ok">${esc(x)}</span>`).join("")}${(j.missing || []).slice(0, 3).map(x => `<span class="sg-chip">${t("thiếu %s", esc(x))}</span>`).join("")}${(j.flags || []).filter(f => f.type !== "duplicate").slice(0, 1).map(f => `<span class="sg-chip warn">${esc(f.label)}</span>`).join("")}</span>
     </li>`).join("");
     const top = jobs[0], f = top.fit || {};

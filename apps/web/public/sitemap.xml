@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-<url><loc>https://jobpilot-edge.pages.dev/</loc><xhtml:link rel="alternate" hreflang="vi" href="https://jobpilot-edge.pages.dev/"/><xhtml:link rel="alternate" hreflang="en" href="https://jobpilot-edge.pages.dev/?lang=en"/></url>
-<url><loc>https://jobpilot-edge.pages.dev/?lang=en</loc><xhtml:link rel="alternate" hreflang="vi" href="https://jobpilot-edge.pages.dev/"/><xhtml:link rel="alternate" hreflang="en" href="https://jobpilot-edge.pages.dev/?lang=en"/></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://jobpilot-edge.pages.dev/</loc></url>
 </urlset>
