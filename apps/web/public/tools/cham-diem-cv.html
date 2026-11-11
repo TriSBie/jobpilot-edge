@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://jobpilot-edge.pages.dev/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -43,22 +43,39 @@
 </script>
 <style>
 /* ponytail: token con của index.html (như 404.html); đổi màu brand thì sửa cả 3 file */
-:root{color-scheme:light dark;--bg:#FFFFFF;--ink:#0A0A0A;--mute:#60646C;--line:#E4E4E7;--soft:#F4F4F5;--brand:#4F5BD5;--brand-ink:#FFFFFF}
+:root{color-scheme:light dark;--bg:#FFFFFF;--ink:#0A0A0A;--mute:#60646C;--line:#E4E4E7;--soft:#F4F4F5;--brand:#4F5BD5;--brand-ink:#FFFFFF;--violet:#8B7CFF;--ease:cubic-bezier(.16,1,.3,1);--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
 @media (prefers-color-scheme:dark){:root{--bg:#08090A;--ink:#F7F8F8;--mute:#8A8F98;--line:#23252A;--soft:#121316;--brand:#7C8CFF;--brand-ink:#08090A}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-header,main,footer{max-width:760px;margin:0 auto;padding:0 20px}
+header,.hero{max-width:1040px;margin:0 auto;padding:0 20px}
+main>section:not(.hero),footer{max-width:760px;margin:0 auto;padding:0 20px}
 header{display:flex;align-items:center;gap:10px;padding-top:20px;padding-bottom:20px}
 header a{display:inline-flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;font:700 18px/1 "Be Vietnam Pro",Inter,sans-serif;min-height:44px}
 h1,h2,h3{font-family:"Be Vietnam Pro",Inter,system-ui,sans-serif;line-height:1.3}
-h1{font-size:clamp(28px,5vw,40px);margin:24px 0 16px}
-h2{font-size:24px;margin:48px 0 12px}
+h1{font-size:clamp(32px,5.5vw,56px);font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:24px 0 20px}
+h2{font-size:32px;letter-spacing:-.01em;line-height:1.2;margin:72px 0 16px}
 h3{font-size:18px;margin:28px 0 6px}
 p,li{color:var(--ink)}
 .mute{color:var(--mute)}
 a{color:var(--brand)}
 a:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
-.cta{display:inline-block;min-height:44px;line-height:44px;padding:0 20px;border-radius:10px;background:var(--brand);color:var(--brand-ink);text-decoration:none;font-weight:600;margin-top:8px}
+.cta{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 22px;border-radius:10px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600;margin:8px 0 6px}
+.cta span{display:inline-block;transition:transform 200ms var(--ease)}
+@media (hover:hover) and (pointer:fine){.cta:hover span{transform:translateX(4px)}}
+/* Hero: 2 cột ≥900px, phải là thẻ bằng chứng (mock tĩnh) */
+.hero{display:grid;gap:40px;padding-top:16px;padding-bottom:24px}
+@media (min-width:900px){.hero{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:56px;padding-top:40px}}
+.proof{margin:0;background:#111318;color:#E7E9EE;border:1px solid #23252A;border-radius:16px;padding:24px;box-shadow:0 24px 48px -24px rgba(0,0,0,.45)}
+.proof .k{margin:0 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#8A8F98}
+.proof .t{margin:0 0 16px;font-weight:600;color:#F7F8F8}
+.proof dl{margin:0;display:grid;grid-template-columns:1fr auto;font-size:15px}
+.proof dt,.proof dd{margin:0;padding:10px 0;border-bottom:1px solid #23252A}
+.proof dd,.proof .n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;color:#F7F8F8}
+.proof .sum{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:18px}
+.proof .n{font-size:44px;line-height:1}
+.proof .lv{color:var(--violet);font-weight:600}
+.bar{height:6px;margin-top:12px;border-radius:3px;background:#23252A;overflow:hidden}
+.bar i{display:block;height:100%;width:77%;background:var(--violet);border-radius:3px;transform-origin:left}
 blockquote{margin:16px 0;padding:12px 16px;border-left:3px solid var(--brand);background:var(--soft);border-radius:0 10px 10px 0}
 blockquote p{margin:0}
 .tbl{overflow-x:auto}
@@ -66,18 +83,44 @@ table{width:100%;border-collapse:collapse;font-size:15px}
 th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
 thead th{color:var(--mute);font-weight:600}
 td:last-child,th:last-child,tbody th{white-space:nowrap}
+td:last-child{font-family:var(--mono);font-weight:500;font-size:14px}
+.total{background:var(--soft)}
+.total th{border-left:3px solid var(--violet)}
 footer{padding-top:32px;padding-bottom:48px;color:var(--mute);font-size:14px}
+/* Reveal CSS thuần: trình duyệt không hỗ trợ scroll-timeline thì hiện ngay */
+@keyframes rv{from{opacity:0;transform:translateY(12px);animation-timing-function:var(--ease)}to{opacity:1;transform:none}}
+@keyframes fill{from{transform:scaleX(0)}}
+@media (prefers-reduced-motion:no-preference){
+.bar i{animation:fill 900ms var(--ease) 200ms both}
+@supports (animation-timeline:view()){main>section>*{animation:rv 1ms linear both;animation-timeline:view();animation-range:entry 0% entry 40%}}
+}
 </style>
 </head>
 <body>
 <header><a href="/"><img src="/favicon.svg" width="28" height="28" alt="">JobPilot</a></header>
 <main>
+<section class="hero">
+<div>
 <h1>Chấm điểm CV theo tin tuyển IT đang mở, có lý do cho từng điểm</h1>
 <p>Mỗi ngày JobPilot gom tin IT mới từ ITviec, TopDev và các trang việc remote, rồi chấm từng tin theo CV của bạn. Mỗi tin có bảng điểm: khớp kỹ năng nào, thiếu kỹ năng nào, khu vực, độ mới, cấp bậc cộng lại ra sao. Bạn biết nên nộp tin nào trước khi đọc hết JD.</p>
 <p>JobPilot không nộp hồ sơ thay bạn. Bạn tự quyết định nộp hay không.</p>
-<p><a class="cta" href="/#lp-try">Thử ngay, không cần CV →</a><br>
+<p><a class="cta" href="/#lp-try">Thử ngay, không cần CV <span aria-hidden="true">→</span></a><br>
 <span class="mute">Chọn 3 đến 8 kỹ năng, cấp bậc và khu vực, xem 10 tin hợp nhất hôm nay.</span></p>
 
+</div>
+<figure class="proof" role="img" aria-label="Ví dụ minh hoạ, dữ liệu mẫu: bảng điểm tin Middle Backend Engineer (Java). Kỹ năng 34,2 trên 50, khu vực 8 trên 8, độ mới 7 trên 7, cấp bậc 5 trên 5. Tổng 77, khớp mạnh.">
+<p class="k">Ví dụ minh hoạ, dữ liệu mẫu</p>
+<p class="t">Middle Backend Engineer (Java)</p>
+<dl>
+<dt>Kỹ năng</dt><dd>34,2 / 50</dd>
+<dt>Khu vực</dt><dd>8 / 8</dd>
+<dt>Độ mới</dt><dd>7 / 7</dd>
+<dt>Cấp bậc</dt><dd>5 / 5</dd>
+</dl>
+<div class="sum"><span class="n">77</span><span class="lv">khớp mạnh</span></div>
+<div class="bar"><i></i></div>
+</figure>
+</section>
 <section>
 <h2>Điểm được tính thế nào</h2>
 <p>Điểm không do AI tự cho. Cách tính cố định, ai cũng xem được:</p>
@@ -114,7 +157,7 @@ footer{padding-top:32px;padding-bottom:48px;color:var(--mute);font-size:14px}
 <tr><th scope="row">Khu vực</th><td>Địa điểm khớp với hồ sơ</td><td>8 / 8</td></tr>
 <tr><th scope="row">Độ mới</th><td>Đăng 2 ngày</td><td>7 / 7</td></tr>
 <tr><th scope="row">Cấp bậc</th><td>Cấp bậc phù hợp</td><td>5 / 5</td></tr>
-<tr><th scope="row"><b>Tổng</b></th><td>(34,2 + 20) / 70 × 100</td><td><b>77 — khớp mạnh</b></td></tr>
+<tr class="total"><th scope="row"><b>Tổng</b></th><td>(34,2 + 20) / 70 × 100</td><td><b>77 — khớp mạnh</b></td></tr>
 </tbody>
 </table>
 </div>
@@ -168,7 +211,7 @@ footer{padding-top:32px;padding-bottom:48px;color:var(--mute);font-size:14px}
 <section>
 <h2>Thử với tin đang tuyển hôm nay</h2>
 <p>Chọn kỹ năng của bạn, xem 10 tin hợp nhất và lý do cho từng điểm. Không cần CV, không cần tài khoản.</p>
-<p><a class="cta" href="/#lp-try">Chấm thử ngay →</a></p>
+<p><a class="cta" href="/#lp-try">Chấm thử ngay <span aria-hidden="true">→</span></a></p>
 <p>Muốn chấm bằng CV thật và theo dõi các tin đã nộp? <a href="/#register">Tạo tài khoản miễn phí</a></p>
 </section>
 </main>

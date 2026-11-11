@@ -29,4 +29,12 @@ item("wording", () => { assert(!/máy chủ của bạn/.test(src)); assert(!/x�
 item("no app JS", () => assert.equal((src.match(/<script\b/g) || []).length, 1, "chỉ được có script ld+json"));
 item("#ats", () => assert(src.includes('id="ats"')));
 item("home link", () => assert(fs.readFileSync(path.join(pub, "index.html"), "utf8").includes('href="/tools/cham-diem-cv"')));
+item("no transition:all", () => assert(!/transition\s*:\s*all/.test(src)));
+item("hover gated", () => src.split("\n").filter((l) => /:hover/.test(l)).forEach((l) => assert(l.includes("hover:hover"), "hover không gate: " + l.trim())));
+item("view() reveal", () => assert(src.includes("animation-timeline:view()")));
+item("hero proof", () => {
+  const f = src.match(/<figure class="proof"[^>]*aria-label="[^"]+"[\s\S]*?<\/figure>/);
+  assert(f, "thiếu card hero có aria-label");
+  assert(/>77</.test(f[0]), "card hero phải có 77");
+});
 console.log("tools-cham-diem-cv selfcheck OK: " + ok.join(" · "));
