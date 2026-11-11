@@ -45,11 +45,16 @@ const src = fs.readFileSync(workerPath, 'utf8');
   const jd = m.extractJd(page, 'src-itviec');
   assert(jd.includes('C#/.NET') && !/Java|Spring Boot|Kafka|Lộc Trời/.test(jd), 'A1: JD lấn sang cuối trang: ' + jd.slice(-120));
   assert.deepStrictEqual(m.extractSkillsFromText(jd).filter((x) => /Java|Spring/.test(x)), [], 'A1 skill');
+  // A1 (Rigel): <section> lồng trong job-content không được cắt sớm rồi rơi về cả trang.
+  const nested = m.extractJd(`<section class='job-content'><section><p>short</p></section><p>C# ${'.NET Core API. '.repeat(20)}</p></section><div>Java Spring Boot</div>`, 'src-itviec');
+  assert(nested.includes('C#') && nested.includes('short') && !/Java/.test(nested), 'A1 lồng: ' + nested.slice(-80));
 
   // A2: tin "kỹ sư" ngành khác bị chặn; tin IT viết tiếng Việt vẫn qua.
-  for (const t of ['KỸ SƯ THẦU CẤP THOÁT NƯỚC', 'Kỹ Sư Thiết Bị SMT', 'Kỹ Sư Quản Lý Năng Lượng', 'Kỹ sư Shop Điện nhẹ', 'Kỹ Sư Giám Sát Xây Dựng', 'Kỹ Sư Cơ Điện Tổng Trạm', 'Kỹ Sư QS (Xây Dựng)'])
+  for (const t of ['KỸ SƯ THẦU CẤP THOÁT NƯỚC', 'Kỹ Sư Thiết Bị SMT', 'Kỹ Sư Quản Lý Năng Lượng', 'Kỹ sư Shop Điện nhẹ', 'Kỹ Sư Giám Sát Xây Dựng', 'Kỹ Sư Cơ Điện Tổng Trạm', 'Kỹ Sư QS (Xây Dựng)', 'Cán Bộ/Kỹ Sư QS (Xây Dựng)', 'Kỹ Sư Sản Xuất (PE, EE)'])
     assert.strictEqual(m.titleGate(t), false, 'A2 chặn: ' + t);
-  for (const t of ['Kỹ sư lập trình Backend (Java)', 'Kỹ Sư Dữ Liệu (Data Engineer)', 'Kỹ sư Quản lý Chất lượng Phần mềm', 'Java Developer', 'Senior DevOps Engineer'])
+  for (const t of ['Kỹ sư lập trình Backend (Java)', 'Kỹ Sư Dữ Liệu (Data Engineer)', 'Kỹ sư Quản lý Chất lượng Phần mềm', 'Java Developer', 'Senior DevOps Engineer',
+    'Kỹ sư Kiểm thử', 'Kỹ sư cầu nối (BrSE)', 'Kỹ sư Cloud', 'Kỹ sư Bảo mật', 'Kỹ sư An toàn thông tin', 'Kỹ sư triển khai ERP',
+    'Embedded Software Engineer - Năng lượng tái tạo', 'Lập trình viên xây dựng hệ thống ERP', 'Kỹ sư phần mềm MES nhà máy sản xuất'])
     assert.strictEqual(m.titleGate(t), true, 'A2 giữ: ' + t);
 
   // A3: "Middle"/"mid" vs tiêu đề Senior không còn 5; thiếu cấp bậc = chưa biết.

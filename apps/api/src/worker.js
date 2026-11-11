@@ -762,7 +762,13 @@ function extractJd(html, sourceId) {
     if (m) t = stripTags(stripTags(decodeUnicodeEscapes(m[1]).replace(/\\n/g, " ").replace(/\\"/g, '"').replace(/\\\//g, "/")));
   }
   // A1: ITviec bọc JD trong <section class='job-content'>: cắt tới </section>, không thì "việc làm liên quan" cuối trang lọt vào skill.
-  if (t.length < 200) { const m = html.match(/<section[^>]*(?:job-content|job-description|jd-content)[^>]*>([\s\S]*?)<\/section>/i); if (m) t = stripTags(m[1]); }
+  if (t.length < 200) {
+    const m = html.match(/<section[^>]*(?:job-content|job-description|jd-content)[^>]*>/i);
+    if (m) { // đếm <section> lồng bên trong để dừng đúng </section> của chính khối JD
+      const re = /<(\/?)section\b[^>]*>/gi; re.lastIndex = m.index + m[0].length;
+      for (let depth = 1, x; (x = re.exec(html)); ) if ((depth += x[1] ? -1 : 1) === 0) { t = stripTags(html.slice(m.index + m[0].length, x.index)); break; }
+    }
+  }
   if (t.length < 200) {
     const m = html.match(/<(div|section)[^>]*(?:job-content|job-description|jd-content)[^>]*>([\s\S]*)/i);
     if (m) t = stripTags(m[2]);
@@ -1247,14 +1253,16 @@ async function ensureSources(env) {
 }
 // Cổng liên quan theo tiêu đề: loại tin phi kỹ thuật (HR/Sales/Kế toán...)
 // mà tìm kiếm từ khoá của TopDev hay trả lẫn vào.
-const TITLE_TECH = /(developer|engineer|backend|back-end|fullstack|full-stack|software|java|node|devops|\bqa\b|tester|data|mobile|android|ios|frontend|front-end|programmer|lập trình|phần mềm|dữ liệu|kỹ sư (?:it|cntt|hệ thống|mạng|ai)\b|công nghệ thông tin)/i;
-// A2: tin ngành khác dùng chữ "kỹ sư"/"engineer" (xây dựng, cơ điện, SMT...). ponytail: danh sách cứng; ngành mới lọt thì thêm vào.
+const TITLE_TECH = /(developer|engineer|backend|back-end|fullstack|full-stack|software|java|node|devops|\bqa\b|tester|data|mobile|android|ios|frontend|front-end|programmer|lập trình|kỹ sư|công nghệ)/i;
+// A2: tin ngành khác dùng chữ "kỹ sư" (xây dựng, cơ điện, SMT...), chỉ chặn khi tiêu đề không có từ IT mạnh.
+// ponytail: hai danh sách cứng; ngành mới lọt (hoặc tin IT bị chặn) thì thêm từ vào.
+const TITLE_IT_STRONG = /(developer|software|programmer|lập trình|phần mềm|dữ liệu|cloud|bảo mật|an toàn thông tin|kiểm thử|brse|\berp\b|\bmes\b|devops|data|backend|back-end|frontend|front-end|fullstack|full-stack|mobile|\bqa\b|tester|\bai\b|embedded)/i;
 const TITLE_NON_IT = /(cấp thoát nước|\bsmt\b|năng lượng|điện nhẹ|xây dựng|cơ khí|cơ điện|thi công|kết cấu|\bqs\b|shop ?drawing|dây chuyền|sản xuất)/i;
 const TITLE_BLOCK = /(human resource|\bhr\b|recruit|talent acquisition|sales|marketing|accountant|kế toán|nhân sự|tuyển dụng|business development|customer service|support|administrator|designer|content|seo|admin\b)/i;
 // T-07: nhóm này chặn kể cả khi có "engineer" (Sales Engineer, Engineering Manager, Data Entry...).
 const TITLE_HARD_BLOCK = /(\bsales\b|pre-?sales|\bsupport\b|\bcontent\b|\bmanager\b|data entry)/i;
 function titleGate(title) {
-  if (!TITLE_TECH.test(title || "") || TITLE_HARD_BLOCK.test(title || "") || TITLE_NON_IT.test(title || "")) return false;
+  if (!TITLE_TECH.test(title || "") || TITLE_HARD_BLOCK.test(title || "") || (TITLE_NON_IT.test(title || "") && !TITLE_IT_STRONG.test(title || ""))) return false;
   if (TITLE_BLOCK.test(title || "") && !/\b(?:developer|engineer|programmer)\b/i.test(title)) return false;
   return true;
 }
@@ -1925,7 +1933,8 @@ export default {
       // A4: tin "skip" xếp sau apply/apply_if, trước tin chưa chấm (sort ổn định, giữ thứ tự điểm trong mỗi nhóm), trước khi phân trang.
       // Nhãn tính ở JS (cần fitBreakdown) nên không làm bằng ORDER BY. ponytail: bản phân trang xét trên jd_head 600 ký tự;
       // khoá vùng nằm sâu hơn trong JD thì nhãn trang có thể là skip mà vẫn đứng trên. Lưu verdict vào job_matches khi chấm nếu cần chặt.
-      if (prof) rows = rows.map((r) => { const v = explain(r).vd; return [r, !v ? 2 : v.verdict === "skip" ? 1 : 0]; }).sort((a, b) => a[1] - b[1]).map((x) => x[0]); // tin chưa chấm vẫn cuối
+      const explained = new Map(); // N1: dùng lại ở out; bản phân trang tính lại cho tin trong trang vì vừa nạp jd_text đầy đủ
+      if (prof) rows = rows.map((r) => { const e = explain(r); explained.set(r.id, e); const v = e.vd; return [r, !v ? 2 : v.verdict === "skip" ? 1 : 0]; }).sort((a, b) => a[1] - b[1]).map((x) => x[0]); // tin chưa chấm vẫn cuối
       const total = rows.length;
       if (paged) {
         rows = rows.slice(offset, offset + limit);
@@ -1936,7 +1945,7 @@ export default {
         }
       }
       const out = rows.map((r) => {
-        const { skillsArr, flags, risk, fit, ruleDetail, hasMatch, vd } = explain(r);
+        const { skillsArr, flags, risk, fit, ruleDetail, hasMatch, vd } = (!paged && explained.get(r.id)) || explain(r);
         return {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
