@@ -575,6 +575,14 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .chip.flag.sun{border-color:var(--sun)}
   #jobsContainer .chip.flag.mute{border-color:var(--line);color:var(--mute)}
   #jobsContainer .chip.src{background:var(--bg);color:var(--mute)}
+  #jobsContainer .chip.mode{background:var(--raised);color:var(--ink)}
+  .jf2{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center;margin:-.4rem 0 1rem}
+  .jf2 [data-mode]{min-height:36px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line-strong,var(--line));background:var(--surface);color:var(--ink);font:500 14px var(--f-body);cursor:pointer}
+  .jf2 [data-mode][aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+  .jf2 .sal{display:inline-flex;align-items:center;gap:.4rem;font-size:14px}
+  .jf2 .sal input{width:88px}
+  .jf2 .hint{color:var(--mute);font-size:13px}
+  .jf2 .err{color:var(--pop);font-size:13px}
   .card{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--soft);display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;animation:rise var(--m-enter) var(--e-out) backwards;animation-delay:calc(min(var(--i,0),6) * 45ms)}
   .card .ttl{font:600 var(--fs-3)/1.2 var(--f-head);margin:0 0 6px}
   .card .ttl a{color:inherit;text-decoration:none}@media (hover:hover) and (pointer:fine){
@@ -1751,6 +1759,17 @@ html.fx-on .bg-fx{opacity:1}
           <button id="scanBtn" class="btn sm p" type="button" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Scan new jobs'><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Quét job mới</button>
         </div>
 
+        <div class="jf2" role="group" aria-label="Lọc theo hình thức và lương" data-en-aria-label="Filter by work mode and salary">
+          <button type="button" data-mode="remote" aria-pressed="false">Remote</button>
+          <button type="button" data-mode="hybrid" aria-pressed="false">Hybrid</button>
+          <button type="button" data-mode="onsite" aria-pressed="false">Onsite</button>
+          <label class="sal" for="filterMinSal"><span data-en="Min salary">Lương tối thiểu</span>
+            <input class="input" id="filterMinSal" type="number" min="1" max="1000" step="1" inputmode="numeric" placeholder="15" aria-describedby="filterSalErr">
+            <span class="muted" data-en="M VND/month">triệu/tháng</span></label>
+          <label class="check"><input id="filterHasSal" type="checkbox"> <span data-en="Only jobs that list a salary">Chỉ tin có ghi lương</span></label>
+          <span id="filterSalErr" class="err" role="alert"></span>
+          <span id="salHint" class="hint" aria-live="polite"></span>
+        </div>
         <div id="jobsAlertStrip"></div>
         <div id="qaPrompt" class="qa-strip hidden" role="status"></div>
         <div id="tgCard" class="qa-strip hidden"></div>
@@ -2023,7 +2042,8 @@ const state = {
   applications: [],
   suggested: [],
   cvDraftSkills: [],
-  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false, onlyNew: false },
+  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false, onlyNew: false, mode: [], minSal: "", hasSal: false },
+  jobsTotal: null,
 };
 
 let jobsFirstRender = true, kanbanFirstLoad = true, palCloseTimer = null;
@@ -3111,6 +3131,9 @@ async function loadJobs(){
   if (state.filters.tier) qs.set("tier", state.filters.tier);
   if (state.filters.source) qs.set("source", state.filters.source);
   if (state.filters.q) qs.set("q", state.filters.q);
+  if (state.filters.mode.length) qs.set("mode", state.filters.mode.join(","));
+  if (state.filters.minSal) qs.set("min_salary", state.filters.minSal);
+  if (state.filters.hasSal) qs.set("has_salary", "1");
   qs.set("limit", "50");
   const seq = ++jobsSeq;
   try {
@@ -3118,6 +3141,7 @@ async function loadJobs(){
     if (seq !== jobsSeq) { clearTimeout(jobsSkelTimer); return; } // bộ lọc đổi trong lúc tải: bỏ kết quả cũ
     state.jobs = Array.isArray(r) ? r : (r.items || []);
     state.jobsNext = Array.isArray(r) ? null : r.next_offset ?? null;
+    state.jobsTotal = Array.isArray(r) || typeof r.total !== "number" ? null : r.total;
     state.jobsQs = qs.toString(); state.jobsMore = "";
     state.jobsVisible = 20;
     clearTimeout(jobsSkelTimer);
@@ -3127,7 +3151,8 @@ async function loadJobs(){
   } catch (e) {
     clearTimeout(jobsSkelTimer);
     if (seq !== jobsSeq) return;
-    box.innerHTML = `<div class="empty" role="alert"><p style="margin:0 0 .8rem">${esc(e.message)}</p><button class="btn" id="jobsRetryBtn" type="button">${t("Thử lại")}</button></div>`;
+    const msg = e.message === "invalid_query" ? t("Bộ lọc không hợp lệ. Kiểm tra lại lương tối thiểu.") : e.message;
+    box.innerHTML = `<div class="empty" role="alert"><p style="margin:0 0 .8rem">${esc(msg)}</p><button class="btn" id="jobsRetryBtn" type="button">${t("Thử lại")}</button></div>`;
     $("#jobsRetryBtn").addEventListener("click", loadJobs);
   }
 }
@@ -3195,8 +3220,18 @@ function renderJobs(){
   const newCount = jobsNewRender();
   if (state.filters.onlyNew) list = list.filter(isNewJob);
   const newPill = newCount || state.filters.onlyNew ? `<button class="new-pill" id="jobsNewPill" type="button" aria-pressed="${state.filters.onlyNew}">${state.filters.onlyNew ? t("Chỉ tin mới (%s) · Bỏ lọc", newCount) : t("%s tin mới · Xem", newCount)}</button>` : "";
-  if (cnt) cnt.textContent = list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
+  const clientFiltered = state.filters.hideFlagged || state.filters.onlyApply || state.filters.onlyNew;
+  // total từ server đã tính cả mode/lương; lọc phía client (cờ, nên nộp, tin mới) thì giữ cách đếm cũ
+  if (cnt) cnt.textContent = state.jobsTotal != null && !clientFiltered ? (state.jobsTotal ? t("%s tin", state.jobsTotal) : "")
+    : list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
+  $("#salHint").textContent = state.filters.hasSal && state.jobsTotal != null ? t("%s tin có ghi lương. Phần lớn tin ITviec ẩn lương sau đăng nhập nên số này nhỏ.", state.jobsTotal) : "";
   if (!list.length && state.jobsNext != null && !state.jobsMore) { loadMoreJobs(); return; } // trang đã tải bị bộ lọc phía client ẩn hết: lấy trang kế
+  if (!list.length && jobsServerFiltered()) {
+    box.innerHTML = newPill + `<div class="empty"><p style="margin:0 0 .8rem">${t("Không có job khớp bộ lọc")}</p><button class="btn" id="jobsClearFilters" type="button">${t("Xoá bộ lọc")}</button></div>`;
+    $("#jobsClearFilters").addEventListener("click", () => { jobsClearFilters(); const b = $('.jf2 [data-mode]'); if (b) b.focus(); });
+    jobsNewPillBind(box);
+    return;
+  }
   if (!list.length) {
     box.innerHTML = newPill + '<div class="empty">' + t("Chưa có job nào khớp bộ lọc.") + ' ' + t(state.user && state.user.is_owner ? 'Thử bấm <b>Quét job mới</b> hoặc nới lỏng bộ lọc nhé.' : 'Hệ thống tự quét job mới mỗi 30 phút. Thử nới lỏng bộ lọc nhé.') + '</div>';
     jobsNewPillBind(box);
@@ -3246,8 +3281,8 @@ function renderJobs(){
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
-        <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", job.salary_text].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
-        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", jobSalary(job)].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
+        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}${MODE_LABEL[job.work_mode] ? `<span class="chip mode">${MODE_LABEL[job.work_mode]}</span>` : ""}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
@@ -3570,6 +3605,60 @@ $("#filterApply").addEventListener("change", (e) => { state.filters.onlyApply = 
 $("#filterFlags").addEventListener("change", (e) => { state.filters.hideFlagged = e.target.checked; state.jobsVisible = 20; renderJobs(); });
 $("#filterSource").addEventListener("change", (e) => { state.filters.source = e.target.value; loadJobs(); });
 $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
+// Bộ lọc hình thức + lương: lọc ở server (trước phân trang), giữ trong URL để tải lại vẫn còn.
+const MODE_LABEL = { remote: "Remote", hybrid: "Hybrid", onsite: "Onsite" };
+const MODES = Object.keys(MODE_LABEL);
+// Lương: salary_vnd_* (VNĐ/tháng) -> "15–25 triệu/tháng"; không có thì salary_text; "Thương lượng"/ẩn sau đăng nhập thì không hiện gì.
+function jobSalary(j){
+  const m = (v) => (Number(v) / 1e6).toLocaleString(LANG === "en" ? "en-US" : "vi-VN", { maximumFractionDigits: 1 });
+  const lo = j.salary_vnd_min, hi = j.salary_vnd_max;
+  if (lo && hi) return lo === hi ? t("%s triệu/tháng", m(lo)) : t("%s–%s triệu/tháng", m(lo), m(hi));
+  if (lo) return t("Từ %s triệu/tháng", m(lo));
+  if (hi) return t("Tới %s triệu/tháng", m(hi));
+  const s = String(j.salary_text || "").trim();
+  return !s || /thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|sign in|log ?in|đăng nhập/i.test(s) ? "" : s;
+}
+const jobsServerFiltered = () => !!(state.filters.mode.length || state.filters.minSal || state.filters.hasSal);
+function jobsFiltersToUrl(){
+  const u = new URL(location.href), f = state.filters;
+  [["mode", f.mode.join(",")], ["min_salary", f.minSal], ["has_salary", f.hasSal ? "1" : ""]].forEach(([k, v]) => { if (v) u.searchParams.set(k, v); else u.searchParams.delete(k); });
+  try { history.replaceState(history.state, "", u.pathname + u.search + u.hash); } catch (e) { /* bỏ qua */ }
+}
+function jobsFiltersSync(){
+  $$(".jf2 [data-mode]").forEach(b => b.setAttribute("aria-pressed", String(state.filters.mode.includes(b.dataset.mode))));
+  $("#filterMinSal").value = state.filters.minSal; $("#filterHasSal").checked = state.filters.hasSal; $("#filterSalErr").textContent = "";
+}
+function jobsFiltersChanged(){ jobsFiltersToUrl(); state.jobsVisible = 20; loadJobs(); } // luôn tải lại từ trang 1
+function jobsClearFilters(){
+  Object.assign(state.filters, { mode: [], minSal: "", hasSal: false });
+  jobsFiltersSync(); jobsFiltersChanged();
+}
+(function jobsFiltersFromUrl(){
+  const q = new URLSearchParams(location.search), ms = q.get("min_salary") || "";
+  state.filters.mode = (q.get("mode") || "").split(",").filter((v, i, a) => MODES.includes(v) && a.indexOf(v) === i);
+  state.filters.minSal = /^[1-9]\d{0,3}$/.test(ms) && Number(ms) <= 1000 ? ms : "";
+  state.filters.hasSal = q.get("has_salary") === "1";
+  jobsFiltersSync();
+})();
+$$(".jf2 [data-mode]").forEach(b => b.addEventListener("click", () => {
+  const m = b.dataset.mode, f = state.filters;
+  f.mode = f.mode.includes(m) ? f.mode.filter(x => x !== m) : MODES.filter(x => x === m || f.mode.includes(x));
+  b.setAttribute("aria-pressed", String(f.mode.includes(m)));
+  jobsFiltersChanged();
+}));
+$("#filterMinSal").addEventListener("input", debounce((e) => {
+  const v = e.target.value.trim(), ok = v === "" || /^[1-9]\d{0,3}$/.test(v) && Number(v) <= 1000;
+  $("#filterSalErr").textContent = ok ? "" : t("Nhập số nguyên từ 1 đến 1000 (triệu/tháng).");
+  e.target.setAttribute("aria-invalid", String(!ok));
+  if (!ok || v === state.filters.minSal) return;
+  state.filters.minSal = v; jobsFiltersChanged();
+}, 400));
+$("#filterHasSal").addEventListener("change", (e) => { state.filters.hasSal = e.target.checked; jobsFiltersChanged(); });
+Object.assign(EN, { "Không có job khớp bộ lọc": "No jobs match these filters", "Xoá bộ lọc": "Clear filters",
+  "%s tin có ghi lương. Phần lớn tin ITviec ẩn lương sau đăng nhập nên số này nhỏ.": "%s jobs list a salary. Most ITviec jobs hide pay behind a login, so this number is small.",
+  "Nhập số nguyên từ 1 đến 1000 (triệu/tháng).": "Enter a whole number from 1 to 1000 (million VND/month).",
+  "Bộ lọc không hợp lệ. Kiểm tra lại lương tối thiểu.": "Invalid filter. Check the minimum salary.",
+  "%s triệu/tháng": "%sM VND/month", "%s–%s triệu/tháng": "%s–%sM VND/month", "Từ %s triệu/tháng": "From %sM VND/month", "Tới %s triệu/tháng": "Up to %sM VND/month" });
 $("#refreshJobsBtn").addEventListener("click", () => { loadJobs(); loadDigest(); loadSourceStatus(); });
 
 $("#submitForm").addEventListener("focusin", () => turnstileRender("submitTurnstile")); // nạp Turnstile khi dùng form, không nạp khi vào app
