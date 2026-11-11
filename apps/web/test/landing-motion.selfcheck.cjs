@@ -9,7 +9,7 @@ assert(at(100, 0.5) > 50, "ease-out phải vượt nửa ở giữa");
 assert.equal(stagger(0), 0); assert.equal(stagger(3), 210); assert.equal(stagger(20), 420);
 assert.equal(new Intl.NumberFormat("vi-VN").format(12345), "12.345");
 assert.equal((src.match(/class="lp-dots"/g) || []).length, 1, "đúng 1 chuyển động lặp");
-assert.equal((src.match(/lp-sec sg-left lp-chapter/g) || []).length, 3);
+assert.equal((src.match(/lp-sec sg-left lp-chapter/g) || []).length, 2);
 assert(!/transition:\s*all/.test(src), "còn transition:all");
 assert(/\.lp-dots i\{animation:lp-dot 3s steps\(1,end\)[^}]*paused/.test(src), "lưới chấm phải mặc định paused");
 assert(src.includes('html.rv #landingView .lp-sec:not(.lp-hero)>*:not(.in){opacity:0'), "fallback .in");

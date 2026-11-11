@@ -396,6 +396,22 @@ html[data-theme="dark"]{
 .lp-sec h2 em, .lp-hero h1 em{ font-style:italic; color:#9ba1a8; }
 .lp-sec .lede{ color:var(--muted); max-width:62ch; font-size:1.02rem; line-height:1.65; margin:0 auto; }
 /* Testimonial: marquee chỉ bằng CSS, 2 hàng ngược chiều; bản sao aria-hidden để lặp liền mạch. */
+#lp-testi{text-align:center}
+.testi-note{margin:.6rem auto 0;font-size:.85rem;color:var(--muted)}
+.testi{margin-top:2.4rem;display:grid;gap:16px}
+.testi-row{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.testi-track{display:flex;width:max-content;animation:testi-x 52s linear infinite}
+.testi-rev .testi-track{animation-direction:reverse;animation-duration:58s}
+.testi-row:hover .testi-track,.testi-row:focus-within .testi-track{animation-play-state:paused}
+.testi-group{display:flex;gap:16px;padding:0 16px 0 0;margin:0;list-style:none}
+.testi-card{width:340px;flex:none;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:16px}
+.testi-q{margin:0;font:400 15px/1.6 var(--f-body);color:var(--text);text-wrap:pretty}
+.testi-who{display:flex;align-items:center;gap:10px;font:400 13px var(--f-body);color:var(--muted)}
+.testi-av{width:32px;height:32px;flex:none;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;font:500 12px var(--f-body);color:var(--text)}
+@keyframes testi-x{to{transform:translateX(-50%)}}
+@media (max-width:640px){.testi-card{width:280px}.testi-rev{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.testi-rev .testi-track{animation:none}}
+@media (prefers-reduced-motion:reduce){.testi-row,.testi-rev{position:static;width:auto;height:auto;clip:auto;white-space:normal;overflow:visible;-webkit-mask-image:none;mask-image:none}.testi-track{animation:none;width:auto;display:block}.testi-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));padding:0}.testi-group.testi-clone{display:none}.testi-card{width:auto}}
+.testi-off .testi-track{animation-play-state:paused}
 .lp-hero{ padding-top:clamp(3rem,8vh,5.5rem); }
 .lp-hero h1{ font-family:var(--f-head); font-weight:400; font-size:clamp(2.7rem,6.5vw,4.6rem); line-height:1.06; margin:1.2rem 0 1rem; }
 .lp-hero .sub{ color:var(--muted); max-width:37.8em; /* =60ch của Inter; em không đổi khi swap font -> không CLS */ font-size:1.08rem; line-height:1.65; margin:0 auto; }
@@ -1395,7 +1411,6 @@ html.fx-on .bg-fx{opacity:1}
       <a href="#lp-live" data-en="Today's jobs">Tin sáng nay</a>
       <a href="#lp-scoring" data-en="How scoring works">Cách chấm điểm</a>
       <a href="#lp-demo-kanban" data-en="Track applications">Theo dõi đơn</a>
-      <a href="#lp-salary" data-en="Salary">Lương</a>
       <a href="#lp-faq" data-en="FAQ">Hỏi đáp</a>
     </nav>
     <div class="sp"></div>
@@ -1522,38 +1537,31 @@ html.fx-on .bg-fx{opacity:1}
   <figure class="lp-frame lp-frame-wide" tabindex="0" role="region" aria-label="Ảnh bảng kanban, cuộn ngang trên điện thoại" data-en-aria-label="Kanban board screenshot, scrolls sideways on phones"><img class="lp-shot shot-dark" src="assets/shot-kanban-dark.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã nộp, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"><img class="lp-shot shot-light" src="assets/shot-kanban-light.webp" width="2160" height="600" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: bảng kanban với các cột Mới, Đã lưu, Đã nộp, Phỏng vấn, Offer, có ngày follow-up và cảnh báo im lặng 9 ngày" data-en-alt="JobPilot screenshot: the kanban board with New, Saved, Applied, Interview and Offer columns, a follow-up date and a 9-day silence warning"></figure>
 </section>
 
-<section class="lp-sec sg-left lp-chapter" id="lp-salary">
-  <div class="sg-split">
-    <div class="sg-split-text">
-      <p class="lp-eyebrow" data-en="Salary">Lương</p>
-      <h2 data-en="Know the pay range first">Biết khung lương trước</h2>
-    </div>
-    <div>
-      <p class="lede" data-en="Many postings say &quot;negotiable&quot;. JobPilot works out the range from live postings that do list pay.">Nhiều tin ghi "thỏa thuận". JobPilot tính khoảng lương từ chính các tin đang tuyển có ghi lương.</p>
-      <ul class="lp-facts">
-        <li data-en="Median and P25 to P75 by role and level">Trung vị và P25 đến P75 theo vị trí, cấp bậc</li>
-        <li data-en="Fewer than 5 matching posts: it says so, no number">Dưới 5 tin khớp thì báo dữ liệu mỏng, không đưa số</li>
-        <li data-en="Suggested lines for the two hardest moments">Gợi ý câu nói cho hai lúc khó mở lời nhất</li>
-      </ul>
-    </div>
-  </div>
-  <figure class="lp-frame"><img class="lp-shot shot-dark" src="assets/shot-salary-dark.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"><img class="lp-shot shot-light" src="assets/shot-salary-light.webp" width="1066" height="1138" loading="lazy" decoding="async" alt="Ảnh chụp JobPilot: thẻ Benchmark lương cho vị trí backend, khoảng trung vị 32 đến 48 triệu từ 46 tin có ghi lương" data-en-alt="JobPilot screenshot: the salary benchmark card for backend roles, a median range of 32M to 48M from 46 postings that list pay"></figure>
-  <div class="sg-pair lp-split-after">
-    <div class="sg-box">
-      <h3 data-en="When they ask your expected salary first">Khi bị hỏi lương mong muốn trước</h3>
-      <p data-en="&quot;Could you share the budget range for this role? I want to make sure we are in the same range before I give a specific number.&quot;">"Anh/chị có thể chia sẻ khoảng ngân sách cho vị trí này không? Em muốn chắc hai bên cùng khoảng trước khi đưa con số cụ thể."</p>
-    </div>
-    <div class="sg-box">
-      <h3 data-en="When the offer is below your expectations">Khi offer thấp hơn kỳ vọng</h3>
-      <p data-en="&quot;This is below the range I am considering, based on the market and my experience. Is there flexibility to get closer to that range?&quot;">"Mức này thấp hơn khoảng em đang cân nhắc theo thị trường và kinh nghiệm của em. Anh/chị có linh hoạt được tới khoảng đó không?"</p>
-    </div>
-  </div>
-</section>
-
 <section class="lp-sec sg-left" id="lp-about">
   <div class="sg-about">
     <h2 data-en="Why JobPilot exists">Vì sao có JobPilot</h2>
     <p class="sg-about-note" data-en="JobPilot started as a personal tool: reading dozens of postings a day to find the few that actually fit is slow and tiring. It gathers IT postings in one place, scores each one against your CV and says why. It never applies on your behalf; you decide where to apply.">JobPilot bắt đầu từ một công cụ cá nhân: đọc vài chục tin mỗi ngày để tìm vài tin thật sự hợp vừa chậm vừa mệt. JobPilot gom tin IT về một chỗ, chấm từng tin theo CV của bạn và nói rõ lý do. Nó không bao giờ nộp đơn thay bạn; bạn quyết định nộp ở đâu.</p>
+  </div>
+</section>
+
+<!-- Testimonial: 6 câu MẪU minh hoạ, không phải khách thật. Giữ nhãn "Minh hoạ" cho tới khi thay bằng phản hồi thật. -->
+<section class="lp-sec" id="lp-testi">
+  <h2 data-en="A day of job hunting with JobPilot">Một ngày tìm việc với JobPilot</h2>
+  <p class="lede" data-en="Everyday situations it helps with: scoring, skip suggestions, reminders and salary.">Những tình huống hằng ngày JobPilot giúp được: chấm điểm, gợi ý bỏ qua, nhắc việc và lương.</p>
+  <p class="testi-note" data-en="Illustrative examples, not reviews from real users.">Minh hoạ, không phải đánh giá của người dùng thật.</p>
+  <div class="testi">
+    <div class="testi-row">
+      <div class="testi-track">
+        <ul class="testi-group"><li class="testi-card"><p class="testi-q" data-en="I can see why a job scores 82: Java and Spring match, Kafka is missing. No need to read the whole JD to know if it fits.">Thấy rõ vì sao một tin được 82 điểm: khớp Java, Spring, thiếu Kafka. Đỡ phải đọc cả JD mới biết có hợp không.</p><div class="testi-who"><span class="testi-av">BE</span><span data-en="Backend dev, 3 years">Backend dev, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="Skip suggestions stop me from wasting time on jobs that ask for 8 years of experience.">Gợi ý bỏ qua giúp mình không phí thời gian vào những tin yêu cầu 8 năm kinh nghiệm.</p><div class="testi-who"><span class="testi-av">FE</span><span data-en="Frontend dev, 2 years">Frontend dev, 2 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The 7-day follow-up reminder is exactly what I kept forgetting when tracking in a spreadsheet.">Nhắc follow-up sau 7 ngày là thứ mình hay quên nhất khi tự theo dõi bằng bảng tính.</p><div class="testi-who"><span class="testi-av">FS</span><span data-en="Fullstack dev, 4 years">Fullstack dev, 4 năm</span></div></li></ul>
+        <ul class="testi-group testi-clone" aria-hidden="true"><li class="testi-card"><p class="testi-q" data-en="I can see why a job scores 82: Java and Spring match, Kafka is missing. No need to read the whole JD to know if it fits.">Thấy rõ vì sao một tin được 82 điểm: khớp Java, Spring, thiếu Kafka. Đỡ phải đọc cả JD mới biết có hợp không.</p><div class="testi-who"><span class="testi-av">BE</span><span data-en="Backend dev, 3 years">Backend dev, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="Skip suggestions stop me from wasting time on jobs that ask for 8 years of experience.">Gợi ý bỏ qua giúp mình không phí thời gian vào những tin yêu cầu 8 năm kinh nghiệm.</p><div class="testi-who"><span class="testi-av">FE</span><span data-en="Frontend dev, 2 years">Frontend dev, 2 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The 7-day follow-up reminder is exactly what I kept forgetting when tracking in a spreadsheet.">Nhắc follow-up sau 7 ngày là thứ mình hay quên nhất khi tự theo dõi bằng bảng tính.</p><div class="testi-who"><span class="testi-av">FS</span><span data-en="Fullstack dev, 4 years">Fullstack dev, 4 năm</span></div></li></ul>
+      </div>
+    </div>
+    <div class="testi-row testi-rev">
+      <div class="testi-track">
+        <ul class="testi-group"><li class="testi-card"><p class="testi-q" data-en="The salary range on each job tells me what to ask for before the interview.">Khoảng lương đi kèm từng tin giúp mình biết nên đề xuất bao nhiêu trước buổi phỏng vấn.</p><div class="testi-who"><span class="testi-av">MB</span><span data-en="Mobile dev, 5 years">Mobile dev, 5 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The kanban board is tidy; I drag a card and see which round I am in with each company.">Bảng kanban gọn, kéo thả trạng thái nhanh, nhìn một lần là biết đang ở vòng nào với công ty nào.</p><div class="testi-who"><span class="testi-av">QA</span><span data-en="QA engineer, 3 years">QA engineer, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="I like that the score comes with concrete reasons, not a number from nowhere.">Mình thích việc điểm được giải thích bằng lý do cụ thể, không phải một con số không rõ nguồn.</p><div class="testi-who"><span class="testi-av">DO</span><span data-en="DevOps engineer, 6 years">DevOps engineer, 6 năm</span></div></li></ul>
+        <ul class="testi-group testi-clone" aria-hidden="true"><li class="testi-card"><p class="testi-q" data-en="The salary range on each job tells me what to ask for before the interview.">Khoảng lương đi kèm từng tin giúp mình biết nên đề xuất bao nhiêu trước buổi phỏng vấn.</p><div class="testi-who"><span class="testi-av">MB</span><span data-en="Mobile dev, 5 years">Mobile dev, 5 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="The kanban board is tidy; I drag a card and see which round I am in with each company.">Bảng kanban gọn, kéo thả trạng thái nhanh, nhìn một lần là biết đang ở vòng nào với công ty nào.</p><div class="testi-who"><span class="testi-av">QA</span><span data-en="QA engineer, 3 years">QA engineer, 3 năm</span></div></li><li class="testi-card"><p class="testi-q" data-en="I like that the score comes with concrete reasons, not a number from nowhere.">Mình thích việc điểm được giải thích bằng lý do cụ thể, không phải một con số không rõ nguồn.</p><div class="testi-who"><span class="testi-av">DO</span><span data-en="DevOps engineer, 6 years">DevOps engineer, 6 năm</span></div></li></ul>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -5360,6 +5368,8 @@ const lpMotion = (() => {
   }
   const dots = land && land.querySelector(".lp-dots");
   if (dots && !RM && IO) new IntersectionObserver((es) => dots.classList.toggle("on", es[0].isIntersecting)).observe(dots);
+  const testi = land && land.querySelector("#lp-testi .testi");
+  if (testi && IO) new IntersectionObserver((es) => testi.classList.toggle("testi-off", !es[0].isIntersecting)).observe(testi);
   const run = (el) => {
     const n = Number(el.dataset.countup) || 0;
     if (RM) { el.textContent = nf.format(n); return; }
