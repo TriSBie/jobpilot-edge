@@ -18,7 +18,7 @@ item("B explain", () => { has("Khớp %s/%s kỹ năng (kỹ năng %s) + phần 
 item("D3 tier badge", () => { has("tierEl.textContent = t(TIER_VI[tier]);"); no(/tierEl.textContent = tier;/); has('class="badge strong" data-en="strong">mạnh<'); });
 item("B xoá", () => no(/xóa|Xóa/));
 item("B about", () => { no(/sg-log/); has('<p class="sg-about-note" data-en='); no(/sg-about-note hidden/); });
-item("B testimonial", () => no(/testi/));
+item("B testimonial", () => { has('<section class="lp-sec" id="lp-testi">'); has("Minh hoạ, không phải đánh giá của người dùng thật."); no(/lp-salary/); });
 item("B negotiation", () => { has("Chỉ dùng khi bạn thật sự có offer khác:"); has("Only use this when you really have another offer:"); });
 item("B kanban hint", () => { no(/nút mũi tên/); has("Đổi giai đoạn bằng ô chọn trên thẻ."); });
 item("C1 404+favicon", () => {
