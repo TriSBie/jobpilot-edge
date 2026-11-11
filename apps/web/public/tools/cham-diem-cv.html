@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chấm điểm CV theo tin tuyển IT thật, có lý do | JobPilot</title>
+<meta name="description" content="Check CV và JD cho lập trình viên: chấm theo tin ITviec, TopDev thật, ghi rõ khớp kỹ năng nào, thiếu gì. Miễn phí, thử không cần CV.">
+<link rel="canonical" href="https://jobpilot-edge.pages.dev/tools/cham-diem-cv">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="JobPilot Edge">
+<meta property="og:title" content="Chấm điểm CV theo tin tuyển IT thật, có lý do | JobPilot">
+<meta property="og:description" content="Check CV và JD cho lập trình viên: chấm theo tin ITviec, TopDev thật, ghi rõ khớp kỹ năng nào, thiếu gì. Miễn phí, thử không cần CV.">
+<meta property="og:url" content="https://jobpilot-edge.pages.dev/tools/cham-diem-cv">
+<meta property="og:image" content="https://jobpilot-edge.pages.dev/og.png">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chấm điểm CV theo tin tuyển IT thật, có lý do | JobPilot">
+<meta name="twitter:description" content="Check CV và JD cho lập trình viên: chấm theo tin ITviec, TopDev thật, ghi rõ khớp kỹ năng nào, thiếu gì. Miễn phí, thử không cần CV.">
+<meta name="twitter:image" content="https://jobpilot-edge.pages.dev/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Điểm này có phải do AI chấm không?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Không. Điểm tính theo công thức cố định ở trên: kỹ năng 50, khu vực 8, độ mới 7, cấp bậc 5, quy về thang 100. AI chỉ giúp đọc CV để gợi ý kỹ năng, và bạn tắt được phần đó."}},
+    {"@type": "Question", "name": "Tôi dán một JD bất kỳ để chấm được không?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Được, sau khi đăng nhập và tạo hồ sơ: dán link tin từ bất kỳ trang nào, JobPilot đọc tin và chấm theo cùng công thức. Phần thử không cần tài khoản thì chỉ chấm trên các tin ITviec và TopDev đã quét sẵn."}},
+    {"@type": "Question", "name": "Bao nhiêu điểm thì nên nộp?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Từ 75 là khớp mạnh, từ 50 là khớp một phần. Nhưng hãy đọc lý do bên cạnh con số: một tin 60 điểm chỉ thiếu một kỹ năng bạn đã biết mà chưa ghi vào CV vẫn đáng nộp hơn một tin 70 điểm lệch cấp bậc."}},
+    {"@type": "Question", "name": "Vì sao tin này khớp gần hết kỹ năng mà chỉ được 69 hoặc 74 điểm?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Tin ghi dưới 3 kỹ năng bị chặn ở 69, vì quá ít thông tin để chấm cao. Tin lệch cấp bậc hoặc lệch khu vực bị chặn ở 74, để không hiện là khớp mạnh khi bạn khó được nhận."}},
+    {"@type": "Question", "name": "Công cụ này có cho biết CV của tôi qua được ATS không?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Không ai biết chắc điều đó, vì mỗi công ty cài ATS theo cách riêng. JobPilot chỉ ra kỹ năng nào tin yêu cầu mà CV của bạn chưa có, đó là phần nên sửa trước."}},
+    {"@type": "Question", "name": "CV của tôi được lưu ở đâu?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Trên hạ tầng Cloudflare, máy chủ đặt ngoài Việt Nam. Không bán dữ liệu, không chia sẻ CV, xoá được bất cứ lúc nào."}}
+  ]
+}
+</script>
+<style>
+/* ponytail: token con của index.html (như 404.html); đổi màu brand thì sửa cả 3 file */
+:root{color-scheme:light dark;--bg:#FFFFFF;--ink:#0A0A0A;--mute:#60646C;--line:#E4E4E7;--soft:#F4F4F5;--brand:#4F5BD5;--brand-ink:#FFFFFF}
+@media (prefers-color-scheme:dark){:root{--bg:#08090A;--ink:#F7F8F8;--mute:#8A8F98;--line:#23252A;--soft:#121316;--brand:#7C8CFF;--brand-ink:#08090A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+header,main,footer{max-width:760px;margin:0 auto;padding:0 20px}
+header{display:flex;align-items:center;gap:10px;padding-top:20px;padding-bottom:20px}
+header a{display:inline-flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;font:700 18px/1 "Be Vietnam Pro",Inter,sans-serif;min-height:44px}
+h1,h2,h3{font-family:"Be Vietnam Pro",Inter,system-ui,sans-serif;line-height:1.3}
+h1{font-size:clamp(28px,5vw,40px);margin:24px 0 16px}
+h2{font-size:24px;margin:48px 0 12px}
+h3{font-size:18px;margin:28px 0 6px}
+p,li{color:var(--ink)}
+.mute{color:var(--mute)}
+a{color:var(--brand)}
+a:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
+.cta{display:inline-block;min-height:44px;line-height:44px;padding:0 20px;border-radius:10px;background:var(--brand);color:var(--brand-ink);text-decoration:none;font-weight:600;margin-top:8px}
+blockquote{margin:16px 0;padding:12px 16px;border-left:3px solid var(--brand);background:var(--soft);border-radius:0 10px 10px 0}
+blockquote p{margin:0}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+thead th{color:var(--mute);font-weight:600}
+td:last-child,th:last-child,tbody th{white-space:nowrap}
+footer{padding-top:32px;padding-bottom:48px;color:var(--mute);font-size:14px}
+</style>
+</head>
+<body>
+<header><a href="/"><img src="/favicon.svg" width="28" height="28" alt="">JobPilot</a></header>
+<main>
+<h1>Chấm điểm CV theo tin tuyển IT đang mở, có lý do cho từng điểm</h1>
+<p>Mỗi ngày JobPilot gom tin IT mới từ ITviec, TopDev và các trang việc remote, rồi chấm từng tin theo CV của bạn. Mỗi tin có bảng điểm: khớp kỹ năng nào, thiếu kỹ năng nào, khu vực, độ mới, cấp bậc cộng lại ra sao. Bạn biết nên nộp tin nào trước khi đọc hết JD.</p>
+<p>JobPilot không nộp hồ sơ thay bạn. Bạn tự quyết định nộp hay không.</p>
+<p><a class="cta" href="/#lp-try">Thử ngay, không cần CV →</a><br>
+<span class="mute">Chọn 3 đến 8 kỹ năng, cấp bậc và khu vực, xem 10 tin hợp nhất hôm nay.</span></p>
+
+<section>
+<h2>Điểm được tính thế nào</h2>
+<p>Điểm không do AI tự cho. Cách tính cố định, ai cũng xem được:</p>
+<p><b>Kỹ năng: tối đa 50 điểm.</b> Mỗi kỹ năng trong hồ sơ có trọng số từ 1 đến 5, bạn tự chỉnh được. Kỹ năng tin yêu cầu mà bạn chưa có tính trọng số 3. Điểm kỹ năng = tổng trọng số những kỹ năng bạn khớp, chia cho tổng trọng số mọi kỹ năng tin yêu cầu, nhân 50. Tức là: bạn đáp ứng được bao nhiêu phần yêu cầu <em>của tin</em>.</p>
+<p><b>Phần còn lại: tối đa 20 điểm.</b></p>
+<ul>
+<li><b>Khu vực (8):</b> đúng khu vực trong hồ sơ, hoặc tin remote nhận ứng viên ở Việt Nam: 8. Tin onsite nhưng bạn chọn cả Remote: 6. Tin chỉ ghi chung "Việt Nam" mà bạn ở một thành phố cụ thể: 5. Tin không ghi địa điểm: 4. Lệch khu vực, hoặc tin remote chỉ nhận người ở Mỹ, châu Âu…: 0.</li>
+<li><b>Độ mới (7):</b> đăng trong 3 ngày: 7; trong 7 ngày: 5; trong 14 ngày: 3; cũ hơn: 1.</li>
+<li><b>Cấp bậc (5):</b> hợp cấp bậc của bạn: 5. Hồ sơ chưa ghi cấp bậc: 4. Tin thiên về senior hơn hoặc junior hơn bạn, hoặc JD đòi nhiều năm kinh nghiệm hơn mức thường gặp ở cấp của bạn: 2.</li>
+</ul>
+<p><b>Tổng = (kỹ năng + phần còn lại) / 70 × 100.</b></p>
+<ul>
+<li>Từ 75 trở lên: <b>khớp mạnh</b>. Từ 50 đến dưới 75: <b>khớp một phần</b>. Dưới 50: <b>khớp yếu</b>.</li>
+</ul>
+<p><b>Hai mức trần, để điểm không cao ảo:</b></p>
+<ul>
+<li>Tin ghi dưới 3 kỹ năng thì tối đa 69 điểm, vì quá ít thông tin để chấm cao.</li>
+<li>Tin lệch cấp bậc (điểm cấp bậc 2) hoặc lệch khu vực (điểm khu vực 0) thì tối đa 74 điểm, dù bạn khớp hết kỹ năng.</li>
+</ul>
+<p>Kèm theo điểm, mỗi tin có một gợi ý: <b>Khớp đủ để nộp</b>, <b>Nộp nếu bổ sung…</b> (kèm tên kỹ năng còn thiếu), <b>Nộp nếu chấp nhận onsite</b>, hoặc <b>Bỏ qua</b> kèm lý do (lệch khu vực, lệch cấp bậc, tin đã cũ, tin có nhiều dấu hiệu rủi ro).</p>
+<p><a href="/#lp-scoring">Xem bảng điểm kéo thử trên trang chủ</a></p>
+</section>
+
+<section>
+<h2>Ví dụ: một tin đã chấm</h2>
+<blockquote><p><b>Ví dụ minh hoạ, dữ liệu mẫu.</b> Tin, công ty và hồ sơ dưới đây là giả định để giải thích cách tính, không phải tin thật.</p></blockquote>
+<p><b>Hồ sơ mẫu:</b> Backend, cấp Middle, ở Hồ Chí Minh. Kỹ năng: Java (5), Spring Boot (5), PostgreSQL (3), Docker (3).</p>
+<p><b>Tin mẫu:</b> "Middle Backend Engineer (Java)", Hồ Chí Minh, đăng 2 ngày trước. Kỹ năng yêu cầu: Java, Spring Boot, Kafka, PostgreSQL, Redis.</p>
+<div class="tbl">
+<table>
+<thead><tr><th scope="col">Phần</th><th scope="col">Cách tính</th><th scope="col">Điểm</th></tr></thead>
+<tbody>
+<tr><th scope="row">Kỹ năng</th><td>Khớp Java 5 + Spring Boot 5 + PostgreSQL 3 = 13. Thiếu Kafka 3 + Redis 3. Tổng yêu cầu 19. 13 / 19 × 50</td><td>34,2 / 50</td></tr>
+<tr><th scope="row">Khu vực</th><td>Địa điểm khớp với hồ sơ</td><td>8 / 8</td></tr>
+<tr><th scope="row">Độ mới</th><td>Đăng 2 ngày</td><td>7 / 7</td></tr>
+<tr><th scope="row">Cấp bậc</th><td>Cấp bậc phù hợp</td><td>5 / 5</td></tr>
+<tr><th scope="row"><b>Tổng</b></th><td>(34,2 + 20) / 70 × 100</td><td><b>77 — khớp mạnh</b></td></tr>
+</tbody>
+</table>
+</div>
+<p>Gợi ý: <b>Khớp đủ để nộp.</b> Còn thiếu Kafka và Redis: nếu bạn đã dùng hai thứ này mà CV chưa ghi, hãy bổ sung trước khi nộp.</p>
+<p>Cùng tin đó, nếu bạn ở Hà Nội và hồ sơ không chọn Remote, điểm khu vực còn 0 và tổng bị chặn ở 74, gợi ý chuyển thành "Bỏ qua: địa điểm không khớp".</p>
+</section>
+
+<section id="ats">
+<h2>ATS là gì, và công cụ này nói được bao nhiêu về ATS</h2>
+<p>ATS (Applicant Tracking System) là phần mềm nhà tuyển dụng dùng để nhận, lưu và lọc hồ sơ. Mỗi công ty dùng một hệ thống khác nhau và tự đặt tiêu chí lọc. Vì vậy <b>không công cụ bên ngoài nào biết chắc CV của bạn có qua ATS của một công ty cụ thể hay không</b>, kể cả JobPilot.</p>
+<p>JobPilot làm được:</p>
+<ul>
+<li>So kỹ năng tin yêu cầu với kỹ năng trong hồ sơ của bạn, và chỉ ra chính xác từ khoá kỹ năng nào còn thiếu. Bộ lọc theo từ khoá là một cách lọc ATS phổ biến, nên đây là phần nên sửa trước.</li>
+<li>Đọc chữ trong file PDF ngay trên trình duyệt. Nếu JobPilot không trích được kỹ năng nào từ CV của bạn (ví dụ CV là ảnh chụp), hãy coi đó là dấu hiệu nên kiểm tra lại file trước khi nộp.</li>
+</ul>
+<p>JobPilot không làm:</p>
+<ul>
+<li>Không đưa ra "điểm ATS" hay "tỉ lệ qua ATS".</li>
+<li>Không chấm font, bố cục, chính tả hay cách hành văn của CV.</li>
+</ul>
+</section>
+
+<section>
+<h2>Quyền riêng tư</h2>
+<p><b>Không bán dữ liệu, không chia sẻ CV, xoá được bất cứ lúc nào.</b></p>
+<ul>
+<li>Phần "Thử ngay" không cần CV và không cần tài khoản.</li>
+<li>Khi bạn tải CV lên, chữ trong PDF được trích ngay trên trình duyệt. Văn bản CV được lưu trên hạ tầng Cloudflare (máy chủ đặt ngoài Việt Nam) để chấm điểm và gợi ý sửa CV.</li>
+<li>AI chạy ngay trên hạ tầng Cloudflare của JobPilot, không gửi cho công ty AI bên ngoài. AI chỉ đọc tối đa 6.000 ký tự đầu của CV để gợi ý kỹ năng. Bạn tắt được trong Cài đặt tài khoản; khi đó hệ thống chỉ dùng danh mục kỹ năng có sẵn.</li>
+<li>JobPilot không gửi CV cho nhà tuyển dụng nào.</li>
+<li>Bạn có thể xoá CV bất cứ lúc nào, hoặc tải dữ liệu của mình về. Khi xoá tài khoản, bạn có 7 ngày để khôi phục; sau đó dữ liệu bị xoá hẳn. Bản sao lưu hằng ngày tự xoá sau 14 ngày, nên dữ liệu đã xoá có thể còn trong bản sao lưu tối đa 14 ngày.</li>
+</ul>
+</section>
+
+<section>
+<h2>Câu hỏi thường gặp</h2>
+<h3>Điểm này có phải do AI chấm không?</h3>
+<p>Không. Điểm tính theo công thức cố định ở trên: kỹ năng 50, khu vực 8, độ mới 7, cấp bậc 5, quy về thang 100. AI chỉ giúp đọc CV để gợi ý kỹ năng, và bạn tắt được phần đó.</p>
+<h3>Tôi dán một JD bất kỳ để chấm được không?</h3>
+<p>Được, sau khi đăng nhập và tạo hồ sơ: dán link tin từ bất kỳ trang nào, JobPilot đọc tin và chấm theo cùng công thức. Phần thử không cần tài khoản thì chỉ chấm trên các tin ITviec và TopDev đã quét sẵn.</p>
+<h3>Bao nhiêu điểm thì nên nộp?</h3>
+<p>Từ 75 là khớp mạnh, từ 50 là khớp một phần. Nhưng hãy đọc lý do bên cạnh con số: một tin 60 điểm chỉ thiếu một kỹ năng bạn đã biết mà chưa ghi vào CV vẫn đáng nộp hơn một tin 70 điểm lệch cấp bậc.</p>
+<h3>Vì sao tin này khớp gần hết kỹ năng mà chỉ được 69 hoặc 74 điểm?</h3>
+<p>Tin ghi dưới 3 kỹ năng bị chặn ở 69, vì quá ít thông tin để chấm cao. Tin lệch cấp bậc hoặc lệch khu vực bị chặn ở 74, để không hiện là khớp mạnh khi bạn khó được nhận.</p>
+<h3>Công cụ này có cho biết CV của tôi qua được ATS không?</h3>
+<p>Không ai biết chắc điều đó, vì mỗi công ty cài ATS theo cách riêng. JobPilot chỉ ra kỹ năng nào tin yêu cầu mà CV của bạn chưa có, đó là phần nên sửa trước.</p>
+<h3>CV của tôi được lưu ở đâu?</h3>
+<p>Trên hạ tầng Cloudflare, máy chủ đặt ngoài Việt Nam. Không bán dữ liệu, không chia sẻ CV, xoá được bất cứ lúc nào.</p>
+</section>
+
+<section>
+<h2>Thử với tin đang tuyển hôm nay</h2>
+<p>Chọn kỹ năng của bạn, xem 10 tin hợp nhất và lý do cho từng điểm. Không cần CV, không cần tài khoản.</p>
+<p><a class="cta" href="/#lp-try">Chấm thử ngay →</a></p>
+<p>Muốn chấm bằng CV thật và theo dõi các tin đã nộp? <a href="/#register">Tạo tài khoản miễn phí</a></p>
+</section>
+</main>
+<footer><a href="/">Về trang chủ JobPilot</a></footer>
+</body>
+</html>
