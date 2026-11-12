@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>JobPilot Admin</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<!-- Admin CRM (SPEC 12/11 §3D), recipe vercel-dashboard-crm, strict Vercel, light only (v1).
+     Token: canvas #fafafa, surface #fff, ink #171717, muted #5c5c5c (6.4:1 trên #fafafa), hairline #e6e6e6, active #ebebeb,
+     accent duy nhất #4F5BD5 (JobPilot, thay Blue-700). Status (proposed, Geist 700): success #45A557, error #E5484D, warning #FFB224. -->
+<style>
+  :root{--canvas:#fafafa;--surface:#fff;--ink:#171717;--mute:#5c5c5c;--line:#e6e6e6;--active:#ebebeb;--accent:#4F5BD5;
+    --ok:#45A557;--err:#E5484D;--warn:#FFB224;--r:8px;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box} [hidden]{display:none!important}
+  html,body{margin:0;background:var(--canvas);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .mono{font-family:var(--mono);font-size:12px}
+  .muted{color:var(--mute)}
+  .trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;font-size:13px;white-space:nowrap}
+  .btn:hover{background:#f2f2f2}
+  .btn.primary{background:var(--ink);border-color:var(--ink);color:#fff} .btn.primary:hover{background:#383838}
+  .btn.ghost{border-color:transparent;background:transparent} .btn.ghost:hover{background:var(--active)}
+  .btn[disabled]{opacity:.55;cursor:not-allowed}
+  .icon-btn{width:32px;padding:0;justify-content:center}
+  .pill{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:9999px;background:var(--active);font-size:12px;font-weight:500;color:var(--ink)}
+  .pill.mono{font-family:var(--mono)}
+  kbd{font:500 11px var(--mono);border:1px solid var(--line);border-radius:4px;padding:0 4px;background:var(--surface);color:var(--mute)}
+  /* shell */
+  .top{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--canvas);position:sticky;top:0;z-index:20}
+  .top .brand{font-weight:600;white-space:nowrap}
+  .top .crumb{color:var(--mute)} .top .crumb b{color:var(--ink);font-weight:500}
+  .top .sp{flex:1}
+  #drawerBtn{display:none}
+  .shell{display:grid;grid-template-columns:254px minmax(0,1fr)}
+  .side{width:254px;height:calc(100vh - 56px);position:sticky;top:56px;border-right:1px solid var(--line);background:var(--canvas);display:flex;flex-direction:column;padding:12px;gap:12px}
+  .find{display:flex;align-items:center;gap:6px;height:32px;padding:0 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+  .find input{border:0;outline:0;background:transparent;flex:1;min-width:0;font-size:13px}
+  .find:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+  .nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow:auto}
+  .nav a{display:flex;align-items:center;gap:10px;height:34px;padding:0 8px;border-radius:6px;color:var(--ink);font-size:14px}
+  .nav a:hover{background:var(--active);text-decoration:none}
+  .nav a[aria-current="page"]{background:var(--active);font-weight:600}
+  .nav svg,.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .nav .pill{margin-left:auto}
+  .me{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+  .av{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--active);font-weight:600;font-size:13px;color:var(--ink)}
+  .av.sm{width:28px;height:28px;font-size:11px}
+  main{padding:24px;min-width:0}
+  h1{font-size:20px;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
+  h2{font-size:14px;font-weight:600;margin:0}
+  /* overview two columns */
+  .ov{display:grid;grid-template-columns:403px minmax(0,1fr);gap:24px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:24px;min-width:0}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .panel>header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .panel>header .sp{flex:1}
+  .rows>div{display:flex;align-items:center;gap:8px;padding:10px 16px;font-size:13px}
+  .rows>div+div{border-top:1px solid var(--line)}
+  .rows .v{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:500}
+  .ring{width:16px;height:16px;flex:none}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--mute)}
+  .dot.ok{background:var(--ok)} .dot.err{background:var(--err)} .dot.warn{background:var(--warn)}
+  .act{display:flex;flex-direction:column;gap:4px;padding:10px 16px;font-size:13px;min-width:0}
+  .act+.act{border-top:1px solid var(--line)}
+  .act .ln{display:flex;gap:8px;align-items:center;min-width:0}
+  /* toolbar */
+  .tools{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  .tools .find{flex:1;min-width:200px;height:38px}
+  .tools select{height:38px;border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:0 8px;font-size:13px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;background:var(--surface);height:38px;padding:3px;gap:2px}
+  .seg button{border:0;background:transparent;border-radius:4px;width:32px;cursor:pointer;display:grid;place-items:center}
+  .seg button[aria-pressed="true"]{background:var(--active)}
+  /* list: grid and list share one card component */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px}
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);height:124px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+  .card:hover{background:#fcfcfc}
+  .card .r1{display:flex;gap:12px;align-items:center;min-width:0;padding-right:36px}
+  .card .nm{font-weight:600;color:var(--ink);display:block}
+  .card .mt,.card .r3{font-size:12px;color:var(--mute)}
+  .card .r2{font-size:13px;font-weight:500}
+  .card .r3{display:flex;gap:6px;align-items:center;min-width:0}
+  .card .more{position:absolute;top:12px;right:12px}
+  .cards.list{grid-template-columns:1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+  .cards.list .card{border:0;border-radius:0;height:75px;padding:0 16px;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) 32px;gap:16px;align-items:center}
+  .cards.list .card+.card{border-top:1px solid var(--line)}
+  .cards.list .card .r1{padding-right:0}
+  .cards.list .card .more{position:static}
+  .foot{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px}
+  .foot .btn{width:100%;justify-content:center;height:38px}
+  .empty{padding:32px 16px;text-align:center;color:var(--mute)}
+  .error{padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);display:flex;gap:12px;align-items:center}
+  .error .dot{background:var(--err)}
+  /* skeleton (không spinner) */
+  .sk{background:var(--active);border-radius:6px;height:12px;animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.5}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  /* detail */
+  .dhead{display:flex;gap:16px;align-items:center;margin-bottom:24px;min-width:0}
+  .dhead h1{margin:0}
+  .dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;padding:12px 16px;font-size:13px;margin:0}
+  .dl dt{color:var(--mute)} .dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+  .tl{list-style:none;margin:0;padding:0}
+  .tl li{display:flex;gap:12px;padding:10px 16px;font-size:13px;align-items:baseline}
+  .tl li+li{border-top:1px solid var(--line)}
+  .tl time{margin-left:auto;color:var(--mute);font-size:12px;white-space:nowrap}
+  textarea{width:100%;min-height:120px;border:1px solid var(--line);border-radius:6px;padding:8px;resize:vertical;background:var(--surface)}
+  .note-foot{display:flex;align-items:center;gap:12px;margin-top:8px}
+  table.t{width:100%;border-collapse:collapse;font-size:13px}
+  table.t th{text-align:left;font-weight:500;color:var(--mute);padding:10px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.t td{padding:10px 16px;border-top:1px solid var(--line);vertical-align:top}
+  table.t tr:first-child td{border-top:0}
+  .tw{overflow-x:auto}
+  /* menus, dialog, toast */
+  .menu{position:fixed;z-index:50;min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:4px;display:none}
+  .menu.open{display:block}
+  .menu.two{display:none;grid-template-columns:1fr 1fr;width:400px} .menu.two.open{display:grid}
+  .menu button{display:flex;width:100%;align-items:center;gap:8px;height:34px;padding:0 10px;border:0;background:transparent;border-radius:6px;cursor:pointer;text-align:left;font-size:14px}
+  .menu button:hover,.menu button:focus-visible{background:var(--active);outline:0}
+  .menu button[disabled]{color:var(--mute);cursor:not-allowed}
+  .menu hr{border:0;border-top:1px solid var(--line);margin:4px 0;grid-column:1/-1}
+  dialog{border:1px solid var(--line);border-radius:12px;padding:20px;width:min(440px,calc(100vw - 32px));box-shadow:0 8px 32px rgba(0,0,0,.12)}
+  dialog::backdrop{background:rgba(0,0,0,.2)}
+  .inp,dialog input{width:100%;height:36px;border:1px solid var(--line);border-radius:6px;padding:0 8px}
+  #toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:60}
+  .toast{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.08);max-width:360px;display:flex;gap:8px;align-items:center}
+  .gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .gate .panel{padding:24px;max-width:420px;width:100%}
+  .gate p{color:var(--mute);margin:8px 0 16px}
+  /* < 1024: sidebar thành drawer, cột xếp chồng (proposed, skill chưa xác minh mobile) */
+  @media (max-width:1023px){
+    #drawerBtn{display:inline-flex}
+    .top .hide-sm,.top .crumb{display:none}
+    .shell{grid-template-columns:minmax(0,1fr)}
+    .side{position:fixed;left:0;top:56px;z-index:15;transform:translateX(-100%);visibility:hidden;transition:transform .2s,visibility .2s;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+    .side.open{transform:none;visibility:visible}
+    main{padding:16px}
+    .ov{grid-template-columns:minmax(0,1fr)}
+    .ov>.col:first-child{order:2}
+    .cards{grid-template-columns:minmax(0,1fr)}
+    .cards.list .card{grid-template-columns:minmax(0,1fr) 32px;height:auto;padding:12px 16px;gap:4px 12px}
+    .cards.list .card .r2,.cards.list .card .r3{grid-column:1}
+    .cards.list .card .more{grid-row:1;grid-column:2}
+    .menu.two{width:calc(100vw - 32px)}
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-app" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+  <symbol id="i-job" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-src" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></symbol>
+</svg>
+<div id="root"></div>
+<div id="menu" class="menu" role="menu"></div>
+<div id="toasts" role="status" aria-live="polite"></div>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+<script>
+"use strict";
+const API = "https://jobpilot-api.tribui-it-work.workers.dev";
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ic = (n) => `<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const STAGE = { new: "Mới", saved: "Đã lưu", applied: "Đã nộp", interview: "Phỏng vấn", offer: "Offer", rejected: "Bị từ chối", archived: "Lưu trữ" };
+const EVT = { stage_changed: "đổi trạng thái", quick_apply_open: "mở trang nộp", note: "ghi chú", interview_added: "thêm phỏng vấn" };
+const VIA = { quick_apply: "qua Nộp nhanh", interview_added: "khi thêm phỏng vấn" };
+const NOTE_MAX = 2000; // = ADMIN_NOTE_MAX ở worker (đếm .length như server)
+const token = () => { try { return localStorage.getItem("jp_token") || ""; } catch (e) { return ""; } };
+const initials = (s) => (String(s || "?").replace(/@.*/, "").split(/[\s._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("") || "?").toUpperCase();
+const fmtAbs = (ts) => ts ? new Date(ts * 1000).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "medium", timeStyle: "short" }) + " (GMT+7)" : "";
+const rtf = new Intl.RelativeTimeFormat("vi", { numeric: "auto" });
+function rel(ts){
+  if (!ts) return "";
+  const d = ts - Date.now() / 1000, a = Math.abs(d);
+  const [n, u] = a < 3600 ? [d / 60, "minute"] : a < 86400 ? [d / 3600, "hour"] : a < 30 * 86400 ? [d / 86400, "day"] : [d / (30 * 86400), "month"];
+  return rtf.format(Math.round(n), u).toLowerCase(); // "Hôm qua" đứng giữa câu
+}
+const when = (ts) => ts ? `<time datetime="${new Date(ts * 1000).toISOString()}" title="${esc(fmtAbs(ts))}">${esc(rel(ts))}</time>` : "";
+const num = (n) => Number(n || 0).toLocaleString("vi-VN");
+
+class HttpError extends Error { constructor(status, code){ super(code); this.status = status; } }
+async function api(path, opts = {}){
+  let res;
+  try {
+    res = await fetch(API + path, Object.assign({}, opts, { headers: Object.assign({ "Content-Type": "application/json", Authorization: "Bearer " + token() }, opts.headers) }));
+  } catch (e) { throw new HttpError(0, "network"); }
+  const txt = await res.text(); let data = null;
+  try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = null; }
+  if (res.status === 401) { gate("401"); throw new HttpError(401, "unauthorized"); }
+  if (res.status === 403) { gate("403"); throw new HttpError(403, "forbidden"); }
+  if (!res.ok) throw new HttpError(res.status, (data && data.error) || "HTTP " + res.status);
+  return data;
+}
+const ERR = { network: "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.", invalid_cursor: "Trang kế không hợp lệ, tải lại danh sách.",
+  application_not_found: "Không tìm thấy đơn này.", user_not_found: "Không tìm thấy ứng viên này.", admin_note_too_long: "Ghi chú quá 2000 ký tự.",
+  account_not_found: "Không có tài khoản với email này." };
+const errMsg = (e) => ERR[e.message] || "Lỗi: " + e.message;
+function toast(msg){
+  const el = document.createElement("div"); el.className = "toast"; el.textContent = msg;
+  $("#toasts").appendChild(el); setTimeout(() => el.remove(), 5000);
+}
+
+/* ---------- cổng: chưa đăng nhập / không có quyền -> không render dữ liệu ---------- */
+let me = null, gated = false;
+function gate(kind){
+  gated = true; closeMenu();
+  if (kind === "401") return loginForm();
+  $("#root").innerHTML = `<div class="gate"><section class="panel" aria-labelledby="gTitle"><h1 id="gTitle">Không có quyền</h1>
+    <p>Tài khoản này không phải chủ dự án nên không xem được trang quản trị.</p>
+    <div style="display:flex;gap:8px"><a class="btn primary" href="/">Mở JobPilot</a><button class="btn" type="button" id="swAcc">Đổi tài khoản</button></div></section></div>`;
+  $("#swAcc").onclick = () => { try { localStorage.removeItem("jp_token"); } catch (e) {} loginForm(); };
+  document.title = "Không có quyền · JobPilot Admin";
+}
+/* Đăng nhập dùng chung auth với SPA: POST /api/auth/login (+ Turnstile như SPA), token lưu jp_token */
+const TURNSTILE_SITE_KEY = "0x4AAAAAAF5goUyMJQ__Pibr"; // = SPA
+let tsId;
+function loginForm(){
+  document.title = "Đăng nhập · JobPilot Admin";
+  $("#root").innerHTML = `<div class="gate"><section class="panel" aria-labelledby="gTitle"><h1 id="gTitle">Đăng nhập quản trị</h1>
+    <p>Dùng tài khoản chủ dự án JobPilot.</p>
+    <form id="lf" novalidate style="display:flex;flex-direction:column;gap:8px">
+      <label for="lEmail" style="font-size:13px;font-weight:500">Email</label><input id="lEmail" class="inp" type="email" autocomplete="username" required>
+      <label for="lPass" style="font-size:13px;font-weight:500">Mật khẩu</label><input id="lPass" class="inp" type="password" autocomplete="current-password" required>
+      <div id="lTs" style="min-height:65px"></div>
+      <div id="lErr" role="alert" style="color:#c4282d;font-size:13px;min-height:18px"></div>
+      <button class="btn primary" type="submit" id="lGo" style="height:38px;justify-content:center">Đăng nhập</button></form></section></div>`;
+  tsId = undefined;
+  const render = () => { if (window.turnstile && $("#lTs")) tsId = turnstile.render("#lTs", { sitekey: TURNSTILE_SITE_KEY, theme: "light", language: "vi" }); };
+  if (window.turnstile) render();
+  else { window.onTs = render; const s = document.createElement("script"); s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTs&render=explicit"; s.async = true; document.head.appendChild(s); }
+  $("#lEmail").focus();
+  const LERR = { invalid_credentials: "Sai email hoặc mật khẩu.", turnstile_failed: "Chưa xác minh được, đợi ô xác minh rồi thử lại.", too_many_attempts: "Sai quá nhiều lần, thử lại sau ít phút.",
+    invalid_email: "Email không hợp lệ.", missing_password: "Nhập mật khẩu.", password_setup_required: "Tài khoản cần đặt lại mật khẩu.", account_deleted: "Tài khoản đang chờ xoá.", network: ERR.network };
+  $("#lf").onsubmit = async (e) => {
+    e.preventDefault(); const b = $("#lGo"), err = $("#lErr"); b.disabled = true; b.textContent = "Đang đăng nhập…"; err.textContent = "";
+    try {
+      // không qua api(): 401 ở đây là sai mật khẩu, không phải hết phiên
+      const r = await fetch(API + "/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: $("#lEmail").value.trim(), password: $("#lPass").value, turnstile_token: window.turnstile && tsId !== undefined ? turnstile.getResponse(tsId) : undefined }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.token) throw new Error(d.error || "HTTP " + r.status);
+      try { localStorage.setItem("jp_token", d.token); } catch (x) {}
+      gated = false; boot();
+    } catch (x) {
+      err.textContent = LERR[x.message] || (x instanceof TypeError ? ERR.network : "Lỗi: " + x.message);
+      if (window.turnstile && tsId !== undefined) turnstile.reset(tsId);
+      b.disabled = false; b.textContent = "Đăng nhập";
+    }
+  };
+}
+
+/* ---------- shell ---------- */
+const NAV = [["overview", "Tổng quan", "home"], ["apps", "Đơn ứng tuyển", "app"], ["users", "Ứng viên", "user"], ["jobs", "Tin tuyển dụng", "job"], ["sources", "Nguồn & Quota", "src"], ["backups", "Backup", "box"]];
+const SECTION = { app: "apps", user: "users" };
+const q = () => new URLSearchParams(location.search);
+const href = (p, extra) => "?" + new URLSearchParams(Object.assign({ p }, extra || {})).toString();
+let overview = null;
+
+function shell(){
+  $("#root").innerHTML = `
+  <header class="top">
+    <button id="drawerBtn" class="btn icon-btn ghost" type="button" aria-label="Mở menu" aria-expanded="false" aria-controls="side">${ic("list")}</button>
+    <span class="brand">JobPilot Admin</span><span class="crumb trunc" aria-live="polite">/ <b id="crumb"></b></span>
+    <span class="sp"></span>
+    <button class="btn ghost hide-sm" type="button" data-run="ingest">Quét tin mới</button>
+    <button class="btn primary" id="actBtn" type="button" aria-haspopup="menu" aria-expanded="false">+ Hành động</button>
+  </header>
+  <div class="shell">
+    <aside class="side" id="side" aria-label="Điều hướng">
+      <form class="find" id="findForm" role="search"><label class="sr" for="findQ">Tìm đơn ứng tuyển</label>${ic("search")}
+        <input id="findQ" type="search" placeholder="Tìm đơn…" autocomplete="off"><kbd>/</kbd></form>
+      <nav class="nav">${NAV.map(([k, l, i]) => `<a href="${href(k)}" data-nav="${k}">${ic(i)}<span>${l}</span>${k === "apps" ? `<span class="pill" id="navPill" title="Đơn đã nộp 7 ngày qua" hidden></span>` : ""}</a>`).join("")}</nav>
+      <div class="me"><span class="av sm" aria-hidden="true">${esc(initials(me.name || me.email))}</span>
+        <span class="trunc muted" style="flex:1;font-size:13px">${esc(me.email)}</span>
+        <button class="btn ghost" type="button" id="logout">Đăng xuất</button></div>
+    </aside>
+    <main id="main" tabindex="-1"></main>
+  </div>`;
+  $("#drawerBtn").onclick = () => toggleDrawer();
+  $("#findForm").onsubmit = (e) => { e.preventDefault(); go(href("apps", { q: $("#findQ").value.trim() })); };
+  $("#logout").onclick = async () => {
+    try { await fetch(API + "/api/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + token() } }); } catch (e) { /* vẫn xoá phiên máy này */ }
+    try { localStorage.removeItem("jp_token"); } catch (e) {}
+    gate("401");
+  };
+  $("#actBtn").onclick = (e) => openMenu(e.currentTarget, ACTIONS(), true);
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-run]"); if (b) runAction(b.dataset.run, b); });
+function toggleDrawer(force){
+  const s = $("#side"), open = force !== undefined ? force : !s.classList.contains("open");
+  s.classList.toggle("open", open); $("#drawerBtn").setAttribute("aria-expanded", open);
+  if (open) $("a,input,button", s).focus();
+}
+
+/* ---------- router ---------- */
+function go(url){ history.pushState(null, "", url); route(); }
+window.addEventListener("popstate", () => route());
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a[href^='?']");
+  if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
+  e.preventDefault(); go(a.getAttribute("href"));
+});
+async function route(){
+  if (gated) return;
+  closeMenu();
+  if (window.matchMedia("(max-width:1023px)").matches) toggleDrawer(false);
+  const p = q().get("p") || "overview", sec = SECTION[p] || p;
+  $$(".nav a").forEach((a) => a.dataset.nav === sec ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  $("#crumb").textContent = (NAV.find((n) => n[0] === sec) || NAV[0])[1];
+  document.title = $("#crumb").textContent + " · JobPilot Admin";
+  const m = $("#main");
+  (PAGES[p] || PAGES.overview)(m);
+}
+
+/* ---------- card: một component cho cả grid và list ---------- */
+const card = ({ av, name, link, meta, r2, r3, menu, label, ext }) => `<article class="card" aria-label="${esc(label || name)}">
+  <div class="r1"><span class="av" aria-hidden="true">${esc(av)}</span><div class="trunc">${link ? `<a class="nm trunc" href="${link}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""}>${esc(name)}</a>` : `<span class="nm trunc">${esc(name)}</span>`}<div class="mt trunc">${meta}</div></div></div>
+  <div class="r2 trunc">${r2}</div><div class="r3 trunc">${r3}</div>
+  <button class="btn icon-btn ghost more" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Thao tác: ${esc(name)}" data-menu="${esc(menu)}">${ic("more")}</button></article>`;
+
+function appCard(a){
+  const ev = a.last_event, rounds = a.rounds && a.rounds.total ? ` · vòng ${a.rounds.done}/${a.rounds.total}` : "";
+  return card({ av: initials(a.job.company), name: a.job.title, link: href("app", { id: a.id }), label: `${a.job.title}, ${a.user.email}`,
+    meta: `${esc(a.user.email)} · ${esc(a.profile.name)}`,
+    r2: `${esc(STAGE[a.stage] || a.stage)}${ev ? ` · ${esc(EVT[ev.type] || ev.type)} ${when(ev.created_at)}` : ` · <span class="muted">chưa có hoạt động</span>`}${rounds}`,
+    r3: `${ic("src")}<span class="mono">${esc(a.job.source)}</span> · ${esc(a.job.company)} · ${when(a.updated_at)}`, menu: "app:" + a.id });
+}
+function userCard(u){
+  return card({ av: initials(u.name || u.email), name: u.email, link: href("user", { id: u.id }), meta: esc(u.name || "—") + (u.deleted_at ? ` · đã xoá ${when(u.deleted_at)}` : ""),
+    r2: `${num(u.applications_count)} đơn · ${num(u.applied_count)} đã nộp · ${num(u.skills_count)} kỹ năng`,
+    r3: `${esc(u.ref_source || "direct")} · đăng ký ${when(u.created_at)}${u.telegram_linked ? " · Telegram" : ""}`, menu: "user:" + u.id });
+}
+const FLAG = { stale: "có thể đã gỡ", reposted: "đăng lại", duplicate: "trùng", long_open: "mở lâu", salary_hidden: "ẩn lương", bloated: "JD dài" };
+function jobCard(j){
+  return card({ av: initials(j.company), name: j.title, link: j.source_url ? esc(j.source_url) : "", ext: true, meta: `${esc(j.company)} · ${esc(j.location || "—")}`,
+    r2: `${num(j.applications_count)} đơn · ${num(j.strong_count)} match mạnh${j.flags.length ? ` · <span class="muted">${esc(j.flags.map((f) => FLAG[f] || f).join(", "))}</span>` : ""}`,
+    r3: `${ic("src")}<span class="mono">${esc(j.source)}</span> · thấy lần đầu ${when(j.first_seen_at)}`, menu: "job:" + j.id });
+}
+
+/* ---------- danh sách có tìm/lọc/tải thêm (cursor) ---------- */
+const LISTS = {
+  apps: { title: "Đơn ứng tuyển", path: "/api/admin/applications", search: "Tìm theo email, tin, công ty…", card: appCard, keys: ["q", "stage", "user_id"],
+    filters: () => [["stage", "Trạng thái", Object.entries(STAGE)]] },
+  users: { title: "Ứng viên", path: "/api/admin/users", search: "Tìm theo email, tên…", card: userCard, keys: ["q"], filters: () => [] },
+  jobs: { title: "Tin tuyển dụng", path: "/api/admin/jobs", search: "Tìm theo tiêu đề, công ty…", card: jobCard, keys: ["q", "source", "flag"],
+    filters: () => [["source", "Nguồn", ((overview && overview.sources) || []).map((s) => [s.id, s.name || s.id])], ["flag", "Cờ", [["reposted", "Đăng lại"], ["stale", "Có thể đã gỡ"]]]] },
+};
+const store = {}; // id -> item, cho menu/export
+let listSeq = 0;
+const skel = (n) => Array.from({ length: n }, () => `<div class="card" aria-hidden="true"><div class="r1"><span class="av"></span><div style="flex:1"><div class="sk" style="width:60%"></div><div class="sk" style="width:40%;margin-top:6px"></div></div></div><div class="sk" style="width:70%"></div><div class="sk" style="width:50%"></div></div>`).join("");
+
+function listView(box, kind, opt = {}){
+  const L = LISTS[kind], sp = q(), view = sp.get("view") === "list" ? "list" : "grid";
+  const params = {}; L.keys.forEach((k) => { if (sp.get(k)) params[k] = sp.get(k); });
+  const seq = ++listSeq;
+  box.innerHTML = `${opt.compact ? `<header style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><h2>${L.title}</h2><span class="sp" style="flex:1"></span>${toggle(view)}</header>` : `<h1>${L.title}</h1>
+    <div class="tools" role="toolbar" aria-label="Lọc ${L.title.toLowerCase()}">
+      <div class="find"><label class="sr" for="listQ">${L.search}</label>${ic("search")}<input id="listQ" type="search" placeholder="${L.search}" value="${esc(params.q || "")}" maxlength="100" autocomplete="off"><kbd>/</kbd></div>
+      ${L.filters().map(([k, label, opts]) => `<label class="sr" for="f-${k}">${label}</label><select id="f-${k}" data-f="${k}"><option value="">${label}: tất cả</option>${opts.map(([v, t]) => `<option value="${esc(v)}"${params[k] === v ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>`).join("")}
+      ${params.user_id ? `<span class="pill">Một ứng viên <a href="${href(kind)}" aria-label="Bỏ lọc ứng viên" style="margin-left:6px">×</a></span>` : ""}
+      ${toggle(view)}
+    </div>`}
+    <div class="cards ${view}" id="cards" aria-busy="true">${skel(opt.compact ? 3 : 6)}</div>
+    <div class="foot"><button class="btn" type="button" id="more" hidden>Tải thêm</button><span class="muted" id="count" role="status"></span></div>`;
+  let cursor = null, shown = 0;
+  const upd = (k, v) => { const s = q(); v ? s.set(k, v) : s.delete(k); history.replaceState(null, "", "?" + s); listView(box, kind, opt); };
+  let tmr;
+  const qi = $("#listQ", box); if (qi) qi.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => upd("q", qi.value.trim()), 300); };
+  $$("[data-f]", box).forEach((s) => s.onchange = () => upd(s.dataset.f, s.value));
+  $$(".seg button", box).forEach((b) => b.onclick = () => {
+    const s = q(); s.set("view", b.dataset.view); history.replaceState(null, "", "?" + s);
+    $("#cards", box).className = "cards " + b.dataset.view;
+    $$(".seg button", box).forEach((x) => x.setAttribute("aria-pressed", x === b));
+  });
+  async function load(){
+    const more = $("#more", box), cards = $("#cards", box);
+    more.disabled = true; more.textContent = "Đang tải…";
+    try {
+      const qs = new URLSearchParams(Object.assign({ limit: opt.compact ? 6 : 24 }, params, cursor ? { cursor } : {}));
+      const d = await api(L.path + "?" + qs);
+      if (seq !== listSeq) return;
+      if (!shown) cards.innerHTML = "";
+      d.items.forEach((it) => { store[kind + ":" + it.id] = it; });
+      cards.insertAdjacentHTML("beforeend", d.items.map(L.card).join(""));
+      shown += d.items.length; cursor = d.next_cursor;
+      cards.removeAttribute("aria-busy");
+      if (!shown) cards.outerHTML = `<div class="empty" id="cards">${Object.keys(params).length ? "Không có kết quả khớp bộ lọc." : "Chưa có dữ liệu."}</div>`;
+      more.hidden = !cursor; more.disabled = false; more.textContent = opt.compact ? "Xem tất cả đơn" : "Tải thêm";
+      if (opt.compact) more.onclick = () => go(href(kind));
+      $("#count", box).textContent = shown ? (cursor ? `Đang hiện ${num(shown)} / ${num(d.total)}` : `Đã hiện hết ${num(d.total)}`) : "";
+    } catch (e) {
+      if (seq !== listSeq || e.status === 401 || e.status === 403) return;
+      more.hidden = true;
+      const msg = `<div class="error" role="alert"><span class="dot"></span><span style="flex:1">${esc(errMsg(e))}</span><button class="btn" type="button" id="retry">Thử lại</button></div>`;
+      if (!shown) $("#cards", box).outerHTML = `<div id="cards">${msg}</div>`; else $("#count", box).innerHTML = msg;
+      $("#retry", box).onclick = () => { if (!shown) listView(box, kind, opt); else load(); };
+    }
+  }
+  $("#more", box).onclick = load;
+  load();
+}
+const toggle = (view) => `<div class="seg" role="group" aria-label="Kiểu hiển thị"><button type="button" data-view="grid" aria-pressed="${view === "grid"}" aria-label="Dạng lưới">${ic("grid")}</button><button type="button" data-view="list" aria-pressed="${view === "list"}" aria-label="Dạng danh sách">${ic("list")}</button></div>`;
+
+/* ---------- menu (••• và + Hành động) ---------- */
+let menuOpener = null;
+function openMenu(btn, items, two){
+  const m = $("#menu");
+  if (menuOpener === btn) return closeMenu();
+  closeMenu();
+  m.className = "menu open" + (two ? " two" : "");
+  m.innerHTML = items.map((it) => it === "-" ? "<hr>" : `<button type="button" role="menuitem"${it.off ? ` disabled title="${esc(it.off)}"` : ""}>${esc(it.label)}${it.off ? `<span class="sr"> (${esc(it.off)})</span>` : ""}</button>`).join("");
+  const acts = items.filter((it) => it !== "-");
+  $$("button", m).forEach((b, i) => b.onclick = () => { closeMenu(); acts[i].run(); });
+  const r = btn.getBoundingClientRect();
+  m.style.top = Math.min(r.bottom + 4, innerHeight - m.offsetHeight - 8) + "px";
+  m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, innerWidth - m.offsetWidth - 8)) + "px";
+  btn.setAttribute("aria-expanded", "true"); menuOpener = btn;
+  const first = $("button:not([disabled])", m); if (first) first.focus();
+}
+function closeMenu(focus){
+  const m = $("#menu"); if (!m || !menuOpener) return;
+  m.className = "menu"; menuOpener.setAttribute("aria-expanded", "false");
+  if (focus) menuOpener.focus();
+  menuOpener = null;
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-menu]");
+  if (b) { const [k, id] = b.dataset.menu.split(/:(.*)/); const it = store[k + "s:" + id]; if (it) openMenu(b, ITEM_MENU[k](it)); return; }
+  if (menuOpener && !e.target.closest("#menu") && e.target !== menuOpener && !menuOpener.contains(e.target)) closeMenu();
+});
+$("#menu").addEventListener("keydown", (e) => {
+  const bs = $$("#menu button:not([disabled])"), i = bs.indexOf(document.activeElement);
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); bs[(i + (e.key === "ArrowDown" ? 1 : bs.length - 1)) % bs.length].focus(); }
+  else if (e.key === "Tab") closeMenu();
+});
+const download = (name, data) => {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+const openOut = (url) => { const w = window.open(url, "_blank", "noopener"); if (w) w.opener = null; };
+const copy = async (text, what) => { try { await navigator.clipboard.writeText(text); toast("Đã copy " + what); } catch (e) { toast("Không copy được, hãy chọn và copy tay."); } };
+const ITEM_MENU = {
+  app: (a) => [
+    { label: "Xem", run: () => go(href("app", { id: a.id })) },
+    { label: "Xem ứng viên", run: () => go(href("user", { id: a.user.id })) },
+    a.job.source_url ? { label: "Mở tin gốc", run: () => openOut(a.job.source_url) } : { label: "Mở tin gốc", off: "Tin không có link gốc" },
+    { label: "Ghi chú nội bộ", run: () => go(href("app", { id: a.id, note: 1 })) },
+    "-",
+    { label: "Export JSON đơn này", run: async () => { try { download(`application-${a.id}.json`, await api("/api/admin/applications/" + encodeURIComponent(a.id))); } catch (e) { if (e.status !== 401 && e.status !== 403) toast(errMsg(e)); } } },
+  ],
+  user: (u) => [
+    { label: "Xem", run: () => go(href("user", { id: u.id })) },
+    { label: "Xem đơn của ứng viên", run: () => go(href("apps", { user_id: u.id })) },
+    "-",
+    u.deleted_at ? { label: "Gửi link reset mật khẩu", off: "Tài khoản đã xoá" } : { label: "Gửi link reset mật khẩu", run: () => resetDialog(u.email) },
+  ],
+  job: (j) => [
+    j.source_url ? { label: "Mở tin gốc", run: () => openOut(j.source_url) } : { label: "Mở tin gốc", off: "Tin không có link gốc" },
+    { label: "Copy id tin", run: () => copy(j.id, "id tin") },
+  ],
+};
+
+/* ---------- hành động quản trị (API thật, kết quả thật) ---------- */
+const ACTIONS = () => [
+  { label: "Quét nguồn", run: () => runAction("ingest") },
+  { label: "Enrich JD", run: () => runAction("enrich") },
+  { label: "Backup ngay", run: () => runAction("backup") },
+  { label: "Gửi link reset mật khẩu", run: () => resetDialog("") },
+];
+const RUN = {
+  ingest: ["/api/admin/ingest/run", {}, (d) => `Đã xếp ${num(d.queued)} lượt quét vào hàng đợi.`],
+  enrich: ["/api/admin/jd/enrich", { limit: 8 }, (d) => "Enrich JD xong: " + Object.entries(d || {}).filter(([, v]) => typeof v !== "object").map(([k, v]) => `${k} ${v}`).join(", ")],
+  backup: ["/api/admin/backups/run", {}, (d) => `Backup xong${d.errors && Object.keys(d.errors).length ? `, ${Object.keys(d.errors).length} lỗi` : ""}.`],
+};
+const busy = {};
+async function runAction(k, btn){
+  if (busy[k]) return;
+  busy[k] = true; if (btn) btn.disabled = true;
+  toast("Đang chạy: " + { ingest: "quét nguồn", enrich: "enrich JD", backup: "backup" }[k] + "…");
+  try { const [p, body, msg] = RUN[k]; toast(msg(await api(p, { method: "POST", body: JSON.stringify(body) }))); if (k === "backup" && q().get("p") === "backups") route(); }
+  catch (e) { if (e.status !== 401 && e.status !== 403) toast(errMsg(e)); }
+  finally { busy[k] = false; if (btn) btn.disabled = false; }
+}
+function resetDialog(email){
+  const d = $("#dlg"), opener = document.activeElement;
+  d.innerHTML = `<form method="dialog" id="rf"><h2 id="dlgTitle" style="font-size:16px">Link reset mật khẩu</h2>
+    <p class="muted" style="font-size:13px">Tạo link hiệu lực 30 phút để gửi tay cho ứng viên. JobPilot chưa tự gửi email.</p>
+    <label for="rEmail" style="font-size:13px;font-weight:500">Email</label><input id="rEmail" type="email" required value="${esc(email)}" autocomplete="off">
+    <div id="rOut" role="status" style="margin-top:12px;font-size:13px;overflow-wrap:anywhere"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn" type="button" value="cancel" id="rClose">Đóng</button><button class="btn primary" type="submit" id="rGo">Tạo link</button></div></form>`;
+  d.onclose = () => { if (opener && opener.isConnected) opener.focus(); };
+  $("#rClose", d).onclick = () => d.close();
+  $("#rf", d).onsubmit = async (e) => {
+    e.preventDefault(); const b = $("#rGo", d), out = $("#rOut", d); b.disabled = true; out.textContent = "Đang tạo…";
+    try {
+      const r = await api("/api/admin/password-reset", { method: "POST", body: JSON.stringify({ email: $("#rEmail", d).value.trim() }) });
+      out.innerHTML = `<span class="mono">${esc(r.link)}</span> <button class="btn" type="button" id="rCopy">Copy</button>`;
+      $("#rCopy", d).onclick = () => copy(r.link, "link");
+    } catch (er) { out.textContent = errMsg(er); }
+    b.disabled = false;
+  };
+  d.showModal(); $("#rEmail", d).focus();
+}
+
+/* ---------- trang ---------- */
+const ring = (v, max) => { const f = max ? Math.min(1, v / max) : 0, c = 2 * Math.PI * 6;
+  return `<svg class="ring" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#e6e6e6" stroke-width="2"/><circle cx="8" cy="8" r="6" fill="none" stroke="#4F5BD5" stroke-width="2" stroke-dasharray="${(f * c).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 8 8)"/></svg>`; };
+const panelSkel = (n) => `<div class="rows" aria-hidden="true">${Array.from({ length: n }, () => `<div><div class="sk" style="width:45%"></div><div class="sk" style="width:20%;margin-left:auto"></div></div>`).join("")}</div>`;
+async function loadOverview(force){
+  if (!overview || force) {
+    overview = await api("/api/admin/overview");
+    const pill = $("#navPill"); if (pill) { pill.textContent = num(overview.applied_7d); pill.hidden = false; }
+  }
+  return overview;
+}
+function backupAge(b){ if (!b || !b.date) return null; const t = Date.parse(b.finished_at || b.date + "T23:59:59+07:00"); return isNaN(t) ? null : (Date.now() - t) / 3600e3; }
+
+const PAGES = {
+  overview(m){
+    m.innerHTML = `<h1 class="sr">Tổng quan</h1><div class="ov">
+      <div class="col">
+        <section class="panel" aria-labelledby="hUse"><header><h2 id="hUse">Số liệu</h2><span class="sp"></span><span class="muted" style="font-size:12px">7 ngày</span></header><div id="use">${panelSkel(5)}</div></section>
+        <section class="panel" aria-labelledby="hAl"><header>${ic("bell")}<h2 id="hAl">Cảnh báo</h2></header><div id="alerts">${panelSkel(2)}</div></section>
+        <section class="panel" aria-labelledby="hAct"><header><h2 id="hAct">Hoạt động gần đây</h2></header><div id="recent">${panelSkel(4)}</div></section>
+      </div>
+      <div class="col" id="ovList"></div></div>`;
+    listView($("#ovList"), "apps", { compact: true });
+    loadOverview(true).then((o) => {
+      const stages = o.applications_by_stage || {}, totalApps = Object.values(stages).reduce((s, n) => s + n, 0);
+      const quota = Object.entries(o.quota || {}).sort();
+      $("#use").innerHTML = `<div class="rows">
+        <div>${ring(o.active_7d, o.users_total)}<span>Ứng viên hoạt động</span><span class="v">${num(o.active_7d)} / ${num(o.users_total)}</span></div>
+        <div><span>Ứng viên mới</span><span class="v">${num(o.users_7d)}</span></div>
+        <div><span>Đơn đã nộp</span><span class="v">${num(o.applied_7d)} <span class="muted">/ ${num(totalApps)} đơn</span></span></div>
+        <div><span>Phỏng vấn sắp tới</span><span class="v">${num(o.interviews_upcoming)}</span></div>
+        <div><span>Tin mới 24 giờ</span><span class="v">${num(o.jobs_24h)} <span class="muted">/ ${num(o.jobs_total)} tin</span></span></div>
+        ${quota.map(([k, v]) => `<div><span class="mono trunc">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>`;
+      const bad = (o.sources || []).filter((s) => s.is_enabled !== 0 && s.last_status && s.last_status !== "ok"), age = backupAge(o.backups_last);
+      const al = bad.map((s) => `<div><span class="dot err"></span><span class="trunc">Nguồn <b>${esc(s.name || s.id)}</b>: ${esc(s.last_error || s.last_status)}</span><span class="v muted" style="font-weight:400">${when(s.last_run_at)}</span></div>`);
+      if (age === null) al.push(`<div><span class="dot warn"></span><span>Chưa có backup nào.</span><button class="btn v" type="button" data-run="backup">Backup ngay</button></div>`);
+      else if (age > 36) al.push(`<div><span class="dot warn"></span><span>Backup gần nhất cách đây ${Math.round(age)} giờ.</span><button class="btn v" type="button" data-run="backup">Backup ngay</button></div>`);
+      al.push(`<div><span class="dot"></span><span class="muted">DLQ: chưa đo (chưa có API đếm DLQ).</span></div>`);
+      $("#alerts").innerHTML = `<div class="rows">${al.join("")}</div>`;
+      const ev = o.recent_events || [];
+      $("#recent").innerHTML = ev.length ? ev.map((e) => `<div class="act"><div class="ln"><span class="trunc"><b>${esc(e.user_email)}</b> ${esc(EVT[e.type] || e.type)} · ${esc(e.job_title)}</span></div>
+        <div class="ln muted" style="font-size:12px"><a href="${href("app", { id: e.application_id })}">Xem đơn</a> · ${when(e.created_at)}<span class="pill mono" style="margin-left:auto">${esc(String(e.application_id).slice(0, 10))}</span></div></div>`).join("")
+        : `<div class="empty">Chưa có hoạt động.</div>`;
+    }).catch((e) => {
+      if (e.status === 401 || e.status === 403) return;
+      ["#use", "#alerts", "#recent"].forEach((s) => { $(s).innerHTML = `<div class="rows"><div role="alert"><span class="dot err"></span><span>${esc(errMsg(e))}</span><button class="btn v" type="button" data-retry>Thử lại</button></div></div>`; });
+      $$("[data-retry]").forEach((b) => b.onclick = () => route());
+    });
+  },
+  apps: (m) => listView(m, "apps"),
+  users: (m) => listView(m, "users"),
+  jobs: (m) => { loadOverview().catch(() => {}).finally(() => { if (q().get("p") === "jobs") listView(m, "jobs"); }); m.innerHTML = `<div class="cards">${skel(6)}</div>`; },
+  async sources(m){
+    m.innerHTML = `<h1>Nguồn & Quota</h1><section class="panel">${panelSkel(4)}</section>`;
+    try {
+      const o = await loadOverview(true);
+      m.innerHTML = `<h1>Nguồn & Quota</h1><div class="col">
+        <section class="panel" aria-labelledby="hS"><header><h2 id="hS">Nguồn tin</h2><span class="sp"></span><button class="btn" type="button" data-run="ingest">Quét nguồn</button></header>
+        <div class="tw"><table class="t"><thead><tr><th>Nguồn</th><th>Bật</th><th>Lần chạy cuối</th><th>Trạng thái</th><th>Lỗi</th></tr></thead><tbody>
+        ${(o.sources || []).map((s) => `<tr><td><b>${esc(s.name || s.id)}</b><div class="mono muted">${esc(s.id)}</div></td><td>${s.is_enabled ? "Bật" : "Tắt"}</td><td>${when(s.last_run_at) || "—"}</td>
+          <td><span style="display:inline-flex;gap:6px;align-items:center"><span class="dot ${s.last_status === "ok" ? "ok" : s.last_status ? "err" : ""}"></span>${esc(s.last_status || "chưa chạy")}</span></td><td class="muted">${esc(s.last_error || "")}</td></tr>`).join("") || `<tr><td colspan="5" class="empty">Chưa có nguồn.</td></tr>`}
+        </tbody></table></div></section>
+        <section class="panel" aria-labelledby="hQ"><header><h2 id="hQ">Quota (KV)</h2></header>
+        ${Object.keys(o.quota || {}).length ? `<div class="rows">${Object.entries(o.quota).sort().map(([k, v]) => `<div><span class="mono">${esc(k)}</span><span class="v">${esc(v)}</span></div>`).join("")}</div>` : `<div class="empty">Chưa có khoá quota nào.</div>`}</section></div>`;
+    } catch (e) { pageErr(m, "Nguồn & Quota", e); }
+  },
+  async backups(m){
+    m.innerHTML = `<h1>Backup</h1><section class="panel">${panelSkel(3)}</section>`;
+    try {
+      const list = await api("/api/admin/backups");
+      m.innerHTML = `<h1>Backup</h1><section class="panel" aria-labelledby="hB"><header><h2 id="hB">Bản backup gần nhất</h2><span class="sp"></span><button class="btn primary" type="button" data-run="backup">Backup ngay</button></header>
+        ${list.length ? `<div class="tw"><table class="t"><thead><tr><th>Ngày</th><th>Xong lúc</th><th>Bảng</th><th>Lỗi</th></tr></thead><tbody>${list.map((b) => `<tr><td class="mono">${esc(b.date)}</td>
+          <td>${esc(b.finished_at ? new Date(b.finished_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : "—")}</td><td>${esc(b.tables ? Object.keys(b.tables).length : "—")}</td>
+          <td class="muted">${esc(b.error || Object.entries(b.errors || {}).map(([k, v]) => k + ": " + v).join("; ") || "")}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty">Chưa có backup nào.</div>`}</section>`;
+    } catch (e) { pageErr(m, "Backup", e); }
+  },
+  async app(m){
+    const id = q().get("id");
+    m.innerHTML = `<div class="dhead"><span class="av"></span><div style="flex:1"><div class="sk" style="width:40%;height:18px"></div><div class="sk" style="width:25%;margin-top:8px"></div></div></div><div class="ov"><div class="col"><section class="panel">${panelSkel(5)}</section></div><div class="col"><section class="panel">${panelSkel(6)}</section></div></div>`;
+    let a;
+    try { a = await api("/api/admin/applications/" + encodeURIComponent(id)); } catch (e) { return pageErr(m, "Đơn ứng tuyển", e); }
+    store["apps:" + a.id] = Object.assign({}, store["apps:" + a.id], a);
+    $("#crumb").textContent = "Đơn ứng tuyển / " + a.job.title;
+    m.innerHTML = `<div class="dhead"><span class="av" aria-hidden="true">${esc(initials(a.job.company))}</span><div class="trunc" style="flex:1"><h1 class="trunc">${esc(a.job.title)}</h1>
+      <div class="muted trunc"><a href="${href("user", { id: a.user.id })}">${esc(a.user.email)}</a> · ${esc(a.profile.name)} · ${esc(a.job.company)}</div></div>
+      <button class="btn icon-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Thao tác: ${esc(a.job.title)}" data-menu="app:${esc(a.id)}">${ic("more")}</button></div>
+    <div class="ov"><div class="col">
+      <section class="panel" aria-labelledby="hI"><header><h2 id="hI">Đơn</h2><span class="sp"></span><span class="pill">${esc(STAGE[a.stage] || a.stage)}</span></header>
+        <dl class="dl"><dt>Nộp lúc</dt><dd>${a.applied_at ? esc(fmtAbs(a.applied_at)) : "—"}</dd><dt>Nhắc follow-up</dt><dd>${a.next_follow_up_at ? esc(fmtAbs(a.next_follow_up_at)) : "—"}</dd>
+        <dt>Cập nhật</dt><dd>${when(a.updated_at)}</dd><dt>Nguồn</dt><dd><span class="mono">${esc(a.job.source)}</span>${a.job.source_url ? ` · <a href="${esc(a.job.source_url)}" target="_blank" rel="noopener noreferrer">Mở tin gốc</a>` : ""}</dd>
+        <dt>Lương</dt><dd>${esc(a.job.salary_text || "—")}</dd><dt>Ghi chú của ứng viên</dt><dd>${esc(a.note || "—")}</dd><dt>Mã đơn</dt><dd class="mono">${esc(a.id)}</dd></dl></section>
+      <section class="panel" aria-labelledby="hN"><header><h2 id="hN"><label for="note">Ghi chú nội bộ</label></h2><span class="sp"></span><span class="muted" style="font-size:12px">Ứng viên không thấy</span></header>
+        <form id="noteForm" style="padding:12px 16px"><textarea id="note" maxlength="${NOTE_MAX}" aria-describedby="noteCount">${esc(a.admin_note || "")}</textarea>
+        <div class="note-foot"><span class="muted" id="noteCount" style="font-size:12px"></span><span id="noteMsg" role="status" style="font-size:13px;flex:1"></span><button class="btn primary" type="submit" id="noteSave">Lưu ghi chú</button></div></form></section>
+      <section class="panel" aria-labelledby="hV"><header><h2 id="hV">Phỏng vấn</h2></header>
+        ${a.interviews.length ? `<ul class="tl">${a.interviews.map((i) => `<li><span><b>${esc(i.round_label || i.kind)}</b>${i.interviewer ? " · " + esc(i.interviewer) : ""}${i.result ? ` · ${esc(i.result)}` : ""}</span><time>${i.scheduled_at ? esc(fmtAbs(i.scheduled_at)) : "chưa hẹn giờ"}</time></li>`).join("")}</ul>` : `<div class="empty">Chưa có lịch phỏng vấn.</div>`}</section>
+    </div><div class="col">
+      <section class="panel" aria-labelledby="hE"><header><h2 id="hE">Dòng thời gian</h2><span class="sp"></span><span class="muted" style="font-size:12px">${a.events.length} sự kiện</span></header>
+        ${a.events.length ? `<ol class="tl">${a.events.map((e) => { const p = e.payload || {}; return `<li><span>${esc(EVT[e.type] || e.type)}${p.to ? `: ${esc(STAGE[p.from] || p.from || "—")} → ${esc(STAGE[p.to] || p.to)}` : ""}${p.via ? ` <span class="muted">${esc(VIA[p.via] || p.via)}</span>` : ""}${p.auto ? ' <span class="muted">tự động</span>' : ""}</span>${when(e.created_at)}</li>`; }).join("")}</ol>` : `<div class="empty">Chưa có sự kiện.</div>`}</section>
+    </div></div>`;
+    const ta = $("#note"), cnt = () => { $("#noteCount").textContent = `${ta.value.length}/${NOTE_MAX}`; };
+    cnt(); ta.oninput = () => { cnt(); $("#noteMsg").textContent = ""; };
+    if (q().get("note")) ta.focus();
+    $("#noteForm").onsubmit = async (e) => {
+      e.preventDefault(); const b = $("#noteSave"), msg = $("#noteMsg"); b.disabled = true; msg.textContent = "Đang lưu…"; msg.style.color = "";
+      try { const r = await api("/api/admin/applications/" + encodeURIComponent(a.id), { method: "PATCH", body: JSON.stringify({ admin_note: ta.value.trim() ? ta.value : null }) });
+        ta.value = r.admin_note || ""; cnt(); msg.textContent = "Đã lưu ghi chú."; }
+      catch (er) { if (er.status === 401 || er.status === 403) return; msg.textContent = errMsg(er); msg.style.color = "var(--err)"; }
+      b.disabled = false;
+    };
+  },
+  async user(m){
+    const id = q().get("id");
+    m.innerHTML = `<div class="dhead"><span class="av"></span><div style="flex:1"><div class="sk" style="width:40%;height:18px"></div></div></div><div class="ov"><div class="col"><section class="panel">${panelSkel(5)}</section></div><div class="col"><section class="panel">${panelSkel(6)}</section></div></div>`;
+    let u;
+    try { u = await api("/api/admin/users/" + encodeURIComponent(id)); } catch (e) { return pageErr(m, "Ứng viên", e); }
+    store["users:" + u.id] = Object.assign({}, store["users:" + u.id], u);
+    $("#crumb").textContent = "Ứng viên / " + u.email;
+    const appTitle = Object.fromEntries(u.applications.map((a) => [a.id, a.job.title]));
+    m.innerHTML = `<div class="dhead"><span class="av" aria-hidden="true">${esc(initials(u.name || u.email))}</span><div class="trunc" style="flex:1"><h1 class="trunc">${esc(u.email)}</h1>
+      <div class="muted trunc">${esc(u.name || "—")} · ${esc(u.ref_source || "direct")} · đăng ký ${when(u.created_at)}${u.deleted_at ? ` · <b>đã xoá</b> ${when(u.deleted_at)}` : ""}</div></div>
+      <button class="btn icon-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Thao tác: ${esc(u.email)}" data-menu="user:${esc(u.id)}">${ic("more")}</button></div>
+    <div class="ov"><div class="col">
+      <section class="panel" aria-labelledby="hU"><header><h2 id="hU">Tài khoản</h2></header><dl class="dl">
+        <dt>Hoạt động gần nhất</dt><dd>${u.last_active_day ? esc(new Date(u.last_active_day * 864e5).toLocaleDateString("vi-VN")) : "—"}</dd>
+        <dt>Đồng ý xử lý CV</dt><dd>${u.consent_cv_at ? when(u.consent_cv_at) : "chưa"}</dd><dt>Tắt AI</dt><dd>${u.ai_opt_out ? "có" : "không"}</dd>
+        <dt>Telegram</dt><dd>${u.telegram_linked ? "đã liên kết" : "chưa"}</dd><dt>Giờ nhận digest</dt><dd>${u.digest_hour != null ? esc(u.digest_hour) + ":00" : "—"}</dd><dt>Mã</dt><dd class="mono">${esc(u.id)}</dd></dl></section>
+      ${u.profiles.map((p) => `<section class="panel"><header><h2>${esc(p.name)}</h2><span class="sp"></span><span class="pill">${esc(p.level || "—")}</span></header><dl class="dl">
+        <dt>Vị trí</dt><dd>${esc((p.target_roles || []).join(", ") || "—")}</dd><dt>Nơi làm</dt><dd>${esc((p.locations || []).join(", ") || "—")}</dd>
+        <dt>Lương tối thiểu</dt><dd>${p.salary_min ? num(p.salary_min) + " ₫" : "—"}</dd><dt>CV</dt><dd>${p.has_cv ? "có" : "chưa"}</dd>
+        <dt>Kỹ năng</dt><dd>${(p.skills || []).length ? esc(p.skills.map((s) => s.skill).join(", ")) : "—"}</dd></dl></section>`).join("") || `<section class="panel"><div class="empty">Chưa có hồ sơ.</div></section>`}
+    </div><div class="col">
+      <section class="panel" aria-labelledby="hUA"><header><h2 id="hUA">Đơn gần nhất</h2><span class="sp"></span><a href="${href("apps", { user_id: u.id })}">Xem tất cả</a></header>
+        ${u.applications.length ? `<ul class="tl">${u.applications.map((a) => `<li><a class="trunc" href="${href("app", { id: a.id })}">${esc(a.job.title)}</a><span class="muted trunc">${esc(a.job.company)}</span><span class="pill">${esc(STAGE[a.stage] || a.stage)}</span>${when(a.updated_at)}</li>`).join("")}</ul>` : `<div class="empty">Chưa có đơn.</div>`}</section>
+      <section class="panel" aria-labelledby="hUE"><header><h2 id="hUE">Sự kiện gần nhất</h2></header>
+        ${u.events.length ? `<ol class="tl">${u.events.map((e) => `<li><span class="trunc">${esc(EVT[e.type] || e.type)}${e.payload && e.payload.to ? ` → ${esc(STAGE[e.payload.to] || e.payload.to)}` : ""} · <a href="${href("app", { id: e.application_id })}">${esc(appTitle[e.application_id] || "đơn")}</a></span>${when(e.created_at)}</li>`).join("")}</ol>` : `<div class="empty">Chưa có sự kiện.</div>`}</section>
+    </div></div>`;
+  },
+};
+function pageErr(m, title, e){
+  if (e.status === 401 || e.status === 403) return;
+  m.innerHTML = `<h1>${esc(title)}</h1><div class="error" role="alert"><span class="dot"></span><span style="flex:1">${esc(errMsg(e))}</span><button class="btn" type="button" id="pRetry">Thử lại</button></div>`;
+  $("#pRetry").onclick = () => route();
+}
+
+/* ---------- bàn phím: / tìm, Esc đóng menu/drawer ---------- */
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { if (menuOpener) { e.preventDefault(); closeMenu(true); } else if ($("#side.open")) { toggleDrawer(false); $("#drawerBtn").focus(); } return; }
+  const el = document.activeElement;
+  if (e.key === "/" && !e.ctrlKey && !e.metaKey && !gated && !(el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable)) && !$("dialog[open]")) {
+    e.preventDefault(); const i = $("#listQ") || $("#findQ"); if (i) { if (i.id === "findQ") toggleDrawer(true); i.focus(); }
+  }
+});
+
+/* ---------- khởi động: chỉ /api/me trước; không phải owner thì dừng ---------- */
+async function boot(){
+  if (!token()) return gate("401");
+  $("#root").innerHTML = `<div class="gate" aria-busy="true"><div class="panel" aria-hidden="true"><div class="sk" style="width:50%;height:18px"></div><div class="sk" style="width:80%;margin-top:12px"></div></div><span class="sr" role="status">Đang tải…</span></div>`;
+  let d;
+  try { d = await api("/api/me"); }
+  catch (e) { if (e.status !== 401 && e.status !== 403) $("#root").innerHTML = `<div class="gate"><section class="panel" role="alert"><h1>Không tải được</h1><p>${esc(errMsg(e))}</p><button class="btn primary" type="button" onclick="location.reload()">Thử lại</button></section></div>`; return; }
+  if (!d || !d.user || !d.user.is_owner) return gate("403");
+  me = d.user; shell();
+  loadOverview().catch(() => {}); // pill đếm đơn applied 7 ngày; lỗi hiện ở trang
+  route();
+}
+boot();
+</script>
+</body>
+</html>
