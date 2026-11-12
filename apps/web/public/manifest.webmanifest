@@ -1,0 +1,14 @@
+{
+  "name": "JobPilot — Việc IT khớp CV",
+  "short_name": "JobPilot",
+  "description": "Chấm điểm việc làm IT theo CV của bạn, miễn phí.",
+  "lang": "vi",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#08090A",
+  "theme_color": "#4F5BD5",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

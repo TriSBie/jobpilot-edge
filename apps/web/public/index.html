@@ -11,6 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"></noscript><!-- font không chặn render (B8: LCP landing) -->
 <script>try{if(localStorage.getItem("jp_token"))document.documentElement.classList.add("jp-in");}catch(e){}</script><style>.jp-in #landingView{display:none}</style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#4F5BD5">
+<link rel="apple-touch-icon" href="/favicon.svg">
 <link rel="canonical" href="https://jobpilot-edge.pages.dev/">
 <link rel="alternate" hreflang="vi" href="https://jobpilot-edge.pages.dev/">
 <link rel="alternate" hreflang="x-default" href="https://jobpilot-edge.pages.dev/">
@@ -1300,6 +1303,29 @@ html.fx-on .bg-fx{opacity:1}
 .qa-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px}
 .qa-strip>div:first-child{min-width:0;flex:1 1 220px}
 .qa-strip .qa-act{display:flex;gap:.5rem;flex-wrap:wrap}
+/* end-user gaps: quên mật khẩu, xác minh email, onboarding, chia sẻ, khoảng cách */
+.linkish{display:block;margin:.8rem auto 0;background:none;border:0;color:var(--brand);font:500 .88rem var(--f-body,inherit);cursor:pointer;min-height:var(--tap,44px);padding:0 .4rem;text-decoration:underline;text-underline-offset:3px}
+.login-card .btn.linkish,.login-card .linkish{width:auto}
+#forgotMsg{font-size:.88rem;min-height:1.2em;margin-top:.7rem;color:var(--muted)}
+#forgotMsg.err{color:var(--red)}
+.ob-check{display:grid;gap:.5rem;margin:.6rem 0 0;padding:0;list-style:none}
+.ob-check li{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.ob-check .tick{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--line-strong,var(--line));display:inline-grid;place-items:center;font-size:13px}
+.ob-check li.done .tick{background:var(--green-bg);color:var(--green);border-color:transparent}
+.ob-check li.done .lbl{color:var(--muted);text-decoration:line-through}
+.ob-check .btn{min-height:32px}
+.ob-bar{height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:.5rem}
+.ob-bar i{display:block;height:100%;background:var(--brand);transition:width .3s}
+.jsort{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:-.4rem 0 1rem;font-size:14px}
+.jsort select{width:auto;min-width:0}
+.jsort .hint{color:var(--muted);font-size:13px}
+#jobsContainer .chip.dist{background:var(--raised);color:var(--ink)}
+.pub-card{max-width:560px;margin:0 auto 1.4rem;text-align:left}
+.pub-card h3{margin:.2rem 0 .4rem;font-size:1.2rem}
+.pub-card .meta{display:flex;flex-wrap:wrap;gap:.3rem .9rem;color:var(--muted);font-size:.92rem}
+.pub-card .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.7rem 0}
+.pub-card .act{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.pub-card img{width:44px;height:44px;border-radius:10px;object-fit:contain;background:#fff}
 .card.kb-sel{box-shadow:inset 3px 0 0 var(--brand)}
 #kbDlg{width:min(420px,calc(100vw - 32px))}
 #kbDlg table{width:100%;border-collapse:collapse;margin-top:.6rem}
@@ -1472,7 +1498,7 @@ html.fx-on .bg-fx{opacity:1}
         <fieldset><legend data-en="Skills (3 to 8)">Kỹ năng (3 đến 8)</legend><div class="sg-try-sk"><label><input type="checkbox" name="trySk" value="Java"><span>Java</span></label><label><input type="checkbox" name="trySk" value="Spring Boot"><span>Spring Boot</span></label><label><input type="checkbox" name="trySk" value="Node.js"><span>Node.js</span></label><label><input type="checkbox" name="trySk" value="TypeScript"><span>TypeScript</span></label><label><input type="checkbox" name="trySk" value="JavaScript"><span>JavaScript</span></label><label><input type="checkbox" name="trySk" value="React"><span>React</span></label><label><input type="checkbox" name="trySk" value="Next.js"><span>Next.js</span></label><label><input type="checkbox" name="trySk" value="Angular"><span>Angular</span></label><label><input type="checkbox" name="trySk" value="Vue.js"><span>Vue.js</span></label><label><input type="checkbox" name="trySk" value="Python"><span>Python</span></label><label><input type="checkbox" name="trySk" value="Django"><span>Django</span></label><label><input type="checkbox" name="trySk" value="Go"><span>Go</span></label><label><input type="checkbox" name="trySk" value="PHP"><span>PHP</span></label><label><input type="checkbox" name="trySk" value="Laravel"><span>Laravel</span></label><label><input type="checkbox" name="trySk" value="C#"><span>C#</span></label><label><input type="checkbox" name="trySk" value=".NET"><span>.NET</span></label><label><input type="checkbox" name="trySk" value="PostgreSQL"><span>PostgreSQL</span></label><label><input type="checkbox" name="trySk" value="MySQL"><span>MySQL</span></label><label><input type="checkbox" name="trySk" value="MongoDB"><span>MongoDB</span></label><label><input type="checkbox" name="trySk" value="Redis"><span>Redis</span></label><label><input type="checkbox" name="trySk" value="Kafka"><span>Kafka</span></label><label><input type="checkbox" name="trySk" value="Docker"><span>Docker</span></label><label><input type="checkbox" name="trySk" value="Kubernetes"><span>Kubernetes</span></label><label><input type="checkbox" name="trySk" value="AWS"><span>AWS</span></label></div></fieldset>
         <div class="sg-try-row">
           <label><span data-en="Level">Cấp bậc</span><select id="tryLevel" class="input"><option value="fresher">Fresher</option><option value="junior">Junior</option><option value="middle" selected>Middle</option><option value="senior">Senior</option></select></label>
-          <label><span data-en="Location">Khu vực</span><select id="tryLoc" class="input"><option value="Hồ Chí Minh" data-en="Ho Chi Minh City">Hồ Chí Minh</option><option value="Hà Nội" data-en="Hanoi">Hà Nội</option><option value="Đà Nẵng" data-en="Da Nang">Đà Nẵng</option><option value="Remote">Remote</option></select></label>
+          <label><span data-en="Location">Khu vực</span><select id="tryLoc" class="input"><option value="Hồ Chí Minh" data-en="Ho Chi Minh City">Hồ Chí Minh</option><option value="Hà Nội" data-en="Hanoi">Hà Nội</option><option value="Đà Nẵng" data-en="Da Nang">Đà Nẵng</option><option value="Cần Thơ" data-en="Can Tho">Cần Thơ</option><option value="Hải Phòng" data-en="Hai Phong">Hải Phòng</option><option value="Bình Dương" data-en="Binh Duong">Bình Dương</option><option value="Đồng Nai" data-en="Dong Nai">Đồng Nai</option><option value="Remote">Remote</option><option value="Khác" data-en="Other">Khác</option></select></label>
           <button class="btn" type="submit" data-en="Show jobs">Xem tin</button>
         </div>
       </form>
@@ -1673,6 +1699,19 @@ html.fx-on .bg-fx{opacity:1}
         <button id="loginBtn" class="btn primary" type="submit" style="width:100%" data-en="Log in">Đăng nhập</button>
         <div id="loginError"></div>
         <button id="restoreBtn" class="btn ghost hidden" type="button" style="width:100%;margin-top:.5rem" data-en="Restore account">Khôi phục tài khoản</button>
+        <button id="forgotLink" class="linkish" type="button" data-en="Forgot password?">Quên mật khẩu?</button>
+      </form>
+
+      <form id="forgotForm" class="hidden" novalidate>
+        <p class="muted small" style="margin:0 0 .8rem" data-en="Enter your account email. If it exists, we send a reset link via Telegram (if linked) or email.">Nhập email tài khoản. Nếu email có tài khoản, link đặt lại được gửi qua Telegram (nếu đã liên kết) hoặc email.</p>
+        <div class="field">
+          <label for="forgotEmail">Email</label>
+          <input id="forgotEmail" type="email" required placeholder="ban@example.com" autocomplete="email">
+        </div>
+        <div id="forgotTurnstile" class="turnstile"></div>
+        <button id="forgotBtn" class="btn primary" type="submit" style="width:100%" data-en="Send reset link">Gửi link đặt lại</button>
+        <div id="forgotMsg" role="status" aria-live="polite"></div>
+        <button id="forgotBack" class="linkish" type="button" data-en="← Back to log in">← Quay lại đăng nhập</button>
       </form>
 
       <form id="resetForm" class="hidden">
@@ -1753,6 +1792,8 @@ html.fx-on .bg-fx{opacity:1}
         <h2 class="page-title" data-en='Jobs <span class="gray" id="jobsCount"></span>'>Việc làm <span class="gray" id="jobsCount"></span></h2>
         <p class="page-sub" data-en="Jobs from ITviec, TopDev and remote boards (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), scored against your profile. The higher the score, the closer to your CV.">Tin từ ITviec, TopDev và các bảng việc remote (We Work Remotely, Remotive, Remote OK, HN Who's Hiring), chấm theo hồ sơ của bạn. Điểm càng cao, càng gần với CV.</p>
 
+        <div id="verifyBanner" class="qa-strip hidden" role="region" aria-label="Xác minh email" data-en-aria-label="Email verification"></div>
+        <div id="obCard" class="qa-strip hidden" role="region" aria-labelledby="obTitle"></div>
         <div id="digestStrip" class="digest"></div>
 
         <div class="toolbar filters">
@@ -1792,6 +1833,19 @@ html.fx-on .bg-fx{opacity:1}
           <span id="filterSalErr" class="err" role="alert"></span>
           <span id="salHint" class="hint" aria-live="polite"></span>
         </div>
+        <div class="jsort" role="group" aria-label="Sắp xếp và khoảng cách" data-en-aria-label="Sort and distance">
+          <label for="jobsSort" data-en="Sort by">Sắp xếp</label>
+          <select id="jobsSort" class="input">
+            <option value="score" data-en="Best match">Phù hợp nhất</option>
+            <option value="new" data-en="Newest">Mới nhất</option>
+            <option value="salary" data-en="Highest salary">Lương cao nhất</option>
+            <option value="distance" data-en="Nearest" disabled>Gần nhất</option>
+          </select>
+          <button id="geoBtn" class="btn sm" type="button" data-en="Use my location">Dùng vị trí của tôi</button>
+          <button id="geoClear" class="btn sm ghost hidden" type="button" data-en="Forget location">Xoá vị trí</button>
+          <label class="check hidden" id="geoNearWrap"><input id="geoNear" type="checkbox"> <span data-en="Within 30 km">Trong 30 km</span></label>
+          <span id="geoMsg" class="hint" role="status" aria-live="polite"></span>
+        </div>
         <div id="jobsAlertStrip"></div>
         <div id="qaPrompt" class="qa-strip hidden" role="status"></div>
         <div id="tgCard" class="qa-strip hidden"></div>
@@ -1817,8 +1871,9 @@ html.fx-on .bg-fx{opacity:1}
       <section id="tab-profile" class="hidden">
         <h2 data-en="Profile &amp; CV" class="page-title">Hồ sơ &amp; CV</h2>
         <p data-en="Skills in your profile drive how jobs are scored. Upload a CV for AI extraction, or add skills by hand." class="page-sub">Kỹ năng trong hồ sơ quyết định cách hệ thống chấm điểm. Tải CV lên để AI trích xuất, hoặc thêm tay từng kỹ năng.</p>
-          <section class="card-p">
+          <section class="card-p" id="cvCard">
             <h3 data-en="Create a profile from your CV">Tạo hồ sơ từ CV</h3>
+            <p class="small" style="margin:.2rem 0 0"><span data-en="Optional. Saves typing: skills are suggested, you approve each one.">Không bắt buộc. Đỡ phải gõ tay: hệ thống gợi ý kỹ năng, bạn duyệt từng cái.</span> <button id="cvConsentInfo" class="linkish" style="display:inline;margin:0;min-height:0" type="button" data-en="What happens to my CV?">CV của tôi được xử lý thế nào?</button></p>
             <p class="muted small" style="margin:.2rem 0 .8rem" data-en="No profile yet? Upload your CV and we pre-fill the form below as a draft for you to check before saving. This button reads the CV in your browser. When you press Save profile, the CV text is stored on Cloudflare R2 so CV suggestions can use it; you can delete it in the Skills card. Salary is not inferred, enter it yourself.">Chưa có hồ sơ? Tải CV lên, hệ thống điền sẵn form bên dưới dạng nháp để bạn kiểm tra rồi mới lưu. Nút này đọc CV ngay trên trình duyệt. Khi bạn bấm Lưu hồ sơ, văn bản CV được lưu lên Cloudflare R2 để dùng cho Gợi ý sửa CV; xoá được ở thẻ Kỹ năng. Lương không suy ra từ CV, bạn tự điền.</p>
             <label for="cvDraftFile" data-en="Upload CV (PDF, TXT or MD)">Tải CV (PDF, TXT hoặc MD)</label>
             <input id="cvDraftFile" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain">
@@ -1858,8 +1913,8 @@ html.fx-on .bg-fx{opacity:1}
               <div class="field">
                 <label data-en="Location" id="pfAreaLbl">Khu vực</label>
                 <div id="pfAreaChips" class="chips" role="group" aria-labelledby="pfAreaLbl"></div>
-                <input id="pfAreaCustom" class="input" type="text" aria-label="Khu vực khác" data-en-aria-label="Other location" placeholder="Vd Cần Thơ, Hải Phòng" data-en-placeholder="e.g. Can Tho, Hai Phong">
-                <small data-en="Other locations, separated by commas">Khu vực khác, cách nhau bởi dấu phẩy</small>
+                <input id="pfAreaCustom" class="input" type="text" aria-label="Khu vực khác" data-en-aria-label="Other location" placeholder="Vd Huế, Vũng Tàu" data-en-placeholder="e.g. Hue, Vung Tau">
+                <small data-en="Other: type locations, separated by commas">Khác: gõ khu vực, cách nhau bởi dấu phẩy</small>
               </div>
               <div class="field">
                 <label data-en="Minimum expected salary" for="pfSalary">Lương tối thiểu kỳ vọng</label>
@@ -2025,6 +2080,7 @@ html.fx-on .bg-fx{opacity:1}
   </form>
 </dialog>
 
+<dialog id="pubDlg" aria-labelledby="pubTitle"></dialog>
 <dialog id="qaDlg" aria-labelledby="qaTitle"></dialog>
 <dialog id="kbDlg" aria-labelledby="kbTitle"></dialog>
 <span id="kbLive" class="sr-only" aria-live="polite"></span>
@@ -2068,6 +2124,7 @@ const state = {
   cvDraftSkills: [],
   filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false, onlyReady: false, onlyNew: false, mode: [], minSal: "", hasSal: false },
   jobsTotal: null,
+  sort: "score",
 };
 
 let jobsFirstRender = true, kanbanFirstLoad = true, palCloseTimer = null;
@@ -2264,7 +2321,7 @@ Object.assign(EN, {
   "Đổi mật khẩu": "Change password", "Đặt mật khẩu mới": "Set new password",
   "Đã đổi mật khẩu. Các thiết bị khác đã bị đăng xuất.": "Password changed. Other devices have been logged out.",
   "Đã đặt mật khẩu mới. Hãy đăng nhập.": "New password set. Please log in.",
-  "Link đặt lại mật khẩu không đúng hoặc đã hết hạn — nhờ quản trị viên gửi link mới.": "This reset link is invalid or has expired. Ask the admin for a new link.",
+  "Link đặt lại mật khẩu không đúng hoặc đã hết hạn. Bấm \"Quên mật khẩu?\" ở trang đăng nhập để nhận link mới.": "This reset link is invalid or has expired. Use \"Forgot password?\" on the log-in page to get a new one.",
   "Hãy nhập mật khẩu hiện tại và mật khẩu mới.": "Enter your current and new password.",
   "Hai mật khẩu chưa khớp.": "The two passwords do not match.",
   // AUTH_ERR
@@ -2407,7 +2464,7 @@ const AUTH_ERR = {
   password_too_short: "Mật khẩu tối thiểu 8 ký tự.",
   password_too_long: "Mật khẩu tối đa 128 ký tự.",
   missing_password: "Hãy nhập mật khẩu.",
-  invalid_reset_token: "Link đặt lại mật khẩu không đúng hoặc đã hết hạn — nhờ quản trị viên gửi link mới.",
+  invalid_reset_token: "Link đặt lại mật khẩu không đúng hoặc đã hết hạn. Bấm \"Quên mật khẩu?\" ở trang đăng nhập để nhận link mới.",
   too_many_attempts: "Thử sai quá nhiều lần — đợi 10 phút rồi thử lại.",
   turnstile_failed: "Xác minh chưa xong. Đợi ô xác minh báo thành công rồi bấm lại.",
   too_many_registrations: "Đăng ký quá nhiều lần từ mạng này, thử lại sau 1 giờ.",
@@ -2432,7 +2489,7 @@ function turnstileLoad(){ // chỉ nạp khi form cần; onload gọi lại rend
 }
 /* Nút gửi bị khoá tới khi widget gọi callback có token. Trước đây nút bấm được ngay: getResponse() trả "" khi widget còn
    đang xác minh, máy chủ trả turnstile_failed, rồi widget mới báo "Thành công" nhưng lỗi cũ vẫn nằm trên form. */
-const TS_FORM = { loginTurnstile: ["#loginBtn", "#loginError"], registerTurnstile: ["#registerBtn", "#registerError"], submitTurnstile: ["#submitBtn", null] };
+const TS_FORM = { loginTurnstile: ["#loginBtn", "#loginError"], registerTurnstile: ["#registerBtn", "#registerError"], submitTurnstile: ["#submitBtn", null], forgotTurnstile: ["#forgotBtn", "#forgotMsg"] };
 const tsReady = {};
 function tsSetReady(id, ok){
   tsReady[id] = ok;
@@ -2562,8 +2619,10 @@ function setAuthMode(mode){
   $("#loginForm").classList.toggle("hidden", mode !== "login");
   $("#registerForm").classList.toggle("hidden", mode !== "register");
   $("#resetForm").classList.toggle("hidden", mode !== "reset");
-  $("#authTabs").classList.toggle("hidden", mode === "reset");
+  $("#forgotForm").classList.toggle("hidden", mode !== "forgot");
+  $("#authTabs").classList.toggle("hidden", mode === "reset" || mode === "forgot");
   if (mode === "reset") { $("#authTitle").textContent = t("Đặt mật khẩu mới"); $("#authSub").textContent = ""; return; }
+  if (mode === "forgot") { $("#authTitle").textContent = t("Quên mật khẩu"); $("#authSub").textContent = ""; turnstileRender("forgotTurnstile"); return; }
   turnstileRender(mode === "register" ? "registerTurnstile" : "loginTurnstile"); // render khi form hiện: widget trong display:none đo sai kích thước
   if (mode === "register") {
     $("#authTitle").innerHTML = t("Tạo tài khoản <em>miễn phí.</em>");
@@ -2942,7 +3001,7 @@ async function createTryProfile(){
   if (!d || !Array.isArray(d.skills)) return;
   if (state.profiles.length) { try { localStorage.removeItem("jp_try"); } catch (_) { /* bỏ qua */ } return; } // chỉ tạo khi chưa có hồ sơ nào
   try {
-    const p = await api("/api/profiles", { method: "POST", body: JSON.stringify({ name: t("Hồ sơ của tôi"), level: d.level, locations: [d.location] }) });
+    const p = await api("/api/profiles", { method: "POST", body: JSON.stringify({ name: t("Hồ sơ của tôi"), level: d.level, locations: d.location && d.location !== "Khác" ? [d.location] : [] }) });
     const full = await api("/api/profiles/" + encodeURIComponent(p.id) + "/skills/confirm", { method: "POST", body: JSON.stringify({ skills: d.skills.map(skill => ({ skill, weight: 4, source: "manual" })) }) });
     state.profiles.push(full);
     try { localStorage.removeItem("jp_try"); } catch (_) { /* bỏ qua */ }
@@ -2973,8 +3032,10 @@ async function boot(){
   renderProfileSelect();
   fillProfileForm();
   renderCurrentSkills();
+  verifyRender(); obRender();
   await Promise.all([loadDigest(), loadJobs(), loadApplications(), loadSourceStatus()]);
   if (!$("#tab-jobs").classList.contains("hidden")) markJobsSeen();
+  deepLinkOpen();
 }
 
 function renderProfileSelect(){
@@ -3157,6 +3218,7 @@ async function loadJobs(){
   if (state.filters.mode.length) qs.set("mode", state.filters.mode.join(","));
   if (state.filters.minSal) qs.set("min_salary", state.filters.minSal);
   if (state.filters.hasSal) qs.set("has_salary", "1");
+  const sp = sortParam(state.sort); if (sp) qs.set("sort", sp);
   qs.set("limit", "50");
   const seq = ++jobsSeq;
   try {
@@ -3243,8 +3305,9 @@ function renderJobs(){
   if (state.filters.onlyReady) list = list.filter(jobReady);
   const newCount = jobsNewRender();
   if (state.filters.onlyNew) list = list.filter(isNewJob);
+  list = geoApply(list);
   const newPill = newCount || state.filters.onlyNew ? `<button class="new-pill" id="jobsNewPill" type="button" aria-pressed="${state.filters.onlyNew}">${state.filters.onlyNew ? t("Chỉ tin mới (%s) · Bỏ lọc", newCount) : t("%s tin mới · Xem", newCount)}</button>` : "";
-  const clientFiltered = state.filters.hideFlagged || state.filters.onlyApply || state.filters.onlyReady || state.filters.onlyNew;
+  const clientFiltered = state.filters.hideFlagged || state.filters.onlyApply || state.filters.onlyReady || state.filters.onlyNew || geoFiltering();
   // total từ server đã tính cả mode/lương; lọc phía client (cờ, nên nộp, tin mới) thì giữ cách đếm cũ
   if (cnt) cnt.textContent = state.jobsTotal != null && !clientFiltered ? (state.jobsTotal ? t("%s tin", state.jobsTotal) : "")
     : list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
@@ -3309,7 +3372,7 @@ function renderJobs(){
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
         ${hasPreview(job) ? previewMeta(job, date) : `<div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", jobSalary(job)].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>`}
-        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}${!hasPreview(job) && MODE_LABEL[job.work_mode] ? `<span class="chip mode">${MODE_LABEL[job.work_mode]}</span>` : ""}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}${!hasPreview(job) && MODE_LABEL[job.work_mode] ? `<span class="chip mode">${MODE_LABEL[job.work_mode]}</span>` : ""}${jobKmChip(job)}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
@@ -3319,6 +3382,7 @@ function renderJobs(){
             ${state.profiles.filter(x => x.id !== state.profileId).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}
           </select>` : ""}
           ${STAGE_KEYS.indexOf(stage) < 2 ? `<button class="btn${job.verdict === "apply" ? " p" : ""}" data-qa-for="${esc(job.id)}" type="button"><svg class="ic-svg" aria-hidden="true"><use href="#apply"/></svg>${t("Nộp nhanh")}</button><button class="btn" data-applied-for="${esc(job.id)}" type="button" aria-label="${esc(t("Đánh dấu đã nộp: %s", job.title))}">${t("Đã nộp")}</button><button class="btn" data-cvs-for="${esc(job.id)}" type="button">${t("Gợi ý sửa CV")}</button>` : ""}
+          <button class="btn" data-share-for="${esc(job.id)}" type="button" aria-label="${esc(t("Chia sẻ: %s", job.title))}">${t("Chia sẻ")}</button>
           ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">${t("Vì sao điểm này?")}</button>` : ""}
         </div>
       </div>
@@ -3354,9 +3418,10 @@ function renderJobs(){
 
   $$("[data-qa-for]", box).forEach(b => b.addEventListener("click", () => qaOpen(b.dataset.qaFor, b)));
   $$("[data-cvs-for]", box).forEach(b => b.addEventListener("click", () => cvsOpen(b.dataset.cvsFor, b)));
+  $$("[data-share-for]", box).forEach(b => b.addEventListener("click", () => shareJob(state.jobs.find(j => String(j.id) === b.dataset.shareFor))));
   $$("[data-applied-for]", box).forEach(b => b.addEventListener("click", () => { b.disabled = true; markApplied(b.dataset.appliedFor).finally(() => { if (b.isConnected) b.disabled = false; }); }));
   $$(".card", box).forEach(c => c.classList.toggle("kb-sel", c.dataset.jobId === kbSel));
-  tgCardRender();
+  tgCardRender(); obRender();
   const lm = $("#loadMoreJobs", box);
   if (lm) lm.addEventListener("click", () => {
     const from = visible;
@@ -3739,13 +3804,12 @@ document.addEventListener("visibilitychange", () => {
   };
 });
 // Thẻ mời Telegram ở tab Việc làm: hồ sơ ≥3 kỹ năng, chưa liên kết, chưa bấm Để sau.
-const TG_CARD_ON = false;
 function tgCardRender(){
   const box = $("#tgCard"), p = currentProfile();
   if (!box) return;
   let off = false; try { off = !!localStorage.getItem("jp_tg_card_off"); } catch (e) { /* bỏ qua */ }
-  // ponytail: tắt tới khi bot Telegram chung có token (prod trả 503); bật lại = đổi TG_CARD_ON thành true.
-  const show = TG_CARD_ON && !off && state.user && !state.user.telegram_linked && p && (p.skills || []).length >= 3;
+  // Bật theo máy chủ: telegram_shared_ok = bot Telegram chung có token. API cũ chưa có trường này → ẩn như trước.
+  const show = !!(state.user && state.user.telegram_shared_ok) && !off && state.user && !state.user.telegram_linked && p && (p.skills || []).length >= 3;
   box.classList.toggle("hidden", !show);
   if (!show) { box.innerHTML = ""; return; }
   const strong = (state.jobs || []).find(j => j.match && j.match.tier === "strong");
@@ -4393,7 +4457,7 @@ function splitList(v){
   return String(v || "").split(",").map(x => x.trim()).filter(Boolean);
 }
 // Danh mục khu vực có dấu. Backend so khớp bỏ dấu (normLoc, worker.js) nên chuỗi cũ "Ho Chi Minh" được map về preset có dấu.
-const AREA_PRESETS = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"];
+const AREA_PRESETS = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Hải Phòng", "Bình Dương", "Đồng Nai", "Remote"];
 const normArea = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/g, "d").trim();
 let pfAreaOpts = AREA_PRESETS.slice(), pfAreas = new Set();
 function renderAreaChips(){
@@ -5214,7 +5278,7 @@ function askDialog(d){
 const confirmBox = (msg) => { $("#confirmMsg").textContent = msg; return askDialog($("#confirmDlg")); };
 async function ensureCvConsent(){
   if (state.user && state.user.consent_cv_at) return true;
-  if (!(await askDialog($("#consentDlg")))) return false;
+  if (!(await askDialog($("#consentDlg")))) { toast(t("Không sao, bạn vẫn thêm kỹ năng bằng tay được.")); return false; }
   const r = await api("/api/me/consent", { method: "POST", body: JSON.stringify({ kind: "cv" }) });
   state.user.consent_cv_at = r.consent_cv_at;
   return true;
@@ -5291,6 +5355,263 @@ $("#restoreBtn").addEventListener("click", async () => {
   finally { btn.disabled = false; btn.textContent = t("Khôi phục tài khoản"); }
 });
 
+/* ---------------- End-user gaps (audit 2026-11-12): quên mật khẩu, xác minh email, sắp xếp, chia sẻ, khoảng cách, onboarding ----------------
+   API mới (feat/enduser-api) có thể chưa lên: mọi chỗ đọc trường mới đều mặc định "ẩn / như cũ" khi thiếu. */
+/* EU-PURE start: hàm thuần, test ở apps/web/test/enduser.selfcheck.cjs */
+const SORTS = ["score", "new", "salary", "distance"];
+// Gửi lên server: score là mặc định (không gửi), distance sắp phía client.
+const sortParam = (s) => (s === "new" || s === "salary") ? s : "";
+const parseJobHash = (h) => { const m = /^#job\/([A-Za-z0-9_-]{1,80})$/.exec(String(h || "")); return m ? m[1] : ""; };
+function haversineKm(a, b){
+  const R = 6371, rad = (d) => d * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(x)));
+}
+const hasLatLng = (j) => j && Number.isFinite(Number(j.lat)) && Number.isFinite(Number(j.lng)) && j.lat !== null && j.lng !== null && j.lat !== "" && j.lng !== "";
+// Sắp phía client trên trang đã tải: server cũ bỏ qua ?sort thì vẫn đúng thứ tự trong phạm vi đã tải. Ổn định (giữ thứ tự server khi bằng nhau).
+function jobSort(list, key, here){
+  const v = key === "new" ? (j) => -Number(j.posted_at || j.first_seen_at || 0)
+    : key === "salary" ? (j) => -Number(j.salary_vnd_max || j.salary_vnd_min || 0)
+    : key === "distance" && here ? (j) => hasLatLng(j) ? haversineKm(here, { lat: Number(j.lat), lng: Number(j.lng) }) : Infinity
+    : null;
+  if (!v) return list;
+  return list.map((j, i) => [v(j), i, j]).sort((a, b) => (a[0] - b[0]) || (a[1] - b[1])).map(x => x[2]);
+}
+/* EU-PURE end */
+
+Object.assign(EN, {
+  "Quên mật khẩu": "Forgot password", "Đang gửi...": "Sending...", "Gửi link đặt lại": "Send reset link",
+  "Nếu email có tài khoản, link đặt lại đã được gửi qua Telegram/email.": "If that email has an account, a reset link has been sent via Telegram/email.",
+  "Tính năng tự đặt lại mật khẩu chưa bật. Nhờ quản trị viên gửi link đặt lại.": "Self-serve reset isn't on yet. Ask the admin for a reset link.",
+  "Hãy nhập email.": "Enter your email.",
+  "Xác minh email để nhận thông báo và đặt lại mật khẩu qua email.": "Verify your email to get notifications and password resets by email.",
+  "Gửi lại email xác minh": "Resend verification email", "Ẩn": "Hide", "Đã gửi email xác minh tới %s.": "Verification email sent to %s.",
+  "Email đã được xác minh.": "Email verified.", "Link xác minh không đúng hoặc đã hết hạn. Đăng nhập rồi bấm Gửi lại email xác minh.": "That verification link is invalid or expired. Log in and press Resend verification email.",
+  "Chia sẻ": "Share", "Chia sẻ: %s": "Share: %s", "Đã copy link tin.": "Job link copied.", "Link tin: %s": "Job link: %s",
+  "Đang tải tin…": "Loading job…", "Tin này không còn hoặc chưa xem trước được.": "This job is gone or can't be previewed.",
+  "Đăng ký để xem điểm khớp với CV": "Sign up to see how it matches your CV", "Xem tin gốc": "View original posting", "Đóng": "Close",
+  "Tin được chia sẻ": "Shared job",
+  "Trình duyệt không hỗ trợ lấy vị trí.": "This browser can't share location.", "Đang lấy vị trí…": "Getting location…",
+  "Không lấy được vị trí. Bạn có thể bật quyền vị trí cho trang rồi thử lại.": "Couldn't get your location. Allow location for this site and try again.",
+  "Đã lưu vị trí trên máy này: %s/%s tin có toạ độ.": "Location saved on this device: %s/%s jobs have coordinates.",
+  "Đã lưu vị trí trên máy này. Chưa có tin nào kèm toạ độ.": "Location saved on this device. No jobs have coordinates yet.",
+  "Đã xoá vị trí.": "Location forgotten.", "~%s km": "~%s km",
+  "Bắt đầu trong 3 bước": "Get started in 3 steps", "(đã xong)": "(done)", "%s/3 xong": "%s/3 done", "Ẩn hướng dẫn": "Hide guide",
+  "Thêm ít nhất 3 kỹ năng": "Add at least 3 skills", "Thêm tay": "Add by hand", "Điền từ CV (tuỳ chọn)": "Fill from CV (optional)",
+  "Xem việc phù hợp": "See matching jobs", "Xem": "View", "Lưu hoặc nộp 1 việc": "Save or apply to 1 job",
+  "Đổi giai đoạn trên thẻ tin, hoặc bấm Đã nộp.": "Change the stage on a job card, or press Applied.",
+  "Không sao, bạn vẫn thêm kỹ năng bằng tay được.": "No problem, you can still add skills by hand.",
+  "Cần Thơ": "Can Tho", "Hải Phòng": "Hai Phong", "Bình Dương": "Binh Duong", "Đồng Nai": "Dong Nai",
+});
+
+/* 1. Quên mật khẩu: luôn trả câu trung tính (không lộ email nào có tài khoản). */
+$("#forgotLink").addEventListener("click", () => { $("#forgotEmail").value = $("#loginEmail").value.trim(); $("#forgotMsg").textContent = ""; setAuthMode("forgot"); $("#forgotEmail").focus(); });
+$("#forgotBack").addEventListener("click", () => { setAuthMode("login"); $("#loginEmail").focus(); });
+$("#forgotForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const email = $("#forgotEmail").value.trim(), btn = $("#forgotBtn"), msg = $("#forgotMsg");
+  msg.className = ""; msg.textContent = "";
+  if (!email || !$("#forgotEmail").checkValidity()) { msg.className = "err"; msg.textContent = t(email ? AUTH_ERR.invalid_email : "Hãy nhập email."); $("#forgotEmail").focus(); return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + t("Đang gửi...");
+  try {
+    await api("/api/auth/forgot", { method: "POST", body: JSON.stringify({ email, turnstile_token: turnstileToken("forgotTurnstile") }), keepSession: true });
+    msg.textContent = t("Nếu email có tài khoản, link đặt lại đã được gửi qua Telegram/email.");
+  } catch (e) {
+    msg.className = "err";
+    msg.textContent = e.status === 404 ? t("Tính năng tự đặt lại mật khẩu chưa bật. Nhờ quản trị viên gửi link đặt lại.") : authErr(e); // API cũ chưa có route
+  } finally {
+    turnstileReset("forgotTurnstile");
+    tsDone("forgotTurnstile", btn, t("Gửi link đặt lại"));
+  }
+});
+
+/* 2. Xác minh email: chỉ khi máy chủ báo mail_enabled === true và email_verified === false. Ẩn trong phiên (sessionStorage). */
+function verifyRender(){
+  const box = $("#verifyBanner"), u = state.user;
+  let off = false; try { off = sessionStorage.getItem("jp_verify_off") === "1"; } catch (e) { /* bỏ qua */ }
+  const show = !!(u && u.mail_enabled === true && u.email_verified === false && !off);
+  box.classList.toggle("hidden", !show);
+  if (!show) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div><b>${t("Xác minh email để nhận thông báo và đặt lại mật khẩu qua email.")}</b><div class="muted small">${esc(u.email || "")}</div></div>
+    <div class="qa-act"><button class="btn small primary" type="button" data-vf="send">${t("Gửi lại email xác minh")}</button><button class="btn small ghost" type="button" data-vf="off">${t("Ẩn")}</button></div>`;
+  box.onclick = async (ev) => {
+    const b = ev.target.closest("[data-vf]");
+    if (!b) return;
+    if (b.dataset.vf === "off") { try { sessionStorage.setItem("jp_verify_off", "1"); } catch (e) { /* bỏ qua */ } verifyRender(); $("#jobsProfileSelect").focus(); return; }
+    b.disabled = true;
+    try { await api("/api/me/verify-email/send", { method: "POST" }); toast(t("Đã gửi email xác minh tới %s.", u.email || ""), "ok"); }
+    catch (e) { toast(e.message === "too_many_attempts" ? t(AUTH_ERR.too_many_attempts) : e.message, "err"); }
+    finally { if (b.isConnected) b.disabled = false; }
+  };
+}
+async function verifyFromUrl(){ // ?verify=<token>: xác minh rồi xoá khỏi URL; không cần đăng nhập
+  let tok = "";
+  try { const u = new URL(location.href); tok = u.searchParams.get("verify") || ""; if (!tok) return; u.searchParams.delete("verify"); history.replaceState(null, "", u.pathname + u.search + u.hash); } catch (e) { return; }
+  try {
+    await api("/api/auth/verify-email", { method: "POST", body: JSON.stringify({ token: tok }), keepSession: true });
+    if (state.user) { state.user.email_verified = true; verifyRender(); }
+    toast(t("Email đã được xác minh."), "ok");
+  } catch (e) { toast(t("Link xác minh không đúng hoặc đã hết hạn. Đăng nhập rồi bấm Gửi lại email xác minh."), "err", { ms: 8000 }); }
+}
+
+/* 4. Sắp xếp: lưu localStorage, gửi ?sort khi server hỗ trợ, đồng thời sắp phía client trên trang đã tải. */
+try { const s = localStorage.getItem("jp_sort"); if (SORTS.includes(s)) state.sort = s; } catch (e) { /* bỏ qua */ }
+$("#jobsSort").addEventListener("change", (e) => {
+  state.sort = SORTS.includes(e.target.value) ? e.target.value : "score";
+  try { localStorage.setItem("jp_sort", state.sort); } catch (_) { /* bỏ qua */ }
+  if (state.sort === "distance") { state.jobsVisible = 20; renderJobs(); } else loadJobs();
+});
+
+/* 6. Khoảng cách: chỉ hỏi vị trí khi bấm; lưu toạ độ làm tròn ~1 km trong localStorage của máy này, không gửi lên server. */
+let geo = null;
+try { const g = JSON.parse(localStorage.getItem("jp_geo") || "null"); if (g && Number.isFinite(g.lat) && Number.isFinite(g.lng)) geo = g; } catch (e) { /* bỏ qua */ }
+state.geoNear = false;
+const geoFiltering = () => !!(geo && state.geoNear);
+function geoSync(){
+  const any = (state.jobs || []).some(hasLatLng);
+  $("#geoClear").classList.toggle("hidden", !geo);
+  $("#geoNearWrap").classList.toggle("hidden", !(geo && any));
+  const opt = $('#jobsSort option[value="distance"]');
+  opt.disabled = !(geo && any);
+  if (opt.disabled && state.sort === "distance") state.sort = "score";
+  $("#jobsSort").value = state.sort;
+}
+function geoApply(list){
+  geoSync();
+  if (geoFiltering()) list = list.filter(j => hasLatLng(j) && haversineKm(geo, { lat: Number(j.lat), lng: Number(j.lng) }) <= 30);
+  return jobSort(list, state.sort, geo);
+}
+function jobKmChip(j){
+  if (!geo || !hasLatLng(j)) return "";
+  const km = haversineKm(geo, { lat: Number(j.lat), lng: Number(j.lng) });
+  return `<span class="chip dist">${t("~%s km", km < 10 ? km.toFixed(1) : Math.round(km))}</span>`;
+}
+$("#geoBtn").addEventListener("click", () => {
+  const msg = $("#geoMsg"), btn = $("#geoBtn");
+  if (!navigator.geolocation) { msg.textContent = t("Trình duyệt không hỗ trợ lấy vị trí."); return; }
+  msg.textContent = t("Đang lấy vị trí…"); btn.disabled = true;
+  navigator.geolocation.getCurrentPosition((pos) => {
+    btn.disabled = false;
+    geo = { lat: Math.round(pos.coords.latitude * 100) / 100, lng: Math.round(pos.coords.longitude * 100) / 100 };
+    try { localStorage.setItem("jp_geo", JSON.stringify(geo)); } catch (e) { /* bỏ qua */ }
+    const n = (state.jobs || []).filter(hasLatLng).length;
+    msg.textContent = n ? t("Đã lưu vị trí trên máy này: %s/%s tin có toạ độ.", n, state.jobs.length) : t("Đã lưu vị trí trên máy này. Chưa có tin nào kèm toạ độ.");
+    renderJobs();
+  }, () => { btn.disabled = false; msg.textContent = t("Không lấy được vị trí. Bạn có thể bật quyền vị trí cho trang rồi thử lại."); }, { maximumAge: 600000, timeout: 15000 });
+});
+$("#geoClear").addEventListener("click", () => {
+  geo = null; state.geoNear = false; $("#geoNear").checked = false;
+  try { localStorage.removeItem("jp_geo"); } catch (e) { /* bỏ qua */ }
+  $("#geoMsg").textContent = t("Đã xoá vị trí."); renderJobs(); $("#geoBtn").focus();
+});
+$("#geoNear").addEventListener("change", (e) => { state.geoNear = e.target.checked; state.jobsVisible = 20; renderJobs(); });
+
+/* 5. Chia sẻ + mở #job/<id>. Đã đăng nhập: tới thẻ tin; không có trong danh sách hoặc chưa đăng nhập: thẻ xem trước công khai. */
+const SHARE_BASE = "https://jobpilot-edge.pages.dev/#job/";
+async function shareJob(job){
+  if (!job) return;
+  const url = SHARE_BASE + encodeURIComponent(job.id);
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+    try { await navigator.share({ title: job.title, text: [job.title, job.company].filter(Boolean).join(" · "), url }); return; }
+    catch (e) { if (e && e.name === "AbortError") return; } // người dùng huỷ: thôi
+  }
+  try { await navigator.clipboard.writeText(url); toast(t("Đã copy link tin."), "ok"); }
+  catch (e) { toast(t("Link tin: %s", url), "", { ms: 10000 }); }
+}
+async function pubOpen(id, loggedIn){
+  const d = $("#pubDlg");
+  const shell = (body) => `<div class="pub-card"><p class="muted small" style="margin:0">${t("Tin được chia sẻ")}</p>${body}</div>`;
+  d.innerHTML = shell(`<h3 id="pubTitle">${t("Đang tải tin…")}</h3><div class="skel" style="width:60%"></div>`);
+  if (!d.open) d.showModal();
+  let j = null;
+  try {
+    const r = await fetch(API_BASE + "/api/public/job/" + encodeURIComponent(id), { headers: { "Accept-Language": LANG } });
+    if (r.ok) j = await r.json();
+  } catch (e) { /* mạng lỗi: coi như không xem trước được */ }
+  const cta = loggedIn ? "" : `<button class="btn primary" type="button" data-pub="reg">${t("Đăng ký để xem điểm khớp với CV")}</button>`;
+  const close = `<button class="btn ghost" type="button" data-pub="close">${t("Đóng")}</button>`;
+  if (!j || !j.title) {
+    d.innerHTML = shell(`<h3 id="pubTitle">${t("Tin này không còn hoặc chưa xem trước được.")}</h3><div class="act">${cta}${close}</div>`);
+  } else {
+    const src = /^https?:\/\//.test(j.source_url || "") ? `<a class="btn" href="${esc(j.source_url)}" target="_blank" rel="noopener">${t("Xem tin gốc")}</a>` : "";
+    const logo = /^https:\/\//.test(j.logo || "") ? `<img src="${esc(j.logo)}" alt="" loading="lazy">` : "";
+    d.innerHTML = shell(`<div style="display:flex;gap:.8rem;align-items:center;margin-top:.5rem">${logo}<h3 id="pubTitle" style="margin:0">${esc(j.title)}</h3></div>
+      <div class="meta">${[j.company, j.location, MODE_LABEL[j.work_mode] || "", j.salary_text].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join("")}</div>
+      ${(j.skills || []).length ? `<div class="chips">${j.skills.slice(0, 12).map(s => `<span class="chip">${esc(s)}</span>`).join("")}</div>` : ""}
+      <div class="act">${cta}${src}${close}</div>`);
+  }
+  d.onclick = (ev) => {
+    const b = ev.target.closest("[data-pub]");
+    if (!b) return;
+    d.close();
+    if (b.dataset.pub === "reg") showAuth("register");
+  };
+  const first = $("[data-pub], a.btn", d); if (first) first.focus();
+}
+function deepLinkOpen(){
+  const id = parseJobHash(location.hash);
+  if (!id) return;
+  const loggedIn = !!(state.token && state.user);
+  if (loggedIn) {
+    try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e) { /* bỏ qua */ }
+    if (state.jobs.some(j => String(j.id) === id)) { switchTab("jobs"); setTimeout(() => nfShowJob(id), 80); return; }
+  }
+  pubOpen(id, loggedIn); // chưa đăng nhập: giữ hash để sau đăng ký/đăng nhập boot() mở lại đúng tin
+}
+addEventListener("hashchange", () => { if (parseJobHash(location.hash)) deepLinkOpen(); });
+
+/* 8 + 9. Onboarding 3 bước cho người mới: suy từ dữ liệu thật + 1 cờ "đã xem" trong localStorage; ẩn được; tự ẩn khi xong. */
+const obKey = () => "jp_ob_" + (state.user && state.user.id || "");
+const obGet = () => { try { return JSON.parse(localStorage.getItem(obKey()) || "{}") || {}; } catch (e) { return {}; } };
+const obSet = (patch) => { try { localStorage.setItem(obKey(), JSON.stringify(Object.assign(obGet(), patch))); } catch (e) { /* bỏ qua */ } };
+function obSteps(){
+  const p = currentProfile(), st = obGet();
+  const saved = (state.applications || []).length > 0 || (state.jobs || []).some(j => j.application && j.application.stage && j.application.stage !== "new");
+  return [!!(p && (p.skills || []).length >= 3), !!st.seen, saved];
+}
+function obRender(){
+  const box = $("#obCard");
+  if (!box) return;
+  const p = currentProfile(), st = obGet(), done = obSteps(), n = done.filter(Boolean).length;
+  const show = !!(state.user && p && !st.off && n < 3);
+  box.classList.toggle("hidden", !show);
+  if (!show) { box.innerHTML = ""; return; }
+  const row = (ok, label, acts) => `<li class="${ok ? "done" : ""}"><span class="tick" aria-hidden="true">${ok ? "✓" : ""}</span><span class="lbl">${label}</span>${ok ? `<span class="sr-only">${t("(đã xong)")}</span>` : ""}${ok ? "" : acts}</li>`;
+  box.innerHTML = `<div><b id="obTitle">${t("Bắt đầu trong 3 bước")}</b> <span class="muted small">${t("%s/3 xong", n)}</span>
+      <div class="ob-bar" role="progressbar" aria-valuemin="0" aria-valuemax="3" aria-valuenow="${n}" aria-labelledby="obTitle"><i style="width:${n / 3 * 100}%"></i></div>
+      <ol class="ob-check">
+        ${row(done[0], t("Thêm ít nhất 3 kỹ năng"), `<button class="btn small" type="button" data-ob="skill">${t("Thêm tay")}</button><button class="btn small" type="button" data-ob="cv">${t("Điền từ CV (tuỳ chọn)")}</button>`)}
+        ${row(done[1], t("Xem việc phù hợp"), `<button class="btn small" type="button" data-ob="see">${t("Xem")}</button>`)}
+        ${row(done[2], t("Lưu hoặc nộp 1 việc"), `<span class="muted small">${t("Đổi giai đoạn trên thẻ tin, hoặc bấm Đã nộp.")}</span>`)}
+      </ol></div>
+    <div class="qa-act" style="align-self:flex-start"><button class="btn small ghost" type="button" data-ob="off">${t("Ẩn hướng dẫn")}</button></div>`;
+  box.onclick = (ev) => {
+    const b = ev.target.closest("[data-ob]");
+    if (!b) return;
+    const k = b.dataset.ob, later = (fn) => setTimeout(fn, 120);
+    if (k === "off") { obSet({ off: 1 }); obRender(); $("#jobsProfileSelect").focus(); }
+    else if (k === "skill") { switchTab("profile"); later(() => { const i = $("#manualSkill"); i.scrollIntoView({ block: "center" }); i.focus(); }); }
+    else if (k === "cv") { switchTab("profile"); later(() => { $("#cvCard").scrollIntoView({ block: "start" }); $("#cvConsentInfo").focus(); }); }
+    else if (k === "see") { obSet({ seen: 1 }); obRender(); const a = $("#jobsContainer .card .ttl a"); if (a) { a.scrollIntoView({ block: "center" }); a.focus(); } }
+  };
+}
+// Mở tin hoặc xem giải thích điểm = đã "xem việc phù hợp".
+$("#jobsContainer").addEventListener("click", (e) => { if (e.target.closest(".ttl a, .explain-toggle") && !obGet().seen) { obSet({ seen: 1 }); obRender(); } });
+// 9. Xem trước điều khoản CV mà không bị ép đồng ý: mở đúng hộp thoại đồng ý, chỉ đọc.
+$("#cvConsentInfo").addEventListener("click", async () => {
+  if (state.user && state.user.consent_cv_at) { await askDialog($("#consentDlg")); return; }
+  if (await askDialog($("#consentDlg"))) {
+    try { const r = await api("/api/me/consent", { method: "POST", body: JSON.stringify({ kind: "cv" }) }); state.user.consent_cv_at = r.consent_cv_at; $("#cvDraftFile").focus(); }
+    catch (e) { toast(e.message, "err"); }
+  }
+});
+
+/* 7. PWA: chỉ đăng ký service worker trên https (Pages/localhost), không phải file:// trong test. */
+if ("serviceWorker" in navigator && /^https:$|^http:$/.test(location.protocol) && (location.protocol === "https:" || location.hostname === "localhost")) {
+  addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => { /* không cài được thì web vẫn chạy */ }));
+}
+
 (async function init(){
   try { // T-22: ?reset=<token> -> form đặt mật khẩu mới, rồi xoá query khỏi URL
     const u = new URL(location.href), rt = u.searchParams.get("reset");
@@ -5300,7 +5621,8 @@ $("#restoreBtn").addEventListener("click", async () => {
       return;
     }
   } catch (e) { /* bỏ qua */ }
-  if (!state.token) { showLanding(); return; }
+  verifyFromUrl();
+  if (!state.token) { showLanding(); deepLinkOpen(); return; }
   try {
     await boot();
   } catch (e) {
