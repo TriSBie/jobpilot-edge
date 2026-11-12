@@ -484,6 +484,67 @@ function stripTags(html) {
     .replace(/\s+/g, " ").trim();
 }
 const decodeUnicodeEscapes = (s) => s.replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+// ---- Xem nhanh thẻ job (SPEC 12/11 §3A): logo, địa chỉ, phúc lợi, chế độ làm việc do nguồn ghi ----
+// Logo chỉ hot-link CDN của nguồn đã biết (không tải về R2). Thêm host ở đây thì thêm cả vào img-src của apps/web/public/_headers.
+const LOGO_HOSTS = new Set(["itviec.com", "assets.saramin.vn"]);
+function safeLogo(u) {
+  if (typeof u !== "string" || u.length > 500) return null;
+  try { const x = new URL(u); return x.protocol === "https:" && LOGO_HOSTS.has(x.hostname) && !x.username && !x.password ? x.href : null; } catch (_) { return null; }
+}
+// &agrave; &ecirc; … (TopDev mã hoá chữ Việt bằng entity có tên) → dấu tổ hợp rồi NFC; stripTags lo phần còn lại.
+const VI_ENT = { grave: "\u0300", acute: "\u0301", circ: "\u0302", tilde: "\u0303" };
+const decodeViEntities = (s) => s.replace(/&([aeiouyAEIOUY])(grave|acute|circ|tilde);/g, (_, c, k) => c + VI_ENT[k]).normalize("NFC");
+const parseBenefits = (v) => { try { const b = JSON.parse(v || "[]"); return Array.isArray(b) ? b.filter((x) => typeof x === "string") : []; } catch (_) { return []; } };
+const clip = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+const BENEFITS_MAX = 5, BENEFIT_LEN = 60;
+function benefitList(html) {
+  const out = [...String(html).matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => stripTags(decodeViEntities(m[1]))).filter(Boolean).slice(0, BENEFITS_MAX).map((t) => clip(t, BENEFIT_LEN));
+  return out.length ? JSON.stringify(out) : null;
+}
+// ponytail: chỉ gặp "Trực tiếp" trên TopDev (khảo sát 12/11); các nhãn khác đoán theo từ khoá, lạ thì null (rơi về heuristic workMode).
+function topdevMode(s) {
+  if (!s) return null;
+  if (/hybrid|linh hoạt|kết hợp/i.test(s)) return "hybrid";
+  if (/remote|từ xa/i.test(s)) return "remote";
+  return /trực tiếp|tại văn phòng|onsite|at office/i.test(s) ? "onsite" : null;
+}
+// TopDev (Next RSC): benefits_original[0].value là "$3e" trỏ tới đoạn "3e:T<len>," mà nội dung HTML nằm ở push([1,"…"]) kế tiếp.
+// ponytail: đoán theo cách Next.js tách chunk hiện tại; lệch thì null.
+function topdevBenefits(seg, flat) {
+  const m = seg.match(/"benefits_original":\[\{[^}]*?"value":"(\$?)([^"]*)"/);
+  if (!m) return null;
+  if (!m[1]) return benefitList(decodeUnicodeEscapes(m[2]));
+  const at = flat.indexOf(`${m[2]}:T`);
+  const st = at < 0 ? -1 : flat.indexOf('push([1,"', at);
+  if (st < 0 || st - at > 300) return null;
+  const end = flat.indexOf('"])', st + 9);
+  return benefitList(decodeUnicodeEscapes(flat.slice(st + 9, end < 0 ? st + 6000 : Math.min(end, st + 6000))));
+}
+// ITviec trang chi tiết (enrichJd đã tải sẵn, 0 request thêm): JSON-LD JobPosting → logo + địa chỉ; nhãn đầu trang → chế độ; "Top 3 reasons" → phúc lợi.
+// ponytail: regex theo markup 12/11; nhãn chế độ chỉ tìm trước <section job-content> để không dính thẻ "việc làm liên quan" cuối trang.
+function extractPreview(html, sourceId) {
+  const out = { logo: null, address: null, benefits: null, mode: null };
+  if (sourceId !== "src-itviec" || !html) return out;
+  for (const m of html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    if (!/JobPosting/.test(m[1])) continue;
+    let j; try { j = JSON.parse(m[1]); } catch (_) { continue; }
+    if (!j || j["@type"] !== "JobPosting") continue;
+    const org = j.hiringOrganization || {};
+    out.logo = safeLogo(typeof org.logo === "string" ? org.logo : org.logo && org.logo.url);
+    const loc = [].concat(j.jobLocation || [])[0];
+    const a = loc && loc.address;
+    if (a && typeof a === "object") out.address = clip([a.streetAddress, a.addressLocality, a.addressRegion].filter((x) => typeof x === "string" && x.trim()).map((x) => x.trim()).join(", "), 300) || null;
+    break;
+  }
+  if (!out.logo) { const m = html.match(/<img[^>]*class=['"][^'"]*employer-logo[^'"]*['"][^>]*data-src=['"]([^'"]+)['"]/i); if (m) out.logo = safeLogo(m[1]); }
+  const cut = html.search(/<section[^>]*job-content/i);
+  const head = cut > 0 ? html.slice(0, cut) : html;
+  const mm = head.match(/>\s*(At office|Hybrid|Remote)\s*</);
+  if (mm) out.mode = { "At office": "onsite", Hybrid: "hybrid", Remote: "remote" }[mm[1]];
+  const r = html.match(/<h2[^>]*>\s*Top 3 reasons to join us\s*<\/h2>\s*<ul[^>]*>([\s\S]*?)<\/ul>/i);
+  if (r) out.benefits = benefitList(r[1]);
+  return out;
+}
 const TECH_EXTRA = new Set(["c++", "c", "c/c++", "oop", "algorithms", "embedded", "agile", "scrum", "jira", "spring", "hibernate", "maven", "gradle", "oracle", "sql server", "mariadb", "cassandra", "hadoop", "spark", "airflow", "testing", "automation test", "manual test"]);
 const CATALOG_BY_LOWER = new Map(SKILL_CATALOG.map((s) => [s.toLowerCase(), s])); // "react" → "React" (tag chữ thường của RemoteOK/Remotive)
 function filterTechTags(tags) {
@@ -576,7 +637,15 @@ async function fetchTopDev(keyword) {
     } else if (tdTxt && !/thương lượng|negotiable/i.test(tdTxt[1])) {
       tdSalary = decodeUnicodeEscapes(tdTxt[1]);
     }
+    // ponytail: tin mà "company" là tham chiếu RSC ("$33:0:props…") không có image_logo trong seg → logo null (cùng chỗ company đang rỗng từ trước).
+    const logoM = seg.match(/"image_logo":"([^"]+)"/);
+    const addrM = seg.match(/"full_addresses":\["((?:[^"\\]|\\.)*)"/);
+    const typeM = seg.match(/"job_types_str":"([^"]*)"/);
     jobs.push({
+      logo: logoM ? safeLogo(decodeUnicodeEscapes(logoM[1]).replace(/\\\//g, "/")) : null,
+      address: addrM ? clip(decodeUnicodeEscapes(addrM[1]).trim(), 300) || null : null,
+      workModeSrc: topdevMode(typeM ? decodeUnicodeEscapes(typeM[1]) : ""),
+      benefits: topdevBenefits(seg, flat),
       title: decodeUnicodeEscapes(m[2]),
       company: companyM ? decodeUnicodeEscapes(companyM[1]) : "",
       location: locM ? decodeUnicodeEscapes(locM[1]) : "Vietnam",
@@ -724,16 +793,20 @@ async function planUpsertJobs(env, items) {
       stmts.push(env.DB.prepare(
         `UPDATE jobs SET last_seen_at = ?, seen_count = seen_count + 1,
            repost_count = repost_count + (CASE WHEN ? >= COALESCE(posted_at,0) + 172800 THEN 1 ELSE 0 END),
-           posted_at = MAX(COALESCE(posted_at,0), ?) WHERE content_hash = ?`
-      ).bind(t, trust, trust, hash));
+           posted_at = MAX(COALESCE(posted_at,0), ?),
+           company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src)
+         WHERE content_hash = ?`
+      ).bind(t, trust, trust, job.logo ?? null, job.address ?? null, job.benefits ?? null, job.workModeSrc ?? null, hash));
     } else {
       row = { id: uid(), source_id: sourceId, source_url: job.url, title: job.title, company: job.company || "", location: job.location || "",
         salary_text: job.salaryText || null, jd_text: job.jdText || "", skills: JSON.stringify(job.skills || []), content_hash: hash, posted_at: posted, first_seen_at: t, submitted_by: submittedBy };
       rows.set(hash, row);
       stmts.push(env.DB.prepare(
-        `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at, submitted_by)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(row.id, sourceId, job.url, job.title, row.company, row.location, row.salary_text, row.jd_text, row.skills, hash, posted, t, t, t, submittedBy));
+        `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at, submitted_by,
+           company_logo_url, address, benefits, work_mode_src)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(row.id, sourceId, job.url, job.title, row.company, row.location, row.salary_text, row.jd_text, row.skills, hash, posted, t, t, t, submittedBy,
+        job.logo ?? null, job.address ?? null, job.benefits ?? null, job.workModeSrc ?? null));
     }
     // Tin cũ chưa có JD mà feed giờ có → bù JD + skills rồi chấm lại.
     if (!jdOf(row) && row.jd_text !== "-" && job.jdText) {
@@ -785,9 +858,9 @@ async function enrichJd(env, limit) {
   ).bind(limit).all();
   let done = 0, failed = 0;
   for (const j of results) {
-    let jd = "", gone = false;
+    let jd = "", gone = false, pv = extractPreview("", j.source_id);
     for (let a = 0; a < 2 && !jd && !gone; a++) {
-      try { jd = extractJd(await fetchText(j.source_url), j.source_id); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
+      try { const html = await fetchText(j.source_url); jd = extractJd(html, j.source_id); pv = extractPreview(html, j.source_id); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
     }
     if (!jd) {
       failed++;
@@ -796,7 +869,8 @@ async function enrichJd(env, limit) {
       continue;
     }
     const skills = [...new Set([...JSON.parse(j.skills || "[]"), ...extractSkillsFromText(jd)])];
-    await env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ? WHERE id = ?").bind(jd, JSON.stringify(skills), j.id).run();
+    await env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ?, company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src) WHERE id = ?")
+      .bind(jd, JSON.stringify(skills), pv.logo, pv.address, pv.benefits, pv.mode, j.id).run();
     await env.Q_SCORE.send({ kind: "score", jobId: j.id });
     done++;
   }
@@ -846,7 +920,8 @@ const VN_CITY_RE = /\b(?:ho chi minh|hcmc?|hn|sai gon|saigon|ha noi|hanoi|da nan
 const REMOTE_SOURCES = new Set(["src-wwr", "src-remotive", "src-remoteok", "src-hn"]);
 const HYBRID_RE = /\bhybrid\b|linh hoat/, REMOTE_RE = /\bremote\b(?! sensing)|tu xa|work from home|\bwfh\b|worldwide|anywhere/;
 // ponytail: đoán theo từ khoá; JD chỉ dùng cho hybrid ở tin VN (JD hay nhắc "remote" kiểu 'không remote'). Sai nhiều thì cho AI gắn nhãn lúc quét.
-function workMode(location, title, jd, sourceId) {
+function workMode(location, title, jd, sourceId, src = null) {
+  if (src === "onsite" || src === "hybrid" || src === "remote") return src; // nhãn nguồn là sự thật, heuristic chỉ là fallback (§3A)
   const lt = normLoc(`${location || ""} ${title || ""}`), j = normLoc(String(jd || "").slice(0, 600));
   if (HYBRID_RE.test(lt) || HYBRID_RE.test(j)) return "hybrid";
   if (REMOTE_SOURCES.has(sourceId) || REMOTE_RE.test(lt)) return "remote";
@@ -2060,7 +2135,7 @@ export default {
       const modes = qm === null ? null : qm.split(",").map((x) => x.trim()).filter(Boolean);
       const minSalary = qs === null ? null : Number(qs);
       if ((modes && (!modes.length || modes.some((x) => !MODES.includes(x)))) || (qs !== null && !/^\d{1,4}$/.test(qs)) || (qh !== null && qh !== "1" && qh !== "0")) return json({ error: "invalid_query" }, 400);
-      const cols = paged ? "j.id, j.source_id, j.source_url, j.title, j.company, j.location, j.salary_text, j.skills, j.posted_at, j.first_seen_at, j.last_seen_at, j.repost_count, substr(j.jd_text, 1, 600) AS jd_head" : "j.*";
+      const cols = paged ? "j.id, j.source_id, j.source_url, j.title, j.company, j.location, j.salary_text, j.skills, j.posted_at, j.first_seen_at, j.last_seen_at, j.repost_count, j.company_logo_url, j.address, j.benefits, j.work_mode_src, substr(j.jd_text, 1, 600) AS jd_head" : "j.*";
       let rows;
       if (profileId) {
         const { results } = await env.DB.prepare(
@@ -2097,7 +2172,7 @@ export default {
       if (tier) rows = rows.filter((r) => r.final_score !== null && r.final_score !== undefined && r.tier === tier);
       if (source) rows = rows.filter((r) => (r.source_id || "").includes(source));
       if (q) rows = rows.filter((r) => `${r.title} ${r.company}`.toLowerCase().includes(q));
-      rows = rows.map((r) => { const sv = salaryVND(r.salary_text); return { ...r, salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, r.jd_head ?? r.jd_text, r.source_id) }; });
+      rows = rows.map((r) => { const sv = salaryVND(r.salary_text); return { ...r, salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, r.jd_head ?? r.jd_text, r.source_id, r.work_mode_src) }; });
       if (modes) rows = rows.filter((r) => modes.includes(r.work_mode));
       if (qh === "1") rows = rows.filter((r) => r.salary_vnd_max !== null);
       if (minSalary !== null) rows = rows.filter((r) => r.salary_vnd_max === null || r.salary_vnd_max >= minSalary * 1e6);
@@ -2141,6 +2216,8 @@ export default {
           id: r.id, title: r.title, company: r.company, location: r.location,
           source_url: r.source_url, source: r.source_id, salary_text: r.salary_text,
           salary_vnd_min: r.salary_vnd_min, salary_vnd_max: r.salary_vnd_max, work_mode: r.work_mode,
+          work_mode_source: r.work_mode ? (r.work_mode === r.work_mode_src ? "source" : "inferred") : null,
+          company_logo_url: safeLogo(r.company_logo_url), address: r.address || null, benefits: parseBenefits(r.benefits),
           skills: skillsArr, jd_len: jdOf(r).length,
           posted_at: r.posted_at, first_seen_at: r.first_seen_at,
           flags, risk,
