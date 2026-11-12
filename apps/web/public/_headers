@@ -4,3 +4,9 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Referrer-Policy: strict-origin-when-cross-origin
   Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://cdnjs.cloudflare.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://jobpilot-api.tribui-it-work.workers.dev https://cdnjs.cloudflare.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+
+# Admin CRM (SPEC §3D). Pages gộp header của /* (HSTS, X-Frame-Options, ...) với khối này; CSP ở đây là bản enforce, chặt hơn: chỉ gọi API.
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://jobpilot-api.tribui-it-work.workers.dev; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
