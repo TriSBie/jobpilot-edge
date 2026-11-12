@@ -676,6 +676,8 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   .toast{display:inline-flex;align-items:center;gap:10px;min-height:var(--tap);background:var(--ink);color:var(--surface);border:none;border-radius:var(--r-md);padding:12px 16px;font-weight:500;box-shadow:var(--pop-shadow)}
   .toast.ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint);flex:none}
   .toast.err::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--pop);flex:none}
+  .toast-act{background:transparent;border:1px solid currentColor;border-radius:var(--r-pill);color:var(--surface);font:600 13px var(--f-body);min-height:32px;padding:0 12px;cursor:pointer;flex:none}
+  .toast-act:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
   .toast-x{background:transparent;border:none;color:var(--surface);opacity:.7;cursor:pointer;font-size:16px;line-height:1;align-self:stretch;min-width:var(--tap);margin:-12px -16px -12px 0;padding:0 16px 0 8px}
   .tabbar-row .tab:focus-visible,.toast-x:focus-visible{outline-color:var(--sun)} /* outline brand chìm trên nền ink */@media (hover:hover) and (pointer:fine){
   .toast-x:hover{opacity:1}}
@@ -1255,6 +1257,12 @@ html.fx-on .bg-fx{opacity:1}
 #qaDlg .chips{margin-top:0}
 #qaDlg textarea{width:100%;min-height:7.5rem;resize:vertical;font:inherit;padding:.6rem .7rem;border-radius:var(--r-sm)}
 #qaDlg .qa-row{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;margin-top:.45rem}
+#qaDlg .qa-check{margin:1rem 0 0;padding:.7rem .85rem;border:1px solid var(--line);border-radius:var(--r-md);background:var(--raised)}
+#qaDlg .qa-check legend{font-weight:600;font-size:.85rem;padding:0 .25rem}
+#qaDlg .qa-check label{display:flex;gap:.6rem;align-items:flex-start;min-height:var(--tap);padding:.35rem 0;cursor:pointer;font-size:.9rem}
+#qaDlg .qa-check input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--brand)}
+#qaDlg .qa-check small{display:block;color:var(--mute);font-size:13px}
+#qaDlg .qa-check .warn{color:var(--sun-ink)}
 #qaDlg .qa-foot{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end;margin-top:1.1rem}
 /* Vòng phỏng vấn: bảng native như Nộp nhanh, không thêm chuyển động */
 #ivDlg{width:min(640px,calc(100vw - 32px))}
@@ -1282,6 +1290,11 @@ html.fx-on .bg-fx{opacity:1}
 .qa-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:var(--r-md);padding:12px 16px;margin-bottom:16px}
 .qa-strip>div:first-child{min-width:0;flex:1 1 220px}
 .qa-strip .qa-act{display:flex;gap:.5rem;flex-wrap:wrap}
+.card.kb-sel{box-shadow:inset 3px 0 0 var(--brand)}
+#kbDlg{width:min(420px,calc(100vw - 32px))}
+#kbDlg table{width:100%;border-collapse:collapse;margin-top:.6rem}
+#kbDlg td{padding:.45rem 0;border-top:1px solid var(--line);font-size:.92rem}
+#kbDlg kbd{font:600 13px var(--f-mono,monospace);display:inline-block;min-width:1.8em;text-align:center;padding:2px 6px;border:1px solid var(--line-strong,var(--line));border-radius:6px;background:var(--raised)}
 .card .actions [data-qa-for]{gap:6px}.card .actions [data-qa-for] .ic-svg{width:18px;height:18px;flex:none}
 /* Gợi ý sửa CV (T-28): dialog riêng, cùng pattern #qaDlg */
 #cvsDlg{width:min(760px,calc(100vw - 32px));max-width:min(760px,calc(100vw - 32px))}
@@ -1742,6 +1755,7 @@ html.fx-on .bg-fx{opacity:1}
           </select>
           <label class="check"><input id="filterFlags" type="checkbox"> <span data-en="Hide flagged">Ẩn tin có cờ</span></label>
           <label class="check"><input id="filterApply" type="checkbox"> <span data-en="Only jobs worth applying to">Chỉ tin nên nộp</span></label>
+          <label class="check"><input id="filterReady" type="checkbox" aria-describedby="filterReadyHint"> <span data-en="Ready to apply">Nộp được ngay</span><span id="filterReadyHint" class="sr-only" data-en="Has an apply link, not applied or skipped yet, not taken down">Có link nộp, chưa nộp hay bỏ qua, chưa bị gỡ</span></label>
           <div class="grow"><input class="input" style="width:100%;min-width:0" id="filterQ" type="search" placeholder="Tìm theo tiêu đề, công ty…  ( / )" data-en-placeholder="Search title, company…  ( / )"></div>
           <span id="rescoringPill" class="rescoring hidden"><i></i><span id="rescoringText" data-en="Rescoring…">Đang chấm lại…</span></span>
           <button id="refreshJobsBtn" class="btn sm" type="button" data-en='<svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Refresh'><svg class="ic-svg" aria-hidden="true"><use href="#scan"/></svg>Làm mới</button>
@@ -1993,6 +2007,8 @@ html.fx-on .bg-fx{opacity:1}
 </dialog>
 
 <dialog id="qaDlg" aria-labelledby="qaTitle"></dialog>
+<dialog id="kbDlg" aria-labelledby="kbTitle"></dialog>
+<span id="kbLive" class="sr-only" aria-live="polite"></span>
 <dialog id="ivDlg" aria-labelledby="ivTitle"></dialog>
 <dialog id="cvsDlg" aria-labelledby="cvsTitle"></dialog>
 
@@ -2031,7 +2047,7 @@ const state = {
   applications: [],
   suggested: [],
   cvDraftSkills: [],
-  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false, onlyNew: false, mode: [], minSal: "", hasSal: false },
+  filters: { tier: "", source: "", q: "", hideFlagged: false, onlyApply: false, onlyReady: false, onlyNew: false, mode: [], minSal: "", hasSal: false },
   jobsTotal: null,
 };
 
@@ -2110,12 +2126,12 @@ function srcLabel(src){
   return src;
 }
 
-function toast(msg, kind){
-  const box = $("#toasts");
+function toast(msg, kind, opt){
+  const box = $("#toasts"), act = opt && opt.action;
   while (box.childElementCount >= 3) box.firstElementChild.remove();
   const el = document.createElement("div");
   el.className = "toast" + (kind ? " " + kind : "");
-  el.innerHTML = `<span>${esc(msg)}</span><button class="toast-x" type="button" aria-label="${t("Đóng")}">×</button>`;
+  el.innerHTML = `<span>${esc(msg)}</span>${act ? `<button class="toast-act" type="button">${esc(act.label)}</button>` : ""}<button class="toast-x" type="button" aria-label="${t("Đóng")}">×</button>`;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const close = () => {
     if (el.classList.contains("out")) return;
@@ -2135,8 +2151,13 @@ function toast(msg, kind){
     }, reduced ? 0 : 120);
   };
   el.querySelector(".toast-x").addEventListener("click", close);
+  if (act) el.querySelector(".toast-act").addEventListener("click", () => { close(); act.run(); });
   box.appendChild(el);
-  setTimeout(close, 4000);
+  // Toast có nút: không tự tắt khi focus đang ở trong nó (người dùng bàn phím kịp bấm)
+  let timer = setTimeout(close, (opt && opt.ms) || 4000);
+  el.addEventListener("focusin", () => clearTimeout(timer));
+  el.addEventListener("focusout", () => { clearTimeout(timer); timer = setTimeout(close, 2000); });
+  return el;
 }
 
 /* ---------------- Chỉ báo chấm lại (Signal bước 4) ---------------- */
@@ -3200,10 +3221,11 @@ function renderJobs(){
   const cnt = $("#jobsCount");
   let list = state.filters.hideFlagged ? state.jobs.filter(j => !cardFlags(j).length) : state.jobs;
   if (state.filters.onlyApply) list = list.filter(j => j.verdict === "apply");
+  if (state.filters.onlyReady) list = list.filter(jobReady);
   const newCount = jobsNewRender();
   if (state.filters.onlyNew) list = list.filter(isNewJob);
   const newPill = newCount || state.filters.onlyNew ? `<button class="new-pill" id="jobsNewPill" type="button" aria-pressed="${state.filters.onlyNew}">${state.filters.onlyNew ? t("Chỉ tin mới (%s) · Bỏ lọc", newCount) : t("%s tin mới · Xem", newCount)}</button>` : "";
-  const clientFiltered = state.filters.hideFlagged || state.filters.onlyApply || state.filters.onlyNew;
+  const clientFiltered = state.filters.hideFlagged || state.filters.onlyApply || state.filters.onlyReady || state.filters.onlyNew;
   // total từ server đã tính cả mode/lương; lọc phía client (cờ, nên nộp, tin mới) thì giữ cách đếm cũ
   if (cnt) cnt.textContent = state.jobsTotal != null && !clientFiltered ? (state.jobsTotal ? t("%s tin", state.jobsTotal) : "")
     : list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
@@ -3276,7 +3298,7 @@ function renderJobs(){
             <option value="">${t("Chấm bằng hồ sơ khác…")}</option>
             ${state.profiles.filter(x => x.id !== state.profileId).map(x => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}
           </select>` : ""}
-          ${STAGE_KEYS.indexOf(stage) < 2 ? `<button class="btn${job.verdict === "apply" ? " p" : ""}" data-qa-for="${esc(job.id)}" type="button"><svg class="ic-svg" aria-hidden="true"><use href="#apply"/></svg>${t("Nộp nhanh")}</button><button class="btn" data-cvs-for="${esc(job.id)}" type="button">${t("Gợi ý sửa CV")}</button>` : ""}
+          ${STAGE_KEYS.indexOf(stage) < 2 ? `<button class="btn${job.verdict === "apply" ? " p" : ""}" data-qa-for="${esc(job.id)}" type="button"><svg class="ic-svg" aria-hidden="true"><use href="#apply"/></svg>${t("Nộp nhanh")}</button><button class="btn" data-applied-for="${esc(job.id)}" type="button" aria-label="${esc(t("Đánh dấu đã nộp: %s", job.title))}">${t("Đã nộp")}</button><button class="btn" data-cvs-for="${esc(job.id)}" type="button">${t("Gợi ý sửa CV")}</button>` : ""}
           ${m && (m.rule_detail || m.fit) ? `<button class="btn explain-toggle" data-explain-for="${esc(job.id)}" aria-expanded="false" aria-controls="explain-${esc(job.id)}" type="button">${t("Vì sao điểm này?")}</button>` : ""}
         </div>
       </div>
@@ -3312,6 +3334,8 @@ function renderJobs(){
 
   $$("[data-qa-for]", box).forEach(b => b.addEventListener("click", () => qaOpen(b.dataset.qaFor, b)));
   $$("[data-cvs-for]", box).forEach(b => b.addEventListener("click", () => cvsOpen(b.dataset.cvsFor, b)));
+  $$("[data-applied-for]", box).forEach(b => b.addEventListener("click", () => { b.disabled = true; markApplied(b.dataset.appliedFor).finally(() => { if (b.isConnected) b.disabled = false; }); }));
+  $$(".card", box).forEach(c => c.classList.toggle("kb-sel", c.dataset.jobId === kbSel));
   tgCardRender();
   const lm = $("#loadMoreJobs", box);
   if (lm) lm.addEventListener("click", () => {
@@ -3322,6 +3346,21 @@ function renderJobs(){
   jobsNewPillBind(box);
 }
 
+// Đổi stage bằng API sẵn có: có đơn thì PATCH, chưa có thì POST. extra = trường PATCH thêm (Hoàn tác trả next_follow_up_at cũ).
+async function saveStage(job, stage, extra){
+  if (job.application && job.application.id) {
+    const updated = await api("/api/applications/" + encodeURIComponent(job.application.id), {
+      method: "PATCH", body: JSON.stringify(Object.assign({ stage }, extra)),
+    });
+    job.application = Object.assign({}, job.application, updated && updated.id ? updated : { stage });
+  } else {
+    const created = await api("/api/applications", {
+      method: "POST",
+      body: JSON.stringify({ profile_id: currentProfile().id, job_id: job.id, stage }),
+    });
+    job.application = created && created.id ? created : { id: null, stage };
+  }
+}
 async function changeJobStage(jobId, stage, selEl){
   const job = state.jobs.find(j => j.id === jobId);
   const p = currentProfile();
@@ -3329,18 +3368,7 @@ async function changeJobStage(jobId, stage, selEl){
   const prev = job.application ? job.application.stage : "new";
   selEl.disabled = true;
   try {
-    if (job.application && job.application.id) {
-      const updated = await api("/api/applications/" + encodeURIComponent(job.application.id), {
-        method: "PATCH", body: JSON.stringify({ stage }),
-      });
-      job.application = Object.assign({}, job.application, updated && updated.id ? updated : { stage });
-    } else {
-      const created = await api("/api/applications", {
-        method: "POST",
-        body: JSON.stringify({ profile_id: p.id, job_id: jobId, stage }),
-      });
-      job.application = created && created.id ? created : { id: null, stage };
-    }
+    await saveStage(job, stage);
     toast(t("Đã chuyển sang giai đoạn: %s", t((STAGES.find(s => s.key === stage) || {}).label)), "ok");
     flashJobCard(selEl);
     loadApplications();
@@ -3398,14 +3426,135 @@ async function qaAction(job, action){
     return row;
   } catch (e) { toast(t(QA_ERR[e.message] || e.message), "err"); return null; }
 }
-async function qaApplied(job){
-  const row = await qaAction(job, "applied");
-  if (!row) return false;
-  toast(t("Đã chuyển sang Đã nộp, nhắc theo dõi sau 7 ngày"), "ok");
-  renderJobs();
-  loadApplications();
+/* Nộp nhanh hơn (P1, 3C): C8 lọc "Nộp được ngay", C1 "Đã nộp" một chạm + Hoàn tác, C2 checklist trước khi nộp, C3 phím tắt.
+   JobPilot vẫn không nộp hộ: mọi nút chỉ đổi trạng thái đơn của chính người dùng. */
+Object.assign(EN, {
+  "Đánh dấu đã nộp: %s": "Mark as applied: %s", "Đã đánh dấu đã nộp: %s": "Marked as applied: %s", "Hoàn tác": "Undo",
+  "Đã hoàn tác: %s": "Undone: %s", "Không hoàn tác được: %s": "Couldn't undo: %s",
+  "Đã lưu: %s": "Saved: %s", "Đã bỏ qua: %s": "Skipped: %s",
+  "Kiểm tra trước khi nộp": "Check before you apply", "Không bắt buộc, chỉ để bạn khỏi quên.": "Optional, just so nothing slips.",
+  "CV đúng hồ sơ %s": "CV matches the %s profile", "Mở CV trong tab Hồ sơ nếu chưa chắc là bản mới nhất.": "Open the Profile tab if you're not sure it's the latest version.",
+  "Lương mong muốn": "Expected salary", "Bạn muốn từ %s; tin ghi %s.": "You want at least %s; the job lists %s.",
+  "Tin ghi tối đa %s, thấp hơn mức bạn muốn (%s).": "The job tops out at %s, below what you want (%s).",
+  "Tin không ghi lương. Chuẩn bị sẵn con số nếu form hỏi.": "No salary listed. Have a number ready in case the form asks.",
+  "Chưa đặt lương mong muốn trong hồ sơ.": "No expected salary set in your profile.",
+  "Ngày có thể bắt đầu": "Start date", "Form thường hỏi thời gian báo nghỉ hoặc ngày đi làm được.": "Forms often ask for your notice period or start date.",
+  "Kỹ năng còn thiếu là thật": "Missing skills are honest", "Chỉ ghi %s nếu bạn thật sự đã làm.": "Only list %s if you've actually used them.",
+  "Phím tắt": "Keyboard shortcuts", "Chọn tin kế tiếp": "Next job", "Chọn tin trước": "Previous job", "Mở Nộp nhanh": "Open Quick apply",
+  "Lưu tin": "Save job", "Bỏ qua (lưu trữ)": "Skip (archive)", "Mở bảng này": "Show this list", "Tìm": "Search",
+  "Phím tắt tắt khi bạn đang gõ chữ.": "Shortcuts are off while you type.",
+  "Đã chọn %s (%s/%s)": "Selected %s (%s/%s)", "Chọn một tin trước (phím j).": "Select a job first (press j).",
+  "Nộp được ngay": "Ready to apply",
+});
+// C8: có link nộp, chưa nộp/bỏ qua (stage new hoặc saved), không cờ stale (đã gỡ hoặc quá 30 ngày).
+const jobReady = (j) => !!j.source_url && STAGE_KEYS.indexOf(j.application ? j.application.stage : "new") < 2 && !(j.flags || []).some(f => f.type === "stale");
+
+// C1 + phím s/x: đổi trạng thái rồi cho Hoàn tác ~6 giây. Hoàn tác = PATCH stage + next_follow_up_at cũ (API sẵn có).
+const UNDO_MS = 6000;
+async function stageWithUndo(jobId, stage){
+  const job = state.jobs.find(j => j.id === jobId);
+  if (!job || !currentProfile()) return false;
+  const before = job.application ? { stage: job.application.stage, next_follow_up_at: job.application.next_follow_up_at || null } : { stage: "new", next_follow_up_at: null };
+  if (before.stage === stage) return true;
+  try {
+    if (stage === "applied") { // dùng quick để event ghi via quick_apply + nhắc follow-up 7 ngày như dialog
+      const row = await api("/api/applications/quick", { method: "POST", body: JSON.stringify({ profile_id: currentProfile().id, job_id: job.id, action: "applied" }) });
+      if (row && row.stage) job.application = Object.assign({}, job.application, row);
+    } else await saveStage(job, stage);
+  } catch (e) { toast(t(QA_ERR[e.message] || e.message), "err"); return false; }
+  const msg = stage === "applied" ? "Đã đánh dấu đã nộp: %s" : stage === "saved" ? "Đã lưu: %s" : "Đã bỏ qua: %s";
+  toast(t(msg, job.title), "ok", { ms: UNDO_MS, action: { label: t("Hoàn tác"), run: async () => {
+    try {
+      await saveStage(job, before.stage, { next_follow_up_at: before.next_follow_up_at });
+      toast(t("Đã hoàn tác: %s", job.title), "ok");
+    } catch (e) { toast(t("Không hoàn tác được: %s", t(QA_ERR[e.message] || e.message)), "err"); }
+    renderJobs(); loadApplications(); kbFocus();
+  } } });
+  renderJobs(); loadApplications(); kbFocus();
   return true;
 }
+const markApplied = (jobId) => stageWithUndo(jobId, "applied");
+
+// C2: checklist không chặn, tick lưu localStorage theo job.
+// ponytail: giữ tối đa 200 job gần nhất trong jp_qc; đồng bộ server khi có cột lưu checklist.
+const qcLoad = () => { try { return JSON.parse(localStorage.getItem("jp_qc") || "{}") || {}; } catch (e) { return {}; } };
+function qcSave(jobId, input){
+  const all = qcLoad(), set = new Set(all[jobId] || []);
+  input.checked ? set.add(input.dataset.qc) : set.delete(input.dataset.qc);
+  delete all[jobId]; if (set.size) all[jobId] = [...set];
+  const keys = Object.keys(all); keys.slice(0, Math.max(0, keys.length - 200)).forEach(k => delete all[k]);
+  try { localStorage.setItem("jp_qc", JSON.stringify(all)); } catch (e) { /* đầy bộ nhớ: bỏ qua, tick vẫn còn trong phiên */ }
+}
+function qaChecklist(job){
+  const p = currentProfile() || {}, done = new Set(qcLoad()[job.id] || []), missing = qaSkills(job).missing;
+  const vnd = (v) => t("%s triệu/tháng", (Number(v) / 1e6).toLocaleString(LANG === "en" ? "en-US" : "vi-VN", { maximumFractionDigits: 1 }));
+  const want = Number(p.salary_min) || 0, jobSal = jobSalary(job), hi = Number(job.salary_vnd_max) || 0;
+  const salWhy = !want ? t("Chưa đặt lương mong muốn trong hồ sơ.")
+    : hi && hi < want ? `<span class="warn">${t("Tin ghi tối đa %s, thấp hơn mức bạn muốn (%s).", esc(vnd(hi)), esc(vnd(want)))}</span>`
+    : jobSal ? t("Bạn muốn từ %s; tin ghi %s.", esc(vnd(want)), esc(jobSal)) : t("Tin không ghi lương. Chuẩn bị sẵn con số nếu form hỏi.");
+  const items = [
+    ["cv", t("CV đúng hồ sơ %s", esc(p.name || "")), t("Mở CV trong tab Hồ sơ nếu chưa chắc là bản mới nhất.")],
+    ["salary", t("Lương mong muốn"), salWhy],
+    ["start", t("Ngày có thể bắt đầu"), t("Form thường hỏi thời gian báo nghỉ hoặc ngày đi làm được.")],
+  ];
+  if (missing.length) items.push(["skills", t("Kỹ năng còn thiếu là thật"), t("Chỉ ghi %s nếu bạn thật sự đã làm.", esc(missing.slice(0, 4).join(", ")))]);
+  return `<fieldset class="qa-check"><legend>${t("Kiểm tra trước khi nộp")}</legend><p class="muted small" style="margin:.1rem 0 .2rem">${t("Không bắt buộc, chỉ để bạn khỏi quên.")}</p>
+    ${items.map(([k, label, why]) => `<label><input type="checkbox" data-qc="${k}"${done.has(k) ? " checked" : ""}><span>${label}<small>${why}</small></span></label>`).join("")}</fieldset>`;
+}
+
+// C3: j/k chọn tin, a Nộp nhanh, s lưu, x bỏ qua, ? bảng phím tắt. Tắt khi đang gõ, khi có dialog/palette mở, ngoài tab Việc làm.
+let kbSel = "";
+const kbCards = () => $$("#jobsContainer .card");
+function kbFocus(){
+  const c = kbSel && $(`#jobsContainer [data-job-id="${CSS.escape(kbSel)}"]`);
+  if (c && !c.contains(document.activeElement)) { const a = $(".ttl a", c); if (a) a.focus({ preventScroll: true }); }
+}
+function kbMove(d){
+  const cards = kbCards();
+  if (!cards.length) return;
+  let i = cards.findIndex(c => c.dataset.jobId === kbSel);
+  i = i < 0 ? (d > 0 ? 0 : cards.length - 1) : Math.max(0, Math.min(cards.length - 1, i + d));
+  const c = cards[i]; kbSel = c.dataset.jobId;
+  cards.forEach(x => x.classList.toggle("kb-sel", x === c));
+  c.scrollIntoView({ block: "nearest" });
+  const a = $(".ttl a", c); if (a) a.focus({ preventScroll: true });
+  $("#kbLive").textContent = t("Đã chọn %s (%s/%s)", a ? a.textContent : "", i + 1, cards.length);
+}
+function kbHelp(){
+  const d = $("#kbDlg"), row = (k, l) => `<tr><td>${k.map(x => `<kbd>${x}</kbd>`).join(" ")}</td><td>${l}</td></tr>`;
+  d.innerHTML = `<h3 id="kbTitle">${t("Phím tắt")}</h3><table>
+    ${row(["j"], t("Chọn tin kế tiếp"))}${row(["k"], t("Chọn tin trước"))}${row(["a"], t("Mở Nộp nhanh"))}
+    ${row(["s"], t("Lưu tin"))}${row(["x"], t("Bỏ qua (lưu trữ)"))}${row(["/"], t("Tìm"))}${row(["?"], t("Mở bảng này"))}</table>
+    <p class="muted small">${t("Phím tắt tắt khi bạn đang gõ chữ.")}</p>
+    <div class="qa-foot" style="display:flex;justify-content:flex-end;margin-top:1rem"><button class="btn" type="button" data-kb-close>${t("Đóng")}</button></div>`;
+  const opener = document.activeElement;
+  d.onclick = (e) => { if (e.target.closest("[data-kb-close]")) d.close(); };
+  d.onclose = () => { if (opener && opener.isConnected) opener.focus(); };
+  d.showModal(); $("[data-kb-close]", d).focus();
+}
+document.addEventListener("focusin", (e) => {
+  const c = e.target.closest && e.target.closest("#jobsContainer .card");
+  if (!c || c.dataset.jobId === kbSel) return;
+  kbSel = c.dataset.jobId; kbCards().forEach(x => x.classList.toggle("kb-sel", x === c));
+});
+document.addEventListener("keydown", (e) => {
+  const el = document.activeElement;
+  if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented || !state.token) return;
+  const typing = el && (/^(TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable || el.tagName === "INPUT" && !/^(checkbox|radio|button|submit|reset)$/.test(el.type));
+  if (typing) return;
+  if (palette.open || $("dialog[open]") || $("#tab-jobs").classList.contains("hidden")) return;
+  const k = e.key;
+  if (k === "?") { e.preventDefault(); kbHelp(); return; }
+  if (k === "j" || k === "k") { e.preventDefault(); kbMove(k === "j" ? 1 : -1); return; }
+  if (!["a", "s", "x"].includes(k)) return;
+  e.preventDefault();
+  const card = kbSel && $(`#jobsContainer [data-job-id="${CSS.escape(kbSel)}"]`);
+  if (!card) { $("#kbLive").textContent = t("Chọn một tin trước (phím j)."); return; }
+  if (k === "a") { const b = $("[data-qa-for]", card); if (b) qaOpen(kbSel, b); return; }
+  const id = kbSel;
+  if (k === "x") { const cards = kbCards(), i = cards.indexOf(card), next = cards[i + 1] || cards[i - 1]; if (next) kbSel = next.dataset.jobId; } // bỏ qua thì chọn tin kế
+  stageWithUndo(id, k === "s" ? "saved" : "archived");
+});
 function qaOpen(jobId, opener){
   const job = state.jobs.find(j => j.id === jobId), d = $("#qaDlg");
   if (!job) return;
@@ -3420,11 +3569,13 @@ function qaOpen(jobId, opener){
       <p class="muted small" id="qaIntroHint" style="margin:0 0 .35rem">${t("Lấy từ hồ sơ của bạn, sửa thoải mái trước khi dán.")}</p>
       <textarea id="qaIntro" aria-describedby="qaIntroHint">${esc(qaIntro(job))}</textarea>
       <div class="qa-row"><button class="btn small" type="button" data-qa="copy-intro">${t("Copy giới thiệu")}</button></div></div>
+    ${qaChecklist(job)}
     <div class="qa-foot">
       <button class="btn ghost" type="button" data-qa="close">${t("Đóng")}</button>
       <button class="btn" type="button" data-qa="applied">${t("Đã nộp")}</button>
       <button class="btn primary" type="button" data-qa="open">${t("Mở trang nộp")}</button>
     </div>`;
+  d.onchange = (ev) => { if (ev.target.matches("[data-qc]")) qcSave(job.id, ev.target); };
   d.onclick = async (ev) => {
     const b = ev.target.closest("[data-qa]");
     if (!b) return;
@@ -3438,7 +3589,7 @@ function qaOpen(jobId, opener){
       qaPendingJob = job; $("#qaPrompt").classList.add("hidden");
       d.close();
       qaAction(job, "open");
-    } else if (a === "applied") { b.disabled = true; if (await qaApplied(job)) d.close(); else b.disabled = false; }
+    } else if (a === "applied") { b.disabled = true; d.close(); if (!(await markApplied(job.id))) b.disabled = false; }
   };
   d.onclose = () => { if (opener && opener.isConnected) opener.focus(); };
   d.showModal(); // dialog native: giữ focus trong bảng, Esc đóng
@@ -3561,7 +3712,7 @@ document.addEventListener("visibilitychange", () => {
     const b = ev.target.closest("[data-qp]");
     if (!b) return;
     qaPendingJob = null; box.classList.add("hidden");
-    if (b.dataset.qp === "yes") await qaApplied(job);
+    if (b.dataset.qp === "yes") await markApplied(job.id);
   };
 });
 // Thẻ mời Telegram ở tab Việc làm: hồ sơ ≥3 kỹ năng, chưa liên kết, chưa bấm Để sau.
@@ -3587,6 +3738,7 @@ function tgCardRender(){
 
 $("#filterTier").addEventListener("change", (e) => { state.filters.tier = e.target.value; loadJobs(); });
 $("#filterApply").addEventListener("change", (e) => { state.filters.onlyApply = e.target.checked; state.jobsVisible = 20; renderJobs(); });
+$("#filterReady").addEventListener("change", (e) => { state.filters.onlyReady = e.target.checked; state.jobsVisible = 20; renderJobs(); });
 $("#filterFlags").addEventListener("change", (e) => { state.filters.hideFlagged = e.target.checked; state.jobsVisible = 20; renderJobs(); });
 $("#filterSource").addEventListener("change", (e) => { state.filters.source = e.target.value; loadJobs(); });
 $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
