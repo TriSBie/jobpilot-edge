@@ -32,4 +32,8 @@ const sw = fs.readFileSync(path.join(pub, "sw.js"), "utf8");
 assert(/startsWith\("\/api\/"\)\) return|startsWith\("\/api\/"\)[^\n]*return;/.test(sw) && sw.includes("url.origin !== location.origin"), "sw phải bỏ qua /api và origin khác");
 assert.strictEqual(JSON.parse(fs.readFileSync(path.join(pub, "manifest.webmanifest"), "utf8")).start_url, "/?source=pwa");
 assert(/geolocation=\(self\)/.test(fs.readFileSync(path.join(pub, "_headers"), "utf8")), "_headers chặn geolocation");
+// #tryLoc (landing) = AREA_PRESETS + "Khác", khớp TRY_LOCATIONS của /api/public/try (PR #14)
+const presets = new Function("return " + src.match(/const AREA_PRESETS = (\[[^\]]*\]);/)[1])();
+const tryOpts = [...src.match(/<select id="tryLoc"[\s\S]*?<\/select>/)[0].matchAll(/<option value="([^"]*)"/g)].map(m => m[1]);
+assert.deepStrictEqual([...tryOpts].sort(), [...presets, "Khác"].sort(), "#tryLoc lệch AREA_PRESETS: " + tryOpts.join(", "));
 console.log("enduser selfcheck OK");
