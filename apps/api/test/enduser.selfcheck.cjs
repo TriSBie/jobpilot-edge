@@ -171,6 +171,20 @@ db.prepare("INSERT INTO sources (id, type, name, created_at) VALUES ('src-itviec
   assert.deepStrictEqual(ids((await call('GET', '/api/jobs?q=manual', null, 'tokA')).body).length, 1, 'q lọc SQL');
   console.log('enduser #4 filters over all jobs + #6 backfill OK');
 
+  // Rigel NO-SHIP 1a428ce: >300 tin mới không lương chiếm hết trần 300 → min_salary=65 sort score/new trả 0 tin khớp
+  for (let i = 0; i < 12; i++) ins('hi' + i, { seen: T - 20 * 86400 - i, sal: `${50 + i} - ${59 + i} triệu` }); // max 59..70tr
+  await call('POST', '/api/admin/backfill/derived', { limit: 500 }, 'own');
+  const want = ['old-remote', 'hi6', 'hi7', 'hi8', 'hi9', 'hi10', 'hi11']; // max >= 65tr (old-remote ~$4000), theo first_seen_at giảm dần
+  for (const so of ['score', 'new']) {
+    const got = ids((await call('GET', '/api/jobs?min_salary=65&sort=' + so, null, 'tokA')).body);
+    assert.deepStrictEqual(got.slice(0, 7), want, 'min_salary sort=' + so);
+    assert.ok(got.length > 7 && !got.some((x) => /^hi[0-5]$/.test(x)), 'vẫn giữ tin chưa rõ lương, loại tin < 65tr');
+    const pg = (await call('GET', `/api/jobs?min_salary=65&sort=${so}&limit=7`, null, 'tokA')).body;
+    assert.deepStrictEqual(ids(pg), want, 'bản phân trang sort=' + so);
+  }
+  db.exec("DELETE FROM jobs WHERE id LIKE 'hi%'");
+  console.log('enduser min_salary ranks salaried first OK');
+
   // #5 sort
   r = await call('GET', '/api/jobs?sort=salary&limit=2', null, 'tokA');
   assert.deepStrictEqual(r.body.items.map((x) => x.id), ['old-remote', 'old-jd-sal'], 'sort=salary');

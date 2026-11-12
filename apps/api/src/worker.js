@@ -2326,11 +2326,13 @@ export default {
       if (minSalary !== null) { w.push("(j.derived_at IS NULL OR j.salary_vnd_max IS NULL OR j.salary_vnd_max >= ?)"); wa.push(minSalary * 1e6); }
       const order = sort === "new" ? "j.first_seen_at DESC" : sort === "salary" ? "j.salary_vnd_max IS NULL, j.salary_vnd_max DESC, j.salary_vnd_min DESC, j.first_seen_at DESC"
         : profileId ? "COALESCE(m.final_score, 0) DESC, j.first_seen_at DESC" : "j.first_seen_at DESC";
+      // Rigel 12/11: min_salary vẫn giữ tin chưa rõ lương, nhưng xếp tin có lương >= X lên trước, để tin không lương không chiếm hết trần JOB_LIST_LIMIT
+      const orderBy = minSalary !== null ? `(j.salary_vnd_max IS NULL), ${order}` : order;
       const { results: rowsDb } = await env.DB.prepare(profileId
         ? `SELECT ${cols}, m.final_score, m.tier, m.matched_skills, m.missing_skills, m.rule_score, a.id AS app_id, a.stage AS app_stage
            FROM jobs j LEFT JOIN job_matches m ON m.job_id = j.id AND m.profile_id = ? LEFT JOIN applications a ON a.job_id = j.id AND a.profile_id = ?
-           WHERE ${w.join(" AND ")} ORDER BY ${order}, j.id LIMIT ${JOB_LIST_LIMIT}`
-        : `SELECT ${cols}, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE ${w.join(" AND ")} ORDER BY ${order}, j.id LIMIT ${JOB_LIST_LIMIT}`
+           WHERE ${w.join(" AND ")} ORDER BY ${orderBy}, j.id LIMIT ${JOB_LIST_LIMIT}`
+        : `SELECT ${cols}, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE ${w.join(" AND ")} ORDER BY ${orderBy}, j.id LIMIT ${JOB_LIST_LIMIT}`
       ).bind(...(profileId ? [profileId, profileId] : []), ...wa).all();
       let rows = rowsDb;
       // Phase 2 — flags + giải thích điểm (tính trực tiếp, không cần chấm lại)
@@ -2384,6 +2386,7 @@ export default {
       // khoá vùng nằm sâu hơn trong JD thì nhãn trang có thể là skip mà vẫn đứng trên. Lưu verdict vào job_matches khi chấm nếu cần chặt.
       const explained = new Map(); // N1: dùng lại ở out; bản phân trang tính lại cho tin trong trang vì vừa nạp jd_text đầy đủ
       if (prof && sort === "score") rows = rows.map((r) => { const e = explain(r); explained.set(r.id, e); const v = e.vd; return [r, !v ? 2 : v.verdict === "skip" ? 1 : 0]; }).sort((a, b) => a[1] - b[1]).map((x) => x[0]); // tin chưa chấm vẫn cuối
+      if (minSalary !== null) rows.sort((a, b) => (a.salary_vnd_max === null) - (b.salary_vnd_max === null)); // sort ổn định: giữ thứ tự sort/nhãn trong mỗi nhóm
       const total = rows.length;
       if (paged) {
         rows = rows.slice(offset, offset + limit);
