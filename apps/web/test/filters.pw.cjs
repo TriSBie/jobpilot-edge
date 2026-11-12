@@ -87,7 +87,7 @@ const count = (page) => page.textContent("#jobsCount");
     await page.click('.jf2 [data-mode="remote"]'); await page.click('.jf2 [data-mode="hybrid"]'); await page.click('.jf2 [data-mode="onsite"]');
     await page.fill("#filterMinSal", "999");
     await page.waitForSelector("#jobsClearFilters");
-    assert.match(await page.textContent("#jobsContainer .empty"), /Không có job khớp bộ lọc/);
+    assert.match(await page.textContent("#jobsContainer .empty"), /Không có tin khớp bộ lọc/);
     await page.waitForTimeout(300);
     f = path.join(OUT, `filters-empty-light-${w}.png`); await page.screenshot({ path: f }); shots.push(f);
     await page.click("#jobsClearFilters");
