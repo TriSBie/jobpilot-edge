@@ -1492,7 +1492,7 @@ async function exportUserData(env, user) {
   const { results: profileRows } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
   const profiles = [];
   for (const p of profileRows) profiles.push(await profileWithSkills(env, p));
-  const applications = await byUser("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY a.created_at");
+  const applications = await byUser("SELECT a.* FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY a.created_at").then((l) => l.map(noAdminNote));
   const events = await byUser("SELECT e.* FROM application_events e JOIN applications a ON a.id = e.application_id JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ? ORDER BY e.created_at");
   for (const a of applications) a.events = events.filter((e) => e.application_id === a.id);
   return {
@@ -1505,6 +1505,196 @@ async function exportUserData(env, user) {
     notifications: await byUser("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at"),
     exported_at: new Date().toISOString(),
   };
+}
+
+// ---------------- admin CRM (SPEC 12/11 §3D) ----------------
+// Gọi sau gate OWNER_EMAIL. Mỗi route ≤ 2 query D1; không trả password_hash/salt, token Telegram/bot, nội dung CV.
+// Phân trang keyset: ?limit (1..50, mặc định 20) & ?cursor (next_cursor của trang trước) — ổn định khi có hàng mới chèn vào.
+// ponytail: thứ tự cố định (mới nhất trước) vì cursor gắn với cột sort; cần sort khác thì thêm cặp (cột, cursor) riêng.
+// admin_note là ghi chú nội bộ của owner: route người dùng trả SELECT * applications phải lọc qua đây.
+const noAdminNote = (r) => { if (!r) return r; const { admin_note, ...rest } = r; return rest; };
+const ADMIN_LIMIT_MAX = 50, ADMIN_NOTE_MAX = 2000;
+const likeArg = (q) => `%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
+const parseJ = (v, d) => { try { return v == null ? d : JSON.parse(v); } catch (_) { return d; } };
+// ponytail: flag lọc bằng SQL chỉ có reposted/stale (xấp xỉ postingFlags); cờ khác vẫn trả trong items[].flags nhưng chưa lọc được.
+const ADMIN_JOB_FLAGS = {
+  reposted: "j.repost_count >= 1",
+  stale: "((j.source_id IS NOT NULL AND j.source_url NOT LIKE 'manual://%' AND COALESCE(j.last_seen_at, j.first_seen_at) < ?) OR COALESCE(j.posted_at, j.first_seen_at) < ?)",
+};
+async function adminCrm(env, request, url, path, lang) {
+  const sp = url.searchParams, t = now();
+  const GET = request.method === "GET";
+  if (GET) console.log("admin", path);
+  const page = (sortCol) => {
+    const limit = Math.min(Math.max(parseInt(sp.get("limit"), 10) || 20, 1), ADMIN_LIMIT_MAX);
+    const c = sp.get("cursor");
+    if (!c) return { limit, cur: null };
+    const m = /^(\d{1,12}):([\w-]{1,64})$/.exec(c);
+    return m ? { limit, cur: { sql: `(${sortCol}, ${sortCol.split(".")[0]}.id) < (?, ?)`, args: [Number(m[1]), m[2]] } } : { error: true };
+  };
+  const done = (rows, limit, key) => {
+    const more = rows.length > limit, items = rows.slice(0, limit), last = items[items.length - 1];
+    return { items, next_cursor: more && last ? `${last[key] ?? 0}:${last.id}` : null };
+  };
+  const q = (sp.get("q") || "").trim().slice(0, 100) || null;
+  let m;
+
+  if (path === "/api/admin/overview" && GET) {
+    const today = Math.floor(t / 86400);
+    const [a, s] = await Promise.all([
+      env.DB.prepare(`SELECT
+        (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) AS users_total,
+        (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL AND created_at >= ?1) AS users_7d,
+        (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL AND last_active_day >= ?2) AS active_7d,
+        (SELECT json_group_object(stage, n) FROM (SELECT stage, COUNT(*) AS n FROM applications GROUP BY stage)) AS by_stage,
+        (SELECT COUNT(*) FROM applications WHERE applied_at >= ?1) AS applied_7d,
+        (SELECT COUNT(*) FROM interviews WHERE scheduled_at >= ?3) AS interviews_upcoming,
+        (SELECT COUNT(*) FROM jobs) AS jobs_total,
+        (SELECT COUNT(*) FROM jobs WHERE first_seen_at >= ?4) AS jobs_24h,
+        (SELECT json_group_array(json_object('id', id, 'type', type, 'created_at', created_at, 'application_id', application_id, 'user_email', email, 'job_title', title)) FROM
+          (SELECT e.id, e.type, e.created_at, e.application_id, u.email, j.title FROM application_events e JOIN applications ap ON ap.id = e.application_id
+           JOIN profiles p ON p.id = ap.profile_id JOIN users u ON u.id = p.user_id JOIN jobs j ON j.id = ap.job_id ORDER BY e.created_at DESC LIMIT 20)) AS recent_events`)
+        .bind(t - 7 * 86400, today - 6, t, t - 86400).first(),
+      env.DB.prepare("SELECT id, type, name, is_enabled, last_run_at, last_status, last_error FROM sources ORDER BY type").all(),
+    ]);
+    const quota = {};
+    const ql = await env.KV.list({ prefix: "quota:" });
+    for (const k of ql.keys) quota[k.name] = await env.KV.get(k.name);
+    let backups_last = null;
+    try {
+      const day = (await env.FILES.list({ prefix: "backups/", delimiter: "/" })).delimitedPrefixes.sort().pop();
+      const obj = day && (await env.FILES.get(`${day}manifest.json`));
+      if (day) backups_last = { date: day.slice(8, 18), ...(obj ? await obj.json() : { error: "manifest_missing" }) };
+    } catch (_) { backups_last = null; }
+    const st = parseJ(a.by_stage, {});
+    return json({ users_total: a.users_total, users_7d: a.users_7d, active_7d: a.active_7d,
+      applications_by_stage: Object.fromEntries(APP_STAGES.map((k) => [k, st[k] || 0])), applied_7d: a.applied_7d,
+      interviews_upcoming: a.interviews_upcoming, jobs_total: a.jobs_total, jobs_24h: a.jobs_24h,
+      sources: s.results, quota, backups_last, recent_events: parseJ(a.recent_events, []) });
+  }
+
+  if (path === "/api/admin/applications" && GET) {
+    const pg = page("a.updated_at");
+    if (pg.error) return json({ error: "invalid_cursor" }, 400);
+    const stage = sp.get("stage") || sp.get("status");
+    if (stage && !APP_STAGES.includes(stage)) return json({ error: "invalid_stage" }, 400);
+    const w = [], args = [];
+    if (stage) { w.push("a.stage = ?"); args.push(stage); }
+    if (sp.get("user_id")) { w.push("u.id = ?"); args.push(sp.get("user_id").slice(0, 64)); }
+    if (q) { w.push("(u.email LIKE ? ESCAPE '\\' OR j.title LIKE ? ESCAPE '\\' OR j.company LIKE ? ESCAPE '\\')"); args.push(likeArg(q), likeArg(q), likeArg(q)); }
+    const from = "FROM applications a JOIN profiles p ON p.id = a.profile_id JOIN users u ON u.id = p.user_id JOIN jobs j ON j.id = a.job_id";
+    const where = (extra) => { const all = extra ? [...w, extra] : w; return all.length ? " WHERE " + all.join(" AND ") : ""; };
+    const [rows, cnt] = await Promise.all([
+      env.DB.prepare(`SELECT a.id, a.stage, a.applied_at, a.next_follow_up_at, a.updated_at, a.admin_note,
+          u.id AS user_id, u.email, u.name AS user_name, p.id AS profile_id, p.name AS profile_name, p.level,
+          j.id AS job_id, j.title, j.company, j.location, j.source_id, j.source_url, substr(j.jd_text, 1, 600) AS jd_head,
+          (SELECT COUNT(*) FROM application_events e WHERE e.application_id = a.id) AS events_count,
+          (SELECT json_object('type', e.type, 'created_at', e.created_at) FROM application_events e WHERE e.application_id = a.id ORDER BY e.created_at DESC LIMIT 1) AS last_event,
+          (SELECT json_object('done', COALESCE(SUM(i.result IN ('pass','fail')), 0), 'total', COUNT(*)) FROM interviews i WHERE i.application_id = a.id) AS rounds
+        ${from}${where(pg.cur && pg.cur.sql)} ORDER BY a.updated_at DESC, a.id DESC LIMIT ?`).bind(...args, ...(pg.cur ? pg.cur.args : []), pg.limit + 1).all(),
+      env.DB.prepare(`SELECT COUNT(*) AS n ${from}${where()}`).bind(...args).first(),
+    ]);
+    const out = done(rows.results, pg.limit, "updated_at");
+    return json({ items: out.items.map((r) => ({ id: r.id, stage: r.stage, applied_at: r.applied_at, next_follow_up_at: r.next_follow_up_at, updated_at: r.updated_at,
+      admin_note: r.admin_note, user: { id: r.user_id, email: r.email, name: r.user_name }, profile: { id: r.profile_id, name: r.profile_name, level: r.level },
+      job: { id: r.job_id, title: r.title, company: r.company, location: r.location, source: r.source_id, source_url: r.source_url,
+        work_mode: workMode(r.location, r.title, r.jd_head, r.source_id), company_logo_url: null },
+      events_count: r.events_count, last_event: parseJ(r.last_event, null), rounds: parseJ(r.rounds, { done: 0, total: 0 }) })),
+      total: cnt.n, next_cursor: out.next_cursor });
+  }
+
+  if ((m = /^\/api\/admin\/applications\/([\w-]{1,64})$/.exec(path))) {
+    const id = m[1];
+    if (request.method === "PATCH") {
+      const b = await readBody(request);
+      if (!b || typeof b !== "object" || !("admin_note" in b)) return json({ error: "admin_note_required" }, 400);
+      const note = b.admin_note;
+      if (note !== null && typeof note !== "string") return json({ error: "invalid_admin_note" }, 400);
+      if (note && note.length > ADMIN_NOTE_MAX) return json({ error: "admin_note_too_long", max: ADMIN_NOTE_MAX }, 400);
+      // không đổi stage / updated_at: ghi chú nội bộ không được xáo thứ tự kanban của người dùng
+      const r = await env.DB.prepare("UPDATE applications SET admin_note = ? WHERE id = ? RETURNING id, stage, updated_at, admin_note").bind(note && note.trim() ? note : null, id).first();
+      return r ? json(r) : json({ error: "application_not_found" }, 404);
+    }
+    if (!GET) return null;
+    const r = await env.DB.prepare(`SELECT a.id, a.stage, a.note, a.admin_note, a.applied_at, a.next_follow_up_at, a.created_at, a.updated_at,
+        json_object('id', u.id, 'email', u.email, 'name', u.name) AS user, json_object('id', p.id, 'name', p.name, 'level', p.level) AS profile,
+        json_object('id', j.id, 'title', j.title, 'company', j.company, 'location', j.location, 'source', j.source_id, 'source_url', j.source_url, 'salary_text', j.salary_text) AS job,
+        (SELECT json_group_array(json_object('id', id, 'type', type, 'payload', CASE WHEN json_valid(payload) THEN json(payload) END, 'created_at', created_at)) FROM
+          (SELECT * FROM application_events WHERE application_id = a.id ORDER BY created_at, id)) AS events,
+        (SELECT json_group_array(json_object('id', id, 'kind', kind, 'round_label', round_label, 'scheduled_at', scheduled_at, 'interviewer', interviewer,
+            'result', result, 'note', note, 'checklist', CASE WHEN json_valid(checklist) THEN json(checklist) END, 'created_at', created_at)) FROM
+          (SELECT * FROM interviews WHERE application_id = a.id ORDER BY scheduled_at = 0, scheduled_at, created_at)) AS interviews
+      FROM applications a JOIN profiles p ON p.id = a.profile_id JOIN users u ON u.id = p.user_id JOIN jobs j ON j.id = a.job_id WHERE a.id = ?`).bind(id).first();
+    if (!r) return json({ error: "application_not_found" }, 404);
+    for (const k of ["user", "profile", "job", "events", "interviews"]) r[k] = parseJ(r[k], k === "events" || k === "interviews" ? [] : null);
+    return json(r);
+  }
+
+  if (path === "/api/admin/users" && GET) {
+    const pg = page("u.created_at");
+    if (pg.error) return json({ error: "invalid_cursor" }, 400);
+    const w = [], args = [];
+    if (q) { w.push("(u.email LIKE ? ESCAPE '\\' OR u.name LIKE ? ESCAPE '\\')"); args.push(likeArg(q), likeArg(q)); }
+    const where = (extra) => { const all = extra ? [...w, extra] : w; return all.length ? " WHERE " + all.join(" AND ") : ""; };
+    const [rows, cnt] = await Promise.all([
+      env.DB.prepare(`SELECT u.id, u.email, u.name, u.created_at, u.last_active_day, u.ref_source, u.consent_cv_at, u.ai_opt_out,
+          u.telegram_chat_id IS NOT NULL AS telegram_linked, u.deleted_at,
+          (SELECT COUNT(*) FROM profiles p WHERE p.user_id = u.id) AS profiles_count,
+          (SELECT COUNT(*) FROM profile_skills s JOIN profiles p ON p.id = s.profile_id WHERE p.user_id = u.id) AS skills_count,
+          (SELECT COUNT(*) FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = u.id) AS applications_count,
+          (SELECT COUNT(*) FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = u.id AND a.applied_at IS NOT NULL) AS applied_count
+        FROM users u${where(pg.cur && pg.cur.sql)} ORDER BY u.created_at DESC, u.id DESC LIMIT ?`).bind(...args, ...(pg.cur ? pg.cur.args : []), pg.limit + 1).all(),
+      env.DB.prepare(`SELECT COUNT(*) AS n FROM users u${where()}`).bind(...args).first(),
+    ]);
+    const out = done(rows.results, pg.limit, "created_at");
+    return json({ items: out.items.map((r) => ({ ...r, ai_opt_out: r.ai_opt_out ? 1 : 0, telegram_linked: !!r.telegram_linked })), total: cnt.n, next_cursor: out.next_cursor });
+  }
+
+  if ((m = /^\/api\/admin\/users\/([\w-]{1,64})$/.exec(path)) && GET) {
+    const r = await env.DB.prepare(`SELECT u.id, u.email, u.name, u.created_at, u.last_active_day, u.ref_source, u.consent_cv_at, u.ai_opt_out,
+        u.telegram_chat_id IS NOT NULL AS telegram_linked, u.digest_hour, u.deleted_at,
+        (SELECT json_group_array(json_object('id', p.id, 'name', p.name, 'level', p.level, 'target_roles', CASE WHEN json_valid(p.target_roles) THEN json(p.target_roles) END, 'locations', CASE WHEN json_valid(p.locations) THEN json(p.locations) END,
+            'salary_min', p.salary_min, 'is_active', p.is_active, 'has_cv', json(CASE WHEN p.cv_file_id IS NOT NULL THEN 'true' ELSE 'false' END), 'public_slug', p.public_slug, 'created_at', p.created_at,
+            'skills', (SELECT json_group_array(json_object('skill', s.skill, 'weight', s.weight, 'source', s.source)) FROM profile_skills s WHERE s.profile_id = p.id)))
+          FROM profiles p WHERE p.user_id = u.id) AS profiles,
+        (SELECT json_group_array(json_object('id', id, 'stage', stage, 'applied_at', applied_at, 'updated_at', updated_at, 'job', json_object('id', job_id, 'title', title, 'company', company))) FROM
+          (SELECT a.id, a.stage, a.applied_at, a.updated_at, j.id AS job_id, j.title, j.company FROM applications a JOIN profiles p ON p.id = a.profile_id JOIN jobs j ON j.id = a.job_id
+           WHERE p.user_id = u.id ORDER BY a.updated_at DESC LIMIT 20)) AS applications,
+        (SELECT json_group_array(json_object('id', id, 'application_id', application_id, 'type', type, 'payload', CASE WHEN json_valid(payload) THEN json(payload) END, 'created_at', created_at)) FROM
+          (SELECT e.* FROM application_events e JOIN applications a ON a.id = e.application_id JOIN profiles p ON p.id = a.profile_id
+           WHERE p.user_id = u.id ORDER BY e.created_at DESC LIMIT 20)) AS events
+      FROM users u WHERE u.id = ?`).bind(m[1]).first();
+    if (!r) return json({ error: "user_not_found" }, 404);
+    for (const k of ["profiles", "applications", "events"]) r[k] = parseJ(r[k], []);
+    return json({ ...r, ai_opt_out: r.ai_opt_out ? 1 : 0, telegram_linked: !!r.telegram_linked });
+  }
+
+  if (path === "/api/admin/jobs" && GET) {
+    const pg = page("j.first_seen_at");
+    if (pg.error) return json({ error: "invalid_cursor" }, 400);
+    const flag = sp.get("flag");
+    if (flag && !ADMIN_JOB_FLAGS[flag]) return json({ error: "invalid_flag", allowed: Object.keys(ADMIN_JOB_FLAGS) }, 400);
+    const w = [], args = [];
+    if (sp.get("source")) { w.push("j.source_id = ?"); args.push(sp.get("source").slice(0, 64)); }
+    if (q) { w.push("(j.title LIKE ? ESCAPE '\\' OR j.company LIKE ? ESCAPE '\\')"); args.push(likeArg(q), likeArg(q)); }
+    if (flag) { w.push(ADMIN_JOB_FLAGS[flag]); if (flag === "stale") args.push(t - 48 * 3600, t - 30 * 86400); }
+    const where = (extra) => { const all = extra ? [...w, extra] : w; return all.length ? " WHERE " + all.join(" AND ") : ""; };
+    const [rows, cnt] = await Promise.all([
+      env.DB.prepare(`SELECT j.id, j.title, j.company, j.location, j.source_id, j.source_url, j.salary_text, j.posted_at, j.first_seen_at, j.last_seen_at,
+          j.seen_count, j.repost_count, CASE WHEN json_valid(j.skills) THEN json_array_length(j.skills) END AS skill_count, substr(j.jd_text, 1, 600) AS jd_head, length(j.jd_text) AS jd_len,
+          (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id) AS applications_count,
+          (SELECT COUNT(*) FROM job_matches mm WHERE mm.job_id = j.id AND mm.tier = 'strong') AS strong_count
+        FROM jobs j${where(pg.cur && pg.cur.sql)} ORDER BY j.first_seen_at DESC, j.id DESC LIMIT ?`).bind(...args, ...(pg.cur ? pg.cur.args : []), pg.limit + 1).all(),
+      env.DB.prepare(`SELECT COUNT(*) AS n FROM jobs j${where()}`).bind(...args).first(),
+    ]);
+    const out = done(rows.results, pg.limit, "first_seen_at");
+    return json({ items: out.items.map((r) => ({ id: r.id, title: r.title, company: r.company, location: r.location, source: r.source_id, source_url: r.source_url,
+      salary_text: r.salary_text, posted_at: r.posted_at, first_seen_at: r.first_seen_at, last_seen_at: r.last_seen_at, seen_count: r.seen_count, repost_count: r.repost_count,
+      jd_len: r.jd_len, work_mode: workMode(r.location, r.title, r.jd_head, r.source_id),
+      flags: postingFlags({ ...r, skillCount: r.skill_count }, t, lang).map((f) => f.type),
+      applications_count: r.applications_count, strong_count: r.strong_count })), total: cnt.n, next_cursor: out.next_cursor });
+  }
+  return null;
 }
 
 // ---------------- router ----------------
@@ -1748,6 +1938,7 @@ export default {
       for (const k of list.keys) out[k.name] = await env.KV.get(k.name);
       return json({ quota: out });
     }
+    if (path.startsWith("/api/admin/")) { const r = await adminCrm(env, request, url, path, lang); if (r) return r; }
 
     // --- profiles ---
     if (path === "/api/profiles" && request.method === "GET") {
@@ -2078,7 +2269,7 @@ export default {
         "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
       ).bind(id, b.profile_id, b.job_id, b.stage || "new", b.note || null, now(), now()).run();
       const row = await env.DB.prepare("SELECT * FROM applications WHERE profile_id = ? AND job_id = ?").bind(b.profile_id, b.job_id).first();
-      return json(row, 201);
+      return json(noAdminNote(row), 201);
     }
     // Nộp nhanh: JobPilot không nộp hộ. "open" = người dùng mở trang ứng tuyển thật (lưu 'saved' nếu chưa có, không đổi stage cũ);
     // "applied" = người dùng xác nhận đã nộp: chỉ nâng new/saved/chưa có lên 'applied', không hạ stage cao hơn. 1 batch D1.
@@ -2099,7 +2290,7 @@ export default {
         env.DB.prepare("UPDATE applications SET stage = 'applied', applied_at = COALESCE(applied_at, ?), next_follow_up_at = COALESCE(next_follow_up_at, ?), updated_at = ? WHERE profile_id = ? AND job_id = ? AND stage IN ('new','saved')").bind(t, t + 7 * 86400, t, ...key),
         sel];
       const res = await env.DB.batch(stmts);
-      return json(res[res.length - 1].results[0]);
+      return json(noAdminNote(res[res.length - 1].results[0]));
     }
     const appMatch = path.match(/^\/api\/applications\/([^/]+)$/);
     if (appMatch && request.method === "PATCH") {
@@ -2114,7 +2305,7 @@ export default {
       await env.DB.prepare("INSERT INTO application_events (id, application_id, type, payload, created_at) VALUES (?, ?, 'stage_changed', ?, ?)")
         .bind(uid(), app.id, JSON.stringify({ from: app.stage, to: stage }), now()).run();
       const upd = await env.DB.prepare("SELECT * FROM applications WHERE id = ?").bind(app.id).first();
-      return json(upd);
+      return json(noAdminNote(upd));
     }
 
     // --- vòng phỏng vấn (T-37). Sở hữu: interview → application → profile → user; sai chủ = 404. ---
