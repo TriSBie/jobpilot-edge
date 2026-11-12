@@ -3778,7 +3778,8 @@ function previewMeta(job, date){
   const pm = PV_MODE[job.work_mode], inf = job.work_mode_source === "inferred";
   const mode = pm ? `<span class="wm"${inf ? ` title="${t("Suy ra từ tin, nguồn không ghi rõ")}"` : ""}><svg aria-hidden="true"><use href="#${pm[0]}"/></svg>${inf ? "≈ " : ""}${t(pm[1])}</span>`
     : `<span class="wm unk">${t("Chưa rõ chế độ")}</span>`;
-  const addr = job.address ? `<a class="addr" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}" target="_blank" rel="noopener" title="${esc(job.address)}">${esc(shortAddr(job.address))}</a>`
+  const ad = (job.address || "").trim();
+  const addr = ad ? `<a class="addr" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ad)}" target="_blank" rel="noopener" title="${esc(ad)}">${esc(shortAddr(ad))}</a>`
     : job.location ? `<span>${esc(job.location)}</span>` : "";
   const rest = [date ? fmtDate(date) : "", jobSalary(job)].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("");
   const b = (job.benefits || []).filter(x => typeof x === "string" && x);

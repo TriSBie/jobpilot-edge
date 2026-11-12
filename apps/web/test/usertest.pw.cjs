@@ -83,11 +83,11 @@ async function open(browser, w, { token = "lab", jobsMode = "ok", consent = true
       assert.equal(await page.$$eval("#jobsContainer .card", (x) => x.length), 20);
       await page.click("#loadMoreJobs"); await page.click("#loadMoreJobs");
       assert.equal(await page.$$eval("#jobsContainer .card", (x) => x.length), 50);
-      assert.equal((await page.textContent("#loadMoreJobs")).trim(), "Xem thêm job");
+      assert.match((await page.textContent("#loadMoreJobs")).trim(), /^Xem thêm \(\d+ tin còn lại\)$/);
       await shot(page, `jobs-more-${w}`, "#loadMoreJobs");
       await page.click("#loadMoreJobs");
       await page.waitForSelector(".loadmore[role=alert] #loadMoreJobs");
-      assert.match(await page.textContent(".loadmore[role=alert]"), /Không tải thêm được job/);
+      assert.match(await page.textContent(".loadmore[role=alert]"), /Không tải thêm được tin/);
       await shot(page, `jobs-more-error-${w}`, "#loadMoreJobs");
       await page.click("#loadMoreJobs");
       await waitFor(async () => (await page.$$eval("#jobsContainer .card", (x) => x.length)) === 60, "không nối trang 2");

@@ -1662,7 +1662,7 @@ async function adminCrm(env, request, url, path, lang) {
     const [rows, cnt] = await Promise.all([
       env.DB.prepare(`SELECT a.id, a.stage, a.applied_at, a.next_follow_up_at, a.updated_at, a.admin_note,
           u.id AS user_id, u.email, u.name AS user_name, p.id AS profile_id, p.name AS profile_name, p.level,
-          j.id AS job_id, j.title, j.company, j.location, j.source_id, j.source_url, substr(j.jd_text, 1, 600) AS jd_head,
+          j.id AS job_id, j.title, j.company, j.location, j.source_id, j.source_url, j.company_logo_url, substr(j.jd_text, 1, 600) AS jd_head,
           (SELECT COUNT(*) FROM application_events e WHERE e.application_id = a.id) AS events_count,
           (SELECT json_object('type', e.type, 'created_at', e.created_at) FROM application_events e WHERE e.application_id = a.id ORDER BY e.created_at DESC LIMIT 1) AS last_event,
           (SELECT json_object('done', COALESCE(SUM(i.result IN ('pass','fail')), 0), 'total', COUNT(*)) FROM interviews i WHERE i.application_id = a.id) AS rounds
@@ -1673,7 +1673,7 @@ async function adminCrm(env, request, url, path, lang) {
     return json({ items: out.items.map((r) => ({ id: r.id, stage: r.stage, applied_at: r.applied_at, next_follow_up_at: r.next_follow_up_at, updated_at: r.updated_at,
       admin_note: r.admin_note, user: { id: r.user_id, email: r.email, name: r.user_name }, profile: { id: r.profile_id, name: r.profile_name, level: r.level },
       job: { id: r.job_id, title: r.title, company: r.company, location: r.location, source: r.source_id, source_url: r.source_url,
-        work_mode: workMode(r.location, r.title, r.jd_head, r.source_id), company_logo_url: null },
+        work_mode: workMode(r.location, r.title, r.jd_head, r.source_id), company_logo_url: safeLogo(r.company_logo_url) },
       events_count: r.events_count, last_event: parseJ(r.last_event, null), rounds: parseJ(r.rounds, { done: 0, total: 0 }) })),
       total: cnt.n, next_cursor: out.next_cursor });
   }
