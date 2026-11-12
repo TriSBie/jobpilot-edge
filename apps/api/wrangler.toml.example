@@ -109,7 +109,9 @@ dataset = "jobpilot_events"
 # - TG_TOKEN_KEY (base64 32 byte, mã hoá token bot Telegram riêng; thiếu = tắt tính năng bot riêng, 503)
 # - TURNSTILE_SECRET (thiếu thì bỏ qua kiểm Turnstile, chỉ cho lab/dev)
 # - RESEND_API_KEY (gửi email quên mật khẩu / xác minh qua Resend; thiếu RESEND_API_KEY hoặc MAIL_FROM = tắt email, mail_enabled=false)
-# - MAIL_FROM (vd "JobPilot <noreply@your-domain>", domain đã xác minh trên Resend)
+# - MAILJET_API_KEY (Mailjet, ưu tiên trước Resend; không cần domain, MAIL_FROM là sender đã xác minh trên Mailjet)
+# - MAILJET_SECRET_KEY (đi cùng MAILJET_API_KEY)
+# - MAIL_FROM (vd "JobPilot <noreply@your-domain>", domain đã xác minh trên Resend, hoặc sender đã xác minh trên Mailjet)
 # Biến tuỳ chọn chỉ dùng ở lab (không đặt ở production):
 # - TELEGRAM_API_BASE (mặc định https://api.telegram.org)
 # - TELEGRAM_QUIET_OVERRIDE ("1" = bỏ giờ yên lặng)

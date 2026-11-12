@@ -29,6 +29,24 @@ const no = ['Công ty có 500 nhân viên, 20 năm kinh nghiệm', 'Vốn 100 tr
 for (const t of no) assert.strictEqual(salaryFromJd(t), null, String(t));
 console.log('enduser salaryFromJd OK');
 
+// JSON-LD baseSalary: mẫu chép từ trang thật 12/11 (ITviec USD số / "You'll love it"; TopDev VND chuỗi số, USD chỉ max, Negotiable)
+const { ldSalary } = new Function(grab('ldSalary') + '\nreturn { ldSalary };')();
+const ld = (bs) => `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org/', '@type': 'JobPosting', title: 'X', baseSalary: bs })}</script>`;
+const LD = {
+  itvNum: ld({ '@type': 'MonetaryAmount', currency: 'USD', value: { '@type': 'QuantitativeValue', minValue: 800, maxValue: 2000, unitText: 'MONTH', value: '800 - 2,000 USD' } }),
+  itvText: ld({ '@type': 'MonetaryAmount', currency: 'USD', value: { '@type': 'QuantitativeValue', unitText: 'MONTH', value: "You'll love it" } }),
+  tdVnd: ld({ '@type': 'MonetaryAmount', currency: 'VND', value: { '@type': 'QuantitativeValue', unitText: 'MONTH', minValue: '17000000', maxValue: '23000000', value: '17.000.000 VND to 23.000.000 VND' } }),
+  tdUpTo: ld({ '@type': 'MonetaryAmount', currency: 'USD', value: { '@type': 'QuantitativeValue', unitText: 'MONTH', maxValue: '1200', value: 'Up to 1.200 USD' } }),
+  tdNeg: ld({ '@type': 'MonetaryAmount', currency: 'VND', value: { '@type': 'QuantitativeValue', unitText: 'MONTH', value: 'Negotiable' } }),
+  year: ld({ '@type': 'MonetaryAmount', currency: 'USD', value: { '@type': 'QuantitativeValue', unitText: 'YEAR', minValue: 40000, maxValue: 60000 } }),
+};
+assert.strictEqual(ldSalary(LD.itvNum), '800 - 2000 USD/month');
+assert.strictEqual(ldSalary(LD.tdVnd), '17 - 23 triệu');
+assert.strictEqual(ldSalary(LD.tdUpTo), '1200 USD/month');
+for (const k of ['itvText', 'tdNeg', 'year']) assert.strictEqual(ldSalary(LD[k]), null, k);
+assert.strictEqual(ldSalary('<script type="application/ld+json">{bad json baseSalary</script>'), null);
+console.log('enduser ldSalary OK');
+
 const db = new DatabaseSync(':memory:');
 for (const f of fs.readdirSync(migDir).sort()) db.exec(fs.readFileSync(path.join(migDir, f), 'utf8'));
 let queries = 0;
@@ -49,6 +67,8 @@ globalThis.fetch = async (u, init = {}) => {
   if (u.startsWith('https://tg.test')) return new Response('{"ok":true}', { status: 200 });
   if (u.startsWith('https://api.resend.com')) return new Response('{"id":"m"}', { status: 200 });
   if (u.startsWith('https://nominatim.openstreetmap.org')) return new Response(u.includes('Nowhere') ? '[]' : '[{"lat":"10.776","lon":"106.700"}]');
+  if (u.startsWith('https://api.mailjet.com')) return new Response('{"Messages":[{"Status":"success"}]}', { status: 200 });
+  if (u.includes('topdev.vn')) return new Response(`<html>${LD.tdVnd}<div class="job-description">${'Golang backend. Mức lương: 25 - 35 triệu. '.repeat(10)}</div></html>`);
   if (u.includes('itviec.com')) return new Response(`<script type="application/ld+json">{"@type":"JobPosting","hiringOrganization":{"logo":"https://itviec.com/l.png"},"jobLocation":{"address":{"streetAddress":"1 Le Loi","addressLocality":"HCM"}}}</script><section class='job-content'>${'Java Spring Boot. Mức lương: 25 - 35 triệu. '.repeat(10)}</section>`);
   return new Response('[]');
 };
@@ -193,4 +213,47 @@ db.prepare("INSERT INTO sources (id, type, name, created_at) VALUES ('src-itviec
   assert.strictEqual((await call('GET', '/api/public/job/mine')).status, 404, 'tin dán tay riêng tư');
   assert.strictEqual((await call('GET', '/api/public/job/nope')).status, 404);
   console.log('enduser #9 public job OK');
+
+  // JSON-LD trong enrich: TopDev chưa có lương, đã có JD → vẫn tải trang chi tiết 1 lần; JSON-LD (17-23tr) thắng JD (25-35tr)
+  db.prepare("INSERT OR IGNORE INTO sources (id, type, name, created_at) VALUES ('src-topdev', 'topdev', 'TopDev', ?)").run(T);
+  ins('td-ld', { src: 'src-topdev', url: 'https://topdev.vn/detail-jobs/x-2145696', seen: T + 1000, jd: 'Mức lương: 25 - 35 triệu. Golang.' });
+  calls.length = 0;
+  await call('POST', '/api/admin/jd/enrich', { limit: 1 }, 'own');
+  assert.strictEqual(calls.filter((c) => c.u.includes('topdev.vn')).length, 1, '1 fetch trang chi tiết');
+  assert.deepStrictEqual(q("SELECT salary_text s, salary_vnd_min a, salary_vnd_max b FROM jobs WHERE id = 'td-ld'")[0], { s: '17 - 23 triệu', a: 17e6, b: 23e6 });
+  // lương sẵn có từ trang danh sách không bị ghi đè
+  db.prepare("UPDATE jobs SET salary_text = '$3000 - $4000/month', enriched_at = NULL, first_seen_at = ? WHERE id = 'n7'").run(T + 2000);
+  await call('POST', '/api/admin/jd/enrich', { limit: 1 }, 'own');
+  assert.strictEqual(q("SELECT salary_text s FROM jobs WHERE id = 'n7'")[0].s, '$3000 - $4000/month');
+  console.log('enduser JSON-LD salary in enrich OK');
+
+  // Mailjet: ưu tiên khi đủ khoá, basic auth, mail_enabled khi chỉ có Mailjet; Mailjet lỗi → Resend
+  const envMJ = { ...env, MAILJET_API_KEY: 'pub', MAILJET_SECRET_KEY: 'sec', MAIL_FROM: 'JobPilot <me@gmail.test>' };
+  assert.strictEqual((await call('GET', '/api/me', null, 'tokA', envMJ)).body.user.mail_enabled, true);
+  calls.length = 0;
+  await call('POST', '/api/auth/forgot', { email: 'b@x.test' }, null, { ...envMJ, RESEND_API_KEY: 'k' }, { 'cf-connecting-ip': '7.7.7.7' });
+  const mj = calls.filter((c) => c.u === 'https://api.mailjet.com/v3.1/send');
+  assert.strictEqual(mj.length, 1); assert.ok(!calls.some((c) => c.u.startsWith('https://api.resend.com')), 'không gửi trùng qua Resend');
+  assert.strictEqual(mj[0].headers.authorization, 'Basic ' + Buffer.from('pub:sec').toString('base64'));
+  const msg = JSON.parse(mj[0].body).Messages[0];
+  assert.deepStrictEqual([msg.From, msg.To, /\?reset=[\w-]+/.test(msg.TextPart)], [{ Email: 'me@gmail.test', Name: 'JobPilot' }, [{ Email: 'b@x.test' }], true]);
+  const f0 = globalThis.fetch; calls.length = 0;
+  globalThis.fetch = async (u, init) => (String(u).startsWith('https://api.mailjet.com') ? (calls.push({ u: String(u) }), new Response('{}', { status: 401 })) : f0(u, init));
+  kv.set('session:tokC', 'C'); db.prepare("INSERT INTO users (id, email, name, created_at) VALUES ('C', 'c@x.test', 'C', ?)").run(T);
+  assert.deepStrictEqual((await call('POST', '/api/me/verify-email/send', {}, 'tokC', { ...envMJ, RESEND_API_KEY: 'k' })).body, { ok: true, sent: true }, 'Mailjet 401 → Resend');
+  assert.deepStrictEqual(calls.map((c) => c.u.slice(0, 22)), ['https://api.mailjet.co', 'https://api.resend.com']);
+  globalThis.fetch = f0;
+  console.log('enduser Mailjet OK');
+
+  // "Thử ngay": nhận đủ khu vực của web
+  for (const l of ['Cần Thơ', 'Hải Phòng', 'Bình Dương', 'Đồng Nai', 'Khác', 'Hồ Chí Minh', 'Remote'])
+    assert.strictEqual((await call('GET', '/api/public/try?skills=Java,Spring%20Boot,Docker&location=' + encodeURIComponent(l))).status, 200, l);
+  assert.strictEqual((await call('GET', '/api/public/try?skills=Java&location=Mars')).status, 400);
+  let web = null;
+  try { web = require('child_process').execSync('git show origin/feat/enduser-web:apps/web/public/index.html', { cwd: path.dirname(workerPath), stdio: ['ignore', 'pipe', 'ignore'] }).toString(); } catch (_) {}
+  if (web) {
+    const pre = JSON.parse(web.match(/AREA_PRESETS = (\[[^\]]*\])/)[1]), TL = JSON.parse(src.match(/TRY_LOCATIONS = (\[[^\]]*\])/)[1]);
+    assert.deepStrictEqual(pre.filter((x) => !TL.includes(x)), [], 'AREA_PRESETS của web có khu vực API chưa nhận');
+  }
+  console.log('enduser try locations OK' + (web ? ' (khớp AREA_PRESETS PR #15)' : ''));
 })().catch((e) => { console.error(e); process.exit(1); });

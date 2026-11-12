@@ -520,6 +520,23 @@ function topdevBenefits(seg, flat) {
   const end = flat.indexOf('"])', st + 9);
   return benefitList(decodeUnicodeEscapes(flat.slice(st + 9, end < 0 ? st + 6000 : Math.min(end, st + 6000))));
 }
+// JSON-LD JobPosting.baseSalary (ITviec USD, TopDev VND/USD) → salary_text cho parseSalary. Chữ ("You'll love it", "Negotiable") → null.
+// ponytail: chỉ unitText MONTH; năm/giờ bỏ qua. Thêm khi nguồn có lương năm.
+function ldSalary(html) {
+  for (const m of String(html || "").matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    if (!/baseSalary/.test(m[1])) continue;
+    let j; try { j = JSON.parse(m[1]); } catch (_) { continue; }
+    const bs = [].concat(j && j.baseSalary || [])[0], v = bs && bs.value;
+    if (!v || typeof v !== "object" || String(v.unitText || "MONTH").toUpperCase() !== "MONTH") continue;
+    const cur = String(bs.currency || "").toUpperCase(), num = (x) => (x == null || x === "" ? null : Number(String(x).replace(/[.,\s]/g, "")));
+    let lo = num(v.minValue), hi = num(v.maxValue);
+    if (hi == null) hi = lo; if (lo == null) lo = hi;
+    if (!(lo > 0 && hi >= lo)) continue;
+    if (cur === "USD" && lo >= 100 && hi <= 20000) return lo === hi ? `${hi} USD/month` : `${lo} - ${hi} USD/month`;
+    if (cur === "VND" && lo >= 1e6 && hi <= 300e6) { const t = (x) => Math.round(x / 1e6); return lo === hi ? `${t(hi)} triệu` : `${t(lo)} - ${t(hi)} triệu`; }
+  }
+  return null;
+}
 // ITviec trang chi tiết (enrichJd đã tải sẵn, 0 request thêm): JSON-LD JobPosting → logo + địa chỉ; nhãn đầu trang → chế độ; "Top 3 reasons" → phúc lợi.
 // ponytail: regex theo markup 12/11; nhãn chế độ chỉ tìm trước <section job-content> để không dính thẻ "việc làm liên quan" cuối trang.
 function extractPreview(html, sourceId) {
@@ -861,14 +878,15 @@ async function enrichJd(env, limit) {
     // ponytail: TopDev logo/địa chỉ bóc ở trang danh sách nên chỉ cần JD; ITviec cần trang chi tiết dù đã có JD.
     `SELECT j.id, j.source_id, j.source_url, j.skills, j.title, j.location, j.salary_text, j.work_mode_src FROM jobs j
      WHERE j.submitted_by IS NULL AND (j.jd_text = '' AND j.source_id IN ('src-itviec','src-topdev')
-        OR j.source_id = 'src-itviec' AND j.jd_text <> '-' AND j.enriched_at IS NULL)
+        OR j.source_id = 'src-itviec' AND j.jd_text <> '-' AND j.enriched_at IS NULL
+        OR j.source_id = 'src-topdev' AND j.jd_text <> '-' AND j.enriched_at IS NULL AND j.salary_text IS NULL)
      ORDER BY j.enriched_at IS NOT NULL, EXISTS (SELECT 1 FROM job_matches m WHERE m.job_id = j.id AND m.tier IN ('strong','partial')) DESC, j.first_seen_at DESC LIMIT ?`
   ).bind(limit).all();
   let done = 0, failed = 0;
   for (const j of results) {
-    let jd = "", gone = false, pv = extractPreview("", j.source_id);
+    let jd = "", gone = false, pv = extractPreview("", j.source_id), sal = null;
     for (let a = 0; a < 2 && !jd && !gone; a++) {
-      try { const html = await fetchText(j.source_url); jd = extractJd(html, j.source_id); pv = extractPreview(html, j.source_id); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
+      try { const html = await fetchText(j.source_url); jd = extractJd(html, j.source_id); pv = extractPreview(html, j.source_id); sal = ldSalary(html); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
     }
     if (!jd) {
       failed++;
@@ -878,8 +896,9 @@ async function enrichJd(env, limit) {
       continue;
     }
     const skills = [...new Set([...JSON.parse(j.skills || "[]"), ...extractSkillsFromText(jd)])];
-    await env.DB.prepare(`UPDATE jobs SET jd_text = ?, skills = ?, company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src), enriched_at = ?, ${DERIVE_SET} WHERE id = ?`)
-      .bind(jd, JSON.stringify(skills), pv.logo, pv.address, pv.benefits, pv.mode, now(), ...deriveArgs({ ...j, jd_text: jd, work_mode_src: pv.mode ?? j.work_mode_src }), j.id).run();
+    const salaryText = j.salary_text || sal; // lương có sẵn (trang danh sách) giữ nguyên; JSON-LD đứng trước bóc từ JD
+    await env.DB.prepare(`UPDATE jobs SET jd_text = ?, skills = ?, salary_text = ?, company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src), enriched_at = ?, ${DERIVE_SET} WHERE id = ?`)
+      .bind(jd, JSON.stringify(skills), salaryText, pv.logo, pv.address, pv.benefits, pv.mode, now(), ...deriveArgs({ ...j, salary_text: salaryText, jd_text: jd, work_mode_src: pv.mode ?? j.work_mode_src }), j.id).run();
     await env.Q_SCORE.send({ kind: "score", jobId: j.id });
     done++;
   }
@@ -888,6 +907,8 @@ async function enrichJd(env, limit) {
   return r;
 }
 
+// /api/public/try: khớp AREA_PRESETS của web (PR #15) + "Khác" (chỉ khớp tin Remote / không ghi địa điểm).
+const TRY_LOCATIONS = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Hải Phòng", "Bình Dương", "Đồng Nai", "Remote", "Khác"];
 const USD_VND = 25500; // 03/11/2026
 // Parse lương → {min, max, currency, period} | null. "Thương lượng" và dạng lạ → null (không đoán mò).
 function parseSalary(text) {
@@ -958,10 +979,24 @@ function deriveJob(r) {
 const DERIVE_SET = "salary_vnd_min = ?, salary_vnd_max = ?, work_mode = ?, derived_at = ?";
 const deriveArgs = (r) => { const d = deriveJob(r); return [d.salary_vnd_min, d.salary_vnd_max, d.work_mode, now()]; };
 
-// Email qua Resend (fetch, không SDK). Thiếu khoá → không gửi, trả false. Không log địa chỉ.
-const mailEnabled = (env) => Boolean(env.RESEND_API_KEY && env.MAIL_FROM);
+// Email: Mailjet trước (gửi được tới mọi người nhận chỉ với 1 sender đã xác minh, không cần domain), rồi Resend (cần domain).
+// fetch, không SDK. Thiếu khoá → không gửi, trả false. Không log địa chỉ.
+const mailjetOn = (env) => Boolean(env.MAILJET_API_KEY && env.MAILJET_SECRET_KEY && env.MAIL_FROM);
+const resendOn = (env) => Boolean(env.RESEND_API_KEY && env.MAIL_FROM);
+const mailEnabled = (env) => mailjetOn(env) || resendOn(env);
 async function sendMail(env, to, subject, text) {
-  if (!mailEnabled(env)) return false;
+  if (mailjetOn(env)) {
+    const m = String(env.MAIL_FROM).match(/^\s*(.*?)\s*<([^>]+)>\s*$/), from = m ? { Email: m[2], Name: m[1] || undefined } : { Email: String(env.MAIL_FROM).trim() };
+    try {
+      const r = await fetch("https://api.mailjet.com/v3.1/send", {
+        method: "POST", headers: { authorization: "Basic " + btoa(`${env.MAILJET_API_KEY}:${env.MAILJET_SECRET_KEY}`), "content-type": "application/json" },
+        body: JSON.stringify({ Messages: [{ From: from, To: [{ Email: to }], Subject: subject, TextPart: text }] }),
+      });
+      if (r.ok) return true;
+      console.log("mail: mailjet", r.status);
+    } catch (e) { console.log("mail: mailjet lỗi", e.message); }
+  }
+  if (!resendOn(env)) return false;
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
@@ -1884,7 +1919,7 @@ export default {
         const level = url.searchParams.get("level") || "middle", location = url.searchParams.get("location") || "Hồ Chí Minh";
         if (!skills.length || skills.length > 8 || skills.some((x) => !SKILL_CATALOG.includes(x))) return json({ error: "invalid_skills" }, 400);
         if (!["fresher", "junior", "middle", "senior"].includes(level)) return json({ error: "invalid_level" }, 400);
-        if (!["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"].includes(location)) return json({ error: "invalid_location" }, 400);
+        if (!TRY_LOCATIONS.includes(location)) return json({ error: "invalid_location" }, 400);
         tryP = { skills: skills.sort(), level, location };
         cacheKey = new Request("https://cache.jobpilot.internal/try?" + new URLSearchParams({ s: tryP.skills.join(","), l: level, c: location, lang }));
         const hit = typeof caches !== "undefined" ? await caches.default.match(cacheKey) : null;
@@ -2406,12 +2441,12 @@ export default {
         const host = new URL(link).hostname;
         const sourceType = /(^|\.)topdev\.vn$/.test(host) ? "topdev" : /(^|\.)itviec\.com$/.test(host) ? "itviec" : "manual";
         const src = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(sourceType === "manual" ? "topdev" : sourceType).first();
-        let jdText = str(b.jd_text, 8000), title = str(b.title, 300), company = str(b.company, 200);
+        let jdText = str(b.jd_text, 8000), title = str(b.title, 300), company = str(b.company, 200), ldSal = null;
         if (!jdText) {
           try {
             const html = await fetchSubmittedPage(link);
             if (html) {
-              jdText = stripTags(html).slice(0, 8000);
+              jdText = stripTags(html).slice(0, 8000); ldSal = ldSalary(html);
               const tm = html.match(/<title>([^<]+)<\/title>/i);
               if (!title && tm) title = tm[1].split("|")[0].split(" - ")[0].trim().slice(0, 300);
             }
@@ -2420,7 +2455,7 @@ export default {
         job = await upsertJob(env, sourceType === "manual" ? null : src?.id || null, {
           title: title || "Tin không tiêu đề", company, location: str(b.location, 200),
           url: link, jdText, skills: extractSkillsFromText(jdText),
-          postedAt: null, salaryText: str(b.salary_text, 100) || null,
+          postedAt: null, salaryText: str(b.salary_text, 100) || ldSal,
         }, user.id);
       } else {
         const title = str(b.title, 300), company = str(b.company, 200), jdText = str(b.jd_text, 8000);
