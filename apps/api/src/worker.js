@@ -520,6 +520,23 @@ function topdevBenefits(seg, flat) {
   const end = flat.indexOf('"])', st + 9);
   return benefitList(decodeUnicodeEscapes(flat.slice(st + 9, end < 0 ? st + 6000 : Math.min(end, st + 6000))));
 }
+// JSON-LD JobPosting.baseSalary (ITviec USD, TopDev VND/USD) → salary_text cho parseSalary. Chữ ("You'll love it", "Negotiable") → null.
+// ponytail: chỉ unitText MONTH; năm/giờ bỏ qua. Thêm khi nguồn có lương năm.
+function ldSalary(html) {
+  for (const m of String(html || "").matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    if (!/baseSalary/.test(m[1])) continue;
+    let j; try { j = JSON.parse(m[1]); } catch (_) { continue; }
+    const bs = [].concat(j && j.baseSalary || [])[0], v = bs && bs.value;
+    if (!v || typeof v !== "object" || String(v.unitText || "MONTH").toUpperCase() !== "MONTH") continue;
+    const cur = String(bs.currency || "").toUpperCase(), num = (x) => (x == null || x === "" ? null : Number(String(x).replace(/[.,\s]/g, "")));
+    let lo = num(v.minValue), hi = num(v.maxValue);
+    if (hi == null) hi = lo; if (lo == null) lo = hi;
+    if (!(lo > 0 && hi >= lo)) continue;
+    if (cur === "USD" && lo >= 100 && hi <= 20000) return lo === hi ? `${hi} USD/month` : `${lo} - ${hi} USD/month`;
+    if (cur === "VND" && lo >= 1e6 && hi <= 300e6) { const t = (x) => Math.round(x / 1e6); return lo === hi ? `${t(hi)} triệu` : `${t(lo)} - ${t(hi)} triệu`; }
+  }
+  return null;
+}
 // ITviec trang chi tiết (enrichJd đã tải sẵn, 0 request thêm): JSON-LD JobPosting → logo + địa chỉ; nhãn đầu trang → chế độ; "Top 3 reasons" → phúc lợi.
 // ponytail: regex theo markup 12/11; nhãn chế độ chỉ tìm trước <section job-content> để không dính thẻ "việc làm liên quan" cuối trang.
 function extractPreview(html, sourceId) {
@@ -782,6 +799,8 @@ async function planUpsertJobs(env, items) {
   const rows = new Map(known.map((r) => [r.content_hash, { ...r }])), seenUrl = new Set(urls.map((r) => r.source_url));
   const t = now(), stmts = [], out = [], toScore = new Set();
   for (const { sourceId, job, hash, submittedBy = null } of items) {
+    // Hygiene (Ada 12/11): tin quét chung bắt buộc có nguồn. source_id NULL chỉ hợp lệ cho tin dán tay (submitted_by), xem postingFlags.
+    if (!sourceId && !submittedBy) { console.log("upsert: bỏ tin chung thiếu source_id"); continue; }
     const posted = job.postedAt ? Math.floor(new Date(job.postedAt).getTime() / 1000) : null;
     const created = !seenUrl.has(job.url);
     seenUrl.add(job.url);
@@ -794,25 +813,28 @@ async function planUpsertJobs(env, items) {
         `UPDATE jobs SET last_seen_at = ?, seen_count = seen_count + 1,
            repost_count = repost_count + (CASE WHEN ? >= COALESCE(posted_at,0) + 172800 THEN 1 ELSE 0 END),
            posted_at = MAX(COALESCE(posted_at,0), ?),
-           company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src)
+           company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src),
+           ${DERIVE_SET}
          WHERE content_hash = ?`
-      ).bind(t, trust, trust, job.logo ?? null, job.address ?? null, job.benefits ?? null, job.workModeSrc ?? null, hash));
+      ).bind(t, trust, trust, job.logo ?? null, job.address ?? null, job.benefits ?? null, job.workModeSrc ?? null,
+        ...deriveArgs({ ...row, work_mode_src: job.workModeSrc ?? row.work_mode_src }), hash));
     } else {
       row = { id: uid(), source_id: sourceId, source_url: job.url, title: job.title, company: job.company || "", location: job.location || "",
-        salary_text: job.salaryText || null, jd_text: job.jdText || "", skills: JSON.stringify(job.skills || []), content_hash: hash, posted_at: posted, first_seen_at: t, submitted_by: submittedBy };
+        salary_text: job.salaryText || null, jd_text: job.jdText || "", skills: JSON.stringify(job.skills || []), content_hash: hash, posted_at: posted, first_seen_at: t, submitted_by: submittedBy,
+        work_mode_src: job.workModeSrc ?? null };
       rows.set(hash, row);
       stmts.push(env.DB.prepare(
         `INSERT OR IGNORE INTO jobs (id, source_id, source_url, title, company, location, salary_text, jd_text, skills, content_hash, posted_at, first_seen_at, last_seen_at, created_at, submitted_by,
-           company_logo_url, address, benefits, work_mode_src)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           company_logo_url, address, benefits, work_mode_src, salary_vnd_min, salary_vnd_max, work_mode, derived_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(row.id, sourceId, job.url, job.title, row.company, row.location, row.salary_text, row.jd_text, row.skills, hash, posted, t, t, t, submittedBy,
-        job.logo ?? null, job.address ?? null, job.benefits ?? null, job.workModeSrc ?? null));
+        job.logo ?? null, job.address ?? null, job.benefits ?? null, job.workModeSrc ?? null, ...deriveArgs(row)));
     }
     // Tin cũ chưa có JD mà feed giờ có → bù JD + skills rồi chấm lại.
     if (!jdOf(row) && row.jd_text !== "-" && job.jdText) {
       row.skills = JSON.stringify([...new Set([...JSON.parse(row.skills || "[]"), ...(job.skills || [])])]);
       row.jd_text = job.jdText;
-      stmts.push(env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ? WHERE id = ?").bind(row.jd_text, row.skills, row.id));
+      stmts.push(env.DB.prepare(`UPDATE jobs SET jd_text = ?, skills = ?, ${DERIVE_SET} WHERE id = ?`).bind(row.jd_text, row.skills, ...deriveArgs(row), row.id));
       toScore.add(row.id);
     }
     if (created) toScore.add(row.id);
@@ -852,25 +874,31 @@ function extractJd(html, sourceId) {
 }
 async function enrichJd(env, limit) {
   const { results } = await env.DB.prepare(
-    `SELECT j.id, j.source_id, j.source_url, j.skills FROM jobs j
-     WHERE j.jd_text = '' AND j.submitted_by IS NULL AND j.source_id IN ('src-itviec','src-topdev')
-     ORDER BY EXISTS (SELECT 1 FROM job_matches m WHERE m.job_id = j.id AND m.tier IN ('strong','partial')) DESC, j.first_seen_at DESC LIMIT ?`
+    // Ada 12/11: JD có sẵn mà logo/địa chỉ chưa bóc (enriched_at NULL) cũng là việc; tin chưa thử bao giờ đi trước, rồi tin khớp, rồi tin mới.
+    // ponytail: TopDev logo/địa chỉ bóc ở trang danh sách nên chỉ cần JD; ITviec cần trang chi tiết dù đã có JD.
+    `SELECT j.id, j.source_id, j.source_url, j.skills, j.title, j.location, j.salary_text, j.work_mode_src FROM jobs j
+     WHERE j.submitted_by IS NULL AND (j.jd_text = '' AND j.source_id IN ('src-itviec','src-topdev')
+        OR j.source_id = 'src-itviec' AND j.jd_text <> '-' AND j.enriched_at IS NULL
+        OR j.source_id = 'src-topdev' AND j.jd_text <> '-' AND j.enriched_at IS NULL AND j.salary_text IS NULL)
+     ORDER BY j.enriched_at IS NOT NULL, EXISTS (SELECT 1 FROM job_matches m WHERE m.job_id = j.id AND m.tier IN ('strong','partial')) DESC, j.first_seen_at DESC LIMIT ?`
   ).bind(limit).all();
   let done = 0, failed = 0;
   for (const j of results) {
-    let jd = "", gone = false, pv = extractPreview("", j.source_id);
+    let jd = "", gone = false, pv = extractPreview("", j.source_id), sal = null;
     for (let a = 0; a < 2 && !jd && !gone; a++) {
-      try { const html = await fetchText(j.source_url); jd = extractJd(html, j.source_id); pv = extractPreview(html, j.source_id); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
+      try { const html = await fetchText(j.source_url); jd = extractJd(html, j.source_id); pv = extractPreview(html, j.source_id); sal = ldSalary(html); } catch (e) { gone = /HTTP (?:404|410)\b/.test(String(e && e.message)); }
     }
     if (!jd) {
       failed++;
       // Chỉ 404/410 mới đánh '-' (tin đã gỡ); lỗi tạm (5xx, timeout, parse rỗng) để '' thử lại lần sau, LIMIT chặn đốt subrequest.
-      if (gone) await env.DB.prepare("UPDATE jobs SET jd_text = '-' WHERE id = ?").bind(j.id).run();
+      if (gone) await env.DB.prepare("UPDATE jobs SET jd_text = '-', enriched_at = ? WHERE id = ?").bind(now(), j.id).run();
+      else await env.DB.prepare("UPDATE jobs SET enriched_at = ? WHERE id = ?").bind(now(), j.id).run(); // xuống cuối hàng, vẫn thử lại
       continue;
     }
     const skills = [...new Set([...JSON.parse(j.skills || "[]"), ...extractSkillsFromText(jd)])];
-    await env.DB.prepare("UPDATE jobs SET jd_text = ?, skills = ?, company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src) WHERE id = ?")
-      .bind(jd, JSON.stringify(skills), pv.logo, pv.address, pv.benefits, pv.mode, j.id).run();
+    const salaryText = j.salary_text || sal; // lương có sẵn (trang danh sách) giữ nguyên; JSON-LD đứng trước bóc từ JD
+    await env.DB.prepare(`UPDATE jobs SET jd_text = ?, skills = ?, salary_text = ?, company_logo_url = COALESCE(?, company_logo_url), address = COALESCE(?, address), benefits = COALESCE(?, benefits), work_mode_src = COALESCE(?, work_mode_src), enriched_at = ?, ${DERIVE_SET} WHERE id = ?`)
+      .bind(jd, JSON.stringify(skills), salaryText, pv.logo, pv.address, pv.benefits, pv.mode, now(), ...deriveArgs({ ...j, salary_text: salaryText, jd_text: jd, work_mode_src: pv.mode ?? j.work_mode_src }), j.id).run();
     await env.Q_SCORE.send({ kind: "score", jobId: j.id });
     done++;
   }
@@ -879,6 +907,8 @@ async function enrichJd(env, limit) {
   return r;
 }
 
+// /api/public/try: khớp AREA_PRESETS của web (PR #15) + "Khác" (chỉ khớp tin Remote / không ghi địa điểm).
+const TRY_LOCATIONS = ["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Hải Phòng", "Bình Dương", "Đồng Nai", "Remote", "Khác"];
 const USD_VND = 25500; // 03/11/2026
 // Parse lương → {min, max, currency, period} | null. "Thương lượng" và dạng lạ → null (không đoán mò).
 function parseSalary(text) {
@@ -915,6 +945,97 @@ function salaryVND(text) {
   const v = monthlyVND(p);
   return { min: Math.round(v.min), max: Math.round(v.max) };
 }
+// Lương trong JD (ITviec/TopDev không có ô lương): chỉ dạng rõ ràng, trả chuỗi chuẩn cho parseSalary, không đoán.
+// ponytail: 3 mẫu (khoảng triệu; "lương: N triệu"; USD có từ khoá lương/"up to"); bỏ "k", năm, tiền khác. Thêm mẫu khi gặp tin thật bị sót.
+const SAL_KW = /(?:mức lương|lương|salary|thu nhập|income|compensation)[^\n\d]{0,25}$/i;
+const TR = "(?:triệu|tr)(?![\\p{L}])(?!\\s*(?:\\/\\s*)?(?:năm|nam\\b|year|per year))"; // "170tr/năm" = lương năm: bỏ, không đoán
+function salaryFromJd(jd) {
+  const t = String(jd || "").slice(0, JD_MAX);
+  let m = t.match(new RegExp(`(?<![\\d.,])(\\d{1,3})\\s*[-–~]\\s*(\\d{1,3})\\s*${TR}`, "iu"));
+  if (m && +m[1] >= 3 && +m[1] <= +m[2] && +m[2] <= 200) return `${+m[1]} - ${+m[2]} triệu`;
+  for (const x of t.matchAll(new RegExp(`(?<![\\d.,])(\\d{1,3})\\s*${TR}`, "giu"))) {
+    if (+x[1] >= 3 && +x[1] <= 200 && SAL_KW.test(t.slice(Math.max(0, x.index - 40), x.index).replace(/(?:up ?to|lên (?:đến|tới)|tới|đến|từ|upto)\s*$/i, ""))) return `${+x[1]} triệu`;
+  }
+  const N = "(\\d{1,2},\\d{3}|\\d{3,5})";
+  const usd = new RegExp(`(?<![\\d.,])\\$?\\s*${N}\\s*(?:usd)?(?:\\s*(?:[-–~]|to)\\s*\\$?\\s*${N})?\\s*(?:usd|\\$)?`, "gi");
+  for (const x of t.matchAll(usd)) {
+    if (!/\$|usd/i.test(x[0])) continue;
+    const before = t.slice(Math.max(0, x.index - 40), x.index), after = t.slice(x.index + x[0].length, x.index + x[0].length + 15);
+    if (/^\s*(?:k\b|\/?\s*(?:year|yr|năm|annum|annual|hour|h\b|day))/i.test(after) || /\b(?:per )?(?:year|annual)/i.test(after)) continue;
+    if (!SAL_KW.test(before) && !/(?:up ?to|lên (?:đến|tới)|tối đa)\s*$/i.test(before)) continue;
+    // "(From $700, Up to $10,000)": lấy $700 làm mức dưới
+    const from = !x[2] && before.match(/(?:from|từ)\s*\$?\s*(\d{1,2},\d{3}|\d{3,5})\s*(?:usd|\$)?\s*[,;]?\s*(?:up ?to|lên (?:đến|tới)|tối đa)\s*$/i);
+    const n = (s) => Number(s.replace(/,/g, "")), b = n(x[2] || x[1]), a = x[2] ? n(x[1]) : from ? n(from[1]) : b;
+    if (a >= 300 && a <= b && b <= 15000) return `${a} - ${b} USD/month`;
+  }
+  return null;
+}
+// Cột lưu sẵn (0020) để lọc/sắp xếp trong SQL trên mọi tin, không chỉ JOB_LIST_LIMIT tin mới nhất.
+function deriveJob(r) {
+  let sv = salaryVND(r.salary_text);
+  if (sv.max === null) sv = salaryVND(salaryFromJd(jdOf(r)));
+  return { salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, jdOf(r), r.source_id, r.work_mode_src) };
+}
+const DERIVE_SET = "salary_vnd_min = ?, salary_vnd_max = ?, work_mode = ?, derived_at = ?";
+const deriveArgs = (r) => { const d = deriveJob(r); return [d.salary_vnd_min, d.salary_vnd_max, d.work_mode, now()]; };
+
+// Email: Mailjet trước (gửi được tới mọi người nhận chỉ với 1 sender đã xác minh, không cần domain), rồi Resend (cần domain).
+// fetch, không SDK. Thiếu khoá → không gửi, trả false. Không log địa chỉ.
+const mailjetOn = (env) => Boolean(env.MAILJET_API_KEY && env.MAILJET_SECRET_KEY && env.MAIL_FROM);
+const resendOn = (env) => Boolean(env.RESEND_API_KEY && env.MAIL_FROM);
+const mailEnabled = (env) => mailjetOn(env) || resendOn(env);
+async function sendMail(env, to, subject, text) {
+  if (mailjetOn(env)) {
+    const m = String(env.MAIL_FROM).match(/^\s*(.*?)\s*<([^>]+)>\s*$/), from = m ? { Email: m[2], Name: m[1] || undefined } : { Email: String(env.MAIL_FROM).trim() };
+    try {
+      const r = await fetch("https://api.mailjet.com/v3.1/send", {
+        method: "POST", headers: { authorization: "Basic " + btoa(`${env.MAILJET_API_KEY}:${env.MAILJET_SECRET_KEY}`), "content-type": "application/json" },
+        body: JSON.stringify({ Messages: [{ From: from, To: [{ Email: to }], Subject: subject, TextPart: text }] }),
+      });
+      if (r.ok) return true;
+      console.log("mail: mailjet", r.status);
+    } catch (e) { console.log("mail: mailjet lỗi", e.message); }
+  }
+  if (!resendOn(env)) return false;
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
+      body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text }),
+    });
+    if (!r.ok) console.log("mail: resend", r.status);
+    return r.ok;
+  } catch (e) { console.log("mail: lỗi", e.message); return false; }
+}
+// Đếm theo khoá KV trong 1 giờ. ponytail: không nguyên tử như ownBotAttempt; vượt vài lần khi dồn dập là chấp nhận được.
+async function kvRate(env, key, max) {
+  const n = Number(await env.KV.get(key)) || 0;
+  if (n >= max) return false;
+  await env.KV.put(key, String(n + 1), { expirationTtl: 3600 });
+  return true;
+}
+
+// Toạ độ văn phòng (§3B) qua Nominatim: ≤1 req/s, vài tin/lần cron, chỉ gửi địa chỉ công ty (không dữ liệu người dùng).
+const GEOCODE_PER_RUN = 2;
+const FORGOT_IP_MAX = 10, FORGOT_EMAIL_MAX = 3, VERIFY_SEND_MAX = 3; // mỗi giờ
+async function geocodeJobs(env, n = GEOCODE_PER_RUN) {
+  const { results } = await env.DB.prepare("SELECT id, address FROM jobs WHERE geocoded_at IS NULL AND address IS NOT NULL AND address <> '' ORDER BY first_seen_at DESC LIMIT ?").bind(n).all();
+  let hit = 0;
+  for (const [i, j] of results.entries()) {
+    if (i) await new Promise((r) => setTimeout(r, 1100));
+    let rows;
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=vn&q=${encodeURIComponent(j.address)}`, { headers: { "user-agent": "JobPilot/1.0", accept: "application/json" } });
+      if (!r.ok) { console.log("geocode", r.status); break; } // 429/5xx: để NULL, thử lần sau
+      rows = await r.json();
+    } catch (e) { console.log("geocode lỗi", e.message); break; }
+    const p = Array.isArray(rows) && rows[0], lat = p && Number(p.lat), lng = p && Number(p.lon);
+    const ok = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+    await env.DB.prepare("UPDATE jobs SET lat = ?, lng = ?, geocoded_at = ? WHERE id = ?").bind(ok ? lat : null, ok ? lng : null, ok ? now() : 0, j.id).run();
+    hit += ok ? 1 : 0;
+  }
+  return { tried: results.length, hit };
+}
+
 const VN_CITY_RE = /\b(?:ho chi minh|hcmc?|hn|sai gon|saigon|ha noi|hanoi|da nang|hai phong|can tho|binh duong|dong nai|bac ninh|hue|nha trang)\b/;
 // Nguồn chỉ đăng tin remote (HN đã lọc REMOTE lúc quét): mặc định remote, trừ khi ghi hybrid.
 const REMOTE_SOURCES = new Set(["src-wwr", "src-remotive", "src-remoteok", "src-hn"]);
@@ -1798,7 +1919,7 @@ export default {
         const level = url.searchParams.get("level") || "middle", location = url.searchParams.get("location") || "Hồ Chí Minh";
         if (!skills.length || skills.length > 8 || skills.some((x) => !SKILL_CATALOG.includes(x))) return json({ error: "invalid_skills" }, 400);
         if (!["fresher", "junior", "middle", "senior"].includes(level)) return json({ error: "invalid_level" }, 400);
-        if (!["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"].includes(location)) return json({ error: "invalid_location" }, 400);
+        if (!TRY_LOCATIONS.includes(location)) return json({ error: "invalid_location" }, 400);
         tryP = { skills: skills.sort(), level, location };
         cacheKey = new Request("https://cache.jobpilot.internal/try?" + new URLSearchParams({ s: tryP.skills.join(","), l: level, c: location, lang }));
         const hit = typeof caches !== "undefined" ? await caches.default.match(cacheKey) : null;
@@ -1918,6 +2039,49 @@ export default {
       return json({ ok: true });
     }
 
+    // Ada 12/11 #1: tự quên mật khẩu. Luôn {ok:true} (không lộ email có tồn tại); giao qua Telegram đã liên kết, không thì email, không thì im.
+    if (path === "/api/auth/forgot" && request.method === "POST") {
+      const body = await readBody(request);
+      const ip = request.headers.get("cf-connecting-ip") || "unknown";
+      if (!(await verifyTurnstile(env, body.turnstile_token, ip))) return json({ error: "turnstile_failed" }, 403);
+      const email = (typeof body.email === "string" ? body.email : "").trim().toLowerCase();
+      if (!EMAIL_RE.test(email) || email.length > 254) return json({ error: "invalid_email" }, 400);
+      if (!(await kvRate(env, `forgot:ip:${ip}`, FORGOT_IP_MAX)) || !(await kvRate(env, `forgot:e:${await sha256hex(email)}`, FORGOT_EMAIL_MAX))) return json({ ok: true });
+      const u = await env.DB.prepare("SELECT u.id, u.email, u.telegram_chat_id, b.token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.email = ? AND u.deleted_at IS NULL").bind(email).first();
+      if (u && (u.telegram_chat_id || mailEnabled(env))) {
+        const token = randomToken();
+        await env.KV.put(`pwreset:${token}`, u.id, { expirationTtl: 1800 });
+        const link = `${APP_URL}/?reset=${token}`;
+        const sent = u.telegram_chat_id
+          && (await tgSendFor(env, u.id, u.telegram_chat_id, `Đặt lại mật khẩu JobPilot (hết hạn sau 30 phút): ${tgLink(link, "mở liên kết")}\nKhông phải bạn yêu cầu thì bỏ qua tin này.`, u.token_enc)) === 200;
+        if (!sent && !(await sendMail(env, u.email, "Đặt lại mật khẩu JobPilot", `Mở liên kết sau để đặt lại mật khẩu (hết hạn sau 30 phút):\n${link}\n\nKhông phải bạn yêu cầu thì bỏ qua email này.`))) await env.KV.delete(`pwreset:${token}`);
+      }
+      return json({ ok: true });
+    }
+    // Ada 12/11 #2: xác minh email (ngủ đến khi có khoá mail). Không bao giờ chặn đăng nhập. Token gắn cả email: đổi email thì token cũ vô hiệu.
+    if (path === "/api/auth/verify-email" && request.method === "POST") {
+      const tk = (await readBody(request)).token;
+      const v = typeof tk === "string" && /^[A-Za-z0-9_-]{16,128}$/.test(tk) ? await env.KV.get(`verify:${tk}`) : null;
+      if (!v) return json({ error: "invalid_verify_token" }, 400);
+      await env.KV.delete(`verify:${tk}`);
+      const [vid, vemail] = v.split("|");
+      const r = await env.DB.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, ?) WHERE id = ? AND email = ? AND deleted_at IS NULL").bind(now(), vid, vemail).run();
+      if (r.meta && r.meta.changes === 0) return json({ error: "invalid_verify_token" }, 400);
+      return json({ ok: true });
+    }
+    // Ada 12/11 #9: trang chia sẻ 1 tin, không cần đăng nhập. Chỉ tin quét chung (tin dán tay là riêng tư), chỉ trường công khai.
+    const pubJob = path.match(/^\/api\/public\/job\/([A-Za-z0-9-]{1,64})$/);
+    if (pubJob && request.method === "GET") {
+      const j = await env.DB.prepare("SELECT title, company, location, salary_text, skills, source_id, source_url, company_logo_url, work_mode_src, work_mode, derived_at, substr(jd_text, 1, 600) AS jd_head FROM jobs WHERE id = ? AND submitted_by IS NULL").bind(pubJob[1]).first();
+      if (!j) { const r = json({ error: "job_not_found" }, 404); r.headers.set("cache-control", "public, max-age=60"); return r; }
+      const r = json({ title: j.title, company: j.company, location: j.location,
+        work_mode: j.derived_at != null ? j.work_mode : workMode(j.location, j.title, j.jd_head, j.source_id, j.work_mode_src),
+        salary_text: j.salary_text || null, logo: safeLogo(j.company_logo_url), source_url: /^https:\/\//.test(j.source_url || "") ? j.source_url : null,
+        skills: parseBenefits(j.skills) });
+      r.headers.set("cache-control", "public, max-age=600");
+      return r;
+    }
+
     // Webhook Telegram: không Bearer, xác thực bằng secret header; luôn 200 sau khi qua kiểm tra.
     if (path === "/api/telegram/webhook" && request.method === "POST") {
       if (!env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
@@ -1965,7 +2129,18 @@ export default {
       return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
         telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null,
-        unread_count: nf.n, has_attention: !!nf.a, jobs_seen_at: user.jobs_seen_at ?? null }, profiles });
+        unread_count: nf.n, has_attention: !!nf.a, jobs_seen_at: user.jobs_seen_at ?? null,
+        email_verified: !!user.email_verified_at, mail_enabled: mailEnabled(env), telegram_shared_ok: Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_BOT_USERNAME) }, profiles });
+    }
+    if (path === "/api/me/verify-email/send" && request.method === "POST") { // sent:false khi chưa có khoá mail / đã xác minh
+      if (user.email_verified_at) return json({ ok: true, sent: false, reason: "already_verified" });
+      if (!mailEnabled(env)) return json({ ok: true, sent: false, reason: "mail_disabled" });
+      if (!(await kvRate(env, `verifysend:${user.id}`, VERIFY_SEND_MAX))) return json({ error: "too_many_attempts" }, 429);
+      const token = randomToken();
+      await env.KV.put(`verify:${token}`, `${user.id}|${user.email}`, { expirationTtl: 86400 });
+      const sent = await sendMail(env, user.email, "Xác minh email JobPilot", `Mở liên kết sau để xác minh email (hết hạn sau 24 giờ):\n${APP_URL}/?verify=${token}`);
+      if (!sent) await env.KV.delete(`verify:${token}`);
+      return json({ ok: true, sent });
     }
     if (path === "/api/auth/change-password" && request.method === "POST") { // T-22
       const b = await readBody(request);
@@ -2135,22 +2310,31 @@ export default {
       const modes = qm === null ? null : qm.split(",").map((x) => x.trim()).filter(Boolean);
       const minSalary = qs === null ? null : Number(qs);
       if ((modes && (!modes.length || modes.some((x) => !MODES.includes(x)))) || (qs !== null && !/^\d{1,4}$/.test(qs)) || (qh !== null && qh !== "1" && qh !== "0")) return json({ error: "invalid_query" }, 400);
-      const cols = paged ? "j.id, j.source_id, j.source_url, j.title, j.company, j.location, j.salary_text, j.skills, j.posted_at, j.first_seen_at, j.last_seen_at, j.repost_count, j.company_logo_url, j.address, j.benefits, j.work_mode_src, substr(j.jd_text, 1, 600) AS jd_head" : "j.*";
-      let rows;
-      if (profileId) {
-        const { results } = await env.DB.prepare(
-          `SELECT ${cols}, m.final_score, m.tier, m.matched_skills, m.missing_skills, m.rule_score,
-                  a.id AS app_id, a.stage AS app_stage
-           FROM jobs j LEFT JOIN job_matches m ON m.job_id = j.id AND m.profile_id = ?
-           LEFT JOIN applications a ON a.job_id = j.id AND a.profile_id = ?
-           WHERE j.submitted_by IS NULL OR j.submitted_by = ?
-           ORDER BY COALESCE(m.final_score, 0) DESC, j.first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`
-        ).bind(profileId, profileId, user.id).all();
-        rows = results;
-      } else {
-        const { results } = await env.DB.prepare(`SELECT ${cols}, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE j.submitted_by IS NULL OR j.submitted_by = ? ORDER BY j.first_seen_at DESC LIMIT ${JOB_LIST_LIMIT}`).bind(user.id).all();
-        rows = results;
-      }
+      const sort = url.searchParams.get("sort") ?? "score";
+      if (!["score", "new", "salary"].includes(sort)) return json({ error: "invalid_query" }, 400);
+      const cols = (paged ? "j.id, j.source_id, j.source_url, j.title, j.company, j.location, j.salary_text, j.skills, j.posted_at, j.first_seen_at, j.last_seen_at, j.repost_count, j.company_logo_url, j.address, j.benefits, j.work_mode_src, j.lat, j.lng, j.derived_at, substr(j.jd_text, 1, 600) AS jd_head" : "j.*")
+        + ", j.salary_vnd_min AS d_min, j.salary_vnd_max AS d_max, j.work_mode AS d_mode";
+      // Ada 12/11 (#4): lọc trong SQL TRƯỚC LIMIT nên phủ mọi tin, không chỉ JOB_LIST_LIMIT tin mới nhất. Cột lưu sẵn từ 0020;
+      // tin chưa tính (derived_at NULL, trước backfill) lọt qua SQL rồi lọc lại bằng JS bên dưới, nên đúng cả trước lẫn sau backfill.
+      // ponytail: kết quả sau lọc vẫn trần JOB_LIST_LIMIT (CPU fitBreakdown); q có chữ có dấu chỉ lọc JS (lower() của SQLite chỉ ASCII).
+      const w = ["(j.submitted_by IS NULL OR j.submitted_by = ?)"], wa = [user.id];
+      if (tier && profileId) { w.push("m.tier = ?"); wa.push(tier); } else if (tier) w.push("0");
+      if (source) { w.push("instr(COALESCE(j.source_id, ''), ?) > 0"); wa.push(source); }
+      if (q && /^[ -~]+$/.test(q)) { w.push("instr(lower(j.title || ' ' || j.company), ?) > 0"); wa.push(q); }
+      if (modes) { w.push(`(j.derived_at IS NULL OR j.work_mode IN ${IN_JSON})`); wa.push(JSON.stringify(modes)); }
+      if (qh === "1") w.push("(j.derived_at IS NULL OR j.salary_vnd_max IS NOT NULL)");
+      if (minSalary !== null) { w.push("(j.derived_at IS NULL OR j.salary_vnd_max IS NULL OR j.salary_vnd_max >= ?)"); wa.push(minSalary * 1e6); }
+      const order = sort === "new" ? "j.first_seen_at DESC" : sort === "salary" ? "j.salary_vnd_max IS NULL, j.salary_vnd_max DESC, j.salary_vnd_min DESC, j.first_seen_at DESC"
+        : profileId ? "COALESCE(m.final_score, 0) DESC, j.first_seen_at DESC" : "j.first_seen_at DESC";
+      // Rigel 12/11: min_salary vẫn giữ tin chưa rõ lương, nhưng xếp tin có lương >= X lên trước, để tin không lương không chiếm hết trần JOB_LIST_LIMIT
+      const orderBy = minSalary !== null ? `(j.salary_vnd_max IS NULL), ${order}` : order;
+      const { results: rowsDb } = await env.DB.prepare(profileId
+        ? `SELECT ${cols}, m.final_score, m.tier, m.matched_skills, m.missing_skills, m.rule_score, a.id AS app_id, a.stage AS app_stage
+           FROM jobs j LEFT JOIN job_matches m ON m.job_id = j.id AND m.profile_id = ? LEFT JOIN applications a ON a.job_id = j.id AND a.profile_id = ?
+           WHERE ${w.join(" AND ")} ORDER BY ${orderBy}, j.id LIMIT ${JOB_LIST_LIMIT}`
+        : `SELECT ${cols}, NULL AS app_id, NULL AS app_stage FROM jobs j WHERE ${w.join(" AND ")} ORDER BY ${orderBy}, j.id LIMIT ${JOB_LIST_LIMIT}`
+      ).bind(...(profileId ? [profileId, profileId] : []), ...wa).all();
+      let rows = rowsDb;
       // Phase 2 — flags + giải thích điểm (tính trực tiếp, không cần chấm lại)
       let prof = null; const skillW = new Map();
       if (profileId) {
@@ -2172,10 +2356,11 @@ export default {
       if (tier) rows = rows.filter((r) => r.final_score !== null && r.final_score !== undefined && r.tier === tier);
       if (source) rows = rows.filter((r) => (r.source_id || "").includes(source));
       if (q) rows = rows.filter((r) => `${r.title} ${r.company}`.toLowerCase().includes(q));
-      rows = rows.map((r) => { const sv = salaryVND(r.salary_text); return { ...r, salary_vnd_min: sv.min, salary_vnd_max: sv.max, work_mode: workMode(r.location, r.title, r.jd_head ?? r.jd_text, r.source_id, r.work_mode_src) }; });
+      rows = rows.map((r) => ({ ...r, ...(r.derived_at != null ? { salary_vnd_min: r.d_min, salary_vnd_max: r.d_max, work_mode: r.d_mode } : deriveJob({ ...r, jd_text: r.jd_head ?? r.jd_text })) }));
       if (modes) rows = rows.filter((r) => modes.includes(r.work_mode));
       if (qh === "1") rows = rows.filter((r) => r.salary_vnd_max !== null);
       if (minSalary !== null) rows = rows.filter((r) => r.salary_vnd_max === null || r.salary_vnd_max >= minSalary * 1e6);
+      if (sort === "salary") rows.sort((a, b) => (b.salary_vnd_max ?? -1) - (a.salary_vnd_max ?? -1) || (b.salary_vnd_min ?? -1) - (a.salary_vnd_min ?? -1)); // tin chưa tính cột vẫn đúng chỗ
       const explain = (r) => {
         const skillsArr = JSON.parse(r.skills || "[]");
         const flags = postingFlags({ ...r, skillCount: skillsArr.length, dup: (keyCount.get(normKey(r)) || 0) > 1 && r.first_seen_at !== keyFirst.get(normKey(r)) }, now(), lang);
@@ -2200,7 +2385,8 @@ export default {
       // Nhãn tính ở JS (cần fitBreakdown) nên không làm bằng ORDER BY. ponytail: bản phân trang xét trên jd_head 600 ký tự;
       // khoá vùng nằm sâu hơn trong JD thì nhãn trang có thể là skip mà vẫn đứng trên. Lưu verdict vào job_matches khi chấm nếu cần chặt.
       const explained = new Map(); // N1: dùng lại ở out; bản phân trang tính lại cho tin trong trang vì vừa nạp jd_text đầy đủ
-      if (prof) rows = rows.map((r) => { const e = explain(r); explained.set(r.id, e); const v = e.vd; return [r, !v ? 2 : v.verdict === "skip" ? 1 : 0]; }).sort((a, b) => a[1] - b[1]).map((x) => x[0]); // tin chưa chấm vẫn cuối
+      if (prof && sort === "score") rows = rows.map((r) => { const e = explain(r); explained.set(r.id, e); const v = e.vd; return [r, !v ? 2 : v.verdict === "skip" ? 1 : 0]; }).sort((a, b) => a[1] - b[1]).map((x) => x[0]); // tin chưa chấm vẫn cuối
+      if (minSalary !== null) rows.sort((a, b) => (a.salary_vnd_max === null) - (b.salary_vnd_max === null)); // sort ổn định: giữ thứ tự sort/nhãn trong mỗi nhóm
       const total = rows.length;
       if (paged) {
         rows = rows.slice(offset, offset + limit);
@@ -2218,6 +2404,7 @@ export default {
           salary_vnd_min: r.salary_vnd_min, salary_vnd_max: r.salary_vnd_max, work_mode: r.work_mode,
           work_mode_source: r.work_mode ? (r.work_mode === r.work_mode_src ? "source" : "inferred") : null,
           company_logo_url: safeLogo(r.company_logo_url), address: r.address || null, benefits: parseBenefits(r.benefits),
+          lat: r.lat ?? null, lng: r.lng ?? null,
           skills: skillsArr, jd_len: jdOf(r).length,
           posted_at: r.posted_at, first_seen_at: r.first_seen_at,
           flags, risk,
@@ -2257,12 +2444,12 @@ export default {
         const host = new URL(link).hostname;
         const sourceType = /(^|\.)topdev\.vn$/.test(host) ? "topdev" : /(^|\.)itviec\.com$/.test(host) ? "itviec" : "manual";
         const src = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(sourceType === "manual" ? "topdev" : sourceType).first();
-        let jdText = str(b.jd_text, 8000), title = str(b.title, 300), company = str(b.company, 200);
+        let jdText = str(b.jd_text, 8000), title = str(b.title, 300), company = str(b.company, 200), ldSal = null;
         if (!jdText) {
           try {
             const html = await fetchSubmittedPage(link);
             if (html) {
-              jdText = stripTags(html).slice(0, 8000);
+              jdText = stripTags(html).slice(0, 8000); ldSal = ldSalary(html);
               const tm = html.match(/<title>([^<]+)<\/title>/i);
               if (!title && tm) title = tm[1].split("|")[0].split(" - ")[0].trim().slice(0, 300);
             }
@@ -2271,7 +2458,7 @@ export default {
         job = await upsertJob(env, sourceType === "manual" ? null : src?.id || null, {
           title: title || "Tin không tiêu đề", company, location: str(b.location, 200),
           url: link, jdText, skills: extractSkillsFromText(jdText),
-          postedAt: null, salaryText: str(b.salary_text, 100) || null,
+          postedAt: null, salaryText: str(b.salary_text, 100) || ldSal,
         }, user.id);
       } else {
         const title = str(b.title, 300), company = str(b.company, 200), jdText = str(b.jd_text, 8000);
@@ -2547,6 +2734,25 @@ export default {
     }
 
     // --- ingest admin + digest ---
+    // Ada 12/11 #4/#6: tính lương VNĐ (kể cả bóc từ JD) + hình thức cho tin cũ (derived_at NULL). 1 batch đọc + 1 batch ghi / lần gọi.
+    // dry_run: trả câu SQL thay vì ghi, để owner xem rồi chạy bằng wrangler d1 execute --file.
+    if (path === "/api/admin/backfill/derived" && request.method === "POST") {
+      const b = await readBody(request);
+      const n = Math.min(Math.max(Number(b.limit) || 200, 1), 500);
+      const [{ results }, { results: [c] }] = await env.DB.batch([
+        env.DB.prepare("SELECT id, title, location, salary_text, jd_text, source_id, work_mode_src FROM jobs WHERE derived_at IS NULL ORDER BY first_seen_at DESC LIMIT ?").bind(n),
+        env.DB.prepare("SELECT COUNT(*) AS c FROM jobs WHERE derived_at IS NULL"),
+      ]);
+      const rows = results.map((r) => ({ id: r.id, args: deriveArgs(r) }));
+      const withSalary = rows.filter((r) => r.args[1] !== null).length;
+      if (b.dry_run) {
+        const lit = (v) => (v === null ? "NULL" : typeof v === "number" ? String(v) : `'${String(v).replace(/'/g, "''")}'`);
+        const sql = rows.map(({ id, args: [mn, mx, md, t] }) => `UPDATE jobs SET salary_vnd_min = ${lit(mn)}, salary_vnd_max = ${lit(mx)}, work_mode = ${lit(md)}, derived_at = ${t} WHERE id = ${lit(id)} AND derived_at IS NULL;`).join("\n");
+        return json({ dry_run: true, rows: rows.length, with_salary: withSalary, remaining: c.c, sql });
+      }
+      if (rows.length) await dbBatch(env, rows.map(({ id, args }) => env.DB.prepare(`UPDATE jobs SET ${DERIVE_SET} WHERE id = ? AND derived_at IS NULL`).bind(...args, id)));
+      return json({ updated: rows.length, with_salary: withSalary, remaining: c.c - rows.length });
+    }
     if (path === "/api/admin/jd/enrich" && request.method === "POST") {
       const b = await readBody(request);
       return json(await enrichJd(env, Math.min(Math.max(Number(b.limit) || 8, 1), 20)));
@@ -2724,6 +2930,7 @@ export default {
         await env.DB.batch([env.DB.prepare(`DELETE FROM job_matches WHERE job_id IN (${old})`).bind(cut), env.DB.prepare(`DELETE FROM jobs WHERE id IN (${old})`).bind(cut)]);
       } catch (e) { console.log("cleanup jobs error", e.message); }
       try { await enrichJd(env, 8); } catch (e) { console.log("enrichJd error", e.message); }
+      try { console.log("geocode", JSON.stringify(await geocodeJobs(env))); } catch (e) { console.log("geocode error", e.message); }
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at IS NULL").all();
       for (const u of users) await env.Q_NOTIFY.send({ kind: "digest", userId: u.id });

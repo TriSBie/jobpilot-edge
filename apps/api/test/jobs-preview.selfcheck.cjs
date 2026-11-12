@@ -83,7 +83,7 @@ global.fetch = async (url) => {
   assert.deepStrictEqual([again.company_logo_url, again.address, again.seen_count], ['https://assets.saramin.vn/images/a.png', '118 Đường B2, Phường An Lợi Đông, Thành phố Hồ Chí Minh', 2], 'giữ cũ khi nguồn rỗng');
 
   // 2. ITviec enrichJd: không thêm request (1 trang/tin), JSON-LD thắng fallback img, nhãn trước job-content
-  db.prepare("UPDATE jobs SET jd_text = 'td' WHERE source_id = 'src-topdev'").run(); // chỉ soi enrich ITviec
+  db.prepare("UPDATE jobs SET jd_text = 'td', enriched_at = 1 WHERE source_id = 'src-topdev'").run(); // chỉ soi enrich ITviec (TopDev chưa có lương + chưa thử cũng vào enrich để đọc JSON-LD)
   for (const id of ['iv-1', 'iv-2']) db.prepare("INSERT INTO jobs (id, source_id, source_url, title, company, location, jd_text, skills, content_hash, first_seen_at, created_at) VALUES (?, 'src-itviec', ?, 'Java Dev', 'bbv', 'Ho Chi Minh', '', '[]', ?, ?, ?)").run(id, 'https://itviec.com/it-jobs/' + id, 'h' + id, T, T);
   global.fetch = async (url) => { fetched.push(String(url)); return { ok: true, status: 200, text: async () => (String(url).endsWith('iv-1') ? ivHtml('https://itviec.com/rails/logo.png') : ivHtml('javascript:alert(1)')) }; };
   fetched.length = 0;
