@@ -576,6 +576,16 @@ html[data-theme="light"] .theme-toggle .ic-moon{ display:none; }
   #jobsContainer .chip.flag.mute{border-color:var(--line);color:var(--mute)}
   #jobsContainer .chip.src{background:var(--bg);color:var(--mute)}
   #jobsContainer .chip.mode{background:var(--raised);color:var(--ink)}
+  /* SPEC §3A: xem nhanh trên thẻ. Chế độ luôn có chữ + icon, không dựa riêng vào màu. */
+  .card .meta.pv{align-items:center;gap:4px 10px}
+  .card .co{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:600}
+  .card .logo{width:32px;height:32px;flex:none;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--raised);object-fit:contain;display:inline-grid;place-items:center;font:700 12px var(--f-body);color:var(--mute);overflow:hidden}
+  .card .wm{display:inline-flex;align-items:center;gap:4px;font-weight:600;color:var(--ink)}
+  .card .wm svg{width:14px;height:14px;flex:none}
+  .card .wm.unk{color:var(--mute);font-weight:500}
+  .card .addr{color:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card .bnf{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}
+  .card .bnf span{background:var(--sun);color:var(--sun-ink);border-radius:var(--r-pill);padding:2px 10px;font:600 12px/1.5 var(--f-body);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .jf2{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center;margin:-.4rem 0 1rem}
   .jf2 [data-mode]{min-height:36px;padding:0 14px;border-radius:var(--r-pill);border:1px solid var(--line-strong,var(--line));background:var(--surface);color:var(--ink);font:500 14px var(--f-body);cursor:pointer}
   .jf2 [data-mode][aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
@@ -1358,6 +1368,15 @@ html.fx-on .bg-fx{opacity:1}
     <circle cx="12" cy="12" r="9"/>
     <path d="M9 9l6 6M15 9l-6 6"/>
   </symbol>
+  <symbol id="building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 21V5l8-2v18M12 9l8 2v10M3 21h18M8 8v.01M8 12v.01M8 16v.01M16 14v.01M16 18v.01"/>
+  </symbol>
+  <symbol id="wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01"/>
+  </symbol>
+  <symbol id="hybrid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11l9-7 9 7M5 10v10h14V10M12 20v-6"/>
+  </symbol>
   <symbol id="bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M13 3L5 14h6l-1 7 8-11h-6l1-7z"/>
   </symbol>
@@ -2047,7 +2066,7 @@ let REF = "";
 try { const q = new URLSearchParams(location.search).get("ref"); if (q && !localStorage.getItem("jp_ref")) localStorage.setItem("jp_ref", q); REF = localStorage.getItem("jp_ref") || q || ""; } catch (e) { /* bỏ qua */ }
 const refSource = () => REF;
 const EN = {};
-Object.assign(EN, {"Hồ sơ của tôi":"My profile","Tối đa 8 kỹ năng.":"At most 8 skills.","Chọn ít nhất 3 kỹ năng.":"Pick at least 3 skills.","Đang chấm điểm…":"Scoring…","Chưa có tin nào khớp, thử thêm kỹ năng khác.":"No matching postings yet, try other skills."});
+Object.assign(EN, {"Onsite bắt buộc":"Onsite only","Chưa rõ chế độ":"Work mode unknown","Suy ra từ tin, nguồn không ghi rõ":"Inferred from the posting, the source does not say","Phúc lợi":"Benefits","Hồ sơ của tôi":"My profile","Tối đa 8 kỹ năng.":"At most 8 skills.","Chọn ít nhất 3 kỹ năng.":"Pick at least 3 skills.","Đang chấm điểm…":"Scoring…","Chưa có tin nào khớp, thử thêm kỹ năng khác.":"No matching postings yet, try other skills."});
 let LANG = "vi";
 try { LANG = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jp_lang") || "vi"; } catch (e) { /* bỏ qua */ }
 if (LANG !== "en") LANG = "vi";
@@ -3266,8 +3285,8 @@ function renderJobs(){
       <div style="min-width:0">
         <h3 class="ttl"><a href="${esc(job.source_url)}" target="_blank" rel="noopener">${esc(job.title)}</a></h3>
         ${job.verdict ? `<div><span class="vd ${esc(job.verdict)}">${job.verdict === "apply" ? t("Nên nộp") : job.verdict === "skip" ? t("Bỏ qua") : esc(job.verdict_why)}</span></div>` : ""}
-        <div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", jobSalary(job)].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>
-        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}${MODE_LABEL[job.work_mode] ? `<span class="chip mode">${MODE_LABEL[job.work_mode]}</span>` : ""}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
+        ${hasPreview(job) ? previewMeta(job, date) : `<div class="meta">${[job.company, job.location, date ? fmtDate(date) : "", jobSalary(job)].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("")}</div>`}
+        <div class="chips">${isNewJob(job) ? `<span class="chip new">${t("Mới")}</span>` : ""}${!hasPreview(job) && MODE_LABEL[job.work_mode] ? `<span class="chip mode">${MODE_LABEL[job.work_mode]}</span>` : ""}<span class="chip src">${esc(srcLabel(job.source))}</span>${m ? "" : `<span class="chip off">${t("chưa chấm")}</span>`}${shownSkills.join("")}${moreChip}${lessChip}${cardFlags(job).map(f => `<span class="chip flag">${esc(f.label)}</span>`).join("")}</div>
         <div class="actions">
           <select class="input" style="width:150px" data-stage-for="${esc(job.id)}" title="${t("Đổi giai đoạn ứng tuyển")}">
             ${STAGES.map(x => `<option value="${x.key}" ${x.key === stage ? "selected" : ""}>${t(x.label)}</option>`).join("")}
@@ -3592,6 +3611,26 @@ $("#filterSource").addEventListener("change", (e) => { state.filters.source = e.
 $("#filterQ").addEventListener("input", debounce((e) => { state.filters.q = e.target.value.trim(); loadJobs(); }, 350));
 // Bộ lọc hình thức + lương: lọc ở server (trước phân trang), giữ trong URL để tải lại vẫn còn.
 const MODE_LABEL = { remote: "Remote", hybrid: "Hybrid", onsite: "Onsite" };
+// SPEC §3A (dữ liệu từ PR #10). Tin không có dữ liệu xem nhanh nào (API cũ, hoặc mọi trường null) thì thẻ giữ nguyên như trước.
+const hasPreview = (j) => !!(j.company_logo_url || j.address || j.work_mode_source || (j.benefits && j.benefits.length));
+const PV_MODE = { onsite: ["building", "Onsite bắt buộc"], hybrid: ["hybrid", "Hybrid"], remote: ["wifi", "Remote OK"] };
+const initials = (s) => (String(s || "?").match(/[\p{L}\p{N}]+/gu) || ["?"]).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+const shortAddr = (a) => { const p = String(a).split(",").map(x => x.trim()).filter(Boolean); return p.slice(-2).join(", "); }; // ponytail: 2 đoạn cuối ≈ quận + thành phố; địa chỉ lạ thì chỉ cắt sai chữ, title vẫn đủ
+function previewMeta(job, date){
+  const ini = `<span class="logo" aria-hidden="true">${esc(initials(job.company))}</span>`;
+  const logo = job.company_logo_url ? `<img class="logo" src="${esc(job.company_logo_url)}" alt="" width="32" height="32" loading="lazy" referrerpolicy="no-referrer" data-ini="${esc(initials(job.company))}">` : ini;
+  const pm = PV_MODE[job.work_mode], inf = job.work_mode_source === "inferred";
+  const mode = pm ? `<span class="wm"${inf ? ` title="${t("Suy ra từ tin, nguồn không ghi rõ")}"` : ""}><svg aria-hidden="true"><use href="#${pm[0]}"/></svg>${inf ? "≈ " : ""}${t(pm[1])}</span>`
+    : `<span class="wm unk">${t("Chưa rõ chế độ")}</span>`;
+  const addr = job.address ? `<a class="addr" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}" target="_blank" rel="noopener" title="${esc(job.address)}">${esc(shortAddr(job.address))}</a>`
+    : job.location ? `<span>${esc(job.location)}</span>` : "";
+  const rest = [date ? fmtDate(date) : "", jobSalary(job)].filter(x => x).map(x => `<span>${esc(x)}</span>`).join("");
+  const b = (job.benefits || []).filter(x => typeof x === "string" && x);
+  const bnf = b.length ? `<div class="bnf" aria-label="${t("Phúc lợi")}">${b.slice(0, 3).map(x => `<span title="${esc(x)}">${esc(x)}</span>`).join("")}${b.length > 3 ? `<span title="${esc(b.slice(3).join(" · "))}">+${b.length - 3}</span>` : ""}</div>` : "";
+  return `<div class="meta pv">${job.company ? `<span class="co">${logo}${esc(job.company)}</span>` : ""}${mode}${addr}${rest}</div>${bnf}`;
+}
+// Ảnh logo lỗi (CDN chặn, 404) -> chữ viết tắt. Sự kiện error không nổi bọt nên bắt ở pha capture.
+document.addEventListener("error", (e) => { const el = e.target; if (el.tagName === "IMG" && el.classList.contains("logo")) { const s = document.createElement("span"); s.className = "logo"; s.setAttribute("aria-hidden", "true"); s.textContent = el.dataset.ini || "?"; el.replaceWith(s); } }, true);
 const MODES = Object.keys(MODE_LABEL);
 // Lương: tin trả USD giữ nguyên salary_text gốc ("$1500 - $2500"); còn lại salary_vnd_* (VNĐ/tháng) -> "15–25 triệu/tháng";
 // không có thì salary_text; "Thương lượng"/ẩn sau đăng nhập thì không hiện gì.
