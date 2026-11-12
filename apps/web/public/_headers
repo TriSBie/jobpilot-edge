@@ -1,9 +1,13 @@
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self)
   Referrer-Policy: strict-origin-when-cross-origin
   Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://cdnjs.cloudflare.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://itviec.com https://assets.saramin.vn; connect-src 'self' https://jobpilot-api.tribui-it-work.workers.dev https://cdnjs.cloudflare.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+
+# Service worker: luôn lấy bản mới để đổi VER có hiệu lực ngay.
+/sw.js
+  Cache-Control: no-cache
 
 # Admin CRM (SPEC §3D). Pages gộp header của /* (HSTS, X-Frame-Options, ...) với khối này; CSP ở đây là bản enforce, chặt hơn: chỉ gọi API.
 /admin/*
