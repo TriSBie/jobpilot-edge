@@ -15,9 +15,9 @@ const mkJobs = () => Array.from({ length: 6 }, (_, k) => ({ id: "j" + (k + 1), t
   application: k === 5 ? { id: "a6", stage: "applied" } : null }));
 const waitFor = async (fn, msg) => { for (let i = 0; i < 80; i++) { if (await fn()) return; await new Promise((r) => setTimeout(r, 50)); } assert.fail(msg); };
 
-async function open(browser, w, theme, failQuick = false) {
+async function open(browser, w, theme, failQuick = false, seed = {}) {
   const ctx = await browser.newContext({ viewport: { width: w, height: 900 } });
-  const page = await ctx.newPage(), calls = [], errs = [], jobs = mkJobs(), apps = {};
+  const page = await ctx.newPage(), calls = [], errs = [], jobs = mkJobs(), apps = JSON.parse(JSON.stringify(seed));
   page.on("pageerror", (e) => errs.push(e.message));
   page.on("console", (m) => { if (m.type() === "error") errs.push(m.text() + " @ " + (m.location().url || "")); });
   await ctx.route(API + "/**", async (r) => {
@@ -26,7 +26,7 @@ async function open(browser, w, theme, failQuick = false) {
     const send = (b, s = 200) => r.fulfill({ status: s, contentType: "application/json", body: JSON.stringify(b) });
     const p = u.pathname;
     if (p === "/api/me") return send({ user: { id: "u1", name: "Minh", email: "qa@lab.vn", consent_cv_at: 1 }, profiles: [profile] });
-    if (p === "/api/jobs") return send({ items: jobs.map((j) => Object.assign({}, j, { application: apps[j.id] || j.application })), total: jobs.length, offset: 0, limit: 50, next_offset: null });
+    if (p === "/api/jobs") return send({ items: jobs.filter((j) => !u.searchParams.get("q") || j.title.includes(u.searchParams.get("q"))).map((j) => Object.assign({}, j, { application: apps[j.id] ? { id: apps[j.id].id, stage: apps[j.id].stage } : j.application, /* như worker.js: chỉ {id, stage} */ })), total: jobs.length, offset: 0, limit: 50, next_offset: null });
     if (p === "/api/applications/quick") {
       if (failQuick) return send({ error: "job_not_found" }, 404);
       const a = apps[body.job_id] = Object.assign({ id: "a-" + body.job_id }, apps[body.job_id], { stage: "applied", next_follow_up_at: 999 });
@@ -118,6 +118,26 @@ const toastText = (page) => page.textContent("#toasts").catch(() => "");
     assert.equal(await page.$eval('[data-job-id="j1"] [data-stage-for]', (s) => s.value), "new");
     assert(!(await page.$eval('[data-applied-for="j1"]', (b) => b.disabled)));
     assert.deepEqual(errs.filter((e) => !/404/.test(e)), []); await ctx.close(); console.log("ok error state"); }
+  // Rigel #9: /api/jobs không trả next_follow_up_at -> Hoàn tác KHÔNG được gửi khoá này (kẻo xoá hạn 999 trên server)
+  { const { ctx, page, calls, errs } = await open(browser, 1280, "light", false, { j6: { id: "a6", stage: "applied", next_follow_up_at: 999 } });
+    await page.focus('[data-job-id="j6"] .ttl a'); await page.keyboard.press("x");
+    await waitFor(async () => calls.some((c) => c.startsWith("PATCH /api/applications/a6") && c.includes('"stage":"archived"')), "x không PATCH archived");
+    await page.click(".toast-act");
+    await waitFor(async () => calls.filter((c) => c.startsWith("PATCH /api/applications/a6")).length === 2, "Hoàn tác không PATCH");
+    const undo = calls.filter((c) => c.startsWith("PATCH /api/applications/a6"))[1];
+    assert.equal(undo, 'PATCH /api/applications/a6 {"stage":"applied"}', "Hoàn tác gửi thừa: " + undo);
+    assert(!undo.includes("next_follow_up_at"));
+    // #kbLive xoá khi lọc còn 0 tin; phím trong lúc IME ghép chữ bị bỏ qua
+    await page.focus('[data-job-id="j1"] .ttl a'); await page.keyboard.press("j");
+    assert.notEqual(await page.textContent("#kbLive"), "");
+    await page.fill("#filterQ", "khongcotinnao");
+    await waitFor(async () => !(await page.$("#jobsContainer .card")), "lọc chưa còn 0 tin");
+    assert.equal(await page.textContent("#kbLive"), "", "kbLive còn chữ khi 0 tin");
+    await page.fill("#filterQ", ""); await waitFor(async () => !!(await page.$('[data-job-id="j1"]')), "bỏ lọc");
+    const n = calls.length; await page.focus('[data-job-id="j1"] .ttl a');
+    await page.evaluate(() => document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "s", isComposing: true, bubbles: true })));
+    await page.waitForTimeout(300); assert(!calls.slice(n).some((c) => /applications/.test(c)), "phím chạy khi isComposing");
+    assert.deepEqual(errs, [], "lỗi console: " + errs.join("; ")); await ctx.close(); console.log("ok undo keeps follow-up"); }
   await browser.close();
   console.log("quick-apply-flow e2e OK\n" + shots.join("\n"));
 })().catch((e) => { console.error(e); process.exit(1); });

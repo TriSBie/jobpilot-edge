@@ -3230,6 +3230,7 @@ function renderJobs(){
   if (cnt) cnt.textContent = state.jobsTotal != null && !clientFiltered ? (state.jobsTotal ? t("%s tin", state.jobsTotal) : "")
     : list.length ? t("%s tin", list.length + (state.jobsNext != null ? "+" : "")) : "";
   $("#salHint").textContent = state.filters.hasSal && state.jobsTotal != null ? t("%s tin có ghi lương. Phần lớn tin ITviec ẩn lương sau đăng nhập nên số này nhỏ.", state.jobsTotal) : "";
+  if (!list.length) $("#kbLive").textContent = ""; // lọc còn 0 tin: không đọc lại tin đã khuất
   if (!list.length && state.jobsNext != null && !state.jobsMore) { loadMoreJobs(); return; } // trang đã tải bị bộ lọc phía client ẩn hết: lấy trang kế
   if (!list.length && jobsServerFiltered()) {
     box.innerHTML = newPill + `<div class="empty"><p style="margin:0 0 .8rem">${t("Không có tin khớp bộ lọc")}</p><button class="btn" id="jobsClearFilters" type="button">${t("Xoá bộ lọc")}</button></div>`;
@@ -3449,12 +3450,15 @@ Object.assign(EN, {
 // C8: có link nộp, chưa nộp/bỏ qua (stage new hoặc saved), không cờ stale (đã gỡ hoặc quá 30 ngày).
 const jobReady = (j) => !!j.source_url && STAGE_KEYS.indexOf(j.application ? j.application.stage : "new") < 2 && !(j.flags || []).some(f => f.type === "stale");
 
-// C1 + phím s/x: đổi trạng thái rồi cho Hoàn tác ~6 giây. Hoàn tác = PATCH stage + next_follow_up_at cũ (API sẵn có).
+// C1 + phím s/x: đổi trạng thái rồi cho Hoàn tác ~6 giây. Hoàn tác = PATCH stage (+ next_follow_up_at cũ chỉ khi biết chắc).
+// /api/jobs chỉ trả application {id, stage}: không có khoá next_follow_up_at thì KHÔNG gửi, kẻo xoá hạn follow-up trên server.
 const UNDO_MS = 6000;
 async function stageWithUndo(jobId, stage){
   const job = state.jobs.find(j => j.id === jobId);
   if (!job || !currentProfile()) return false;
-  const before = job.application ? { stage: job.application.stage, next_follow_up_at: job.application.next_follow_up_at || null } : { stage: "new", next_follow_up_at: null };
+  const app = job.application, before = { stage: app ? app.stage : "new" };
+  if (!app) before.extra = { next_follow_up_at: null }; // chưa có đơn = chắc chắn chưa có hạn; quick applied tự đặt +7 ngày nên Hoàn tác phải gỡ
+  else if ("next_follow_up_at" in app) before.extra = { next_follow_up_at: app.next_follow_up_at == null ? null : app.next_follow_up_at };
   if (before.stage === stage) return true;
   try {
     if (stage === "applied") { // dùng quick để event ghi via quick_apply + nhắc follow-up 7 ngày như dialog
@@ -3465,7 +3469,7 @@ async function stageWithUndo(jobId, stage){
   const msg = stage === "applied" ? "Đã đánh dấu đã nộp: %s" : stage === "saved" ? "Đã lưu: %s" : "Đã bỏ qua: %s";
   toast(t(msg, job.title), "ok", { ms: UNDO_MS, action: { label: t("Hoàn tác"), run: async () => {
     try {
-      await saveStage(job, before.stage, { next_follow_up_at: before.next_follow_up_at });
+      await saveStage(job, before.stage, before.extra);
       toast(t("Đã hoàn tác: %s", job.title), "ok");
     } catch (e) { toast(t("Không hoàn tác được: %s", t(QA_ERR[e.message] || e.message)), "err"); }
     renderJobs(); loadApplications(); kbFocus();
@@ -3539,7 +3543,7 @@ document.addEventListener("focusin", (e) => {
 });
 document.addEventListener("keydown", (e) => {
   const el = document.activeElement;
-  if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented || !state.token) return;
+  if (e.isComposing || e.keyCode === 229 || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented || !state.token) return; // IME (Telex) đang ghép chữ
   const typing = el && (/^(TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable || el.tagName === "INPUT" && !/^(checkbox|radio|button|submit|reset)$/.test(el.type));
   if (typing) return;
   if (palette.open || $("dialog[open]") || $("#tab-jobs").classList.contains("hidden")) return;
