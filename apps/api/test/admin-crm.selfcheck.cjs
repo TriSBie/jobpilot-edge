@@ -15,6 +15,7 @@ const stmt = (sql, args = []) => ({ sql, args, bind: (...a) => stmt(sql, a),
   all: async () => ({ results: exec(sql, args) }), first: async () => exec(sql, args)[0] || null, run: async () => (exec(sql, args), { success: true }) });
 const kv = new Map([['session:tokO', 'own'], ['session:tokU', 'u0'], ['quota:ai:2026-11-12', '7']]);
 const env = {
+  OWNER_EMAIL: 'tribui.it.work@gmail.com',
   DB: { prepare: (sql) => stmt(sql), batch: async (l) => l.map((s) => ({ results: exec(s.sql, s.args) })) },
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); },
     list: async ({ prefix }) => ({ keys: [...kv.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })) }) },

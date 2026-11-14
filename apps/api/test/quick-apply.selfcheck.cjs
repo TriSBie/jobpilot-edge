@@ -14,6 +14,7 @@ const stmt = (sql, args = []) => ({ sql, args, bind: (...a) => stmt(sql, a),
   all: async () => ({ results: exec(sql, args) }), first: async () => exec(sql, args)[0] || null, run: async () => (exec(sql, args), { success: true }) });
 const kv = new Map();
 const env = {
+  OWNER_EMAIL: 'tribui.it.work@gmail.com',
   DB: { prepare: (sql) => stmt(sql), batch: async (l) => { batches++; db.exec('BEGIN'); try { const r = l.map((s) => ({ results: exec(s.sql, s.args) })); db.exec('COMMIT'); return r; } catch (e) { db.exec('ROLLBACK'); throw e; } } },
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); } },
   FILES: { delete: async () => {} }, Q_SCORE: { send: async () => {} },

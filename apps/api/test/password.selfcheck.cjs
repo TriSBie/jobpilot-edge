@@ -16,6 +16,7 @@ const stmt = (sql, args = []) => ({
 });
 const kv = new Map();
 const env = {
+  OWNER_EMAIL: 'owner@x.test',
   DB: { prepare: (sql) => stmt(sql), batch: async (list) => list.map((s) => ({ results: exec(s.sql, s.args) })) },
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); } },
 };
@@ -57,7 +58,7 @@ const env = {
   // reset: chỉ owner tạo link
   const o = await call('POST', '/api/admin/password-reset', { email: 'a@x.com' }, s3);
   assert.strictEqual(o.status, 403, 'không phải owner');
-  const OWNER = (fs.readFileSync(workerPath, 'utf8').match(/OWNER_EMAIL\s*=\s*"([^"]+)"/) || [])[1];
+  const OWNER = env.OWNER_EMAIL;
   db.prepare("INSERT INTO users (id,email,name,created_at) VALUES ('own',?, 'O', 1)").run(OWNER);
   kv.set('session:own', 'own|' + Date.now());
   const lk = await call('POST', '/api/admin/password-reset', { email: 'a@x.com' }, 'own');

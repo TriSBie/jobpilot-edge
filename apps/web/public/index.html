@@ -2269,6 +2269,7 @@ Object.assign(EN, {
   "Hai mật khẩu chưa khớp.": "The two passwords do not match.",
   // AUTH_ERR
   "Email hoặc mật khẩu chưa đúng.": "Incorrect email or password.",
+  "Vai trò hoặc khu vực quá dài: tối đa 20 mục, mỗi mục 80 ký tự.": "Too many roles or locations: at most 20 items, 80 characters each.",
   "Email này đã có tài khoản — hãy chuyển sang tab Đăng nhập.": "This email already has an account. Switch to the Log in tab.",
   "Email chưa đúng định dạng.": "That email address is not valid.",
   "Hãy nhập họ tên (tối thiểu 2 ký tự).": "Enter your full name (at least 2 characters).",
@@ -2417,6 +2418,7 @@ const AUTH_ERR = {
   text_too_long: "Nội dung CV quá dài (tối đa 200.000 ký tự).",
   account_not_found: "Không tìm thấy tài khoản với email này.",
   password_already_set: "Tài khoản đã có mật khẩu — hãy đăng nhập.",
+  invalid_profile: "Vai trò hoặc khu vực quá dài: tối đa 20 mục, mỗi mục 80 ký tự.",
 };
 function authErr(e){ return t(AUTH_ERR[e.message] || e.message); }
 
@@ -4476,7 +4478,7 @@ $("#profileForm").addEventListener("submit", async (ev) => {
       toast(t("Đã tạo hồ sơ mới."), "ok");
       await Promise.all([loadDigest(), loadJobs(), loadApplications()]);    }
   } catch (e) {
-    toast(e.message, "err");
+    toast(authErr(e), "err");
   } finally {
     btn.disabled = false;
   }

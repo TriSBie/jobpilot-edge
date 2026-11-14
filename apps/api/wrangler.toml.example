@@ -65,7 +65,8 @@ dead_letter_queue = "jobpilot-score-dlq"
 
 [[queues.consumers]]
 queue = "jobpilot-notify"
-max_batch_size = 10
+# Mỗi digest ~5 truy vấn D1 (ngân sách Free 40/lần chạy, xem audit-fixes.selfcheck)
+max_batch_size = 5
 # Telegram/digest lỗi tạm hay gặp hơn → thử nhiều hơn (anh chốt 06/11/2026)
 max_retries = 5
 dead_letter_queue = "jobpilot-notify-dlq"
@@ -108,6 +109,7 @@ dataset = "jobpilot_events"
 # - TELEGRAM_WEBHOOK_SECRET
 # - TG_TOKEN_KEY (base64 32 byte, mã hoá token bot Telegram riêng; thiếu = tắt tính năng bot riêng, 503)
 # - TURNSTILE_SECRET (thiếu thì bỏ qua kiểm Turnstile, chỉ cho lab/dev)
+# - OWNER_EMAIL (email tài khoản owner được vào /api/admin/*; thiếu = không ai là admin)
 # Biến tuỳ chọn chỉ dùng ở lab (không đặt ở production):
 # - TELEGRAM_API_BASE (mặc định https://api.telegram.org)
 # - TELEGRAM_QUIET_OVERRIDE ("1" = bỏ giờ yên lặng)

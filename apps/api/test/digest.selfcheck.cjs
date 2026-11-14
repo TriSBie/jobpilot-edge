@@ -11,8 +11,9 @@ const W = new Function(src.replace(/^export default /m, 'const __w = ').replace(
     job('us-locked', 'Remote (US only)', 90), job('stale', 'Hồ Chí Minh', 80, { last_seen_at: t - 5 * 86400 }),
   ];
   let writes = 0;
-  const mk = (rows) => ({ DB: { prepare: (sql) => ({ bind() { return this; }, run: async () => { writes++; }, all: async () => ({
-    results: /FROM profiles/.test(sql) ? [{ id: 'p', name: 'P', level: 'middle', locations: '["Hồ Chí Minh","Remote"]' }] : /FROM job_matches/.test(sql) && !/tier = 'strong'/.test(sql) ? rows : [] }) }) } });
+  const mk = (rows) => { const DB = { prepare: (sql) => ({ bind() { return this; }, run: async () => { writes++; }, all: async () => ({
+    results: /FROM profiles/.test(sql) ? [{ id: 'p', name: 'P', level: 'middle', locations: '["Hồ Chí Minh","Remote"]' }] : /FROM job_matches/.test(sql) && !/tier = 'strong'/.test(sql) ? rows : [] }) }),
+    batch: async (l) => Promise.all(l.map((s) => s.all())) }; return { DB }; };
   const user = { id: 'u' };
   let d = await W.buildDigest(mk(cand), user, 'vi');
   assert.deepEqual(d.fresh.map((x) => x.title), ['ok1', 'ok2', 'ok3'], 'top 3, bỏ khoá vùng + stale');

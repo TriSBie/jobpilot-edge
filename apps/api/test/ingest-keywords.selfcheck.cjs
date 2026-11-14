@@ -3,7 +3,7 @@
 const fs = require("fs"), assert = require("assert");
 const src = fs.readFileSync(process.argv[2] || "apps/api/src/worker.js", "utf8");
 const cut = (from, to) => { const a = src.indexOf(from), b = src.indexOf(to, a); assert(a >= 0 && b > a, from); return src.slice(a, b); };
-const code = cut("const DEFAULT_KEYWORDS", "async function ensureSources") + "\nreturn { DEFAULT_KEYWORDS, ingestKeywords };";
+const code = cut("const jsonArr", "\n") + "\n" + cut("const DEFAULT_KEYWORDS", "async function ensureSources") + "\nreturn { DEFAULT_KEYWORDS, ingestKeywords };";
 const m = new Function(code)();
 const db = (rows) => ({ DB: { prepare: () => ({ all: async () => { if (rows instanceof Error) throw rows; return { results: rows }; } }) } });
 (async () => {
@@ -17,5 +17,8 @@ const db = (rows) => ({ DB: { prepare: () => ({ all: async () => { if (rows inst
   assert.equal(many.length, 12); assert.deepEqual(many.slice(0, 4), m.DEFAULT_KEYWORDS);
   assert.deepEqual(await m.ingestKeywords(db(new Error("D1 down"))), m.DEFAULT_KEYWORDS);
   assert.deepEqual(await m.ingestKeywords(db([])), m.DEFAULT_KEYWORDS);
+  // Một hồ sơ có target_roles không phải mảng (dòng cũ) không được xoá từ khoá của hồ sơ khác.
+  assert.deepEqual(await m.ingestKeywords(db([{ target_roles: "5", top: "{}" }, { target_roles: '"Java"', top: null }, { target_roles: '["Data Engineer"]', top: "[]" }])),
+    [...m.DEFAULT_KEYWORDS, "Data Engineer"]);
   console.log("ingest-keywords selfcheck OK");
 })().catch((e) => { console.error(e); process.exit(1); });

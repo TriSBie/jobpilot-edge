@@ -128,10 +128,13 @@ function ivFields(b) {
 }
 const ivRow = (r) => r && { ...r, checklist: JSON.parse(r.checklist || "[]") };
 const IV_OWNED = "SELECT a.id FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ?";
-const OWNER_EMAIL = "tribui.it.work@gmail.com";
+// Owner = env.OWNER_EMAIL (secret); thiếu thì không ai là admin.
+const isOwner = (env, u) => !!env.OWNER_EMAIL && u.email === env.OWNER_EMAIL;
 // T-88: nguồn đăng ký ?ref — chỉ chữ thường/số/_/-, tối đa 40 ký tự, sai thì null.
 const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
 const uid = () => crypto.randomUUID();
+// Cột JSON mảng trong DB: hỏng hoặc không phải mảng → null (một dòng sai không được làm chết cả lô/route).
+const jsonArr = (v) => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : null; } catch { return null; } };
 async function sha256hex(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -232,6 +235,9 @@ async function getUser(request, env) {
   return u;
 }
 
+// locations/target_roles phải là mảng chuỗi ngắn: một dòng sai từng làm cả lô chấm điểm vào DLQ.
+const strArr = (v) => Array.isArray(v) && v.length <= 20 && v.every((x) => typeof x === "string" && x.length <= 80);
+const badProfileArrays = (b) => [b.locations, b.target_roles].some((v) => v != null && !strArr(v));
 async function ownsProfile(env, user, profileId) {
   if (!profileId) return false;
   return !!(await env.DB.prepare("SELECT id FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first());
@@ -256,8 +262,8 @@ async function profileWithSkills(env, profile) {
   ).bind(profile.id).all();
   return {
     ...profile,
-    target_roles: JSON.parse(profile.target_roles || "[]"),
-    locations: JSON.parse(profile.locations || "[]"),
+    target_roles: jsonArr(profile.target_roles) || [],
+    locations: jsonArr(profile.locations) || [],
     skills: results,
   };
 }
@@ -1215,7 +1221,6 @@ async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
   }
   // Hồ sơ không có skill thì bỏ qua, như cũ.
   // Một dòng JSON hỏng chỉ bỏ đúng tin đó, không kéo cả lô vào DLQ (lỗi ở đây = retryAll cả lô).
-  const jsonArr = (v) => { try { return JSON.parse(v || "[]"); } catch { return null; } };
   const profiles = new Map(profRows.filter((p) => skillsOf.has(p.id)).map((p) => [p.id, { ...p, locations: jsonArr(p.locations) || [] }]));
   const parse = (j) => { const skills = jsonArr(j.skills); if (!skills) console.log("score: bỏ qua tin skills hỏng", j.id); return skills && { ...j, skills }; };
   const byId = new Map(jobRows.map((j) => [j.id, parse(j)]).filter(([, j]) => j));
@@ -1278,7 +1283,7 @@ async function ingestKeywords(env) {
       "SELECT p.target_roles, (SELECT json_group_array(skill) FROM (SELECT skill FROM profile_skills WHERE profile_id = p.id ORDER BY weight DESC, skill LIMIT 2)) AS top FROM profiles p WHERE p.is_active = 1"
     ).all();
     for (const r of results) {
-      for (const kw of [...JSON.parse(r.target_roles || "[]"), ...JSON.parse(r.top || "[]")]) {
+      for (const kw of [...(jsonArr(r.target_roles) || []), ...(jsonArr(r.top) || [])]) {
         const k = String(kw).trim(), low = k.toLowerCase();
         if (k.length <= 2 || seen.has(low) || GENERIC_KEYWORDS.has(low)) continue;
         seen.add(low); out.push(k);
@@ -1297,7 +1302,7 @@ async function enqueueProfileScan(env, profileId) {
     ).bind(profileId).first();
     if (!r) return 0;
     const base = new Set(DEFAULT_KEYWORDS.map((k) => k.toLowerCase())), picked = [];
-    for (const kw of [...JSON.parse(r.target_roles || "[]"), ...JSON.parse(r.top || "[]")]) {
+    for (const kw of [...(jsonArr(r.target_roles) || []), ...(jsonArr(r.top) || [])]) {
       const k = String(kw).trim(), low = k.toLowerCase();
       if (k.length <= 2 || base.has(low) || GENERIC_KEYWORDS.has(low)) continue;
       base.add(low);
@@ -1373,18 +1378,25 @@ async function buildDigest(env, user, lang = "vi", profileId = null, persist = f
     ? await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1 AND id = ?").bind(user.id, profileId).all()
     : await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1").bind(user.id).all();
   const strong = [], followUps = [], fresh = [];
-  for (const p of profiles) {
-    const { results: sm } = await env.DB.prepare(
+  const res = profiles.length ? await env.DB.batch(profiles.flatMap((p) => [
+    env.DB.prepare(
       `SELECT j.title, j.company, j.source_url, m.final_score FROM job_matches m JOIN jobs j ON j.id = m.job_id
        WHERE m.profile_id = ? AND m.tier = 'strong' AND j.first_seen_at >= ? ORDER BY m.final_score DESC LIMIT 20`
-    ).bind(p.id, since).all();
-    strong.push(...sm.map((r) => ({ ...r, profile: p.name })));
-    // B6: tin mới còn phù hợp (verdict != skip, không khoá vùng/stale), dùng đúng verdictFor/postingFlags/fitBreakdown như /api/jobs.
-    const { results: cand } = await env.DB.prepare(
+    ).bind(p.id, since),
+    env.DB.prepare(
       `SELECT j.*, m.final_score, m.tier, m.missing_skills FROM job_matches m JOIN jobs j ON j.id = m.job_id
        WHERE m.profile_id = ? AND m.tier = 'partial' AND j.first_seen_at >= ? ORDER BY m.final_score DESC LIMIT 30`
-    ).bind(p.id, since).all();
-    const prof = { ...p, locations: JSON.parse(p.locations || "[]") };
+    ).bind(p.id, since),
+    env.DB.prepare(
+      `SELECT a.id, a.stage, a.next_follow_up_at, j.title, j.company FROM applications a JOIN jobs j ON j.id = a.job_id
+       WHERE a.profile_id = ? AND a.next_follow_up_at IS NOT NULL AND a.next_follow_up_at <= ? AND a.stage IN ('applied','interview') ORDER BY a.next_follow_up_at LIMIT 20`
+    ).bind(p.id, now()),
+  ])) : [];
+  profiles.forEach((p, i) => {
+    const [{ results: sm }, { results: cand }, { results: fu }] = res.slice(3 * i, 3 * i + 3);
+    strong.push(...sm.map((r) => ({ ...r, profile: p.name })));
+    // B6: tin mới còn phù hợp (verdict != skip, không khoá vùng/stale), dùng đúng verdictFor/postingFlags/fitBreakdown như /api/jobs.
+    const prof = { ...p, locations: jsonArr(p.locations) || [] };
     for (const r of cand) {
       const fit = fitBreakdown(prof, { title: r.title, location: r.location, posted_at: r.posted_at, first_seen_at: r.first_seen_at, jd_text: jdOf(r) });
       const flags = postingFlags(r, now(), lang);
@@ -1393,12 +1405,8 @@ async function buildDigest(env, user, lang = "vi", profileId = null, persist = f
       if (v.verdict === "skip" || fit.location === 0 || flags.some((f) => f.type === "stale")) continue;
       fresh.push({ title: r.title, company: r.company, source_url: r.source_url, final_score: r.final_score, verdict: v.verdict, profile: p.name });
     }
-    const { results: fu } = await env.DB.prepare(
-      `SELECT a.id, a.stage, a.next_follow_up_at, j.title, j.company FROM applications a JOIN jobs j ON j.id = a.job_id
-       WHERE a.profile_id = ? AND a.next_follow_up_at IS NOT NULL AND a.next_follow_up_at <= ? AND a.stage IN ('applied','interview') ORDER BY a.next_follow_up_at LIMIT 20`
-    ).bind(p.id, now()).all();
     followUps.push(...fu);
-  }
+  });
   const dateStr = new Date().toISOString().slice(0, 10);
   const summary = `${strong.length} strong match mới, ${followUps.length} việc cần follow-up`;
   if (persist) await env.DB.prepare(
@@ -1583,7 +1591,7 @@ async function exportUserData(env, user) {
 }
 
 // ---------------- admin CRM (SPEC 12/11 §3D) ----------------
-// Gọi sau gate OWNER_EMAIL. Mỗi route ≤ 2 query D1; không trả password_hash/salt, token Telegram/bot, nội dung CV.
+// Gọi sau gate isOwner. Mỗi route ≤ 2 query D1; không trả password_hash/salt, token Telegram/bot, nội dung CV.
 // Phân trang keyset: ?limit (1..50, mặc định 20) & ?cursor (next_cursor của trang trước) — ổn định khi có hàng mới chèn vào.
 // ponytail: thứ tự cố định (mới nhất trước) vì cursor gắn với cột sort; cần sort khác thì thêm cặp (cột, cursor) riêng.
 // admin_note là ghi chú nội bộ của owner: route người dùng trả SELECT * applications phải lọc qua đây.
@@ -1952,7 +1960,7 @@ export default {
     }
 
     // Route /api/admin/* chỉ dành cho tài khoản owner.
-    if (path.startsWith("/api/admin/") && user.email !== OWNER_EMAIL) {
+    if (path.startsWith("/api/admin/") && !isOwner(env, user)) {
       return json({ error: "forbidden" }, 403);
     }
 
@@ -1962,7 +1970,7 @@ export default {
       for (const p of results) profiles.push(await profileWithSkills(env, p));
       const ownBot = await env.DB.prepare("SELECT username, status, last_error FROM user_bots WHERE user_id = ?").bind(user.id).first();
       const nf = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM (SELECT 1 FROM notifications WHERE user_id = ?1 AND is_read = 0 LIMIT 10)) AS n, EXISTS (SELECT 1 FROM notifications WHERE user_id = ?1 AND type = 'bot_broken' AND is_read = 0) AS a").bind(user.id).first();
-      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: user.email === OWNER_EMAIL,
+      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: isOwner(env, user),
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
         telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null,
         unread_count: nf.n, has_attention: !!nf.a, jobs_seen_at: user.jobs_seen_at ?? null }, profiles });
@@ -2024,6 +2032,7 @@ export default {
     }
     if (path === "/api/profiles" && request.method === "POST") {
       const b = await readBody(request);
+      if (badProfileArrays(b)) return json({ error: "invalid_profile" }, 400);
       const id = uid();
       await env.DB.prepare(
         "INSERT INTO profiles (id, user_id, name, target_roles, level, locations, salary_min, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)"
@@ -2036,13 +2045,14 @@ export default {
     const profMatch = path.match(/^\/api\/profiles\/([^/]+)$/);
     if (profMatch && request.method === "PATCH") {
       const b = await readBody(request);
+      if (badProfileArrays(b)) return json({ error: "invalid_profile" }, 400);
       const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(profMatch[1], user.id).first();
       if (!p) return json({ error: "profile_not_found" }, 404);
       await env.DB.prepare(
-        "UPDATE profiles SET name = ?, target_roles = ?, level = ?, locations = ?, salary_min = ?, public_slug = ?, updated_at = ? WHERE id = ?"
-      ).bind(b.name ?? p.name, JSON.stringify(b.target_roles ?? JSON.parse(p.target_roles || "[]")),
-        "level" in b ? (b.level || null) : p.level, JSON.stringify(b.locations ?? JSON.parse(p.locations || "[]")),
-        "salary_min" in b ? (b.salary_min || null) : p.salary_min, b.public_slug ?? p.public_slug, now(), p.id).run();
+        "UPDATE profiles SET name = ?, target_roles = ?, level = ?, locations = ?, salary_min = ?, updated_at = ? WHERE id = ?"
+      ).bind(b.name ?? p.name, JSON.stringify(b.target_roles ?? (jsonArr(p.target_roles) || [])),
+        "level" in b ? (b.level || null) : p.level, JSON.stringify(b.locations ?? (jsonArr(p.locations) || [])),
+        "salary_min" in b ? (b.salary_min || null) : p.salary_min, now(), p.id).run();
       // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
       const rescoreQueued = await enqueueProfileRescore(env, p.id);
       if ("target_roles" in b) await enqueueProfileScan(env, p.id);
@@ -2156,7 +2166,7 @@ export default {
       if (profileId) {
         const prow = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(profileId).first();
         if (prow) {
-          prof = { ...prow, locations: JSON.parse(prow.locations || "[]") };
+          prof = { ...prow, locations: jsonArr(prow.locations) || [] };
           const { results: sk } = await env.DB.prepare("SELECT skill, weight FROM profile_skills WHERE profile_id = ?").bind(profileId).all();
           sk.forEach((s) => skillW.set(String(s.skill).toLowerCase(), s.weight));
         }
@@ -2300,20 +2310,15 @@ export default {
       if (!profileId) return json({ error: "profile_id_required" }, 400);
       if (!(await ownsProfile(env, user, profileId))) return json({ error: "profile_not_found" }, 404);
       // T-37: vòng phỏng vấn gói trong cùng 1 truy vấn (subquery theo idx_interviews_app, không N+1).
-      const sql = profileId
-        ? `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier,
+      const sql = `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier,
              (SELECT json_object('id', i.id, 'kind', i.kind, 'round_label', i.round_label, 'scheduled_at', i.scheduled_at) FROM interviews i
                WHERE i.application_id = a.id AND i.scheduled_at > ? ORDER BY i.scheduled_at LIMIT 1) AS next_iv,
              (SELECT json_object('done', COALESCE(SUM(i.result IN ('pass','fail')), 0), 'total', COUNT(*)) FROM interviews i WHERE i.application_id = a.id) AS rounds
            FROM applications a JOIN jobs j ON j.id = a.job_id
            LEFT JOIN job_matches m ON m.job_id = a.job_id AND m.profile_id = a.profile_id
-           WHERE a.profile_id = ? ORDER BY a.updated_at DESC LIMIT 500`
-        : `SELECT a.*, j.title, j.company, j.location, j.source_url, m.final_score, m.tier
-           FROM applications a JOIN jobs j ON j.id = a.job_id
-           LEFT JOIN job_matches m ON m.job_id = a.job_id AND m.profile_id = a.profile_id
-           ORDER BY a.updated_at DESC LIMIT 500`;
+           WHERE a.profile_id = ? ORDER BY a.updated_at DESC LIMIT 500`;
       const t = now(), W = 7 * 86400;
-      const { results } = profileId ? await env.DB.prepare(sql).bind(t, profileId).all() : await env.DB.prepare(sql).all();
+      const { results } = await env.DB.prepare(sql).bind(t, profileId).all();
       const cnt = (st, a, b) => `SUM(CASE WHEN stage = '${st}' AND updated_at >= ${a} AND updated_at < ${b} THEN 1 ELSE 0 END)`;
       const range = (a, b) => `SELECT ${cnt("applied", a, b)} AS applied, ${cnt("interview", a, b)} AS interview, ${cnt("offer", a, b)} AS offer, ${cnt("rejected", a, b)} AS rejected FROM applications WHERE profile_id = ?`;
       const [cur, prev, sil] = await Promise.all([
@@ -2341,12 +2346,17 @@ export default {
       if (b.stage !== undefined && !APP_STAGES.includes(b.stage)) return json({ error: "invalid_stage" }, 400);
       const visible = await env.DB.prepare("SELECT id FROM jobs WHERE id = ? AND (submitted_by IS NULL OR submitted_by = ?)").bind(b.job_id, user.id).first();
       if (!visible) return json({ error: "job_not_found" }, 404);
-      const id = uid();
-      await env.DB.prepare(
-        "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
-      ).bind(id, b.profile_id, b.job_id, b.stage || "new", b.note || null, now(), now()).run();
-      const row = await env.DB.prepare("SELECT * FROM applications WHERE profile_id = ? AND job_id = ?").bind(b.profile_id, b.job_id).first();
-      return json(noAdminNote(row), 201);
+      const id = uid(), t = now(), stage = b.stage || "new";
+      // Đơn đã có (client cũ/2 tab) mà stage đổi: ghi event trước khi UPSERT đổi stage.
+      const res = await env.DB.batch([
+        env.DB.prepare("INSERT INTO application_events (id, application_id, type, payload, created_at) SELECT ?, id, 'stage_changed', json_object('from', stage, 'to', ?), ? FROM applications WHERE profile_id = ? AND job_id = ? AND stage != ?")
+          .bind(uid(), stage, t, b.profile_id, b.job_id, stage),
+        env.DB.prepare(
+          "INSERT INTO applications (id, profile_id, job_id, stage, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(profile_id, job_id) DO UPDATE SET stage = excluded.stage, updated_at = excluded.updated_at"
+        ).bind(id, b.profile_id, b.job_id, stage, b.note || null, t, t),
+        env.DB.prepare("SELECT * FROM applications WHERE profile_id = ? AND job_id = ?").bind(b.profile_id, b.job_id),
+      ]);
+      return json(noAdminNote(res[2].results[0]), 201);
     }
     // Nộp nhanh: JobPilot không nộp hộ. "open" = người dùng mở trang ứng tuyển thật (lưu 'saved' nếu chưa có, không đổi stage cũ);
     // "applied" = người dùng xác nhận đã nộp: chỉ nâng new/saved/chưa có lên 'applied', không hạ stage cao hơn. 1 batch D1.
