@@ -6,3 +6,6 @@ apps/api/wrangler.toml
 *.muse-github-snapshot-sync.json
 .DS_Store
 .wrangler/
+
+# Private work logs
+worklog/
