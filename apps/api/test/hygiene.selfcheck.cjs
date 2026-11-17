@@ -45,7 +45,9 @@ db.prepare("INSERT INTO sources (id, type, name, last_status, created_at) VALUES
 
   // T-45
   queries = 0;
-  await worker.scheduled({ cron: '*/30 * * * *' }, env, {});
+  await worker.scheduled({ cron: '*/30 * * * *', scheduledTime: T * 1000 }, env, {});
+  assert(sent.length > 0 && sent.every((m) => m.scanId === T * 1000 && /^[a-f0-9]{64}$/.test(m.scanGroup) && Number.isInteger(m.keywordIndex) && m.keywordIndex >= 0 && m.keywordIndex < m.expectedCount), 'scheduled messages include scan metadata');
+  for (const source of new Set(sent.map((m) => m.sourceType))) { const batch = sent.filter((m) => m.sourceType === source); assert.strictEqual(batch.length, batch[0].expectedCount); assert.strictEqual(new Set(batch.map((m) => m.keywordIndex)).size, batch.length); }
   assert(queries <= 40, 'cron queries ' + queries);
   assert.deepStrictEqual(q('SELECT id FROM jobs ORDER BY id').map((r) => r.id), ['fresh', 'old-app'], 'chỉ xoá tin cũ không có đơn');
   assert.deepStrictEqual(q('SELECT job_id FROM job_matches ORDER BY job_id').map((r) => r.job_id), ['fresh', 'old-app']);

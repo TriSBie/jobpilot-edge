@@ -1,0 +1,40 @@
+// T-112: queue scans, delayed completion and alert retry on SQLite with Worker handlers.
+const assert = require("node:assert/strict"), fs = require("node:fs"), path = require("node:path"), os = require("node:os");
+const { pathToFileURL } = require("node:url"); const { DatabaseSync } = require("node:sqlite");
+const workerPath = path.resolve(process.argv[2] || "apps/api/src/worker.js");
+const db = new DatabaseSync(":memory:");
+const migDir = path.join(path.dirname(workerPath), "..", "..", "..", "db", "migrations");
+for (const f of fs.readdirSync(migDir).sort()) db.exec(fs.readFileSync(path.join(migDir, f), "utf8"));
+const execute = (sql, args) => { const s = db.prepare(sql); return /^\s*(SELECT|WITH)|\bRETURNING\b/i.test(sql) ? s.all(...args) : (s.run(...args), []); };
+let queryCalls = 0, maxDailyQueries = 0;
+const stmt = (sql, args = []) => ({ sql, args, bind: (...a) => stmt(sql, a), first: async () => (queryCalls++, execute(sql, args)[0] || null), all: async () => (queryCalls++, { results: execute(sql, args) }), run: async () => (queryCalls++, execute(sql, args), { success: true }) });
+const env = { DB: { prepare: (s) => stmt(s), batch: async (items) => { queryCalls++; db.exec("BEGIN"); try { const out=items.map((s) => ({ results: execute(s.sql, s.args) })); db.exec("COMMIT"); return out; } catch (e) { db.exec("ROLLBACK"); throw e; } } }, Q_SCORE: { send: async () => {}, sendBatch: async () => {} }, Q_NOTIFY: { send: async () => {} }, OWNER_EMAIL: "owner@example.invalid", TELEGRAM_BOT_TOKEN: "fake", TELEGRAM_API_BASE: "https://tg.invalid" };
+const time = Math.floor(Date.now()/1000), base = (time - 900) * 1000;
+db.prepare("INSERT INTO sources (id,type,name,is_enabled,created_at) VALUES ('src-topdev','topdev','TopDev',1,?)").run(time);
+db.prepare("INSERT INTO sources (id,type,name,is_enabled,created_at) VALUES ('src-itviec','itviec','ITviec',1,?)").run(time);
+db.prepare("INSERT INTO users (id,email,name,created_at,telegram_chat_id) VALUES ('owner',?,'Owner',?,'fake-chat')").run(env.OWNER_EMAIL,time);
+let mode = "zero", telegramOk = true, sent = 0;
+const actualFetch = globalThis.fetch;
+globalThis.fetch = async (url) => { if (String(url).startsWith("https://tg.invalid")) { sent++; return new Response("{}", { status: telegramOk ? 200 : 503 }); } if (mode === "fail") return new Response("oops", { status: 500 }); if (mode === "404") return new Response("missing", { status: 404 }); if (mode === "job") return new Response(fs.readFileSync(path.join(__dirname,"fixtures","topdev.html"),"utf8")); return new Response("<html></html>"); };
+(async () => {
+ const temp=path.join(os.tmpdir(),`scan-worker-${process.pid}.mjs`); fs.copyFileSync(workerPath,temp); let worker; try { worker=(await import(pathToFileURL(temp).href)).default; } finally { fs.unlinkSync(temp); }
+ const ingest=async (scanId,index,expected=2,scanGroup="a".repeat(64),sourceType="topdev") => { let ack=0,retry=0; await worker.queue({ queue:"jobpilot-ingest", messages:[{body:{kind:"ingest",sourceType,keyword:"Java",scanId,scanGroup,keywordIndex:index,expectedCount:expected},ack(){ack++;},retry(){retry++;}}] },env,{}); assert.equal(ack,1); assert.equal(retry,0); };
+ const daily=async () => { queryCalls=0; await worker.scheduled({cron:"0 1 * * *"},env,{}); maxDailyQueries=Math.max(maxDailyQueries,queryCalls); assert(queryCalls<=40,"daily query budget: "+queryCalls); };
+ const rows=()=>db.prepare("SELECT scan_id,keyword_index,success,raw_count FROM ingest_scan_results ORDER BY scan_id,keyword_index").all();
+ await ingest(base-120000,0,2,"a".repeat(64)); await ingest(base-120000,1,2,"b".repeat(64)); await ingest(base-120000,0,2,"b".repeat(64)); await ingest(base,0); await ingest(base,1); await ingest(base+60000,0); await daily(); assert.equal(sent,0,"incomplete scan must not count");
+ mode="404"; await ingest(base+60000,1); assert.equal(rows().find((x)=>x.scan_id===base+60000 && x.keyword_index===1).success,0,"404 must not count as successful scan"); await daily(); assert.equal(sent,0,"failed scan must not count");
+ mode="zero"; await ingest(base+60000,1); assert.equal(rows().find((x)=>x.scan_id===base+60000 && x.keyword_index===1).success,1);
+ mode="fail"; await ingest(base+60000,1); assert.equal(rows().find((x)=>x.scan_id===base+60000 && x.keyword_index===1).success,1,"failed retry must not overwrite success");
+ env.OWNER_EMAIL=""; await daily(); assert.equal(sent,0,"missing owner must not mark scan alerted"); env.OWNER_EMAIL="owner@example.invalid"; await daily(); assert.equal(sent,1); await daily(); assert.equal(sent,1,"same scan pair must not resend");
+ mode="job"; await ingest(base+120000,0,1); await daily(); assert.equal(sent,1,"nonzero later scan breaks zero sequence");
+ mode="zero"; await ingest(base+180000,0,1); await ingest(base+240000,0,1); telegramOk=false; await daily(); assert.equal(sent,2,"failed Telegram send attempted"); telegramOk=true; await daily(); assert.equal(sent,3,"failed send retried"); await daily(); assert.equal(sent,3,"successful send is recorded");
+ await ingest(base-60000,0,1); await daily(); assert.equal(sent,3,"late older scan must not replace newer scan order");
+ mode="404"; await ingest(base,0,1,"c".repeat(64),"itviec"); await ingest(base+60000,0,1,"c".repeat(64),"itviec");
+ assert.equal(db.prepare("SELECT COUNT(*) n FROM ingest_scan_results WHERE source_type='itviec' AND success=1 AND raw_count=0").get().n,2,"ITviec 404 is a successful empty scan");
+ await daily(); assert.equal(sent,4,"two ITviec 404 scans alert");
+ db.exec("DROP TABLE ingest_scan_results"); mode="job";
+ const before=db.prepare("SELECT SUM(seen_count) n FROM jobs").get().n;
+ await ingest(base+300000,0,1);
+ assert(db.prepare("SELECT SUM(seen_count) n FROM jobs").get().n>before,"ingest saves jobs without monitoring table");
+ globalThis.fetch=actualFetch; console.log("T-112 scan monitoring selfcheck OK; daily max queries:",maxDailyQueries);
+})().catch((error)=>{globalThis.fetch=actualFetch; console.error(error);process.exitCode=1;});

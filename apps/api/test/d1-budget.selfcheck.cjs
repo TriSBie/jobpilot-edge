@@ -126,8 +126,9 @@ const run = (worker, queue, bodies, env) => worker.queue({ queue, messages: msgs
       return new Response(JSON.stringify(body));
     };
     const logs = [], log = console.log; console.log = (...a) => logs.push(a.join(' '));
-    try { await run(worker, 'jobpilot-ingest', Array.from({ length: nIngest }, (_, i) => ({ kind: 'ingest', sourceType: i % 2 ? 'remotive' : 'remoteok', keyword: '*' })), S.env); }
+    try { await run(worker, 'jobpilot-ingest', Array.from({ length: nIngest }, (_, i) => ({ kind: 'ingest', sourceType: i % 2 ? 'remotive' : 'remoteok', keyword: '*', scanId: T * 1000, scanGroup: "a".repeat(64), keywordIndex: Math.floor(i / 2), expectedCount: Math.ceil(nIngest / 2) })), S.env); }
     finally { console.log = log; globalThis.fetch = realFetch; }
+    assert.strictEqual(S.q('SELECT COUNT(*) c FROM ingest_scan_results')[0].c, nIngest, 'all scheduled keyword results persisted');
     const created = logs.filter((l) => l.startsWith('ingest ')).reduce((n, l) => n + JSON.parse(l.slice(l.indexOf('{'))).created, 0);
     result.ingest = { queries: S.stats.queries, jobs: S.q('SELECT COUNT(*) c FROM jobs')[0].c, created, scoreMsgs: S.stats.scoreMsgs.length,
       jdFilled: S.q("SELECT COUNT(*) c FROM jobs WHERE id LIKE 'old%' AND jd_text LIKE 'Java%'")[0].c, seenTwice: S.q('SELECT COUNT(*) c FROM jobs WHERE seen_count >= 2')[0].c,

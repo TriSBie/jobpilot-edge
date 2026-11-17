@@ -2043,6 +2043,25 @@ html.fx-on .bg-fx{opacity:1}
 /* =====================================================   JobPilot Edge — frontend SPA v2 (vanilla JS, không build step)
    ============================================================ */
 const API_BASE = "https://jobpilot-api.tribui-it-work.workers.dev";
+// T-112: anonymous browser vitals; no identifiers or page URLs are sent.
+(() => {
+  if (!("PerformanceObserver" in window) || !navigator.sendBeacon) return;
+  const page = () => document.getElementById("appView")?.classList.contains("hidden") ? "landing" : "app";
+  let lcp = null, cls = null, session = 0, sessionStart = 0, lastShift = 0;
+  const interactions = new Map();
+  try { new PerformanceObserver((list) => { for (const e of list.getEntries()) lcp = { page: page(), value: e.startTime }; }).observe({ type: "largest-contentful-paint", buffered: true }); } catch (_) {}
+  try { new PerformanceObserver((list) => { for (const e of list.getEntries()) { if (e.hadRecentInput) continue; if (e.startTime - lastShift > 1000 || e.startTime - sessionStart > 5000) { session = 0; sessionStart = e.startTime; } session += e.value; lastShift = e.startTime; cls = Math.max(cls || 0, session); } }).observe({ type: "layout-shift", buffered: true }); if (!PerformanceObserver.supportedEntryTypes || PerformanceObserver.supportedEntryTypes.includes("layout-shift")) cls = cls ?? 0; } catch (_) {}
+  try { new PerformanceObserver((list) => { for (const e of list.getEntries()) if (e.interactionId) interactions.set(e.interactionId, Math.max(interactions.get(e.interactionId) || 0, e.duration)); }).observe({ type: "event", buffered: true, durationThreshold: 16 }); } catch (_) {}
+  let sent = false;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "hidden" || sent) return;
+    sent = true;
+    const send = (metric, value, target) => navigator.sendBeacon(API_BASE + "/api/rum", JSON.stringify({ metric, value, page: target }));
+    if (lcp) send("LCP", lcp.value, lcp.page);
+    if (cls !== null) send("CLS", cls, page());
+    if (interactions.size) { const times = [...interactions.values()].sort((a, b) => b - a); send("INP", times[Math.min(times.length - 1, Math.floor((performance.interactionCount || times.length) / 50))], page()); }
+  });
+})();
 const TURNSTILE_SITE_KEY = "0x4AAAAAAF5goUyMJQ__Pibr"; // widget "jobpilot" (hostname jobpilot-edge.pages.dev); lab/dev dùng test key 1x00000000000000000000AA
 const STAGES = [
   { key: "new",       label: "Mới" },

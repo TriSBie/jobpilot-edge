@@ -232,6 +232,7 @@ async function getUser(request, env) {
   const [userId, iat] = v.split("|"); // T-22: "userId|iat(ms)"; giá trị cũ chỉ có userId
   const u = await env.DB.prepare("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL").bind(userId).first();
   if (u && u.sessions_valid_after && !(Number(iat) >= u.sessions_valid_after)) return null; // session cũ / trước mốc đổi mật khẩu
+  if (u && env.__trace) env.__trace.userId = u.id;
   return u;
 }
 
@@ -1050,6 +1051,11 @@ const APP_URL = "https://jobpilot-edge.pages.dev";
 const tgEsc = (x) => String(x ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const tgLink = (url, text) => url ? `<a href="${tgEsc(url).replace(/"/g, "&quot;")}">${tgEsc(text)}</a>` : tgEsc(text);
 // Trả mã HTTP của Telegram (200 = gửi được), 0 khi thiếu token hoặc lỗi mạng. Không log URL (chứa token).
+function metric(env, event, label, values) {
+  try {
+    if (env.EVENTS) env.EVENTS.writeDataPoint({ blobs: [event, label], doubles: values, indexes: [event] });
+  } catch (_) { /* Metrics must not alter application behaviour. */ }
+}
 async function tgSend(env, chatId, html, token = env.TELEGRAM_BOT_TOKEN) {
   if (!token) { console.log("telegram: thiếu TELEGRAM_BOT_TOKEN, bỏ qua"); return 0; }
   try {
@@ -1058,8 +1064,9 @@ async function tgSend(env, chatId, html, token = env.TELEGRAM_BOT_TOKEN) {
       body: JSON.stringify({ chat_id: chatId, text: html, parse_mode: "HTML", disable_web_page_preview: true }),
     });
     if (!r.ok) console.log("telegram: sendMessage", r.status);
+    metric(env, "telegram", r.ok ? "ok" : "error", [1]);
     return r.status;
-  } catch (e) { console.log("telegram: sendMessage lỗi", e.message); return 0; }
+  } catch (e) { metric(env, "telegram", "error", [1]); console.log("telegram: sendMessage lỗi", e.message); return 0; }
 }
 // Gọi Bot API bất kỳ (getMe, setWebhook…), trả JSON của Telegram; mạng lỗi thì ném.
 async function tgApi(env, token, method, body) {
@@ -1240,6 +1247,7 @@ async function scoreBatch(env, jobIds, rescoreIds, ver = new Map()) {
     strong.push(x);
   }
   await dbBatch(env, stmts);
+  metric(env, "score", "matches", [stmts.length - strong.length]);
   for (const { job, p, s } of strong) {
     try {
       const stub = env.USER_HUB.get(env.USER_HUB.idFromName(p.user_id));
@@ -1348,14 +1356,15 @@ function titleGate(title) {
 }
 
 // 3 truy vấn D1/tin nhắn bất kể số tin nguồn trả về: SELECT nguồn, batch đọc trùng, batch ghi (gồm UPDATE sources).
-async function runIngestSource(env, sourceType, keyword) {
+async function runIngestSource(env, sourceType, keyword, scan = null) {
   const source = await env.DB.prepare("SELECT * FROM sources WHERE type = ?").bind(sourceType).first();
   if (!source) return { error: "source_missing" };
-  let jobs = [], status = "ok", error = null;
+  let jobs = [], status = "ok", error = null, scanOk = true;
   try {
     jobs = REMOTE_FETCHERS[sourceType] ? await REMOTE_FETCHERS[sourceType]()
       : sourceType === "topdev" ? await fetchTopDev(keyword) : await fetchITviec(keyword);
   } catch (e) {
+    scanOk = sourceType === "itviec" && e.message === "HTTP 404";
     // T-49: keyword lỗi không đè 'ok' của keyword khác vừa xong (<20 phút, cùng lượt cron); chỉ khi mọi keyword lỗi mới ra 'error'.
     // ITviec trả 404 cho slug không có tin: coi là 0 tin, không phải lỗi nguồn (T-49 một phần).
     if (e.message !== "HTTP 404" || REMOTE_FETCHERS[sourceType]) { status = "error"; error = e.message; }
@@ -1366,8 +1375,40 @@ async function runIngestSource(env, sourceType, keyword) {
   plan.stmts.push(env.DB.prepare("UPDATE sources SET last_run_at = ?, last_status = CASE WHEN ? = 'error' AND last_status = 'ok' AND last_run_at > ? THEN 'ok' ELSE ? END, last_error = ? WHERE id = ?")
     .bind(now(), status, now() - 1200, status, error, source.id));
   await dbBatch(env, plan.stmts);
+  if (scan && typeof scan.scanGroup === "string" && /^[a-f0-9]{64}$/.test(scan.scanGroup) && Number.isSafeInteger(scan.scanId) && scan.scanId > 0 && Number.isInteger(scan.expectedCount) && scan.expectedCount > 0 && scan.expectedCount <= 12 && Number.isInteger(scan.keywordIndex) && scan.keywordIndex >= 0 && scan.keywordIndex < scan.expectedCount) {
+    try {
+      await env.DB.prepare("INSERT INTO ingest_scan_results (scan_id, source_type, keyword_index, scan_group, expected_count, success, raw_count) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (scan_id, source_type, keyword_index) DO UPDATE SET expected_count = CASE WHEN ingest_scan_results.scan_group = excluded.scan_group AND ingest_scan_results.expected_count = excluded.expected_count THEN ingest_scan_results.expected_count ELSE -1 END, success = MAX(ingest_scan_results.success, excluded.success), raw_count = CASE WHEN ingest_scan_results.success = 1 THEN ingest_scan_results.raw_count ELSE excluded.raw_count END")
+        .bind(scan.scanId, sourceType, scan.keywordIndex, scan.scanGroup, scan.expectedCount, scanOk ? 1 : 0, rawCount).run();
+    } catch (e) { console.log("scan monitoring write failed", e.message); }
+  }
   await sendScores(env, plan.toScore);
+  metric(env, "ingest", sourceType, [rawCount, jobs.length, plan.out.filter((r) => r.created).length, status === "error" ? 1 : 0]);
   return { fetched: jobs.length, raw: rawCount, created: plan.out.filter((r) => r.created).length, status, error };
+}
+
+// T-112: only complete successful scans count; old or failed scans do not trigger a false alert.
+async function alertEmptyScans(env) {
+  const cutoff = now() * 1000 - 120000;
+  const sql = "WITH complete AS (" +
+    " SELECT source_type, scan_id, SUM(raw_count) AS total FROM ingest_scan_results WHERE scan_id <= ? GROUP BY source_type, scan_id" +
+    " HAVING COUNT(*) = MAX(expected_count) AND MIN(expected_count) = MAX(expected_count) AND MIN(scan_group) = MAX(scan_group) AND SUM(success) = COUNT(*)" +
+    "), ranked AS (SELECT source_type, scan_id, total, ROW_NUMBER() OVER (PARTITION BY source_type ORDER BY scan_id DESC) AS rn FROM complete)," +
+    " candidates AS (SELECT source_type, MAX(scan_id) AS scan_id FROM ranked WHERE rn <= 2 GROUP BY source_type HAVING COUNT(*) = 2 AND SUM(total) = 0)" +
+    " SELECT c.source_type, c.scan_id FROM candidates c JOIN sources s ON s.type = c.source_type AND s.is_enabled = 1" +
+    " LEFT JOIN ingest_scan_alerts a ON a.source_type = c.source_type WHERE a.scan_id IS NULL OR a.scan_id < c.scan_id";
+  const { results } = await env.DB.prepare(sql).bind(cutoff).all();
+  if (results.length && env.OWNER_EMAIL) {
+    const owner = await env.DB.prepare("SELECT u.id, u.telegram_chat_id, b.token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.email = ? AND u.deleted_at IS NULL").bind(env.OWNER_EMAIL).first();
+    if (owner?.telegram_chat_id) {
+      for (const scan of results) {
+        const status = await tgSendFor(env, owner.id, owner.telegram_chat_id, "Scraper alert: " + tgEsc(scan.source_type) + " returned zero jobs in two completed scans.", owner.token_enc);
+        if (status >= 200 && status < 300) {
+          await env.DB.prepare("INSERT INTO ingest_scan_alerts (source_type, scan_id, sent_at) VALUES (?, ?, ?) ON CONFLICT(source_type) DO UPDATE SET scan_id = excluded.scan_id, sent_at = excluded.sent_at WHERE ingest_scan_alerts.scan_id < excluded.scan_id").bind(scan.source_type, scan.scan_id, now()).run();
+        }
+      }
+    } else console.log("scan alert unavailable: owner Telegram not configured");
+  } else if (results.length) console.log("scan alert unavailable: owner not configured");
+  await env.DB.prepare("DELETE FROM ingest_scan_results WHERE rowid IN (SELECT rowid FROM ingest_scan_results WHERE scan_id < ? LIMIT 2000)").bind(now() * 1000 - 7 * 86400000).run();
 }
 
 // ---------------- digest ----------------
@@ -1486,13 +1527,13 @@ async function verifyTurnstile(env, token, ip) {
 }
 // Giới hạn đăng ký theo IP, 5 lần/giờ (T-16b), cùng kiểu upsert nguyên tử; count dừng ở MAX+1. Cron */30 dọn dòng cũ.
 const REGISTER_MAX = 5;
-async function registerAttemptAllowed(env, ip, hour) {
+async function registerAttemptAllowed(env, ip, hour, max = REGISTER_MAX) {
   const r = await env.DB.prepare(
     `INSERT INTO register_attempts (ip, hour, count) VALUES (?1, ?2, 1)
      ON CONFLICT(ip, hour) DO UPDATE SET count = CASE WHEN count > ?3 THEN count ELSE count + 1 END
      RETURNING count`
-  ).bind(ip, hour, REGISTER_MAX).first();
-  return r.count <= REGISTER_MAX;
+  ).bind(ip, hour, max).first();
+  return r.count <= max;
 }
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 function passwordError(pw) {
@@ -1780,15 +1821,76 @@ async function adminCrm(env, request, url, path, lang) {
   return null;
 }
 
+// T-112: preserve D1 statement receivers while counting actual executions.
+function observeEnv(env, state) {
+  if (!env.DB) return new Proxy(env, { get: (target, key) => key === "__trace" ? state : Reflect.get(target, key, target) });
+  const original = new WeakMap();
+  const statement = (value) => {
+    const proxy = new Proxy(value, { get(target, key) {
+      const item = Reflect.get(target, key, target);
+      if (typeof item !== "function") return item;
+      if (key === "bind") return (...args) => statement(item.apply(target, args));
+      if (["first", "all", "run", "raw"].includes(key)) return (...args) => { state.d1_queries++; return item.apply(target, args); };
+      return item.bind(target);
+    }});
+    original.set(proxy, value);
+    return proxy;
+  };
+  const db = new Proxy(env.DB, { get(target, key) {
+    const item = Reflect.get(target, key, target);
+    if (key === "prepare") return (...args) => statement(item.apply(target, args));
+    if (key === "batch") return (items) => { state.d1_queries++; return item.call(target, items.map((s) => original.get(s) || s)); };
+    return typeof item === "function" ? item.bind(target) : item;
+  }});
+  return new Proxy(env, { get: (target, key) => key === "__trace" ? state : key === "DB" ? db : Reflect.get(target, key, target) });
+}
+function observedRoute(path) {
+  const routes = ["/api/jobs", "/api/applications", "/api/public/try", "/api/public/sample", "/api/rum", "/api/health"];
+  if (routes.includes(path)) return path;
+  if (/^\/api\/jobs\/[^/]+$/.test(path)) return "/api/jobs/:id";
+  if (/^\/api\/applications\/[^/]+$/.test(path)) return "/api/applications/:id";
+  return path.startsWith("/api/") ? "/api/other" : "/other";
+}
+
+async function handleRum(request, env) {
+  const ip = request.headers.get("cf-connecting-ip");
+  if (!ip || ip.length > 64) return json({ error: "invalid_request" }, 400);
+  const ipKey = await sha256hex("rum:" + ip);
+  if (!(await registerAttemptAllowed(env, "rum:" + ipKey, Math.floor(now() / 3600), 60))) return json({ error: "rate_limited" }, 429);
+  const reader = request.body?.getReader();
+  if (!reader) return json({ error: "invalid_request" }, 400);
+  let size = 0, chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > 1024) { await reader.cancel(); return json({ error: "too_large" }, 413); }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size); let pos = 0;
+  for (const chunk of chunks) { bytes.set(chunk, pos); pos += chunk.byteLength; }
+  let data;
+  try { data = JSON.parse(new TextDecoder().decode(bytes)); } catch (_) { return json({ error: "invalid_request" }, 400); }
+  if (!data || typeof data !== "object" || !["LCP", "INP", "CLS"].includes(data.metric) || !["landing", "app"].includes(data.page) || typeof data.value !== "number" || !Number.isFinite(data.value) || data.value < 0 || data.value > 3600000) return json({ error: "invalid_request" }, 400);
+  metric(env, "web_vital", data.metric + ":" + data.page, [data.value]);
+  return new Response(null, { status: 204, headers: CORS });
+}
+
 // ---------------- router ----------------
 export default {
   async fetch(request, env, ctx) {
+    const started = Date.now(), state = { d1_queries: 0, cache: "unknown", userId: null };
+    env = observeEnv(env, state);
+    const route = observedRoute(new URL(request.url).pathname);
+    const run = async () => {
     try {
     const url = new URL(request.url);
     const path = url.pathname;
     const qlang = url.searchParams.get("lang"); // A9: web gửi ?lang để cache không trộn VI/EN
     const lang = qlang === "en" || qlang === "vi" ? qlang : /^en/i.test(request.headers.get("accept-language") || "") ? "en" : "vi";
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
+
+    if (path === "/api/rum" && request.method === "POST") return await handleRum(request, env);
 
     if (path === "/api/health") {
       return json({ ok: true, service: "jobpilot-api", phase: 2, ts: new Date().toISOString(),
@@ -1810,6 +1912,7 @@ export default {
         tryP = { skills: skills.sort(), level, location };
         cacheKey = new Request("https://cache.jobpilot.internal/try?" + new URLSearchParams({ s: tryP.skills.join(","), l: level, c: location, lang }));
         const hit = typeof caches !== "undefined" ? await caches.default.match(cacheKey) : null;
+        if (env.__trace) env.__trace.cache = hit ? "hit" : "miss";
         if (hit) return hit;
       }
       const SCRAPED = "submitted_by IS NULL AND (source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%')";
@@ -2656,6 +2759,16 @@ export default {
       console.error("request failed", error);
       return json({ error: "internal_error" }, 500);
     }
+    };
+    const response = await run();
+    try {
+      const method = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"].includes(request.method) ? request.method : "OTHER";
+      const user_hash = state.userId ? await sha256hex(state.userId) : null;
+      const ms = Date.now() - started;
+      console.log(JSON.stringify({ route, method, status: response.status, ms, d1_queries: state.d1_queries, cache: state.cache, user_hash }));
+      metric(env, "request", route, [ms, response.status]);
+    } catch (_) { /* Request telemetry must not change the response. */ }
+    return response;
   },
 
   async queue(batch, env, ctx) {
@@ -2677,7 +2790,7 @@ export default {
       const body = msg.body || {};
       try {
         if (batch.queue === "jobpilot-ingest" && body.kind === "ingest") {
-          const r = await runIngestSource(env, body.sourceType, body.keyword);
+          const r = await runIngestSource(env, body.sourceType, body.keyword, body);
           console.log(`ingest ${body.sourceType}/${body.keyword}:`, JSON.stringify(r));
         } else if (batch.queue === "jobpilot-notify" && body.kind === "digest") {
           const u = await env.DB.prepare("SELECT u.*, b.token_enc AS own_token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.id = ?").bind(body.userId).first();
@@ -2708,7 +2821,10 @@ export default {
       const { results } = await env.DB.prepare("SELECT * FROM sources WHERE is_enabled = 1").all();
       const keywords = await ingestKeywords(env);
       for (const src of results) {
-        for (const kw of REMOTE_FETCHERS[src.type] ? ["*"] : keywords) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: kw });
+        const scanKeywords = REMOTE_FETCHERS[src.type] ? ["*"] : keywords;
+        const scanId = Number.isSafeInteger(event.scheduledTime) ? event.scheduledTime : Date.now();
+        const scanGroup = await sha256hex(JSON.stringify(scanKeywords));
+        for (let i = 0; i < scanKeywords.length; i++) await env.Q_INGEST.send({ kind: "ingest", sourceType: src.type, keyword: scanKeywords[i], scanId, scanGroup, keywordIndex: i, expectedCount: scanKeywords.length });
       }
       // Đóng mềm: đơn im lặng quá AUTO_CLOSE_DAYS. Event chèn trước UPDATE vì UPDATE đổi stage.
       // Mặc định TẮT trên prod (ghi tự động lên dữ liệu người dùng); owner bật bằng var AUTO_CLOSE_ENABLED="1" sau khi xem số đếm.
@@ -2737,6 +2853,7 @@ export default {
     } else if (event.cron === "0 1 * * *") {
       const { results: users } = await env.DB.prepare("SELECT id FROM users WHERE deleted_at IS NULL").all();
       for (const u of users) await env.Q_NOTIFY.send({ kind: "digest", userId: u.id });
+      try { await alertEmptyScans(env); } catch (e) { console.log("scan alert failed", e.message); }
     } else if (event.cron === "0 18 * * *") {
       const m = await backupToR2(env);
       console.log("backup", m.date, "subrequests", m.subrequests, "errors", JSON.stringify(m.errors));
