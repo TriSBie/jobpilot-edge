@@ -1,8 +1,8 @@
 // Tự kiểm cờ rủi ro tin ảo. Chạy: node apps/api/test/posting-risk.selfcheck.cjs
 const fs = require('fs'), assert = require('assert');
 const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8').replace(/\r\n/g, '\n');
-const m = src.match(/const EN = \{[\s\S]*?\n\};\nfunction tr[\s\S]*?\n\}/)[0] + '\n' + src.match(/function postingFlags[\s\S]*?\n\}/)[0];
-const postingFlags = new Function(m + '\nreturn postingFlags;')();
+(async () => {
+const { postingFlags } = await import(require('url').pathToFileURL(require('path').resolve(process.argv[2] || 'apps/api/src/worker.js')).href);
 const N = 1_000_000, D = 86400;
 const base = { posted_at: N - D, first_seen_at: N - D, last_seen_at: N, repost_count: 0, salary_text: '25 - 40 triệu', skillCount: 3 };
 const types = (r, lang) => postingFlags({ ...base, ...r }, N, lang).map((f) => f.type);
@@ -27,3 +27,4 @@ assert.ok(!types({ source_id: null, last_seen_at: N - 3 * D }).includes('stale')
 assert.ok(!types({ source_url: 'manual://abc', source_id: 'x', last_seen_at: N - 3 * D }).includes('stale'), 'manual:// không gone');
 assert.deepEqual(types({ source_id: 'src-itviec', last_seen_at: N - 3 * D }), ['stale'], 'tin quét vẫn gone');
 console.log('posting-risk T-94 OK');
+})().catch((e) => { console.error(e); process.exitCode = 1; });

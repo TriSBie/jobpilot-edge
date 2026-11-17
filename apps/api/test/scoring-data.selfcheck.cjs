@@ -32,10 +32,7 @@ for (const [i, s] of ['$3,000 - $4,000/month', '$5,000 - $6,000/month', '$7,000 
 
 const src = fs.readFileSync(workerPath, 'utf8');
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-scoring-${process.pid}.mjs`);
-  fs.writeFileSync(tmp, src + '\nexport { extractJd, extractSkillsFromText, titleGate, fitBreakdown, fixMojibake };');
-  const m = await import(pathToFileURL(tmp).href);
-  fs.unlinkSync(tmp);
+  const m = await import(pathToFileURL(workerPath).href);
   const worker = m.default;
   const get = async (p, h = {}) => { const r = await worker.fetch(new Request('https://api.test' + p, { headers: h }), env, {}); return { r, body: await r.json() }; };
 

@@ -36,10 +36,9 @@ db.prepare("INSERT INTO applications (id, profile_id, job_id, created_at, update
 db.prepare("INSERT INTO sources (id, type, name, last_status, created_at) VALUES ('src-itviec', 'itviec', 'ITviec', 'ok', ?)").run(T);
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-hyg-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const originalFetch = globalThis.fetch;
+  try {
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const urls = [];
   globalThis.fetch = async (u) => { urls.push(String(u)); return new Response('<html></html>'); };
 
@@ -73,4 +72,5 @@ db.prepare("INSERT INTO sources (id, type, name, last_status, created_at) VALUES
   await rescore(T + 10);
   assert.strictEqual(q('SELECT COUNT(*) c FROM job_matches')[0].c, 2);
   console.log('hygiene selfcheck OK');
+  } finally { globalThis.fetch = originalFetch; }
 })().catch((e) => { console.error(e); process.exit(1); });

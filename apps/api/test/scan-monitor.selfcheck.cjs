@@ -15,9 +15,10 @@ db.prepare("INSERT INTO sources (id,type,name,is_enabled,created_at) VALUES ('sr
 db.prepare("INSERT INTO users (id,email,name,created_at,telegram_chat_id) VALUES ('owner',?,'Owner',?,'fake-chat')").run(env.OWNER_EMAIL,time);
 let mode = "zero", telegramOk = true, sent = 0;
 const actualFetch = globalThis.fetch;
-globalThis.fetch = async (url) => { if (String(url).startsWith("https://tg.invalid")) { sent++; return new Response("{}", { status: telegramOk ? 200 : 503 }); } if (mode === "fail") return new Response("oops", { status: 500 }); if (mode === "404") return new Response("missing", { status: 404 }); if (mode === "job") return new Response(fs.readFileSync(path.join(__dirname,"fixtures","topdev.html"),"utf8")); return new Response("<html></html>"); };
 (async () => {
- const temp=path.join(os.tmpdir(),`scan-worker-${process.pid}.mjs`); fs.copyFileSync(workerPath,temp); let worker; try { worker=(await import(pathToFileURL(temp).href)).default; } finally { fs.unlinkSync(temp); }
+ try {
+ globalThis.fetch = async (url) => { if (String(url).startsWith("https://tg.invalid")) { sent++; return new Response("{}", { status: telegramOk ? 200 : 503 }); } if (mode === "fail") return new Response("oops", { status: 500 }); if (mode === "404") return new Response("missing", { status: 404 }); if (mode === "job") return new Response(fs.readFileSync(path.join(__dirname,"fixtures","topdev.html"),"utf8")); return new Response("<html></html>"); };
+ const worker=(await import(pathToFileURL(workerPath).href)).default;
  const ingest=async (scanId,index,expected=2,scanGroup="a".repeat(64),sourceType="topdev") => { let ack=0,retry=0; await worker.queue({ queue:"jobpilot-ingest", messages:[{body:{kind:"ingest",sourceType,keyword:"Java",scanId,scanGroup,keywordIndex:index,expectedCount:expected},ack(){ack++;},retry(){retry++;}}] },env,{}); assert.equal(ack,1); assert.equal(retry,0); };
  const daily=async () => { queryCalls=0; await worker.scheduled({cron:"0 1 * * *"},env,{}); maxDailyQueries=Math.max(maxDailyQueries,queryCalls); assert(queryCalls<=40,"daily query budget: "+queryCalls); };
  const rows=()=>db.prepare("SELECT scan_id,keyword_index,success,raw_count FROM ingest_scan_results ORDER BY scan_id,keyword_index").all();
@@ -36,5 +37,6 @@ globalThis.fetch = async (url) => { if (String(url).startsWith("https://tg.inval
  const before=db.prepare("SELECT SUM(seen_count) n FROM jobs").get().n;
  await ingest(base+300000,0,1);
  assert(db.prepare("SELECT SUM(seen_count) n FROM jobs").get().n>before,"ingest saves jobs without monitoring table");
- globalThis.fetch=actualFetch; console.log("T-112 scan monitoring selfcheck OK; daily max queries:",maxDailyQueries);
-})().catch((error)=>{globalThis.fetch=actualFetch; console.error(error);process.exitCode=1;});
+ console.log("T-112 scan monitoring selfcheck OK; daily max queries:",maxDailyQueries);
+ } finally { globalThis.fetch=actualFetch; }
+})().catch((error)=>{console.error(error);process.exitCode=1;});

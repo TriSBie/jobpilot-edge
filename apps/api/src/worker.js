@@ -77,7 +77,7 @@ function tr(lang, vi, ...args) {
   return s;
 }
 // T-65: nhãn khuyến nghị. ponytail: ngưỡng cứng (level<=2, risk>=3, thiếu nặng >=3: weight thiếu hiện cố định 3); chỉnh khi có dữ liệu nộp thật.
-function verdictFor(match, fit, flags, risk, lang) {
+export function verdictFor(match, fit, flags, risk, lang) {
   const miss = ((match.rule_detail && match.rule_detail.missing) || []).slice().sort((x, y) => y.weight - x.weight);
   let why = null;
   if (fit && fit.location === 0) why = "địa điểm không khớp";
@@ -197,7 +197,7 @@ function skillInText(skill, text) {
   const cands = [skill.toLowerCase(), ...(SKILL_ALIASES[skill] ?? [])];
   return cands.some((c) => new RegExp(`(^|[^a-z0-9+#.])${escapeRe(c)}([^a-z0-9+#]|$)`, "i").test(hay));
 }
-const extractSkillsFromText = (text) => SKILL_CATALOG.filter((s) => skillInText(s, text || ""));
+export const extractSkillsFromText = (text) => SKILL_CATALOG.filter((s) => skillInText(s, text || ""));
 const CORE_SKILLS = new Set(["Java", "Spring Boot", "Kafka", "PostgreSQL", "Redis", "NestJS", "Node.js", "TypeScript", "Microservices", "Docker"]);
 
 // llama-3.1-8b-instruct bị Cloudflare khai tử 2026-05-30 (lỗi 5028) nên hàm này từng âm thầm trả [].
@@ -715,7 +715,7 @@ async function fetchRemotive() {
   }));
 }
 // A8: RemoteOK trả UTF-8 bị giải mã latin1 ("â\u0080\u0094" thay "—"): ghép lại byte rồi giải UTF-8; chuỗi đã có ký tự >0xFF thì giữ nguyên.
-function fixMojibake(s) {
+export function fixMojibake(s) {
   if (typeof s !== "string" || !/[ÃÂâ][\x80-\xBF]/.test(s) || /[^\x00-\xFF]/.test(s)) return s;
   try { return new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(s, (c) => c.charCodeAt(0))); } catch { return s; }
 }
@@ -835,7 +835,7 @@ async function upsertJob(env, sourceId, job, submittedBy = null) {
 }
 
 // Bóc JD từ trang chi tiết ITviec/TopDev. Fallback: toàn trang. ponytail: selector đoán theo markup hiện tại; lệch thì rơi về fallback.
-function extractJd(html, sourceId) {
+export function extractJd(html, sourceId) {
   let t = "";
   if (sourceId === "src-topdev") {
     const m = html.match(/\\?"description\\?":\\?"((?:[^"\\]|\\.)*?)\\?"[,}]/);
@@ -886,9 +886,9 @@ async function enrichJd(env, limit) {
   return r;
 }
 
-const USD_VND = 25500; // 03/11/2026
+export const USD_VND = 25500; // 03/11/2026
 // Parse lương → {min, max, currency, period} | null. "Thương lượng" và dạng lạ → null (không đoán mò).
-function parseSalary(text) {
+export function parseSalary(text) {
   if (!text) return null;
   let t = String(text);
   if (/thương lượng|thoả thuận|thỏa thuận|negotiable|competitive|per task|per hour|per day|\/h\b|\/hr\b|\/hour\b|\/day\b|€|£|\beur\b|\bgbp\b/i.test(t)) return null;
@@ -910,13 +910,13 @@ function parseSalary(text) {
   return null;
 }
 // Quy về VNĐ/tháng.
-function monthlyVND(p) {
+export function monthlyVND(p) {
   const f = (p.currency === "USD" ? USD_VND : 1) / (p.period === "year" ? 12 : 1);
   return { min: p.min * f, max: p.max * f };
 }
 // /api/jobs: lương VNĐ/tháng (cùng parser + tỉ giá với benchmark) và hình thức làm việc, suy ra lúc đọc.
 // ponytail: tính lúc đọc trên ≤ JOB_LIST_LIMIT tin; khi danh sách lớn hơn, lưu thành cột bằng migration và lọc trong SQL.
-function salaryVND(text) {
+export function salaryVND(text) {
   const p = parseSalary(text);
   if (!p) return { min: null, max: null };
   const v = monthlyVND(p);
@@ -927,7 +927,7 @@ const VN_CITY_RE = /\b(?:ho chi minh|hcmc?|hn|sai gon|saigon|ha noi|hanoi|da nan
 const REMOTE_SOURCES = new Set(["src-wwr", "src-remotive", "src-remoteok", "src-hn"]);
 const HYBRID_RE = /\bhybrid\b|linh hoat/, REMOTE_RE = /\bremote\b(?! sensing)|tu xa|work from home|\bwfh\b|worldwide|anywhere/;
 // ponytail: đoán theo từ khoá; JD chỉ dùng cho hybrid ở tin VN (JD hay nhắc "remote" kiểu 'không remote'). Sai nhiều thì cho AI gắn nhãn lúc quét.
-function workMode(location, title, jd, sourceId, src = null) {
+export function workMode(location, title, jd, sourceId, src = null) {
   if (src === "onsite" || src === "hybrid" || src === "remote") return src; // nhãn nguồn là sự thật, heuristic chỉ là fallback (§3A)
   const lt = normLoc(`${location || ""} ${title || ""}`), j = normLoc(String(jd || "").slice(0, 600));
   if (HYBRID_RE.test(lt) || HYBRID_RE.test(j)) return "hybrid";
@@ -936,7 +936,7 @@ function workMode(location, title, jd, sourceId, src = null) {
   return REMOTE_RE.test(j) ? "remote" : null;
 }
 // Cờ rủi ro tin ảo từ lịch sử quét. row: posted_at, first_seen_at, last_seen_at, repost_count, salary_text, skillCount, dup.
-function postingFlags(row, nowTs, lang) {
+export function postingFlags(row, nowTs, lang) {
   const flags = [];
   const lastSeen = row.last_seen_at || row.first_seen_at || nowTs;
   const manual = row.source_id === null || String(row.source_url || "").startsWith("manual://"); // tin dán tay không được quét lại
@@ -967,7 +967,7 @@ function normLoc(s) {
 }
 const REGION_LOCK = /(?<!\b(?:help|let|ask|tell|give|show|join|contact|about|with|email|follow|call|text|trust) )\b(?:us|usa|u\.s\.?a?|united states|north america|americas?|canada|latam|eu|europe|european|eea|chau au|emea|uk|germany|berlin|london|cet|est|pst|us timezones?|us hours)(?![a-z])/;
 const JD_REGION_LOCK = /\b(?:(?:only|exclusively) (?:hiring |accepting |open to )?(?:candidates )?(?:in|from) (?:the )?(?:us|usa|u\.s\.?a?|united states|north america|canada|latam|eu|europe|eea|emea|uk|united kingdom|chau au|chau my|my)(?![a-z])|(?:must|need to|required to) (?:be )?(?:based|located|living|residing|reside) in (?:the )?(?:us|usa|u\.s\.?a?|united states|north america|canada|latam|eu|europe|eea|emea|uk|united kingdom|chau au|chau my|my)(?![a-z])|(?:the )?(?:us|usa|u\.s\.?a?|united states|north america|canada|latam|eu|europe|eea|emea|uk|united kingdom|chau au|chau my|my)[ -](?:only|based candidates only|residents only)\b|chi nhan (?:ung vien )?(?:o|tai|tu) (?:the )?(?:us|usa|u\.s\.?a?|united states|north america|canada|latam|eu|europe|eea|emea|uk|united kingdom|chau au|chau my|my)(?![a-z]))/;
-function fitBreakdown(profile, job) {
+export function fitBreakdown(profile, job) {
   const locs = (profile.locations || []).map(normLoc);
   const jobLoc = normLoc(job.location);
   // ponytail: chỉ gỡ "join/contact/about us"; tiêu đề có "us" là đại từ kiểu khác vẫn có thể khớp nhầm khoá vùng.
@@ -1020,7 +1020,7 @@ function fitBreakdown(profile, job) {
   return { location, locationWhy, locationArg, levelArg, freshness, ageDays, level, levelWhy, total: location + freshness + level };
 }
 
-function scoreJob(profile, profileSkills, job) {
+export function scoreJob(profile, profileSkills, job) {
   const jobSkills = [...new Set([...(job.skills || []), ...extractSkillsFromText(jdOf(job))])];
   const profileByKey = new Map(profileSkills.map((ps) => [ps.skill.toLowerCase(), ps]));
   // Mẫu số = tổng trọng số các skill JOB yêu cầu (skill có trong profile lấy
@@ -1349,7 +1349,7 @@ const TITLE_NON_IT = /(cấp thoát nước|\bsmt\b|năng lượng|điện nhẹ
 const TITLE_BLOCK = /(human resource|\bhr\b|recruit|talent acquisition|sales|marketing|accountant|kế toán|nhân sự|tuyển dụng|business development|customer service|support|administrator|designer|content|seo|admin\b)/i;
 // T-07: nhóm này chặn kể cả khi có "engineer" (Sales Engineer, Engineering Manager, Data Entry...).
 const TITLE_HARD_BLOCK = /(\bsales\b|pre-?sales|\bsupport\b|\bcontent\b|\bmanager\b|data entry)/i;
-function titleGate(title) {
+export function titleGate(title) {
   if (!TITLE_TECH.test(title || "") || TITLE_HARD_BLOCK.test(title || "") || (TITLE_NON_IT.test(title || "") && !TITLE_IT_STRONG.test(title || ""))) return false;
   if (TITLE_BLOCK.test(title || "") && !/\b(?:developer|engineer|programmer)\b/i.test(title)) return false;
   return true;

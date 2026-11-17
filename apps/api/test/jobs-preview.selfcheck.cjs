@@ -46,6 +46,9 @@ const ivHtml = (logo) => `<html><head><script type="application/ld+json">${JSON.
 <div class='related'><div class='text-rich-grey'> Remote </div></div></body></html>`;
 
 const fetched = [];
+const originalFetch = globalThis.fetch;
+(async () => {
+try {
 global.fetch = async (url) => {
   fetched.push(String(url));
   const u = String(url);
@@ -53,11 +56,7 @@ global.fetch = async (url) => {
   return { ok: true, status: 200, text: async () => body };
 };
 
-(async () => {
-  const tmp = path.join(os.tmpdir(), `worker-preview-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (method, p, body) => { const r = await worker.fetch(new Request('https://api.test' + p, { method, headers: { Authorization: 'Bearer tokO', 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {}); return { status: r.status, body: await r.json() }; };
 
   // 1. TopDev ingest: 1 request, bóc trường mới, allowlist logo
@@ -116,4 +115,5 @@ global.fetch = async (url) => {
   for (const h of hosts) assert.ok(img.includes(h), 'img-src thiếu ' + h);
   assert.ok(!img.some((x) => x.includes('*')), 'không wildcard');
   console.log('jobs-preview selfcheck OK');
+} finally { globalThis.fetch = originalFetch; }
 })().catch((e) => { console.error(e); process.exit(1); });

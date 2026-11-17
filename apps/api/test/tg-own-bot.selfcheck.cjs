@@ -39,6 +39,9 @@ for (const u of ['u1', 'u2', 'u3', 'u4']) {
 
 // Telegram giả: token hợp lệ = A/B/C; REVOKED = token bị thu hồi (401); C không giữ được webhook.
 const calls = [], revoked = new Set(), hooks = {}, secrets = {};
+const originalFetch = globalThis.fetch;
+(async () => {
+try {
 globalThis.fetch = async (u, init = {}) => {
   const m = String(u).match(/^https:\/\/tg\.test\/bot([^/]+)\/(\w+)$/);
   assert(m, 'gọi ngoài Telegram giả: ' + u);
@@ -53,11 +56,7 @@ globalThis.fetch = async (u, init = {}) => {
   return Response.json({ ok: true });
 };
 
-(async () => {
-  const tmp = path.join(os.tmpdir(), `worker-tgbot-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const ORIGIN = 'https://api.jp.test';
   const call = async (method, p, { user, body, headers = {}, e = env } = {}) => {
     const h = { 'content-type': 'application/json', ...headers };
@@ -213,4 +212,5 @@ globalThis.fetch = async (u, init = {}) => {
   // không log token
   assert(!/console\.(log|error)\([^)]*token\b(?!_)/.test(src.replace(/thiếu TELEGRAM_BOT_TOKEN/g, '').replace(/token bot riêng/g, '')), 'có log token');
   console.log('tg-own-bot selfcheck OK');
+} finally { globalThis.fetch = originalFetch; }
 })().catch((e) => { console.error(e); process.exit(1); });

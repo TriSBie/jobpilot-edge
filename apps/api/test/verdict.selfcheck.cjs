@@ -1,9 +1,8 @@
 // Chạy: node apps/api/test/verdict.selfcheck.cjs apps/api/src/worker.js
 const fs = require('fs'), assert = require('assert');
 const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8');
-const cut = (a) => { const s = src.indexOf(a); let d = 0; for (let j = src.indexOf('{', s); ; j++) { if (src[j] === '{') d++; else if (src[j] === '}' && --d === 0) return src.slice(s, j + 1); } };
-const EN = src.slice(src.indexOf('const EN = {'), src.indexOf('function tr(lang'));
-const { verdictFor } = new Function(EN + cut('function tr(') + cut('function verdictFor') + 'return { verdictFor };')();
+(async () => {
+const { verdictFor } = await import(require('url').pathToFileURL(require('path').resolve(process.argv[2] || 'apps/api/src/worker.js')).href);
 const miss = (...w) => ({ rule_detail: { missing: w.map((x, i) => ({ skill: 'S' + i, weight: x })) } });
 const fit = (location = 8, level = 5) => ({ location, level });
 const v = (m, f, fl, r, l) => verdictFor(m, f, fl, r, l);
@@ -22,3 +21,4 @@ console.log('verdict selfcheck OK');
 assert.equal(v({ tier: 'weak', ...miss(3) }, fit()).verdict, 'apply_if');
 assert.equal(v({ tier: 'partial', ...miss(3) }, fit()).verdict, 'apply');
 console.log('verdict S5 OK');
+})().catch((e) => { console.error(e); process.exitCode = 1; });

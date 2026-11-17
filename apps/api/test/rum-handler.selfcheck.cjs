@@ -8,11 +8,11 @@ const points = [], logs = [];
 const env = { DB: { prepare: (sql) => ({ bind: (...args) => ({ first: async () => db.prepare(sql).get(...args) }) }) }, EVENTS: { writeDataPoint: (p) => points.push(p) } };
 const file = path.resolve(process.argv[2] || "apps/api/src/worker.js");
 (async () => {
-  const temp = path.join(os.tmpdir(), `rum-worker-${process.pid}.mjs`);
-  fs.copyFileSync(file, temp);
-  let worker;
-  try { worker = (await import(pathToFileURL(temp).href)).default; } finally { fs.unlinkSync(temp); }
-  const originalLog = console.log; console.log = (...args) => { if (args.length === 1 && typeof args[0] === "string" && args[0].startsWith("{")) logs.push(JSON.parse(args[0])); else originalLog(...args); };
+  const originalLog = console.log;
+  const originalCaches = Object.getOwnPropertyDescriptor(globalThis, "caches");
+  try {
+  const worker = (await import(pathToFileURL(file).href)).default;
+  console.log = (...args) => { if (args.length === 1 && typeof args[0] === "string" && args[0].startsWith("{")) logs.push(JSON.parse(args[0])); else originalLog(...args); };
   const ip = "203.0.113.2";
   const call = (body, sourceIp = ip) => worker.fetch(new Request("https://api.test/api/rum", { method: "POST", headers: { "cf-connecting-ip": sourceIp }, body }), env, {});
   const good = JSON.stringify({ metric: "LCP", page: "landing", value: 1234 });
@@ -43,6 +43,10 @@ const file = path.resolve(process.argv[2] || "apps/api/src/worker.js");
   const entry = logs.at(-1);
   assert.equal(entry.route, "/api/jobs/:id"); assert.equal(entry.d1_queries, 2); assert.match(entry.user_hash, /^[a-f0-9]{64}$/);
   assert(!JSON.stringify(entry).includes("private-user-id")); assert(!JSON.stringify(entry).includes("private-token")); assert(!JSON.stringify(entry).includes("person@example.com")); assert(!JSON.stringify(entry).includes("secret-token"));
-  delete globalThis.caches;
   console.log("T-112 RUM handler selfcheck OK");
+  } finally {
+    console.log = originalLog;
+    if (originalCaches) Object.defineProperty(globalThis, "caches", originalCaches);
+    else delete globalThis.caches;
+  }
 })().catch((error) => { console.error(error); process.exitCode = 1; });

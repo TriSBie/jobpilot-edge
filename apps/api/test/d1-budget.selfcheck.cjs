@@ -64,10 +64,7 @@ const msgs = (bodies) => bodies.map((body) => ({ body, ack() {}, retry() {} }));
 const run = (worker, queue, bodies, env) => worker.queue({ queue, messages: msgs(bodies), ackAll() {}, retryAll() { throw new Error('retryAll'); } }, env, {});
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const result = {};
 
   // --- score: lô đầy, 3 tin khớp mạnh + 7 tin yếu, 10 hồ sơ (+1 không skill, +1 tắt) ---
@@ -82,8 +79,9 @@ const run = (worker, queue, bodies, env) => worker.queue({ queue, messages: msgs
     }
     const realFetch = globalThis.fetch;
     globalThis.fetch = async (u) => { if (String(u).startsWith('https://tg.test')) S.stats.tg++; return new Response('{}'); };
-    await run(worker, 'jobpilot-score', [...ids.map((jobId) => ({ kind: 'score', jobId })), { kind: 'score', jobId: 'missing' }].slice(0, nScore), S.env);
-    globalThis.fetch = realFetch;
+    try {
+      await run(worker, 'jobpilot-score', [...ids.map((jobId) => ({ kind: 'score', jobId })), { kind: 'score', jobId: 'missing' }].slice(0, nScore), S.env);
+    } finally { globalThis.fetch = realFetch; }
     const m = S.q('SELECT tier, COUNT(*) c FROM job_matches GROUP BY tier');
     result.score = { queries: S.stats.queries, matches: S.q('SELECT COUNT(*) c FROM job_matches')[0].c, strong: (m.find((r) => r.tier === 'strong') || {}).c,
       notifications: S.q("SELECT COUNT(*) c FROM notifications WHERE type = 'strong_match'")[0].c, broadcasts: S.stats.broadcasts, telegram: S.stats.tg };

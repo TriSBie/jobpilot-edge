@@ -36,16 +36,15 @@ db.prepare("INSERT INTO sources (id, type, name, created_at) VALUES ('src-topdev
 db.prepare("INSERT INTO jobs (id, source_id, source_url, title, company, skills, content_hash, first_seen_at, created_at) VALUES ('shared', 'src-topdev', 'https://topdev.vn/detail-jobs/x-1', 'Java Dev', 'Co', '[\"Java\"]', 'hshared', ?, ?)").run(T, T);
 
 const fetched = [];
+const originalFetch = globalThis.fetch;
+(async () => {
+try {
 globalThis.fetch = async (u, init) => {
   fetched.push({ url: String(u), redirect: init && init.redirect });
   return new Response('<html><title>Java Backend | TopDev</title><body>Java Spring Boot PostgreSQL</body></html>');
 };
 
-(async () => {
-  const tmp = path.join(os.tmpdir(), `worker-submit-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (who, method, p, body) => {
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: { Authorization: `Bearer tok${who}`, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {});
     return { status: r.status, body: await r.json().catch(() => null) };
@@ -158,4 +157,5 @@ globalThis.fetch = async (u, init) => {
 
   console.log('submit-privacy:', JSON.stringify(r));
   console.log('submit-privacy selfcheck OK');
+} finally { globalThis.fetch = originalFetch; }
 })().catch((e) => { console.error(e); process.exit(1); });

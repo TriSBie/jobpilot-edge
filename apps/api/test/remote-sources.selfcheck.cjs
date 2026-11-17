@@ -23,9 +23,11 @@ const feeds = {
   ] },
 };
 // Thay fetch toàn cục: trả RSS cho mọi feed WWR (nên dedupe phải gộp 5×2 item → 2), JSON cho các API.
-global.fetch = async (url) => ({ ok: true, text: async () => feeds.rss, json: async () => (url.includes("remotive") ? feeds.remotive : url.includes("search_by_date") ? feeds.hnSearch : url.includes("/items/") ? feeds.hnItem : feeds.remoteok) });
-const m = new Function(code)();
+const originalFetch = globalThis.fetch;
 (async () => {
+try {
+global.fetch = async (url) => ({ ok: true, text: async () => feeds.rss, json: async () => (url.includes("remotive") ? feeds.remotive : url.includes("search_by_date") ? feeds.hnSearch : url.includes("/items/") ? feeds.hnItem : feeds.remoteok) });
+const m = new Function(code.replace(/^export /gm, ""))();
   const w = await m.fetchWWR();
   assert.equal(w.length, 2, "WWR dedupe theo link qua 5 feed");
   assert.deepEqual([w[0].title, w[0].company, w[0].location, w[0].postedAt], ["Senior Java Developer", "Acme", "Remote (Anywhere in the World)", "2026-10-12"]);
@@ -42,4 +44,5 @@ const m = new Function(code)();
   assert.deepEqual([h[0].company, h[0].title, h[0].location, h[0].url, h[0].postedAt], ["Sidekick Labs", "Senior SWE", "REMOTE (US / Canada)", "https://news.ycombinator.com/item?id=1", "2026-10-01"]);
   assert.deepEqual(h[0].skills.sort(), ["Kubernetes", "PostgreSQL", "Python"]);
   console.log("remote-sources selfcheck OK");
+} finally { globalThis.fetch = originalFetch; }
 })().catch((e) => { console.error(e); process.exit(1); });

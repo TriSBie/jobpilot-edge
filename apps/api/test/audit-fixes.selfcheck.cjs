@@ -37,10 +37,7 @@ for (let u = 0; u < N; u++) {
 db.prepare("INSERT INTO jobs (id, source_url, title, company, location, skills, content_hash, first_seen_at, created_at) VALUES ('j1', 'https://x.test/1', 'Java Dev', 'C', 'Remote', '[\"Java\"]', 'h1', ?, ?)").run(T, T);
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-audit-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (tok, method, p, body) => {
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: { Authorization: `Bearer ${tok}`, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {});
     return { status: r.status, body: await r.json().catch(() => null) };

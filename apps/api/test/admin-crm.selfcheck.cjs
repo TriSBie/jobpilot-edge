@@ -45,11 +45,10 @@ db.prepare("INSERT INTO application_events (id, application_id, type, payload, c
 db.prepare("INSERT INTO interviews (id, application_id, kind, round_label, scheduled_at, result, created_at) VALUES ('i1', 'a2', 'technical', 'Tech 1', ?, 'pass', ?), ('i2', 'a2', 'hr', 'HR', ?, 'pending', ?)").run(T - 86400, T, T + 86400, T);
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-admin-crm-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
-  const logs = []; const log0 = console.log; console.log = (...a) => logs.push(a.join(' '));
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const logs = []; const log0 = console.log;
+  try {
+  console.log = (...a) => logs.push(a.join(' '));
   const call = async (tok, method, p, body) => {
     const q0 = queries;
     const r = await worker.fetch(new Request('https://api.test' + p, { method, headers: { ...(tok && { Authorization: `Bearer ${tok}` }), 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {});
@@ -161,6 +160,6 @@ db.prepare("INSERT INTO interviews (id, application_id, kind, round_label, sched
   assert.ok(!(await exp.text()).includes('admin_note'), 'export lộ admin_note');
   assert.strictEqual((await call('tokO', 'PATCH', '/api/admin/applications/a0', { admin_note: null })).body.admin_note, null);
 
-  console.log = log0;
+  } finally { console.log = log0; }
   console.log('admin-crm selfcheck OK');
 })().catch((e) => { console.error(e); process.exit(1); });

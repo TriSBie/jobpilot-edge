@@ -36,10 +36,7 @@ db.prepare("INSERT INTO files (id, user_id, r2_key, kind, filename, size_bytes, 
 kv.set('session:tokO', 'own'); kv.set('session:tokU', 'usr');
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-funnel-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (tok, method, p, body) => {
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: { ...(tok && { Authorization: `Bearer ${tok}` }), 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {});
     return { status: r.status, text: await r.text() };

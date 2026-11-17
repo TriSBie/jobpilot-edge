@@ -9,9 +9,8 @@ const migDir = path.join(path.dirname(workerPath), '..', '..', '..', 'db', 'migr
 const src = fs.readFileSync(workerPath, 'utf8').replace(/\r\n/g, '\n');
 
 // 1. hàm thuần: parse lương (cùng parser + tỉ giá benchmark) và nhận diện hình thức
-const pure = new Function(['USD_VND', 'parseSalary', 'monthlyVND', 'salaryVND', 'normLoc', 'VN_CITY_RE', 'REMOTE_SOURCES', 'HYBRID_RE', 'workMode']
-  .map((n) => src.match(new RegExp(`\\n(const ${n} =[^\\n]*\\n|function ${n}\\([\\s\\S]*?\\n\\}\\n)`))[1]).join('\n')
-  + '\nreturn { salaryVND, workMode, USD_VND };')();
+(async () => {
+const pure = await import(pathToFileURL(workerPath).href);
 const { salaryVND, workMode, USD_VND } = pure;
 assert.deepStrictEqual(salaryVND('15 - 25 triệu'), { min: 15e6, max: 25e6 });
 assert.deepStrictEqual(salaryVND('$3k - $5k/năm'), { min: Math.round(3000 * USD_VND / 12), max: Math.round(5000 * USD_VND / 12) });
@@ -60,11 +59,7 @@ job('j4', 'Ho Chi Minh', '10 - 15 triệu', 'Office', 4);              // onsite
 job('j5', 'Remote (US)', 'Thương lượng', '', 5);                     // remote, no salary
 job('j6', 'Vietnam', null, '', 6);                                   // null
 
-(async () => {
-  const tmp = path.join(os.tmpdir(), `worker-filters-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const get = async (qs) => { const r = await worker.fetch(new Request('https://api.test/api/jobs' + qs, { headers: { Authorization: 'Bearer tokA' } }), env, {}); return { status: r.status, body: await r.json() }; };
   const idsOf = (b) => (Array.isArray(b) ? b : b.items).map((x) => x.id).sort();
 

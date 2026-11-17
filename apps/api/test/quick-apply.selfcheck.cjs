@@ -32,10 +32,7 @@ seed('aI', 'j2', 'interview'); seed('aO', 'j4', 'offer');
 kv.set('session:tok1', 'u1'); kv.set('session:tokO', 'own');
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-quick-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (tok, p, body, method = 'POST') => {
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: { ...(tok && { Authorization: `Bearer ${tok}` }), 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {});
     return { status: r.status, body: JSON.parse(await r.text()) };

@@ -38,6 +38,9 @@ for (const u of ['u1', 'u2', 'u3']) {
 const addJob = (id) => db.prepare("INSERT INTO jobs (id, source_url, title, company, location, skills, content_hash, posted_at, first_seen_at, created_at) VALUES (?, ?, 'Backend Developer', 'Co', 'Remote (Worldwide)', '[\"Java\",\"Spring Boot\",\"PostgreSQL\"]', ?, ?, ?, ?)").run(id, 'https://x/' + id, 'h' + id, T, T, T);
 
 const sends = [], revoked = new Set();
+const originalFetch = globalThis.fetch;
+(async () => {
+try {
 globalThis.fetch = async (u, init = {}) => {
   const m = String(u).match(/^https:\/\/tg\.test\/bot([^/]+)\/(\w+)$/);
   assert(m, 'gọi ngoài Telegram giả: ' + u);
@@ -48,11 +51,7 @@ globalThis.fetch = async (u, init = {}) => {
 };
 const q = (sql, ...a) => db.prepare(sql).all(...a);
 
-(async () => {
-  const tmp = path.join(os.tmpdir(), `worker-notif-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (method, p, user, body) => {
     const h = { 'content-type': 'application/json', authorization: 'Bearer s-' + user };
     const r = await worker.fetch(new Request('https://api.jp.test' + p, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }), env, {});
@@ -167,4 +166,5 @@ const q = (sql, ...a) => db.prepare(sql).all(...a);
   assert(used.has('PATCH') && used.has('PUT') && used.has('POST') && used.has('DELETE'));
 
   console.log('notifications selfcheck OK');
+} finally { globalThis.fetch = originalFetch; }
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -29,10 +29,7 @@ for (let i = 0; i < 14; i++) db.prepare("INSERT INTO jobs (id, source_id, source
   .run('j' + i, `https://topdev.vn/detail-jobs/j-${i}`, i % 2 ? '["Java","Docker"]' : '["Java","Spring Boot","Redis"]', 'h' + i, T - i, T, i === 13 ? 'A' : null);
 
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-try-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const get = async (p) => { const r = await worker.fetch(new Request('https://api.test' + p), env, {}); return { status: r.status, body: await r.json() }; };
   const post = async (p, body) => { const r = await worker.fetch(new Request('https://api.test' + p, { method: 'POST', headers: { Authorization: 'Bearer tokA', 'content-type': 'application/json' }, body: JSON.stringify(body) }), env, {}); return { status: r.status, body: await r.json() }; };
 

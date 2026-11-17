@@ -3,28 +3,11 @@ const fs = require('fs');
 const assert = require('assert');
 const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8');
 
-function block(start) {
-  const s = src.indexOf(start);
-  if (s < 0) throw new Error('không thấy ' + start);
-  let d = 0;
-  for (let j = src.indexOf('{', s); j < src.length; j++) {
-    if (src[j] === '{') d++;
-    else if (src[j] === '}' && --d === 0) return src.slice(s, j + 1);
-  }
-}
-const catalog = src.slice(src.indexOf('const SKILL_CATALOG'), src.indexOf('const CORE_SKILLS'));
-const code = [
-  'const now = () => 1793346000;',
-  catalog,
-  block('function normLoc'),
-src.match(/const jdOf.*/)[0],
-  src.match(/const REGION_LOCK.*/)[0],
-  src.match(/const JD_REGION_LOCK.*/)[0],
-  block('function fitBreakdown'),
-  block('function scoreJob'),
-  'return { scoreJob };',
-].join('\n');
-const { scoreJob } = new Function(code)();
+(async () => {
+const originalNow = Date.now;
+Date.now = () => 1793346000 * 1000;
+try {
+const { scoreJob, fitBreakdown, titleGate } = await import(require('url').pathToFileURL(require('path').resolve(process.argv[2] || 'apps/api/src/worker.js')).href);
 
 const P = { level: 'middle', locations: ['Hồ Chí Minh', 'Remote'] };
 const S = [{ skill: 'Java', weight: 5 }, { skill: 'Spring Boot', weight: 5 }, { skill: 'PostgreSQL', weight: 3 }];
@@ -42,7 +25,6 @@ const cases = [
   ['Backend Developer', 'Ho Chi Minh', ['Java'], (r) => r.finalScore <= 69, 'ít kỹ năng → tối đa 69'],
 ];
 // T-60: remote khoá vùng → location 0, trần 74; remote mở / đúng thành phố → 8.
-const fitBreakdown = new Function(code.replace('return { scoreJob };', 'return fitBreakdown;'))();
 const loc = (location) => fitBreakdown(P, { title: 'Backend Developer', location, jd_text: '', posted_at: 1793346000 }).location;
 for (const [location, want] of [['Remote (US only)', 0], ['Remote (Europe / US Eastern)', 0], ['Remote (Anywhere in the World)', 8], ['Remote', 8], ['Ho Chi Minh', 8], ['Remote (APAC)', 8], ['Remote (Australia)', 8]]) {
   console.log(String(loc(location)).padStart(3), '/ 8     |', location);
@@ -88,7 +70,6 @@ const locT = (title, location = 'Remote') => fitBreakdown(P, { title, location, 
 for (const t of ['U.S. Based Remote Contractor', 'Remote (US only) Backend Engineer', 'Backend Engineer - EU timezone Remote']) assert.equal(locT(t), 0, t);
 assert.equal(locT('Backend Engineer', 'Remote'), 8, 'tiêu đề thường vẫn khớp');
 // T-07: bảng titleGate.
-const { titleGate } = new Function(src.slice(src.indexOf('const TITLE_TECH'), src.indexOf('async function runIngestSource')) + 'return { titleGate };')();
 for (const [t, want] of [['Backend Developer', 1], ['Java Engineer', 1], ['Software Engineer', 1], ['Node.js Developer', 1], ['QA Engineer', 1], ['Senior DevOps Engineer', 1], ['Fullstack Developer (React/Node)', 1], ['Mobile Developer (Android)', 1], ['Data Engineer', 1],
   ['Sales Engineer', 0], ['Pre-sales Engineer', 0], ['Presales Engineer', 0], ['Customer Support Engineer', 0], ['Content Engineer', 0], ['Engineering Manager', 0], ['Data Entry Clerk', 0], ['HR Recruiter', 0], ['Kế toán', 0]])
   assert.equal(titleGate(t), !!want, t);
@@ -102,3 +83,5 @@ assert.equal(lv('We have been in business for 20 years and love Java').level, 5,
 assert.equal(lv('Founded 10 years ago, great culture').level, 5, 'giới thiệu 10 years');
 assert.equal(lv('Requirements: 8 years of experience in Java').level, 2, 'vẫn bắt yêu cầu');
 console.log('score T-95/T-96 OK');
+} finally { Date.now = originalNow; }
+})().catch((e) => { console.error(e); process.exitCode = 1; });

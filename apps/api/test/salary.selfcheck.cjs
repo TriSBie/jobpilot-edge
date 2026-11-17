@@ -1,7 +1,8 @@
 // Tự kiểm parseSalary. Chạy: node apps/api/test/salary.selfcheck.cjs
 const fs = require('fs'), assert = require('assert');
 const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8').replace(/\r\n/g, '\n');
-const { parseSalary, monthlyVND, USD_VND } = new Function(src.match(/const USD_VND[^\n]*\n/)[0] + src.match(/function parseSalary\([\s\S]*?\n\}\n/)[0] + src.match(/function monthlyVND[\s\S]*?\n\}/)[0] + '\nreturn {parseSalary, monthlyVND, USD_VND};')();
+(async () => {
+const { parseSalary, monthlyVND, USD_VND } = await import(require('url').pathToFileURL(require('path').resolve(process.argv[2] || 'apps/api/src/worker.js')).href);
 const eq = (t, e) => assert.deepEqual(parseSalary(t), e, t);
 eq('25 - 40 triệu', { min: 25e6, max: 40e6, currency: 'VND', period: 'month' });
 eq('Up to 30 triệu', { min: 30e6, max: 30e6, currency: 'VND', period: 'month' });
@@ -18,3 +19,4 @@ for (const s of ['$50/hr', '$50 per hour', '$40/hour', '$300/day', '€60k', '£
 eq('$100k + 20% bonus', { min: 100e3, max: 100e3, currency: 'USD', period: 'year' });
 eq('$120k + equity', { min: 120e3, max: 120e3, currency: 'USD', period: 'year' });
 console.log('salary T-97 OK');
+})().catch((e) => { console.error(e); process.exitCode = 1; });

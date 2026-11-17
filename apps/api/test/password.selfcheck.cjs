@@ -21,10 +21,7 @@ const env = {
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); } },
 };
 (async () => {
-  const tmp = path.join(os.tmpdir(), `worker-pw-${process.pid}.mjs`);
-  fs.copyFileSync(workerPath, tmp);
-  const worker = (await import(pathToFileURL(tmp).href)).default;
-  fs.unlinkSync(tmp);
+  const worker = (await import(pathToFileURL(workerPath).href)).default;
   const call = async (method, p, body, tok) => {
     const h = { 'content-type': 'application/json' }; if (tok) h.Authorization = `Bearer ${tok}`;
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: h, body: body && JSON.stringify(body) }), env, {});
