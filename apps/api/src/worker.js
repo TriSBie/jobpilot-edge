@@ -784,7 +784,8 @@ async function planUpsertJobs(env, items) {
   for (const it of items) it.hash = await sha256hex(`${it.job.title}|${it.job.company}|${it.job.url}`.toLowerCase() + (it.submittedBy ? `|user:${it.submittedBy}` : ""));
   const [{ results: known }, { results: urls }] = await env.DB.batch([
     env.DB.prepare(`SELECT * FROM jobs WHERE content_hash IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.hash))),
-    env.DB.prepare(`SELECT DISTINCT source_url FROM jobs WHERE submitted_by IS NULL AND source_url IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.job.url))),
+    // T-106: ưu tiên index source_url khi tra trùng theo lô URL.
+    env.DB.prepare(`SELECT DISTINCT source_url FROM jobs WHERE +submitted_by IS NULL AND source_url IN ${IN_JSON}`).bind(JSON.stringify(items.map((i) => i.job.url))),
   ]);
   const rows = new Map(known.map((r) => [r.content_hash, { ...r }])), seenUrl = new Set(urls.map((r) => r.source_url));
   const t = now(), stmts = [], out = [], toScore = new Set();
