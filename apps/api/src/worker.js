@@ -686,11 +686,21 @@ const xmlTag = (s, tag) => { const m = s.match(new RegExp(`<${tag}>([\\s\\S]*?)<
 const toISODate = (s) => { const t = Date.parse(s || ""); return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10); };
 async function fetchWWR() {
   const seen = new Set(), jobs = [];
-  for (const feed of WWR_FEEDS) {
+  // T-120: thử đủ feed trong cùng cửa sổ timeout, rồi đọc kết quả theo thứ tự cũ.
+  const feeds = await Promise.allSettled(WWR_FEEDS.map(async (feed) => {
     const res = await fetch(`https://weworkremotely.com/categories/${feed}.rss`, { headers: { "User-Agent": REMOTE_UA }, signal: AbortSignal.timeout(20000) });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${feed}`);
-    const xml = await res.text();
-    for (const item of xml.split("<item>").slice(1)) {
+    return await res.text();
+  }));
+  let failed = 0, firstError;
+  for (const [i, feed] of feeds.entries()) {
+    if (feed.status === "rejected") {
+      if (failed === 0) firstError = feed.reason;
+      failed++;
+      console.log("WWR feed failed:", WWR_FEEDS[i], feed.reason?.message);
+      continue;
+    }
+    for (const item of feed.value.split("<item>").slice(1)) {
       const link = xmlTag(item, "link");
       if (!link || seen.has(link)) continue;
       seen.add(link);
@@ -705,6 +715,7 @@ async function fetchWWR() {
       });
     }
   }
+  if (failed === WWR_FEEDS.length) throw firstError;
   return jobs;
 }
 async function fetchRemotive() {
