@@ -2,11 +2,17 @@ import type { MiddlewareHandler } from 'hono';
 import { getUser, json, now } from '../worker.js';
 import type { AppEnv, ObservedEnv } from './observe.ts';
 
-type AuthUser = NonNullable<Awaited<ReturnType<typeof getUser>>>;
+export interface AuthUser {
+  id: string;
+  last_active_day: number | null;
+  password_hash: string | null;
+  password_salt: string | null;
+  deleted_at: number | null;
+}
 type AuthEnv = AppEnv & { Variables: { user: AuthUser } };
 
 export async function getActiveUser(request: Request, env: ObservedEnv) {
-  const user = await getUser(request, env);
+  const user: AuthUser | null = await getUser(request, env);
   if (!user) return null;
 
   // T-88: ghi ngày hoạt động tối đa 1 lần/ngày/user (chỉ khi khác hôm nay), không ghi mỗi request.
