@@ -29,7 +29,7 @@ for (let i = 0; i < 14; i++) db.prepare("INSERT INTO jobs (id, source_id, source
   .run('j' + i, `https://topdev.vn/detail-jobs/j-${i}`, i % 2 ? '["Java","Docker"]' : '["Java","Spring Boot","Redis"]', 'h' + i, T - i, T, i === 13 ? 'A' : null);
 
 (async () => {
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const get = async (p) => { const r = await worker.fetch(new Request('https://api.test' + p), env, {}); return { status: r.status, body: await r.json() }; };
   const post = async (p, body) => { const r = await worker.fetch(new Request('https://api.test' + p, { method: 'POST', headers: { Authorization: 'Bearer tokA', 'content-type': 'application/json' }, body: JSON.stringify(body) }), env, {}); return { status: r.status, body: await r.json() }; };
 

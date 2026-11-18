@@ -1,9 +1,10 @@
-// T-117b: so contract entry Hono đã bundle với legacy trên hai DB seed độc lập.
+// T-117b/c: so bundle Hono với legacy và fixture public ghi từ base.
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { spawnSync } = require('node:child_process');
 const { DatabaseSync } = require('node:sqlite');
+const publicBaseline = require('./fixtures/public-contract-df3db94.json');
 const root = path.resolve(__dirname, '../../..');
 const legacyPath = path.resolve(process.argv[2] || 'apps/api/src/worker.js');
 const entrySource = path.resolve(process.argv[3] || path.join(root, 'apps/api/src/index.ts'));
@@ -37,6 +38,23 @@ const scenarios=[
   {name:'health',url:'/api/health',status:200,token:null},
   {name:'public',url:'/api/public/sample',status:200,token:null},
   {name:'public try',url:'/api/public/try?skills=Java,Spring%20Boot,PostgreSQL',status:200,token:null},
+  {name:'public try english',url:'/api/public/try?skills=Java&lang=en',status:200,token:null},
+  {name:'public sample language header',url:'/api/public/sample',language:'en-US',status:200,token:null},
+  {name:'public try duplicate query',url:'/api/public/try?skills=Java&skills=bogus&level=&level=bogus&location=&location=bogus',status:200,token:null},
+  {name:'public try invalid skills first',url:'/api/public/try?skills=bogus&level=bogus&location=bogus',status:400,token:null,error:'invalid_skills'},
+  {name:'public try missing skills',url:'/api/public/try',status:400,token:null,error:'invalid_skills'},
+  {name:'public try malformed encoding',url:'/api/public/try?skills=%E0%A4%A',status:400,token:null,error:'invalid_skills'},
+  {name:'public try over skill limit',url:'/api/public/try?skills=Java,TypeScript,JavaScript,Node.js,NestJS,Express,Next.js,React,PostgreSQL',status:400,token:null,error:'invalid_skills'},
+  {name:'public try at skill limit',url:'/api/public/try?skills=Java,TypeScript,JavaScript,Node.js,NestJS,Express,Next.js,React',status:200,token:null},
+  {name:'public try invalid level first',url:'/api/public/try?skills=Java&level=bogus&location=bogus',status:400,token:null,error:'invalid_level'},
+  {name:'public try invalid location',url:'/api/public/try?skills=Java&location=bogus',status:400,token:null,error:'invalid_location'},
+  {name:'public try HEAD',url:'/api/public/try?skills=Java',method:'HEAD',status:401,token:null},
+  {name:'public try OPTIONS',url:'/api/public/try?skills=Java',method:'OPTIONS',status:200,token:null},
+  {name:'public try POST',url:'/api/public/try?skills=Java',method:'POST',status:401,token:null},
+  {name:'public try POST with token',url:'/api/public/try?skills=Java',method:'POST',status:404},
+  {name:'public encoded path',url:'/api/public/%74ry?skills=Java',status:401,token:null},
+  {name:'public trailing slash',url:'/api/public/try/?skills=Java',status:401,token:null},
+  {name:'public try DB failure',url:'/api/public/try?skills=Java',dbError:true,status:500,token:null,error:'internal_error'},
   {name:'me',url:'/api/me',status:200},
   {name:'profiles',url:'/api/profiles',status:200},
   {name:'jobs',url:'/api/jobs?profile_id=p&limit=10',status:200},
@@ -68,18 +86,21 @@ const scenarios=[
     const current=(await import(pathToFileURL(bundled).href)).default;
     const rows=[];
     for(const scenario of scenarios){
-      const responses=[],logs=[];
-      for(const worker of [legacy,current]){
+      const responses=[],logs=[],telemetry=[];
+      const baseline=publicBaseline[scenario.name];
+      for(const worker of baseline?[current]:[legacy,current]){
         const state=setup(),cache=new Map(),workerLogs=[];
         globalThis.caches={default:{match:async r=>cache.get(r.url)?.clone(),put:async(r,res)=>cache.set(r.url,res.clone())}};
         console.log=(...a)=>workerLogs.push(a.join(' ')); console.error=()=>{};
         try {
           if(scenario.dbError)state.env.DB.prepare=()=>{throw new Error('fixture DB unavailable');};
           const headers={'content-type':'application/json','cf-connecting-ip':'203.0.113.2'};
+          if(scenario.language)headers['accept-language']=scenario.language;
           const token=scenario.token===undefined?'tok':scenario.token;if(token)headers.authorization=`Bearer ${token}`;
           const res=await worker.fetch(new Request('https://api.test'+scenario.url,{method:scenario.method||'GET',headers,body:scenario.body&&JSON.stringify(scenario.body)}),state.env,state.ctx);
           assert.equal(res.status,scenario.status,scenario.name);
           const body=await res.text();
+          if(scenario.error)assert.equal(JSON.parse(body).error,scenario.error,scenario.name+' error');
           responses.push({status:res.status,headers:[...res.headers].sort(),body:scenario.method==='HEAD'?'':body});
           await Promise.all(state.waits);
           const log=workerLogs.map(x=>{try{return JSON.parse(x);}catch{return null;}}).find(x=>x&&Object.hasOwn(x,'d1_queries'));
@@ -87,16 +108,32 @@ const scenarios=[
           for(const key of ['route','method','status','ms','d1_queries','cache','user_hash'])assert(Object.hasOwn(log,key),`${scenario.name}: ${key}`);
           logs.push(log);
           if(scenario.name==='public try'){
-            const r=await worker.fetch(new Request('https://api.test'+scenario.url,{headers}),state.env,state.ctx);await r.text();
+            const repeat='/api/public/try?skills=PostgreSQL,spring+boot,java,Java&level=middle&location=H%E1%BB%93+Ch%C3%AD+Minh';
+            const r=await worker.fetch(new Request('https://api.test'+repeat,{headers}),state.env,state.ctx);
+            assert.equal(r.status,res.status,'cache hit status');
+            assert.deepEqual([...r.headers].sort(),[...res.headers].sort(),'cache hit headers');
+            assert.equal(await r.text(),body,'cache hit body');
             assert(workerLogs.some(x=>x.includes('"cache":"hit"')),'waitUntil cache write must be visible');
           }
+          const requestLogs=workerLogs.map(x=>{try{return JSON.parse(x);}catch{return null;}}).filter(x=>x&&Object.hasOwn(x,'d1_queries'));
+          const count=scenario.name==='public try'?2:1;
+          assert.equal(requestLogs.length,count,scenario.name+' log mỗi request');
+          assert.equal(state.points.filter(p=>p.blobs[0]==='request').length,count,scenario.name+' metric mỗi request');
+          telemetry.push({logs:requestLogs,points:state.points,cacheKeys:[...cache.keys()]});
         }finally{state.db.close();}
       }
-      assert.deepEqual(responses[1],responses[0],scenario.name+' status/header/body');
-      assert.deepEqual(logs[1],logs[0],scenario.name+' logs');
-      rows.push({scenario:scenario.name,status:responses[1].status,identical:true});
+      if(baseline){
+        const {response,...expectedTelemetry}=baseline;
+        assert.deepEqual(responses[0],response,scenario.name+' status/header/body');
+        assert.deepEqual(telemetry[0],expectedTelemetry,scenario.name+' telemetry');
+      }else{
+        assert.deepEqual(responses[1],responses[0],scenario.name+' status/header/body');
+        assert.deepEqual(logs[1],logs[0],scenario.name+' logs');
+        assert.deepEqual(telemetry[1],telemetry[0],scenario.name+' telemetry');
+      }
+      rows.push({scenario:scenario.name,status:responses.at(-1).status,identical:true});
     }
     console.log=original.log; console.error=original.error;
-    console.log('T-117b entry contract selfcheck OK:',JSON.stringify(rows));
+    console.log('T-117b/c entry contract selfcheck OK:',JSON.stringify(rows));
   }finally{globalThis.Date=original.Date;globalThis.fetch=original.fetch;globalThis.caches=original.caches;console.log=original.log;console.error=original.error;}
 })().catch(e=>{console.error(e);process.exitCode=1});

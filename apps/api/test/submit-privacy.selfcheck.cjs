@@ -101,7 +101,8 @@ globalThis.fetch = async (u, init) => {
 
   // 5. Landing sample + benchmark bỏ job dán tay; rescore B không kéo job của A vào.
   db.prepare("UPDATE jobs SET salary_text = '9999 USD' WHERE id = ?").run(aId);
-  const sample = await (await worker.fetch(new Request('https://api.test/api/public/sample'), env, {})).json();
+  const entry = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
+  const sample = await (await entry.fetch(new Request('https://api.test/api/public/sample'), env, {})).json();
   assert.ok(!JSON.stringify(sample).includes('java-backend-99'), 'landing không lộ job dán tay');
   scoreMsgs.push({ kind: 'rescore_profile', profileId: 'pB' }); await scoreAll();
   assert.strictEqual(q('SELECT COUNT(*) c FROM job_matches WHERE profile_id = ? AND job_id = ?', 'pB', aId)[0].c, 0, 'rescore B không chấm job của A');

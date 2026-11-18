@@ -2,6 +2,8 @@
 // Vanilla Workers runtime. Bindings: DB(D1) KV FILES(R2) Q_INGEST Q_SCORE
 // Q_NOTIFY USER_HUB(DO) AI EMB(Vectorize) EVENTS(Analytics Engine).
 
+import { observeRequest } from './infra/observe.ts';
+
 export class UserHub {
   constructor(state, env) {
     this.state = state;
@@ -71,7 +73,7 @@ const EN = {
   "Nộp nếu chấp nhận onsite": "Apply if you accept onsite",
   "Diễn đạt lại theo cách JD dùng": "Rephrased using the JD's wording",
 };
-function tr(lang, vi, ...args) {
+export function tr(lang, vi, ...args) {
   let s = (lang === "en" && EN[vi]) || vi;
   for (const a of args) s = s.replace("%s", () => a);
   return s;
@@ -89,13 +91,13 @@ export function verdictFor(match, fit, flags, risk, lang) {
   if (fit && fit.location === 6) return { verdict: "apply_if", why: tr(lang, "Nộp nếu chấp nhận onsite") };
   return { verdict: "apply_if", why: tr(lang, "Nộp nếu bổ sung %s", miss.slice(0, 2).map((m) => m.skill).join(", ")) };
 }
-function json(data, status = 200) {
+export function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "content-type": "application/json", ...CORS },
   });
 }
-const now = () => Math.floor(Date.now() / 1000);
+export const now = () => Math.floor(Date.now() / 1000);
 // ponytail: 14 ngày cố định cho mọi người dùng; thành cài đặt theo hồ sơ khi có người xin.
 const AUTO_CLOSE_DAYS = 14;
 // T-45: một giới hạn dùng chung cho danh sách /api/jobs và lượt chấm lại; dọn tin quét không thấy > 30 ngày, mỗi lượt cron tối đa 200 tin.
@@ -135,7 +137,7 @@ const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z
 const uid = () => crypto.randomUUID();
 // Cột JSON mảng trong DB: hỏng hoặc không phải mảng → null (một dòng sai không được làm chết cả lô/route).
 const jsonArr = (v) => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : null; } catch { return null; } };
-async function sha256hex(text) {
+export async function sha256hex(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -169,9 +171,9 @@ const SKILL_CANON = new Map(Object.entries({
   typeorm: "TypeORM", bullmq: "BullMQ", svelte: "Svelte", express: "Express",
   fastapi: "FastAPI", git: "Git", linux: "Linux",
 }));
-const canonSkill = (s) => SKILL_CANON.get(s.trim().toLowerCase()) ?? s.trim();
+export const canonSkill = (s) => SKILL_CANON.get(s.trim().toLowerCase()) ?? s.trim();
 
-const SKILL_CATALOG = [
+export const SKILL_CATALOG = [
   "Java", "Spring Boot", "TypeScript", "JavaScript", "Node.js", "NestJS",
   "Express", "Next.js", "React", "PostgreSQL", "MySQL", "Redis", "Kafka",
   "BullMQ", "Prisma", "TypeORM", "Docker", "AWS", "Microservices",
@@ -1052,7 +1054,7 @@ const APP_URL = "https://jobpilot-edge.pages.dev";
 const tgEsc = (x) => String(x ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const tgLink = (url, text) => url ? `<a href="${tgEsc(url).replace(/"/g, "&quot;")}">${tgEsc(text)}</a>` : tgEsc(text);
 // Trả mã HTTP của Telegram (200 = gửi được), 0 khi thiếu token hoặc lỗi mạng. Không log URL (chứa token).
-function metric(env, event, label, values) {
+export function metric(env, event, label, values) {
   try {
     if (env.EVENTS) env.EVENTS.writeDataPoint({ blobs: [event, label], doubles: values, indexes: [event] });
   } catch (_) { /* Metrics must not alter application behaviour. */ }
@@ -1082,7 +1084,7 @@ function tgQuiet(env, ms = Date.now()) {
   return h >= 22 || h < 7;
 }
 // Hàm thuần: bản tin ngày → HTML Telegram; null nếu không có gì để báo.
-function formatDigestTg(d) {
+export function formatDigestTg(d) {
   const strong = d.strong || [], fu = d.follow_ups || [], fresh = d.fresh || [];
   if (!strong.length && !fu.length && !fresh.length) return null;
   const [, mm, dd] = String(d.date).split("-");
@@ -1414,7 +1416,7 @@ async function alertEmptyScans(env) {
 
 // ---------------- digest ----------------
 // persist=true chỉ từ cron/consumer; GET không ghi DB (T-47). profileId=null: gộp mọi hồ sơ.
-async function buildDigest(env, user, lang = "vi", profileId = null, persist = false) {
+export async function buildDigest(env, user, lang = "vi", profileId = null, persist = false) {
   const since = now() - 86400;
   const { results: profiles } = profileId
     ? await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? AND is_active = 1 AND id = ?").bind(user.id, profileId).all()
@@ -1823,7 +1825,7 @@ async function adminCrm(env, request, url, path, lang) {
 }
 
 // T-112: preserve D1 statement receivers while counting actual executions.
-function observeEnv(env, state) {
+export function observeEnv(env, state) {
   if (!env.DB) return new Proxy(env, { get: (target, key) => key === "__trace" ? state : Reflect.get(target, key, target) });
   const original = new WeakMap();
   const statement = (value) => {
@@ -1845,7 +1847,7 @@ function observeEnv(env, state) {
   }});
   return new Proxy(env, { get: (target, key) => key === "__trace" ? state : key === "DB" ? db : Reflect.get(target, key, target) });
 }
-function observedRoute(path) {
+export function observedRoute(path) {
   const routes = ["/api/jobs", "/api/applications", "/api/public/try", "/api/public/sample", "/api/rum", "/api/health"];
   if (routes.includes(path)) return path;
   if (/^\/api\/jobs\/[^/]+$/.test(path)) return "/api/jobs/:id";
@@ -1878,12 +1880,8 @@ async function handleRum(request, env) {
 }
 
 // ---------------- router ----------------
-export default {
+export const legacyHandlers = {
   async fetch(request, env, ctx) {
-    const started = Date.now(), state = { d1_queries: 0, cache: "unknown", userId: null };
-    env = observeEnv(env, state);
-    const route = observedRoute(new URL(request.url).pathname);
-    const run = async () => {
     try {
     const url = new URL(request.url);
     const path = url.pathname;
@@ -1896,68 +1894,6 @@ export default {
     if (path === "/api/health") {
       return json({ ok: true, service: "jobpilot-api", phase: 2, ts: new Date().toISOString(),
         bindings: { DB: !!env.DB, KV: !!env.KV, FILES: !!env.FILES, AI: !!env.AI, EMB: !!env.EMB, EVENTS: !!env.EVENTS } });
-    }
-
-    // Landing: job THẬT vừa quét chấm cho một hồ sơ mẫu cố định. Chỉ lấy link quét chuẩn của
-    // ITviec/TopDev (không bao giờ là job dán tay), chỉ đọc, chỉ trả trường công khai; cache 5 phút.
-    // /api/public/try: cùng đường chấm, hồ sơ do khách chọn (allow-list chặt), top 10, cache theo tham số đã chuẩn hoá.
-    if ((path === "/api/public/sample" || path === "/api/public/try") && request.method === "GET") {
-      const isTry = path === "/api/public/try";
-      let tryP = null, cacheKey = null;
-      if (isTry) {
-        const skills = [...new Set((url.searchParams.get("skills") || "").split(",").map((x) => x.trim()).filter(Boolean).map(canonSkill))];
-        const level = url.searchParams.get("level") || "middle", location = url.searchParams.get("location") || "Hồ Chí Minh";
-        if (!skills.length || skills.length > 8 || skills.some((x) => !SKILL_CATALOG.includes(x))) return json({ error: "invalid_skills" }, 400);
-        if (!["fresher", "junior", "middle", "senior"].includes(level)) return json({ error: "invalid_level" }, 400);
-        if (!["Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Remote"].includes(location)) return json({ error: "invalid_location" }, 400);
-        tryP = { skills: skills.sort(), level, location };
-        cacheKey = new Request("https://cache.jobpilot.internal/try?" + new URLSearchParams({ s: tryP.skills.join(","), l: level, c: location, lang }));
-        const hit = typeof caches !== "undefined" ? await caches.default.match(cacheKey) : null;
-        if (env.__trace) env.__trace.cache = hit ? "hit" : "miss";
-        if (hit) return hit;
-      }
-      const SCRAPED = "submitted_by IS NULL AND (source_url LIKE 'https://itviec.com/it-jobs/%' OR source_url LIKE 'https://topdev.vn/detail-jobs/%')";
-      const { results } = await env.DB.prepare(
-        `SELECT id, title, company, location, source_id, source_url, salary_text, skills, posted_at, first_seen_at, last_seen_at, repost_count
-         FROM jobs WHERE ${SCRAPED} ORDER BY COALESCE(last_seen_at, first_seen_at) DESC LIMIT ${isTry ? 150 : 60}`
-      ).all();
-      const sampleProfile = isTry ? { level: tryP.level, locations: [tryP.location] } : { level: "middle", locations: ["Hồ Chí Minh", "Remote"] };
-      const sampleSkills = isTry ? tryP.skills.map((skill) => ({ skill, weight: 4 })) : [
-        { skill: "Java", weight: 5 }, { skill: "Spring Boot", weight: 5 }, { skill: "PostgreSQL", weight: 3 },
-        { skill: "Docker", weight: 3 }, { skill: "REST APIs", weight: 3 }, { skill: "Git", weight: 2 },
-      ];
-      const scored = results.map((j) => {
-        const job = { ...j, skills: JSON.parse(j.skills || "[]"), jd_text: "" };
-        const s = scoreJob(sampleProfile, sampleSkills, job);
-        const f = fitBreakdown(sampleProfile, job);
-        // Landing thấy đúng thứ app thấy: cờ tín hiệu + nhãn khuyến nghị (dùng cùng hàm, không tính riêng).
-        const flags = postingFlags(j, now(), lang);
-        const risk = flags.filter((x) => x.type !== "duplicate").length;
-        const v = verdictFor({ tier: s.tier, rule_detail: { missing: s.missing.map((m) => (typeof m === "string" ? { skill: m, weight: 3 } : m)) } }, f, flags, risk, lang);
-        return {
-          title: j.title, company: j.company, location: j.location, source: j.source_id, url: j.source_url,
-          salary: j.salary_text, age_days: f.ageDays, score: s.finalScore, tier: s.tier,
-          rule: Math.round(s.rule * 10) / 10, fit: { location: f.location, freshness: f.freshness, level: f.level, location_why: tr(lang, f.locationWhy, f.locationArg), level_why: tr(lang, f.levelWhy, f.levelArg) },
-          matched: s.matched, missing: s.missing.slice(0, 6), capped: s.jobSkills.length < 3,
-          flags, verdict: v.verdict, verdict_why: v.why,
-        };
-      }).filter((x) => x.matched.length > 0 && titleGate(x.title))
-        // Ưu tiên tin đúng cấp bậc hồ sơ mẫu, rồi mới tới điểm (chỉ là thứ tự hiển thị).
-        .sort((a, b) => ((a.verdict === "skip") - (b.verdict === "skip")) || (b.fit.level - a.fit.level) || (b.score - a.score));
-      const stats = await env.DB.prepare(
-        `SELECT (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED}) AS jobs,
-                (SELECT COUNT(*) FROM jobs WHERE ${SCRAPED} AND first_seen_at > ?) AS new_24h,
-                (SELECT MAX(last_run_at) FROM sources) AS last_scan`
-      ).bind(now() - 86400).first();
-      const res = json({
-        profile: isTry ? { level: tryP.level, location: tryP.location, skills: sampleSkills }
-          : { label: tr(lang, "Backend Java · 3 năm · Hồ Chí Minh / Remote"), skills: sampleSkills },
-        jobs: scored.slice(0, isTry ? 10 : 5), stats,
-      });
-      res.headers.set("cache-control", "public, max-age=300");
-      res.headers.set("vary", "Accept-Language");
-      if (isTry && typeof caches !== "undefined") (ctx && ctx.waitUntil(caches.default.put(cacheKey, res.clone())));
-      return res;
     }
 
     // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
@@ -2760,16 +2696,6 @@ export default {
       console.error("request failed", error);
       return json({ error: "internal_error" }, 500);
     }
-    };
-    const response = await run();
-    try {
-      const method = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"].includes(request.method) ? request.method : "OTHER";
-      const user_hash = state.userId ? await sha256hex(state.userId) : null;
-      const ms = Date.now() - started;
-      console.log(JSON.stringify({ route, method, status: response.status, ms, d1_queries: state.d1_queries, cache: state.cache, user_hash }));
-      metric(env, "request", route, [ms, response.status]);
-    } catch (_) { /* Request telemetry must not change the response. */ }
-    return response;
   },
 
   async queue(batch, env, ctx) {
@@ -2864,5 +2790,12 @@ export default {
 
   async email(message, env, ctx) {
     console.log(`email from ${message.from} subject: ${message.headers.get("subject") || ""}`);
+  },
+};
+
+export default {
+  ...legacyHandlers,
+  fetch(request, env, ctx) {
+    return observeRequest(request, env, (observed) => legacyHandlers.fetch(request, observed, ctx));
   },
 };

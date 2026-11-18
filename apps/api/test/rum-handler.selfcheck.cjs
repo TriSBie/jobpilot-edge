@@ -11,7 +11,7 @@ const file = path.resolve(process.argv[2] || "apps/api/src/worker.js");
   const originalLog = console.log;
   const originalCaches = Object.getOwnPropertyDescriptor(globalThis, "caches");
   try {
-  const worker = (await import(pathToFileURL(file).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(file), "index.ts")).href)).default;
   console.log = (...args) => { if (args.length === 1 && typeof args[0] === "string" && args[0].startsWith("{")) logs.push(JSON.parse(args[0])); else originalLog(...args); };
   const ip = "203.0.113.2";
   const call = (body, sourceIp = ip) => worker.fetch(new Request("https://api.test/api/rum", { method: "POST", headers: { "cf-connecting-ip": sourceIp }, body }), env, {});

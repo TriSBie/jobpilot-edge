@@ -3,7 +3,7 @@ const assert = require("node:assert/strict"), fs = require("node:fs"), { execFil
 const src = process.argv[2] === "--base" ? execFileSync("git", ["show", "main:apps/api/src/worker.js"], { encoding: "utf8" }) : fs.readFileSync(process.argv[2] || "apps/api/src/worker.js", "utf8");
 const start = src.indexOf("function observeEnv("); const end = src.indexOf("async function handleRum(", start);
 assert(start >= 0 && end > start, "request observation helper must exist");
-const { observeEnv, observedRoute } = new Function(src.slice(start, end) + "\nreturn { observeEnv, observedRoute };")();
+const { observeEnv, observedRoute } = new Function(src.slice(start, end).replace(/^export /gm, "") + "\nreturn { observeEnv, observedRoute };")();
 class Statement { constructor(value) { this.value = value; } bind(value) { assert(this instanceof Statement); return new Statement(value); } first() { assert(this instanceof Statement); return this.value; } all() { assert(this instanceof Statement); return [this.value]; } run() { assert(this instanceof Statement); return this.value; } }
 const db = { prepare() { assert.equal(this, db); return new Statement(0); }, batch(items) { assert.equal(this, db); assert(items.every((i) => i instanceof Statement)); return items.map((i) => i.value); } };
 const state = { d1_queries: 0 }, env = observeEnv({ DB: db, KV: "kv" }, state);

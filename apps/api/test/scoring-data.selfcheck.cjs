@@ -33,7 +33,7 @@ for (const [i, s] of ['$3,000 - $4,000/month', '$5,000 - $6,000/month', '$7,000 
 const src = fs.readFileSync(workerPath, 'utf8');
 (async () => {
   const m = await import(pathToFileURL(workerPath).href);
-  const worker = m.default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const get = async (p, h = {}) => { const r = await worker.fetch(new Request('https://api.test' + p, { headers: h }), env, {}); return { r, body: await r.json() }; };
 
   // A1: JD ITviec chỉ lấy trong <section class='job-content'>; khối "việc làm liên quan" sau đó không thành skill (live: Lộc Trời C# dính Java/Spring Boot).

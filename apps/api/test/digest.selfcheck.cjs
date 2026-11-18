@@ -1,9 +1,11 @@
 // Chạy: node apps/api/test/digest.selfcheck.cjs apps/api/src/worker.js
 // Nạp worker.js, giả DB tối thiểu: kiểm tin phù hợp trong digest, GET không ghi, stage sai → 400.
 const fs = require('fs'), assert = require('assert');
-const src = fs.readFileSync(process.argv[2] || 'apps/api/src/worker.js', 'utf8').replace(/\r\n/g, '\n');
-const W = new Function(src.replace(/^export default /m, 'const __w = ').replace(/^export /gm, '') + '\nreturn { __w, buildDigest, formatDigestTg };')();
+const { pathToFileURL } = require('node:url');
+const workerPath = process.argv[2] || 'apps/api/src/worker.js';
+const src = fs.readFileSync(workerPath, 'utf8').replace(/\r\n/g, '\n');
 (async () => {
+  const W = await import(pathToFileURL(workerPath).href);
   const t = Math.floor(Date.now() / 1000);
   const job = (title, location, score, extra = {}) => ({ title, company: 'C', location, source_url: 'https://x/' + title, first_seen_at: t - 3600, last_seen_at: t, posted_at: t - 3600, jd_text: '', final_score: score, tier: 'partial', missing_skills: '[]', ...extra });
   const cand = [
