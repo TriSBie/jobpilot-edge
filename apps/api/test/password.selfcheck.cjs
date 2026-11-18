@@ -1,4 +1,4 @@
-// T-22: đổi / đặt lại mật khẩu + huỷ session cũ (sessions_valid_after). Chạy worker.fetch thật trên SQLite trong RAM.
+// T-22: đổi / đặt lại mật khẩu + huỷ session cũ (sessions_valid_after). Chạy entry Hono thật trên SQLite trong RAM.
 // Chạy: node apps/api/test/password.selfcheck.cjs apps/api/src/worker.js
 const fs = require('fs'), path = require('path'), os = require('os'), assert = require('assert');
 const { pathToFileURL } = require('url');
@@ -21,7 +21,7 @@ const env = {
   KV: { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); }, delete: async (k) => { kv.delete(k); } },
 };
 (async () => {
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const call = async (method, p, body, tok) => {
     const h = { 'content-type': 'application/json' }; if (tok) h.Authorization = `Bearer ${tok}`;
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: h, body: body && JSON.stringify(body) }), env, {});

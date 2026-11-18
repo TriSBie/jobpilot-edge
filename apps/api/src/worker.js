@@ -2,6 +2,7 @@
 // Vanilla Workers runtime. Bindings: DB(D1) KV FILES(R2) Q_INGEST Q_SCORE
 // Q_NOTIFY USER_HUB(DO) AI EMB(Vectorize) EVENTS(Analytics Engine).
 
+import { getActiveUser } from './infra/auth.ts';
 import { observeRequest } from './infra/observe.ts';
 
 export class UserHub {
@@ -133,8 +134,8 @@ const IV_OWNED = "SELECT a.id FROM applications a JOIN profiles p ON p.id = a.pr
 // Owner = env.OWNER_EMAIL (secret); thiếu thì không ai là admin.
 const isOwner = (env, u) => !!env.OWNER_EMAIL && u.email === env.OWNER_EMAIL;
 // T-88: nguồn đăng ký ?ref — chỉ chữ thường/số/_/-, tối đa 40 ký tự, sai thì null.
-const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
-const uid = () => crypto.randomUUID();
+export const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
+export const uid = () => crypto.randomUUID();
 // Cột JSON mảng trong DB: hỏng hoặc không phải mảng → null (một dòng sai không được làm chết cả lô/route).
 const jsonArr = (v) => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : null; } catch { return null; } };
 export async function sha256hex(text) {
@@ -146,7 +147,7 @@ function randomToken() {
   crypto.getRandomValues(bytes);
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
-async function readBody(request) {
+export async function readBody(request) {
   try { return await request.json(); } catch (_) { return {}; }
 }
 
@@ -225,7 +226,7 @@ async function aiExtractSkills(env, cvText) {
 }
 
 // ---------------- auth ----------------
-async function getUser(request, env) {
+export async function getUser(request, env) {
   const auth = request.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token) return null;
@@ -398,7 +399,7 @@ async function handleCvSuggest(request, env, user, profileId, lang) {
 }
 
 // ---------------- privacy (T-62 + T-24) ----------------
-const DELETE_GRACE = 7 * 86400;
+export const DELETE_GRACE = 7 * 86400;
 // Xoá mọi file CV của hồ sơ (text đã trích + PDF gốc đều có key cv/<user>/<profile>-...), gợi ý KV và cv_file_id.
 async function deleteProfileCv(env, profile) {
   // instr thay LIKE: mẫu dài hơn 50 ký tự vượt SQLITE_MAX_LIKE_PATTERN_LENGTH của D1
@@ -1507,12 +1508,12 @@ async function pbkdf2(password, saltBytes) {
     { name: "PBKDF2", salt: saltBytes, iterations: PBKDF2_ITER, hash: "SHA-256" }, key, 256);
   return new Uint8Array(bits);
 }
-async function makePasswordRecord(password) {
+export async function makePasswordRecord(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const hash = await pbkdf2(password, salt);
   return { salt: b64encode(salt), hash: b64encode(hash) };
 }
-async function verifyPassword(password, saltB64, hashB64) {
+export async function verifyPassword(password, saltB64, hashB64) {
   const computed = await pbkdf2(password, b64decode(saltB64));
   const expected = b64decode(hashB64);
   if (computed.length !== expected.length) return false;
@@ -1520,7 +1521,7 @@ async function verifyPassword(password, saltB64, hashB64) {
   for (let i = 0; i < computed.length; i++) diff |= computed[i] ^ expected[i];
   return diff === 0;
 }
-async function issueSession(env, user) {
+export async function issueSession(env, user) {
   const token = randomToken();
   await env.KV.put(`session:${token}`, `${user.id}|${Date.now()}`, { expirationTtl: 2592000 });
   return { token, user: { id: user.id, email: user.email, name: user.name } };
@@ -1530,7 +1531,7 @@ async function issueSession(env, user) {
 // nguyên tử: các request song song nhận số đếm khác nhau nên không vượt được MAX (đọc-rồi-ghi thì vượt được).
 // fail_count dừng ở MAX+1 và last_fail_at đứng yên khi đã bị khoá, nên kẻ tấn công không kéo dài được khoá.
 const LOGIN_FAIL_MAX = 5, LOGIN_FAIL_WINDOW = 600;
-async function loginAttemptAllowed(env, userId) {
+export async function loginAttemptAllowed(env, userId) {
   const r = await env.DB.prepare(
     `INSERT INTO login_failures (user_id, fail_count, last_fail_at) VALUES (?1, 1, ?2)
      ON CONFLICT(user_id) DO UPDATE SET
@@ -1541,7 +1542,7 @@ async function loginAttemptAllowed(env, userId) {
   return r.fail_count <= LOGIN_FAIL_MAX;
 }
 // Cloudflare Turnstile. Không có TURNSTILE_SECRET (lab/dev, hoặc chưa `wrangler secret put`) thì bỏ qua và cảnh báo.
-async function verifyTurnstile(env, token, ip) {
+export async function verifyTurnstile(env, token, ip) {
   if (!env.TURNSTILE_SECRET) { console.log("WARN turnstile: thiếu env.TURNSTILE_SECRET, bỏ qua kiểm tra"); return true; }
   if (!token || typeof token !== "string") return false;
   const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token });
@@ -1561,8 +1562,8 @@ export async function registerAttemptAllowed(env, ip, hour, max = REGISTER_MAX) 
   ).bind(ip, hour, max).first();
   return r.count <= max;
 }
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-function passwordError(pw) {
+export const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+export function passwordError(pw) {
   if (!pw || typeof pw !== "string") return "missing_password";
   if (pw.length < 8) return "password_too_short";
   if (pw.length > 128) return "password_too_long";
@@ -1888,76 +1889,6 @@ export const legacyHandlers = {
     const lang = qlang === "en" || qlang === "vi" ? qlang : /^en/i.test(request.headers.get("accept-language") || "") ? "en" : "vi";
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
-    // --- auth: đăng ký / đăng nhập bằng mật khẩu (thay magic-link-lite) ---
-    if (path === "/api/auth/register" && request.method === "POST") {
-      const body = await readBody(request);
-      if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
-      const email = (body.email || "").trim().toLowerCase();
-      const name = (body.name || "").trim();
-      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
-      if (name.length < 2 || name.length > 80) return json({ error: "invalid_name" }, 400);
-      const pwErr = passwordError(body.password);
-      if (pwErr) return json({ error: pwErr }, 400);
-      const ip = request.headers.get("cf-connecting-ip") || "unknown";
-      if (!(await registerAttemptAllowed(env, ip, Math.floor(now() / 3600)))) return json({ error: "too_many_registrations" }, 429); // trước khi băm
-      const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
-      if (existing) return json({ error: "email_taken" }, 409);
-      const rec = await makePasswordRecord(body.password);
-      const id = uid();
-      await env.DB.prepare(
-        "INSERT INTO users (id, email, name, timezone, digest_email, created_at, password_hash, password_salt, password_set_at, ref_source, last_active_day) VALUES (?, ?, ?, 'Asia/Saigon', ?, ?, ?, ?, ?, ?, ?)"
-      ).bind(id, email, name, email, now(), rec.hash, rec.salt, now(), cleanRef(body.ref), Math.floor(now() / 86400)).run();
-      const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(id).first();
-      return json(await issueSession(env, user), 201);
-    }
-    if ((path === "/api/auth/login" || path === "/api/auth/restore") && request.method === "POST") {
-      const body = await readBody(request);
-      if (!(await verifyTurnstile(env, body.turnstile_token, request.headers.get("cf-connecting-ip")))) return json({ error: "turnstile_failed" }, 403);
-      const email = (body.email || "").trim().toLowerCase();
-      if (!EMAIL_RE.test(email)) return json({ error: "invalid_email" }, 400);
-      if (!body.password) return json({ error: "missing_password" }, 400);
-      const user = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
-      if (!user) return json({ error: "invalid_credentials" }, 401); // email lạ: không ghi gì
-      if (!user.password_hash) return json({ error: "password_setup_required" }, 403);
-      if (!(await loginAttemptAllowed(env, user.id))) return json({ error: "too_many_attempts" }, 429); // trước khi băm: bị khoá thì không tốn CPU
-      const ok = await verifyPassword(body.password, user.password_salt, user.password_hash);
-      if (!ok) return json({ error: "invalid_credentials" }, 401);
-      await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id).run();
-      if (path === "/api/auth/restore") { // T-24: khôi phục trong 7 ngày kể từ khi đánh dấu xoá
-        if (!user.deleted_at) return json({ error: "not_deleted" }, 400);
-        if (now() > user.deleted_at + DELETE_GRACE) return json({ error: "restore_expired" }, 410);
-        await env.DB.prepare("UPDATE users SET deleted_at = NULL WHERE id = ?").bind(user.id).run();
-      } else if (user.deleted_at) {
-        return json({ error: "account_deleted", restore_until: user.deleted_at + DELETE_GRACE }, 403);
-      }
-      return json(await issueSession(env, user));
-    }
-    if (path === "/api/auth/logout" && request.method === "POST") { // T-15: thu hồi session
-      const token = (request.headers.get("Authorization") || "").replace(/^Bearer /, "");
-      if (!token) return json({ error: "unauthorized" }, 401);
-      await env.KV.delete(`session:${token}`);
-      return json({ ok: true });
-    }
-    if (path === "/api/auth/set-password" && request.method === "POST") {
-      return json({ error: "password_setup_disabled" }, 410);
-    }
-    if (path === "/api/auth/reset-password" && request.method === "POST") { // T-22: token 1 lần do owner phát
-      const body = await readBody(request);
-      const pwErr = passwordError(body.new_password);
-      if (pwErr) return json({ error: pwErr }, 400);
-      const tk = typeof body.token === "string" ? body.token : "";
-      const userId = tk ? await env.KV.get(`pwreset:${tk}`) : null;
-      if (!userId) return json({ error: "invalid_reset_token" }, 400);
-      await env.KV.delete(`pwreset:${tk}`); // xoá trước khi đổi: dùng 1 lần
-      const rec = await makePasswordRecord(body.new_password);
-      const r = await env.DB.prepare(
-        "UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ?, sessions_valid_after = ? WHERE id = ? AND deleted_at IS NULL"
-      ).bind(rec.hash, rec.salt, now(), Date.now(), userId).run();
-      if (r.meta && r.meta.changes === 0) return json({ error: "invalid_reset_token" }, 400);
-      await env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(userId).run();
-      return json({ ok: true });
-    }
-
     // Webhook Telegram: không Bearer, xác thực bằng secret header; luôn 200 sau khi qua kiểm tra.
     if (path === "/api/telegram/webhook" && request.method === "POST") {
       if (!env.TELEGRAM_WEBHOOK_SECRET) return json({ error: "telegram_not_configured" }, 503);
@@ -1977,15 +1908,9 @@ export const legacyHandlers = {
       return json({ ok: true });
     }
 
-    const user = await getUser(request, env);
-    if (!user) return json({ error: "unauthorized" }, 401);
-
-    // T-88: ghi ngày hoạt động tối đa 1 lần/ngày/user (chỉ khi khác hôm nay), không ghi mỗi request.
-    const today = Math.floor(now() / 86400);
-    if (user.last_active_day !== today) {
-      await env.DB.prepare("UPDATE users SET last_active_day = ? WHERE id = ?").bind(today, user.id).run();
-      user.last_active_day = today;
-    }
+    const activeUser = await getActiveUser(request, env);
+    if (!activeUser) return json({ error: "unauthorized" }, 401);
+    const { user, today } = activeUser;
 
     if (path === "/api/realtime") {
       return env.USER_HUB.get(env.USER_HUB.idFromName(user.id)).fetch(request);
@@ -2006,22 +1931,6 @@ export const legacyHandlers = {
         consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
         telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null,
         unread_count: nf.n, has_attention: !!nf.a, jobs_seen_at: user.jobs_seen_at ?? null }, profiles });
-    }
-    if (path === "/api/auth/change-password" && request.method === "POST") { // T-22
-      const b = await readBody(request);
-      const pwErr = passwordError(b.new_password);
-      if (pwErr) return json({ error: pwErr }, 400);
-      if (!b.current_password || typeof b.current_password !== "string" || !user.password_hash) return json({ error: "invalid_credentials" }, 401);
-      if (!(await loginAttemptAllowed(env, user.id))) return json({ error: "too_many_attempts" }, 429);
-      if (!(await verifyPassword(b.current_password, user.password_salt, user.password_hash))) return json({ error: "invalid_credentials" }, 401);
-      const rec = await makePasswordRecord(b.new_password);
-      const t0 = Date.now();
-      await env.DB.batch([
-        env.DB.prepare("UPDATE users SET password_hash = ?, password_salt = ?, password_set_at = ?, sessions_valid_after = ? WHERE id = ?").bind(rec.hash, rec.salt, now(), t0, user.id),
-        env.DB.prepare("DELETE FROM login_failures WHERE user_id = ?").bind(user.id),
-      ]);
-      await env.KV.delete(`session:${request.headers.get("Authorization").slice(7)}`);
-      return json(await issueSession(env, user)); // token mới (iat >= mốc) để người gọi vẫn đăng nhập
     }
     if (path === "/api/admin/password-reset" && request.method === "POST") { // T-22: owner gửi link thủ công (chưa có email)
       const email = ((await readBody(request)).email || "").trim().toLowerCase();

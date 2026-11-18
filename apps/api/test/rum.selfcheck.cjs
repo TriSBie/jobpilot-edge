@@ -35,6 +35,10 @@ const req = (body, ip = "203.0.113.2") => new Request("https://example.invalid/a
     assert.equal((await handle(req(JSON.stringify({ metric: "LCP", page: "/secret", value: 1 })))).status, 400);
     assert.equal((await handle(req(JSON.stringify({ metric: "LCP", page: "app", value: 1 })))).status, 429);
     assert.equal((await handle(req("{}", ""))).status, 400);
+    const validationIp = "203.0.113.3";
+    assert.equal((await handle(req(JSON.stringify({ metric: "LCP", page: "app", value: 3600001 }), validationIp))).status, 400);
+    assert.equal((await handle(req(JSON.stringify({ metric: "FID", page: "app", value: 1 }), validationIp))).status, 400);
+    assert.equal((await handle(req(JSON.stringify({ metric: "LCP", page: "app", value: 1 }), "x".repeat(65)))).status, 400);
     assert.equal(points.length, 1);
     console.log("T-112 RUM selfcheck OK");
   } finally {
