@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["apps/api/src/index.ts", "worker-configuration.d.ts"]
+}

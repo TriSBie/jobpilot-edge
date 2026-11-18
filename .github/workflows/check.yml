@@ -18,23 +18,8 @@ jobs:
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: '22'
-      - name: Check Worker syntax
-        run: node --check apps/api/src/worker.js
-      - name: API selfchecks
-        shell: bash
-        run: |
-          for test in apps/api/test/*.cjs; do
-            if [[ "$test" == "apps/api/test/talent.selfcheck.cjs" ]]; then
-              echo "Skipping unfinished HR/talent selfcheck: $test"
-              continue
-            fi
-            echo "Running $test"
-            node "$test" apps/api/src/worker.js
-          done
-      - name: Web selfchecks
-        shell: bash
-        run: |
-          for test in apps/web/test/*.selfcheck.cjs; do
-            echo "Running $test"
-            node "$test"
-          done
+          cache: npm
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Typecheck and selfchecks
+        run: npm run check

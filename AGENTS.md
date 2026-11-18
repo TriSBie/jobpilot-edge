@@ -6,7 +6,8 @@ Hướng dẫn cho AI agent (Codex, Claude, Cursor…) làm việc trong repo n�
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `apps/api/src/worker.js` | Toàn bộ API: một Cloudflare Worker (~1.9k dòng): `fetch` (≈35 route `/api/*`), `queue` (3 consumer: ingest, score, notify), `scheduled` (3 cron), Durable Object `UserHub` |
+| `apps/api/src/index.ts` | Entry TypeScript/Hono; chuyển tiếp fetch, queue, scheduled và email tới worker.js; tái xuất UserHub |
+| `apps/api/src/worker.js` | Logic legacy còn nguyên; selfcheck đọc source vẫn dùng file này trong giai đoạn chuyển route |
 | `apps/web/public/index.html` | Toàn bộ SPA, một file (~4.5k dòng): landing + app, tiếng Việt là nguồn, tiếng Anh qua `t()` / `data-en` |
 | `db/migrations/NNNN_*.sql` | Schema D1 (SQLite), áp theo thứ tự số |
 | `apps/api/test/*.selfcheck.cjs` | Selfcheck chạy handler thật trên SQLite trong RAM (`node:sqlite`) |
@@ -14,17 +15,18 @@ Hướng dẫn cho AI agent (Codex, Claude, Cursor…) làm việc trong repo n�
 | `apps/api/wrangler.toml.example` | Mẫu cấu hình: phải khai báo mọi `env.X` mà worker.js dùng (selfcheck `wrangler-config` bắt lệch) |
 | `PLAN.md`, `ROADMAP.md` | Kế hoạch, định vị sản phẩm |
 
-Không có framework, không có build step, không có `package.json` ở gốc. Đừng thêm.
+Node >=22.23.4 là mức đã kiểm chứng với selfcheck node:sqlite; Node 22.13 tuy mở module mặc định nhưng chưa chạy được các câu bind của test hiện tại. npm, TypeScript và Hono đã có ở gốc. Dependency pin trong package.json và package-lock.json. Dùng `npm ci`, sau đó `npm run check`. Không tự thêm framework hoặc dependency ngoài task được duyệt.
 
 ## Chạy kiểm tra (bắt buộc trước khi commit)
 
 ```bash
-node --check apps/api/src/worker.js
-for t in apps/api/test/*.cjs; do node "$t" apps/api/src/worker.js; done   # mọi dòng cuối phải có "OK"
-node apps/web/test/i18n.selfcheck.cjs
+npm ci
+npm run check
 ```
 
 - `score`, `verdict`, `weekstats` **bắt buộc** truyền đường dẫn `worker.js` làm tham số (không có tham số là lỗi `path undefined`, không phải lỗi code).
+- `tools/check.mjs` chạy selfcheck source trên `API_ENTRY` (mặc định worker.js). Contract selfcheck riêng bundle và chạy entry index.ts. Không bỏ contract này khi legacy tests vẫn còn xanh.
+- `npm run typegen` sinh worker-configuration.d.ts từ template; `npm run build:api` tạo bundle local vào .test-build/api. `tools/wrangler.mjs` tạo config TOML tạm, không cần config production.
 - `d1-budget` kiểm ngân sách D1 gói Free: **≤ 40 truy vấn mỗi lần chạy** queue/cron (một `DB.batch()` tính là 1). Code mới trong queue/cron phải gộp batch.
 - Selfcheck mới: chép khung của `submit-privacy.selfcheck.cjs` (DB RAM đủ migration, `worker.fetch`/`worker.queue`/`worker.scheduled` thật, mock `fetch` ngoài). Chứng minh nó **fail trên base** và pass trên bản sửa.
 - Có `PRAGMA foreign_keys = ON` trong test khi đụng tới xoá dữ liệu.

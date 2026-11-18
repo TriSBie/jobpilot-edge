@@ -3,7 +3,7 @@
 # TUYỆT ĐỐI không commit wrangler.toml đã điền ID/secret lên repo public.
 
 name = "jobpilot-api"
-main = "src/worker.js"
+main = "src/index.ts"
 compatibility_date = "2026-10-01"
 workers_dev = true
 

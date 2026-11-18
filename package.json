@@ -1,0 +1,20 @@
+{
+  "name": "jobpilot-edge",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.23.4" },
+  "scripts": {
+    "check": "tsc --noEmit && node tools/check.mjs",
+    "typegen": "node tools/wrangler.mjs types worker-configuration.d.ts",
+    "build:api": "node tools/wrangler.mjs deploy --dry-run --outdir .test-build/api"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "0.9.1",
+    "hono": "4.13.16",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "wrangler": "4.156.2"
+  }
+}

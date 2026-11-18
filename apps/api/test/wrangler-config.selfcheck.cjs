@@ -18,7 +18,7 @@ assert(used.size > 5, 'không đọc được env.X trong worker.js');
 const missing = [...used].filter((x) => !declared.has(x));
 assert.deepStrictEqual(missing, [], 'env.X dùng trong worker.js nhưng thiếu trong toml.example: ' + missing.join(', '));
 
-assert.match(live, /^main\s*=\s*"src\/worker\.js"\s*$/m, 'main phải là src/worker.js');
+assert.match(live, /^main\s*=\s*"src\/index\.ts"\s*$/m, 'main phải là src/index.ts');
 assert(!/^\[\[migrations\]\]/m.test(live), 'không khai báo [[migrations]] UserHub: prod đã có DO, khai báo lại = lỗi 10074');
 assert(!/^[a-z_]*id\s*=\s*"(?!<)[^"]+"/m.test(live), 'id thật trong toml.example (repo public) — dùng placeholder <...>');
 assert(!/\[\[workflows\]\]/.test(live), 'không có Workflow class trong worker.js — bỏ [[workflows]]');
