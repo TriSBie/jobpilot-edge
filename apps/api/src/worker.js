@@ -1390,23 +1390,35 @@ async function runIngestSource(env, sourceType, keyword, scan = null) {
 }
 
 // T-112: only complete successful scans count; old or failed scans do not trigger a false alert.
+const SCAN_FAIL_STREAK = 4; // T-120: bốn lượt quét, cách nhau 30 phút.
 async function alertEmptyScans(env) {
   const cutoff = now() * 1000 - 120000;
-  const sql = "WITH complete AS (" +
-    " SELECT source_type, scan_id, SUM(raw_count) AS total FROM ingest_scan_results WHERE scan_id <= ? GROUP BY source_type, scan_id" +
-    " HAVING COUNT(*) = MAX(expected_count) AND MIN(expected_count) = MAX(expected_count) AND MIN(scan_group) = MAX(scan_group) AND SUM(success) = COUNT(*)" +
-    "), ranked AS (SELECT source_type, scan_id, total, ROW_NUMBER() OVER (PARTITION BY source_type ORDER BY scan_id DESC) AS rn FROM complete)," +
-    " candidates AS (SELECT source_type, MAX(scan_id) AS scan_id FROM ranked WHERE rn <= 2 GROUP BY source_type HAVING COUNT(*) = 2 AND SUM(total) = 0)" +
-    " SELECT c.source_type, c.scan_id FROM candidates c JOIN sources s ON s.type = c.source_type AND s.is_enabled = 1" +
-    " LEFT JOIN ingest_scan_alerts a ON a.source_type = c.source_type WHERE a.scan_id IS NULL OR a.scan_id < c.scan_id";
-  const { results } = await env.DB.prepare(sql).bind(cutoff).all();
+  // Marker lỗi dùng key riêng; chỉ lượt thành công hoàn chỉnh mới mở chuỗi cảnh báo tiếp theo.
+  const sql = "WITH scans AS (" +
+    " SELECT source_type, scan_id, SUM(raw_count) AS total," +
+    " CASE WHEN MIN(expected_count) = MAX(expected_count) AND MIN(expected_count) > 0 AND MIN(scan_group) = MAX(scan_group)" +
+    " THEN CASE WHEN MIN(success) = 0 THEN 'failure' WHEN COUNT(*) = MAX(expected_count) AND SUM(success) = COUNT(*) THEN 'ok' END END AS outcome" +
+    " FROM ingest_scan_results WHERE scan_id <= ? GROUP BY source_type, scan_id" +
+    "), completed AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY source_type ORDER BY scan_id DESC) AS rn FROM scans WHERE outcome = 'ok')," +
+    " ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY source_type ORDER BY scan_id DESC) AS rn FROM scans)," +
+    " candidates AS (" +
+    " SELECT source_type, MAX(scan_id) AS scan_id, source_type AS alert_key, MAX(scan_id) - 1 AS reset_id" +
+    " FROM completed WHERE rn <= 2 GROUP BY source_type HAVING COUNT(*) = 2 AND SUM(total) = 0" +
+    " UNION ALL SELECT source_type, MAX(scan_id), 'failure:' || source_type, MAX(CASE WHEN outcome = 'ok' THEN scan_id END)" +
+    " FROM ranked GROUP BY source_type HAVING COUNT(CASE WHEN rn <= ? AND outcome = 'failure' THEN 1 END) = ?" +
+    ") SELECT c.source_type, c.scan_id, c.alert_key FROM candidates c JOIN sources s ON s.type = c.source_type AND s.is_enabled = 1" +
+    " LEFT JOIN ingest_scan_alerts a ON a.source_type = c.alert_key WHERE a.scan_id IS NULL OR a.scan_id <= c.reset_id";
+  const { results } = await env.DB.prepare(sql).bind(cutoff, SCAN_FAIL_STREAK, SCAN_FAIL_STREAK).all();
   if (results.length && env.OWNER_EMAIL) {
     const owner = await env.DB.prepare("SELECT u.id, u.telegram_chat_id, b.token_enc FROM users u LEFT JOIN user_bots b ON b.user_id = u.id AND b.status = 'ok' WHERE u.email = ? AND u.deleted_at IS NULL").bind(env.OWNER_EMAIL).first();
     if (owner?.telegram_chat_id) {
       for (const scan of results) {
-        const status = await tgSendFor(env, owner.id, owner.telegram_chat_id, "Scraper alert: " + tgEsc(scan.source_type) + " returned zero jobs in two completed scans.", owner.token_enc);
+        const detail = scan.alert_key === scan.source_type
+          ? " returned zero jobs in two completed scans."
+          : ` lỗi ${SCAN_FAIL_STREAK} lượt liên tiếp`;
+        const status = await tgSendFor(env, owner.id, owner.telegram_chat_id, "Scraper alert: " + tgEsc(scan.source_type) + detail, owner.token_enc);
         if (status >= 200 && status < 300) {
-          await env.DB.prepare("INSERT INTO ingest_scan_alerts (source_type, scan_id, sent_at) VALUES (?, ?, ?) ON CONFLICT(source_type) DO UPDATE SET scan_id = excluded.scan_id, sent_at = excluded.sent_at WHERE ingest_scan_alerts.scan_id < excluded.scan_id").bind(scan.source_type, scan.scan_id, now()).run();
+          await env.DB.prepare("INSERT INTO ingest_scan_alerts (source_type, scan_id, sent_at) VALUES (?, ?, ?) ON CONFLICT(source_type) DO UPDATE SET scan_id = excluded.scan_id, sent_at = excluded.sent_at WHERE ingest_scan_alerts.scan_id < excluded.scan_id").bind(scan.alert_key, scan.scan_id, now()).run();
         }
       }
     } else console.log("scan alert unavailable: owner Telegram not configured");
