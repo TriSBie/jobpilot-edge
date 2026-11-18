@@ -3,8 +3,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { spawnSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 const publicBaseline = require('./fixtures/public-contract-df3db94.json');
+const healthRumBaseline = require('./fixtures/health-rum-contract-414ec0b.json');
 const root = path.resolve(__dirname, '../../..');
 const legacyPath = path.resolve(process.argv[2] || 'apps/api/src/worker.js');
 const entrySource = path.resolve(process.argv[3] || path.join(root, 'apps/api/src/index.ts'));
@@ -36,9 +38,14 @@ function setup() {
 }
 const scenarios=[
   {name:'health',url:'/api/health',status:200,token:null},
+  {name:'health POST',url:'/api/health',method:'POST',status:200,token:null},
+  {name:'health PUT',url:'/api/health',method:'PUT',status:200,token:null},
+  {name:'health PROPFIND',url:'/api/health',method:'PROPFIND',status:200,token:null},
+  {name:'health OPTIONS',url:'/api/health',method:'OPTIONS',status:200,token:null},
   {name:'public',url:'/api/public/sample',status:200,token:null},
   {name:'public try',url:'/api/public/try?skills=Java,Spring%20Boot,PostgreSQL',status:200,token:null},
   {name:'public try english',url:'/api/public/try?skills=Java&lang=en',status:200,token:null},
+  {name:'public try senior remote',url:'/api/public/try?skills=Java&level=senior&location=Remote',status:200,token:null},
   {name:'public sample language header',url:'/api/public/sample',language:'en-US',status:200,token:null},
   {name:'public try duplicate query',url:'/api/public/try?skills=Java&skills=bogus&level=&level=bogus&location=&location=bogus',status:200,token:null},
   {name:'public try invalid skills first',url:'/api/public/try?skills=bogus&level=bogus&location=bogus',status:400,token:null,error:'invalid_skills'},
@@ -65,6 +72,13 @@ const scenarios=[
   {name:'admin',url:'/api/admin/quota',status:200,token:'owner'},
   {name:'auth logout',url:'/api/auth/logout',method:'POST',status:200},
   {name:'rum',url:'/api/rum',method:'POST',body:{metric:'LCP',page:'landing',value:100},status:204,token:null},
+  {name:'rum missing IP',url:'/api/rum',method:'POST',body:{metric:'LCP',page:'landing',value:100},noIp:true,status:400,token:null,error:'invalid_request'},
+  {name:'rum bad JSON',url:'/api/rum',method:'POST',rawBody:'not json',status:400,token:null,error:'invalid_request'},
+  {name:'rum invalid metric',url:'/api/rum',method:'POST',body:{metric:'FCP',page:'landing',value:100},status:400,token:null,error:'invalid_request'},
+  {name:'rum body 1025 bytes',url:'/api/rum',method:'POST',largeBody:true,status:413,token:null,error:'too_large'},
+  {name:'rum 61st attempt',url:'/api/rum',method:'POST',body:{metric:'LCP',page:'landing',value:100},priorAttempts:60,status:429,token:null,error:'rate_limited'},
+  {name:'rum GET',url:'/api/rum',status:401,token:null,error:'unauthorized'},
+  {name:'rum OPTIONS',url:'/api/rum',method:'OPTIONS',status:200,token:null},
   {name:'preflight',url:'/api/jobs',method:'OPTIONS',status:200,token:null},
   {name:'wrong method',url:'/api/jobs',method:'PUT',status:404},
   {name:'unknown path',url:'/api/khong-co',status:404},
@@ -87,7 +101,7 @@ const scenarios=[
     const rows=[];
     for(const scenario of scenarios){
       const responses=[],logs=[],telemetry=[];
-      const baseline=publicBaseline[scenario.name];
+      const baseline=publicBaseline[scenario.name] || healthRumBaseline[scenario.name];
       for(const worker of baseline?[current]:[legacy,current]){
         const state=setup(),cache=new Map(),workerLogs=[];
         globalThis.caches={default:{match:async r=>cache.get(r.url)?.clone(),put:async(r,res)=>cache.set(r.url,res.clone())}};
@@ -95,11 +109,28 @@ const scenarios=[
         try {
           if(scenario.dbError)state.env.DB.prepare=()=>{throw new Error('fixture DB unavailable');};
           const headers={'content-type':'application/json','cf-connecting-ip':'203.0.113.2'};
+          if(scenario.noIp)delete headers['cf-connecting-ip'];
+          if(scenario.priorAttempts){
+            const ipKey='rum:'+createHash('sha256').update('rum:'+headers['cf-connecting-ip']).digest('hex');
+            state.db.prepare('INSERT INTO register_attempts (ip,hour,count) VALUES (?,?,?)').run(ipKey,Math.floor(fixed/3600000),scenario.priorAttempts);
+          }
           if(scenario.language)headers['accept-language']=scenario.language;
           const token=scenario.token===undefined?'tok':scenario.token;if(token)headers.authorization=`Bearer ${token}`;
-          const res=await worker.fetch(new Request('https://api.test'+scenario.url,{method:scenario.method||'GET',headers,body:scenario.body&&JSON.stringify(scenario.body)}),state.env,state.ctx);
+          const init={method:scenario.method||'GET',headers,body:scenario.rawBody??(scenario.body&&JSON.stringify(scenario.body))};
+          if(scenario.largeBody){
+            init.body=new ReadableStream({start(controller){
+              controller.enqueue(new Uint8Array(1024).fill(120));
+              controller.enqueue(Uint8Array.of(120));
+              controller.close();
+            }});
+            init.duplex='half';
+          }
+          const request=new Request('https://api.test'+scenario.url,init);
+          if(scenario.largeBody)assert.equal(request.headers.get('content-length'),null);
+          const res=await worker.fetch(request,state.env,state.ctx);
           assert.equal(res.status,scenario.status,scenario.name);
           const body=await res.text();
+          if(scenario.method==='HEAD'&&worker===current)assert.equal(body,'',scenario.name+' body');
           if(scenario.error)assert.equal(JSON.parse(body).error,scenario.error,scenario.name+' error');
           responses.push({status:res.status,headers:[...res.headers].sort(),body:scenario.method==='HEAD'?'':body});
           await Promise.all(state.waits);
@@ -119,6 +150,7 @@ const scenarios=[
           const count=scenario.name==='public try'?2:1;
           assert.equal(requestLogs.length,count,scenario.name+' log mỗi request');
           assert.equal(state.points.filter(p=>p.blobs[0]==='request').length,count,scenario.name+' metric mỗi request');
+          if(scenario.priorAttempts)assert.equal(state.db.prepare('SELECT count FROM register_attempts').get().count,61);
           telemetry.push({logs:requestLogs,points:state.points,cacheKeys:[...cache.keys()]});
         }finally{state.db.close();}
       }

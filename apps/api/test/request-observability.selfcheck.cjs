@@ -1,7 +1,7 @@
 // T-112: D1 execution counter preserves receivers, bind and batch semantics.
 const assert = require("node:assert/strict"), fs = require("node:fs"), { execFileSync } = require("node:child_process");
 const src = process.argv[2] === "--base" ? execFileSync("git", ["show", "main:apps/api/src/worker.js"], { encoding: "utf8" }) : fs.readFileSync(process.argv[2] || "apps/api/src/worker.js", "utf8");
-const start = src.indexOf("function observeEnv("); const end = src.indexOf("async function handleRum(", start);
+const start = src.indexOf("function observeEnv("); const end = src.indexOf("// ---------------- router ----------------", start);
 assert(start >= 0 && end > start, "request observation helper must exist");
 const { observeEnv, observedRoute } = new Function(src.slice(start, end).replace(/^export /gm, "") + "\nreturn { observeEnv, observedRoute };")();
 class Statement { constructor(value) { this.value = value; } bind(value) { assert(this instanceof Statement); return new Statement(value); } first() { assert(this instanceof Statement); return this.value; } all() { assert(this instanceof Statement); return [this.value]; } run() { assert(this instanceof Statement); return this.value; } }
