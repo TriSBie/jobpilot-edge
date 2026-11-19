@@ -8,6 +8,13 @@ export interface AuthUser {
   password_hash: string | null;
   password_salt: string | null;
   deleted_at: number | null;
+  // T-117c-me: các cột users mà /api/me đọc (row vẫn là SELECT * FROM users).
+  email: string;
+  name: string;
+  consent_cv_at: number | null;
+  ai_opt_out: number;
+  telegram_chat_id: string | null;
+  jobs_seen_at: number | null;
 }
 type AuthEnv = AppEnv & { Variables: { user: AuthUser } };
 
