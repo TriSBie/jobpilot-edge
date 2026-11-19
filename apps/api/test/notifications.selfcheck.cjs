@@ -51,7 +51,7 @@ globalThis.fetch = async (u, init = {}) => {
 };
 const q = (sql, ...a) => db.prepare(sql).all(...a);
 
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const call = async (method, p, user, body) => {
     const h = { 'content-type': 'application/json', authorization: 'Bearer s-' + user };
     const r = await worker.fetch(new Request('https://api.jp.test' + p, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) }), env, {});

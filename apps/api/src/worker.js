@@ -132,7 +132,7 @@ function ivFields(b) {
 const ivRow = (r) => r && { ...r, checklist: JSON.parse(r.checklist || "[]") };
 const IV_OWNED = "SELECT a.id FROM applications a JOIN profiles p ON p.id = a.profile_id WHERE p.user_id = ?";
 // Owner = env.OWNER_EMAIL (secret); thiếu thì không ai là admin.
-const isOwner = (env, u) => !!env.OWNER_EMAIL && u.email === env.OWNER_EMAIL;
+export const isOwner = (env, u) => !!env.OWNER_EMAIL && u.email === env.OWNER_EMAIL;
 // T-88: nguồn đăng ký ?ref — chỉ chữ thường/số/_/-, tối đa 40 ký tự, sai thì null.
 export const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
 export const uid = () => crypto.randomUUID();
@@ -260,7 +260,7 @@ async function enqueueProfileRescore(env, profileId) {
 }
 
 // ---------------- profiles & CV ----------------
-async function profileWithSkills(env, profile) {
+export async function profileWithSkills(env, profile) {
   const { results } = await env.DB.prepare(
     "SELECT skill, weight, source FROM profile_skills WHERE profile_id = ? ORDER BY weight DESC, skill"
   ).bind(profile.id).all();
@@ -1634,7 +1634,7 @@ async function listBackupManifests(env) {
   }
   return out;
 }
-async function exportUserData(env, user) {
+export async function exportUserData(env, user) {
   const u = { ...user };
   delete u.password_hash;
   delete u.password_salt;
@@ -1921,17 +1921,6 @@ export const legacyHandlers = {
       return json({ error: "forbidden" }, 403);
     }
 
-    if (path === "/api/me" && request.method === "GET") {
-      const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
-      const profiles = [];
-      for (const p of results) profiles.push(await profileWithSkills(env, p));
-      const ownBot = await env.DB.prepare("SELECT username, status, last_error FROM user_bots WHERE user_id = ?").bind(user.id).first();
-      const nf = await env.DB.prepare("SELECT (SELECT COUNT(*) FROM (SELECT 1 FROM notifications WHERE user_id = ?1 AND is_read = 0 LIMIT 10)) AS n, EXISTS (SELECT 1 FROM notifications WHERE user_id = ?1 AND type = 'bot_broken' AND is_read = 0) AS a").bind(user.id).first();
-      return json({ user: { id: user.id, email: user.email, name: user.name, is_owner: isOwner(env, user),
-        consent_cv_at: user.consent_cv_at, ai_opt_out: user.ai_opt_out ? 1 : 0, telegram_linked: !!user.telegram_chat_id,
-        telegram_bot: ownBot ? { username: ownBot.username, status: ownBot.status, last_error: ownBot.last_error } : null,
-        unread_count: nf.n, has_attention: !!nf.a, jobs_seen_at: user.jobs_seen_at ?? null }, profiles });
-    }
     if (path === "/api/admin/password-reset" && request.method === "POST") { // T-22: owner gửi link thủ công (chưa có email)
       const email = ((await readBody(request)).email || "").trim().toLowerCase();
       const target = await env.DB.prepare("SELECT id FROM users WHERE email = ? AND deleted_at IS NULL").bind(email).first();
@@ -2379,13 +2368,6 @@ export const legacyHandlers = {
     }
 
     // --- privacy (T-62 + T-24): đồng ý tải CV, tắt AI, xoá CV, xoá tài khoản ---
-    if (path === "/api/me/consent" && request.method === "POST") {
-      const b = await readBody(request);
-      if (b.kind !== "cv") return json({ error: "unknown_consent" }, 400);
-      const r = await env.DB.prepare("UPDATE users SET consent_cv_at = COALESCE(consent_cv_at, ?) WHERE id = ? RETURNING consent_cv_at")
-        .bind(now(), user.id).first();
-      return json({ consent_cv_at: r.consent_cv_at });
-    }
     if (path === "/api/me/telegram/link" && request.method === "POST") {
       // Bot riêng đang ok → deeplink tới bot đó, không cần cấu hình bot chung.
       const own = ownBotEnabled(env) ? await env.DB.prepare("SELECT username FROM user_bots WHERE user_id = ? AND status = 'ok'").bind(user.id).first() : null;
@@ -2473,23 +2455,6 @@ export const legacyHandlers = {
       await env.DB.prepare("UPDATE users SET telegram_chat_id = NULL, telegram_link_code = NULL WHERE id = ?").bind(user.id).run();
       return json({ ok: true });
     }
-    if (path === "/api/me" && request.method === "PATCH") {
-      const b = await readBody(request);
-      if (b.jobs_seen !== undefined && b.jobs_seen !== true) return json({ error: "invalid_jobs_seen" }, 400);
-      if ((b.ai_opt_out !== undefined || b.jobs_seen !== true) && ![0, 1, true, false].includes(b.ai_opt_out)) return json({ error: "invalid_ai_opt_out" }, 400);
-      const out = {}, stmts = [];
-      if (b.ai_opt_out !== undefined) { out.ai_opt_out = b.ai_opt_out ? 1 : 0; stmts.push(env.DB.prepare("UPDATE users SET ai_opt_out = ? WHERE id = ?").bind(out.ai_opt_out, user.id)); }
-      if (b.jobs_seen) { out.jobs_seen_at = now(); stmts.push(env.DB.prepare("UPDATE users SET jobs_seen_at = ? WHERE id = ?").bind(out.jobs_seen_at, user.id)); } // giờ do server đặt
-      await env.DB.batch(stmts);
-      return json(out);
-    }
-    if (path === "/api/me" && request.method === "DELETE") {
-      const b = await readBody(request);
-      if (!b.password || !(await verifyPassword(b.password, user.password_salt, user.password_hash))) return json({ error: "invalid_credentials" }, 401);
-      await env.DB.prepare("UPDATE users SET deleted_at = ? WHERE id = ?").bind(now(), user.id).run();
-      await env.KV.delete(`session:${request.headers.get("Authorization").slice(7)}`);
-      return json({ ok: true, restore_until: now() + DELETE_GRACE });
-    }
     const cvDelMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv$/);
     if (cvDelMatch && request.method === "DELETE") {
       const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvDelMatch[1], user.id).first();
@@ -2519,11 +2484,6 @@ export const legacyHandlers = {
     }
 
     // --- export theo user + backup admin (T-25) ---
-    if (path === "/api/me/export" && request.method === "GET") {
-      return new Response(JSON.stringify(await exportUserData(env, user)), {
-        headers: { ...CORS, "content-type": "application/json", "content-disposition": `attachment; filename="jobpilot-export-${new Date().toISOString().slice(0, 10)}.json"` },
-      });
-    }
     if (path === "/api/admin/backups" && request.method === "GET") {
       return json(await listBackupManifests(env));
     }

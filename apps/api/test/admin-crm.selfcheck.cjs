@@ -45,7 +45,7 @@ db.prepare("INSERT INTO application_events (id, application_id, type, payload, c
 db.prepare("INSERT INTO interviews (id, application_id, kind, round_label, scheduled_at, result, created_at) VALUES ('i1', 'a2', 'technical', 'Tech 1', ?, 'pass', ?), ('i2', 'a2', 'hr', 'HR', ?, 'pending', ?)").run(T - 86400, T, T + 86400, T);
 
 (async () => {
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const logs = []; const log0 = console.log;
   try {
   console.log = (...a) => logs.push(a.join(' '));

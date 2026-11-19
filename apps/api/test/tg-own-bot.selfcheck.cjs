@@ -56,7 +56,7 @@ globalThis.fetch = async (u, init = {}) => {
   return Response.json({ ok: true });
 };
 
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const ORIGIN = 'https://api.jp.test';
   const call = async (method, p, { user, body, headers = {}, e = env } = {}) => {
     const h = { 'content-type': 'application/json', ...headers };

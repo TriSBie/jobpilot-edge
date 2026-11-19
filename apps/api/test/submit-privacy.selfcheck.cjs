@@ -44,7 +44,7 @@ globalThis.fetch = async (u, init) => {
   return new Response('<html><title>Java Backend | TopDev</title><body>Java Spring Boot PostgreSQL</body></html>');
 };
 
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const call = async (who, method, p, body) => {
     const r = await worker.fetch(new Request(`https://api.test${p}`, { method, headers: { Authorization: `Bearer tok${who}`, 'content-type': 'application/json' }, body: body && JSON.stringify(body) }), env, {});
     return { status: r.status, body: await r.json().catch(() => null) };

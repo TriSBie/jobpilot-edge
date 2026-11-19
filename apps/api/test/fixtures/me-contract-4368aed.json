@@ -1,0 +1,1555 @@
+{
+  "summary": {
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"user\":{\"id\":\"u\",\"email\":\"user@example.invalid\",\"name\":\"User\",\"is_owner\":false,\"consent_cv_at\":null,\"ai_opt_out\":0,\"telegram_linked\":false,\"telegram_bot\":null,\"unread_count\":0,\"has_attention\":false,\"jobs_seen_at\":null},\"profiles\":[{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[],\"level\":\"middle\",\"locations\":[\"Remote\"],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"Spring Boot\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"PostgreSQL\",\"weight\":3,\"source\":\"manual\"}]}]}"
+    },
+    "logs": [
+      {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      }
+    ],
+    "points": [
+      {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    ],
+    "cacheKeys": []
+  },
+  "requests": {
+    "me A summary": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"user\":{\"id\":\"u\",\"email\":\"user@example.invalid\",\"name\":\"User\",\"is_owner\":false,\"consent_cv_at\":null,\"ai_opt_out\":0,\"telegram_linked\":false,\"telegram_bot\":null,\"unread_count\":0,\"has_attention\":false,\"jobs_seen_at\":null},\"profiles\":[{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[],\"level\":\"middle\",\"locations\":[\"Remote\"],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"Spring Boot\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"PostgreSQL\",\"weight\":3,\"source\":\"manual\"}]}]}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me B summary": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"user\":{\"id\":\"owner\",\"email\":\"owner@example.invalid\",\"name\":\"Owner\",\"is_owner\":true,\"consent_cv_at\":null,\"ai_opt_out\":0,\"telegram_linked\":false,\"telegram_bot\":null,\"unread_count\":0,\"has_attention\":false,\"jobs_seen_at\":null},\"profiles\":[{\"id\":\"p-b\",\"user_id\":\"owner\",\"name\":\"B profile\",\"target_roles\":[],\"level\":\"middle\",\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}]}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "4c1029697ee358715d3a14a2add817c4b01651440de808371f78165ac90dc581"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me A export": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-disposition",
+          "attachment; filename=\"jobpilot-export-2026-10-30.json\""
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"user\":{\"id\":\"u\",\"email\":\"user@example.invalid\",\"name\":\"User\",\"timezone\":\"Asia/Saigon\",\"digest_email\":null,\"created_at\":1793346000,\"password_set_at\":null,\"consent_cv_at\":null,\"ai_opt_out\":0,\"deleted_at\":null,\"telegram_chat_id\":null,\"telegram_linked_at\":null,\"digest_hour\":8,\"sessions_valid_after\":null,\"ref_source\":null,\"last_active_day\":20756,\"jobs_seen_at\":null},\"profiles\":[{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[],\"level\":\"middle\",\"locations\":[\"Remote\"],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"Spring Boot\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"PostgreSQL\",\"weight\":3,\"source\":\"manual\"}]}],\"applications\":[{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000,\"events\":[]}],\"interviews\":[],\"files\":[],\"digests\":[],\"notifications\":[],\"exported_at\":\"2026-10-30T07:40:00.000Z\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 9,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me B export": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-disposition",
+          "attachment; filename=\"jobpilot-export-2026-10-30.json\""
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"user\":{\"id\":\"owner\",\"email\":\"owner@example.invalid\",\"name\":\"Owner\",\"timezone\":\"Asia/Saigon\",\"digest_email\":null,\"created_at\":1793346000,\"password_set_at\":null,\"consent_cv_at\":null,\"ai_opt_out\":0,\"deleted_at\":null,\"telegram_chat_id\":null,\"telegram_linked_at\":null,\"digest_hour\":8,\"sessions_valid_after\":null,\"ref_source\":null,\"last_active_day\":20756,\"jobs_seen_at\":null},\"profiles\":[{\"id\":\"p-b\",\"user_id\":\"owner\",\"name\":\"B profile\",\"target_roles\":[],\"level\":\"middle\",\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}],\"applications\":[{\"id\":\"app-b\",\"profile_id\":\"p-b\",\"job_id\":\"job\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000,\"events\":[]}],\"interviews\":[],\"files\":[],\"digests\":[],\"notifications\":[],\"exported_at\":\"2026-10-30T07:40:00.000Z\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 9,
+        "cache": "unknown",
+        "user_hash": "4c1029697ee358715d3a14a2add817c4b01651440de808371f78165ac90dc581"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch empty": {
+      "status": 400,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"invalid_ai_opt_out\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          400
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch malformed": {
+      "status": 400,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"invalid_ai_opt_out\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          400
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch jobs_seen first": {
+      "status": 400,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"invalid_jobs_seen\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          400
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch wrong opt out": {
+      "status": 400,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"invalid_ai_opt_out\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          400
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch server time": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"ai_opt_out\":1,\"jobs_seen_at\":1793346000}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch opt-out only": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"ai_opt_out\":0}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me patch jobs_seen only": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"jobs_seen_at\":1793346000}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me consent wrong kind": {
+      "status": 400,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unknown_consent\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          400
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me consent first": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"consent_cv_at\":1793346000}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me consent repeat": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"consent_cv_at\":1793346000}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me anonymous GET": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me anonymous PATCH": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me anonymous DELETE": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me anonymous POST": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me anonymous PUT": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me anonymous HEAD": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "",
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me authenticated fallback POST": {
+      "status": 404,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"not_found\",\"path\":\"/api/me\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          404
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me authenticated fallback PUT": {
+      "status": 404,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"not_found\",\"path\":\"/api/me\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          404
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me authenticated fallback HEAD": {
+      "status": 404,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "",
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          404
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me OPTIONS CORS": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ]
+      ],
+      "body": "",
+      "log": {
+        "route": "/api/other",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me consent needs auth": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me export needs auth": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me export HEAD fallback": {
+      "status": 404,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "",
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          404
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me consent GET fallback": {
+      "status": 404,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"not_found\",\"path\":\"/api/me/consent\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          404
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me Telegram fallback": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"configured\":false,\"bot_username\":null,\"status\":null,\"last_error\":null,\"checked_at\":null}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me delete missing password": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"invalid_credentials\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me delete wrong password": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"invalid_credentials\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me delete correct password": {
+      "status": 200,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"ok\":true,\"restore_until\":1793950800}",
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          200
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me deleted session rejected": {
+      "status": 401,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"unauthorized\"}",
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          401
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    },
+    "me deleted user login": {
+      "status": 403,
+      "headers": [
+        [
+          "access-control-allow-headers",
+          "authorization, content-type, accept-language"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "content-type",
+          "application/json"
+        ]
+      ],
+      "body": "{\"error\":\"account_deleted\",\"restore_until\":1793950800}",
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 403,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "metric": {
+        "blobs": [
+          "request",
+          "/api/other"
+        ],
+        "doubles": [
+          0,
+          403
+        ],
+        "indexes": [
+          "request"
+        ]
+      }
+    }
+  }
+}

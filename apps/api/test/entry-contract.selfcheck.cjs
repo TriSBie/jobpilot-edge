@@ -8,6 +8,9 @@ const { DatabaseSync } = require('node:sqlite');
 const publicBaseline = require('./fixtures/public-contract-df3db94.json');
 const healthRumBaseline = require('./fixtures/health-rum-contract-414ec0b.json');
 const authBaseline = require('./fixtures/auth-contract-ae7eb19.json');
+const meFixturePath = path.join(__dirname, 'fixtures/me-contract-4368aed.json');
+const captureMe = process.argv[4] === '--capture-me';
+const meBaseline = captureMe ? {} : require(meFixturePath);
 const logoutFixture = authBaseline['auth logout success'].requests[0];
 const logoutBaseline = { response: logoutFixture.response, logs: [logoutFixture.log], points: [logoutFixture.metric], cacheKeys: [] };
 const root = path.resolve(__dirname, '../../..');
@@ -328,6 +331,112 @@ async function runAuthContract(worker) {
   }
 }
 
+async function runMeContract(worker) {
+  const { db, env, kv, points, ctx } = setup();
+  const originalLog = console.log;
+  const originalNow = Date.now;
+  const emitted = [];
+  const snapshots = {};
+  try {
+    const t = fixed / 1000;
+    db.prepare('UPDATE users SET password_hash=?, password_salt=? WHERE id=?').run(authHash, authSalt.toString('base64'), 'u');
+    db.prepare("INSERT INTO profiles (id,user_id,name,level,locations,created_at,updated_at) VALUES ('p-b','owner','B profile','middle','[]',?,?)").run(t,t);
+    db.prepare("INSERT INTO applications (id,profile_id,job_id,stage,created_at,updated_at) VALUES ('app-b','p-b','job','saved',?,?)").run(t,t);
+    console.log = (...args) => emitted.push(args.join(' '));
+    const request = async (name, method, url, status, { token = 'tok', body, error, raw } = {}) => {
+      const headers = { 'content-type': 'application/json' };
+      if (token) headers.authorization = 'Bearer ' + token;
+      const start = emitted.length, pointStart = points.length;
+      const response = await worker.fetch(new Request('https://api.test' + url, {
+        method, headers, body: raw ?? (body === undefined ? undefined : JSON.stringify(body)),
+      }), env, ctx);
+      assert.equal(response.status, status, name);
+      const text = await response.text();
+      if (method === 'HEAD') assert.equal(text, '', name + ' body');
+      const data = text ? JSON.parse(text) : null;
+      if (error) assert.equal(data.error, error, name + ' error');
+      const logs = emitted.slice(start).flatMap(line => {
+        try { const log = JSON.parse(line); return Object.hasOwn(log, 'd1_queries') ? [log] : []; }
+        catch { return []; }
+      });
+      assert.equal(logs.length, 1, name + ' request log count');
+      assert.equal(points.length - pointStart, 1, name + ' metric count');
+      assert.doesNotMatch(JSON.stringify(logs), /example\.invalid|Fixture-Current01/, name + ' private data in log');
+      if (token && status < 400 && method !== 'OPTIONS' && !url.startsWith('/api/auth/')) {
+        const id = token === 'owner' ? 'owner' : 'u';
+        assert.equal(logs[0].user_hash, createHash('sha256').update(id).digest('hex'), name + ' user hash');
+      }
+      snapshots[name] = { status, headers: [...response.headers].sort(), body: text, log: logs[0], metric: points[pointStart] };
+      return data;
+    };
+
+    const summaryA = await request('me A summary', 'GET', '/api/me', 200);
+    assert.equal(summaryA.user.id, 'u');
+    assert.deepEqual(summaryA.profiles.map(profile => profile.id), ['p']);
+    for (const key of ['password_hash', 'password_salt', 'token_enc', 'telegram_chat_id']) {
+      assert.ok(!Object.hasOwn(summaryA.user, key), 'summary omits ' + key);
+    }
+    const summaryB = await request('me B summary', 'GET', '/api/me', 200, { token: 'owner' });
+    assert.deepEqual(summaryB.profiles.map(profile => profile.id), ['p-b']);
+    const exported = await request('me A export', 'GET', '/api/me/export?user_id=owner', 200);
+    assert.equal(exported.user.id, 'u');
+    assert.deepEqual(exported.profiles.map(profile => profile.id), ['p']);
+    assert.deepEqual(exported.applications.map(app => app.id), ['app']);
+    assert.ok(!Object.hasOwn(exported.user, 'password_hash') && !Object.hasOwn(exported.user, 'password_salt'));
+    assert.equal(Object.fromEntries(snapshots['me A export'].headers)['content-disposition'],
+      'attachment; filename="jobpilot-export-' + new Date(fixed).toISOString().slice(0, 10) + '.json"');
+    const exportedB = await request('me B export', 'GET', '/api/me/export', 200, { token: 'owner' });
+    assert.deepEqual(exportedB.applications.map(app => app.id), ['app-b']);
+
+    await request('me patch empty', 'PATCH', '/api/me', 400, { body: {}, error: 'invalid_ai_opt_out' });
+    await request('me patch malformed', 'PATCH', '/api/me', 400, { raw: '{', error: 'invalid_ai_opt_out' });
+    await request('me patch jobs_seen first', 'PATCH', '/api/me', 400, { body: { jobs_seen: false, ai_opt_out: '1' }, error: 'invalid_jobs_seen' });
+    await request('me patch wrong opt out', 'PATCH', '/api/me', 400, { body: { ai_opt_out: '1' }, error: 'invalid_ai_opt_out' });
+    assert.deepEqual(await request('me patch server time', 'PATCH', '/api/me', 200, {
+      body: { user_id: 'owner', ai_opt_out: true, jobs_seen: true, jobs_seen_at: 1 },
+    }), { ai_opt_out: 1, jobs_seen_at: t });
+    assert.deepEqual({ ...db.prepare("SELECT ai_opt_out,jobs_seen_at FROM users WHERE id='owner'").get() },
+      { ai_opt_out: 0, jobs_seen_at: null }, 'A cannot change B');
+    await request('me patch opt-out only', 'PATCH', '/api/me', 200, { body: { ai_opt_out: false } });
+    await request('me patch jobs_seen only', 'PATCH', '/api/me', 200, { body: { jobs_seen: true } });
+
+    await request('me consent wrong kind', 'POST', '/api/me/consent', 400, { body: { kind: 'other' }, error: 'unknown_consent' });
+    assert.deepEqual(await request('me consent first', 'POST', '/api/me/consent', 200, { body: { kind: 'cv' } }), { consent_cv_at: t });
+    Date.now = () => fixed + 2000;
+    assert.deepEqual(await request('me consent repeat', 'POST', '/api/me/consent', 200, { body: { kind: 'cv' } }), { consent_cv_at: t });
+    Date.now = originalNow;
+
+    for (const method of ['GET', 'PATCH', 'DELETE', 'POST', 'PUT', 'HEAD']) {
+      await request('me anonymous ' + method, method, '/api/me', 401, { token: null, error: method === 'HEAD' ? undefined : 'unauthorized' });
+    }
+    for (const method of ['POST', 'PUT', 'HEAD']) {
+      await request('me authenticated fallback ' + method, method, '/api/me', 404, { error: method === 'HEAD' ? undefined : 'not_found' });
+    }
+    await request('me OPTIONS CORS', 'OPTIONS', '/api/me', 200, { token: null });
+    await request('me consent needs auth', 'POST', '/api/me/consent', 401, { token: null, error: 'unauthorized' });
+    await request('me export needs auth', 'GET', '/api/me/export', 401, { token: null, error: 'unauthorized' });
+    await request('me export HEAD fallback', 'HEAD', '/api/me/export', 404);
+    await request('me consent GET fallback', 'GET', '/api/me/consent', 404, { error: 'not_found' });
+    await request('me Telegram fallback', 'GET', '/api/me/telegram/bot', 200);
+
+    await request('me delete missing password', 'DELETE', '/api/me', 401, { body: {}, error: 'invalid_credentials' });
+    await request('me delete wrong password', 'DELETE', '/api/me', 401, { body: { password: 'incorrect-fixture' }, error: 'invalid_credentials' });
+    assert.equal(db.prepare("SELECT deleted_at FROM users WHERE id='u'").get().deleted_at, null);
+    assert.deepEqual(await request('me delete correct password', 'DELETE', '/api/me', 200, {
+      body: { password: authPassword, user_id: 'owner' },
+    }), { ok: true, restore_until: t + 7 * 86400 });
+    assert.equal(kv.has('session:tok'), false);
+    assert.equal(db.prepare("SELECT deleted_at FROM users WHERE id='owner'").get().deleted_at, null);
+    await request('me deleted session rejected', 'GET', '/api/me', 401, { error: 'unauthorized' });
+    await request('me deleted user login', 'POST', '/api/auth/login', 403, { token: null, body: loginBody, error: 'account_deleted' });
+    return snapshots;
+  } finally {
+    Date.now = originalNow;
+    console.log = originalLog;
+    db.close();
+  }
+}
+
 (async()=>{
   const original={Date:globalThis.Date,fetch:globalThis.fetch,caches:globalThis.caches,log:console.log,error:console.error};
   class FixedDate extends original.Date { constructor(...args){super(...(args.length?args:[fixed]));} static now(){return fixed;} }
@@ -337,9 +446,11 @@ async function runAuthContract(worker) {
     const legacy=(await import(pathToFileURL(legacyPath).href)).default;
     const current=(await import(pathToFileURL(bundled).href)).default;
     const rows=[];
+    let meSummary;
     for(const scenario of scenarios){
       const responses=[],logs=[],telemetry=[];
-      const baseline=publicBaseline[scenario.name] || healthRumBaseline[scenario.name] || (scenario.name === 'auth logout' ? logoutBaseline : undefined);
+      const baseline=publicBaseline[scenario.name] || healthRumBaseline[scenario.name] || (scenario.name === 'auth logout' ? logoutBaseline : undefined)
+        || (scenario.name === 'me' ? meBaseline.summary : undefined);
       for(const worker of baseline?[current]:[legacy,current]){
         const state=setup(),cache=new Map(),workerLogs=[];
         globalThis.caches={default:{match:async r=>cache.get(r.url)?.clone(),put:async(r,res)=>cache.set(r.url,res.clone())}};
@@ -401,6 +512,7 @@ async function runAuthContract(worker) {
         assert.deepEqual(logs[1],logs[0],scenario.name+' logs');
         assert.deepEqual(telemetry[1],telemetry[0],scenario.name+' telemetry');
       }
+      if (scenario.name === 'me') meSummary = { response: responses.at(-1), ...telemetry.at(-1) };
       rows.push({scenario:scenario.name,status:responses.at(-1).status,identical:true});
     }
     const auth = await runAuthContract(current);
@@ -409,6 +521,10 @@ async function runAuthContract(worker) {
       assert.deepEqual(seen, authBaseline[name], name + ' status/header/body, telemetry and credential effects');
       rows.push({ scenario: name, status: seen.requests[0].response.status, identical: true });
     }
+    const me = await runMeContract(current);
+    if (captureMe) fs.writeFileSync(meFixturePath, JSON.stringify({ summary: meSummary, requests: me }, null, 2) + '\n');
+    else assert.deepEqual(me, meBaseline.requests, 'me status/header/body and telemetry on baseline');
+    for (const [name, seen] of Object.entries(me)) rows.push({ scenario: name, status: seen.status, identical: true });
     console.log=original.log; console.error=original.error;
     console.log('T-117b/c entry contract selfcheck OK:',JSON.stringify(rows));
   }finally{globalThis.Date=original.Date;globalThis.fetch=original.fetch;globalThis.caches=original.caches;console.log=original.log;console.error=original.error;}
