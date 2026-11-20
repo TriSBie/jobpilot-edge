@@ -45,7 +45,7 @@ const rlKey = () => `cvsugrl:u1:${Math.floor(Date.now() / 86400000)}`;
 
 const good = { section: 'Experience', original: 'Built loyalty point services with Java and Spring Boot, processing events through Kafka.', suggested: 'Built Kafka event-driven loyalty point services in Java / Spring Boot.', reason: 'JD nhấn mạnh Kafka' };
 (async () => {
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const call = async (tok, pid, body) => {
     const r = await worker.fetch(new Request(`https://api.test/api/profiles/${pid}/cv-suggest`, { method: 'POST', headers: { Authorization: `Bearer ${tok}`, 'content-type': 'application/json' }, body: JSON.stringify(body) }), env, {});
     return { status: r.status, body: JSON.parse(await r.text()) };

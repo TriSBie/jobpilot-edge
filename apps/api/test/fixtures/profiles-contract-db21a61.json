@@ -1,0 +1,3598 @@
+{
+  "requests": {
+    "profiles original list": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[],\"level\":\"middle\",\"locations\":[\"Remote\"],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"Spring Boot\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"PostgreSQL\",\"weight\":3,\"source\":\"manual\"}]}]"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 3,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles owner list": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"other\",\"user_id\":\"owner\",\"name\":\"Other fixture\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}]"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 3,
+          "cache": "unknown",
+          "user_hash": "4c1029697ee358715d3a14a2add817c4b01651440de808371f78165ac90dc581"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other PATCH": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PATCH",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other POST/cv-text": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other POST/cv-suggest": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other POST/cv-file": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other POST/skills/confirm": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other POST/skills": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other DELETE/skills/Java": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other DELETE/cv": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles patch malformed arrays precede ownership": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_profile\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PATCH",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles create invalid array": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_profile\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles original invalid body": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_profile\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles create empty": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"profiles-fixture-1\",\"user_id\":\"u\",\"name\":\"Hồ sơ mới\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 201,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles create malformed JSON": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"profiles-fixture-2\",\"user_id\":\"u\",\"name\":\"Hồ sơ mới\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 201,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles create JSON null": {
+      "response": {
+        "status": 500,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"internal_error\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 500,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            500
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles create text/plain JSON": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"profiles-fixture-3\",\"user_id\":\"u\",\"name\":\"Plain fixture\",\"target_roles\":[\"Fixture role\"],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 201,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles patch raw encoded id": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"raw%2Fid\",\"user_id\":\"u\",\"name\":\"Raw ID fixture\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PATCH",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles patch enqueues rescore": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"Spring Boot\",\"weight\":5,\"source\":\"manual\"},{\"skill\":\"PostgreSQL\",\"weight\":3,\"source\":\"manual\"}],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PATCH",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 7,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv file header first": {
+      "response": {
+        "status": 413,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"file_too_large\",\"max_bytes\":5242880}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 413,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            413
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv text consent first": {
+      "response": {
+        "status": 403,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"cv_consent_required\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 403,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            403
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv file consent": {
+      "response": {
+        "status": 403,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"cv_consent_required\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 403,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            403
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest missing job": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"job_not_found\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest missing CV": {
+      "response": {
+        "status": 409,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"no_cv\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 409,
+          "ms": 0,
+          "d1_queries": 3,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            409
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv text too short": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"cv_text_too_short\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv text too long": {
+      "response": {
+        "status": 413,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"text_too_long\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 413,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            413
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv file oversized body": {
+      "response": {
+        "status": 413,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"file_too_large\",\"max_bytes\":5242880}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 413,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            413
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv file success": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"file_id\":\"profiles-fixture-4\",\"size_bytes\":3}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 3,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv text opt out": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"file_id\":\"profiles-fixture-5\",\"text_chars\":383,\"suggested_skills\":[{\"skill\":\"Java\",\"weight\":5,\"from_ai\":false,\"from_catalog\":true},{\"skill\":\"PostgreSQL\",\"weight\":5,\"from_ai\":false,\"from_catalog\":true}]}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 4,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest opt out": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"matched\":[\"Java\",\"Spring Boot\",\"PostgreSQL\"],\"missing\":[],\"skills_text\":\"Java, Spring Boot, PostgreSQL\",\"suggestions\":[],\"dropped\":0,\"ai_used\":false}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest query language": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"matched\":[\"Java\",\"Spring Boot\",\"PostgreSQL\"],\"missing\":[],\"skills_text\":\"Java, Spring Boot, PostgreSQL\",\"suggestions\":[],\"dropped\":0,\"ai_used\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest accept language cache": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"matched\":[\"Java\",\"Spring Boot\",\"PostgreSQL\"],\"missing\":[],\"skills_text\":\"Java, Spring Boot, PostgreSQL\",\"suggestions\":[],\"dropped\":0,\"ai_used\":true,\"cached\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest explicit language wins": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"matched\":[\"Java\",\"Spring Boot\",\"PostgreSQL\"],\"missing\":[],\"skills_text\":\"Java, Spring Boot, PostgreSQL\",\"suggestions\":[],\"dropped\":0,\"ai_used\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv suggest rate limit": {
+      "response": {
+        "status": 429,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"rate_limited\",\"retry_after\":58800}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 429,
+          "ms": 0,
+          "d1_queries": 5,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            429
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles cv delete success": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"ok\":true,\"deleted_files\":2}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 4,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skills confirm": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":4,\"source\":\"cv\"}],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill invalid": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_skill\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill save Kỹ năng / nền": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":4,\"source\":\"cv\"},{\"skill\":\"Kỹ năng / nền\",\"weight\":3,\"source\":\"manual\"}],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill delete Kỹ năng / nền": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":4,\"source\":\"cv\"}],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill save Percent%2F": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":4,\"source\":\"cv\"},{\"skill\":\"Percent%2F\",\"weight\":3,\"source\":\"manual\"}],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill delete Percent%2F": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":4,\"source\":\"cv\"}],\"rescore_queued\":true}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill malformed encoding": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_skill\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles skill decoded whitespace": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_skill\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 400,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous PUT/api/profiles": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PUT",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated PUT/api/profiles": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PUT",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous PATCH/api/profiles": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PATCH",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated PATCH/api/profiles": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PATCH",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous DELETE/api/profiles": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated DELETE/api/profiles": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "DELETE",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous HEAD/api/profiles": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "HEAD",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated HEAD/api/profiles": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "HEAD",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous GET/api/profiles/p": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated GET/api/profiles/p": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles/p\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous PUT/api/profiles/p": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PUT",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated PUT/api/profiles/p": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles/p\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "PUT",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous POST/api/profiles/p": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated POST/api/profiles/p": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles/p\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "POST",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback anonymous HEAD/api/profiles/p": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "HEAD",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles fallback authenticated HEAD/api/profiles/p": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "HEAD",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles GET anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles OPTIONS": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "OPTIONS",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles trailing slash": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/profiles/\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles upper case": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/Profiles\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 404,
+          "ms": 0,
+          "d1_queries": 1,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles other subpath": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 401,
+          "ms": 0,
+          "d1_queries": 0,
+          "cache": "unknown",
+          "user_hash": null
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles me fallback": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"user\":{\"id\":\"u\",\"email\":\"user@example.invalid\",\"name\":\"User\",\"is_owner\":false,\"consent_cv_at\":1793346000,\"ai_opt_out\":0,\"telegram_linked\":false,\"telegram_bot\":null,\"unread_count\":0,\"has_attention\":false,\"jobs_seen_at\":null},\"profiles\":[{\"id\":\"p\",\"user_id\":\"u\",\"name\":\"Backend\",\"target_roles\":[\"Different fixture role\"],\"level\":\"senior\",\"locations\":[\"Remote\"],\"salary_min\":25,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[{\"skill\":\"Java\",\"weight\":4,\"source\":\"cv\"}]},{\"id\":\"raw%2Fid\",\"user_id\":\"u\",\"name\":\"Raw ID fixture\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]},{\"id\":\"profiles-fixture-1\",\"user_id\":\"u\",\"name\":\"Hồ sơ mới\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]},{\"id\":\"profiles-fixture-2\",\"user_id\":\"u\",\"name\":\"Hồ sơ mới\",\"target_roles\":[],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]},{\"id\":\"profiles-fixture-3\",\"user_id\":\"u\",\"name\":\"Plain fixture\",\"target_roles\":[\"Fixture role\"],\"level\":null,\"locations\":[],\"salary_min\":null,\"cv_file_id\":null,\"public_slug\":null,\"is_active\":1,\"created_at\":1793346000,\"updated_at\":1793346000,\"skills\":[]}]}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 9,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "profiles Telegram fallback": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"configured\":false,\"bot_username\":null,\"status\":null,\"last_error\":null,\"checked_at\":null}"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 2,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    }
+  },
+  "effects": {
+    "profiles": [
+      {
+        "id": "other",
+        "user_id": "owner",
+        "name": "Other fixture",
+        "target_roles": "[]",
+        "level": null,
+        "locations": "[]",
+        "salary_min": null,
+        "cv_file_id": null,
+        "public_slug": null,
+        "is_active": 1,
+        "created_at": 1793346000,
+        "updated_at": 1793346000
+      },
+      {
+        "id": "p",
+        "user_id": "u",
+        "name": "Backend",
+        "target_roles": "[\"Different fixture role\"]",
+        "level": "senior",
+        "locations": "[\"Remote\"]",
+        "salary_min": 25,
+        "cv_file_id": null,
+        "public_slug": null,
+        "is_active": 1,
+        "created_at": 1793346000,
+        "updated_at": 1793346000
+      },
+      {
+        "id": "profiles-fixture-1",
+        "user_id": "u",
+        "name": "Hồ sơ mới",
+        "target_roles": "[]",
+        "level": null,
+        "locations": "[]",
+        "salary_min": null,
+        "cv_file_id": null,
+        "public_slug": null,
+        "is_active": 1,
+        "created_at": 1793346000,
+        "updated_at": 1793346000
+      },
+      {
+        "id": "profiles-fixture-2",
+        "user_id": "u",
+        "name": "Hồ sơ mới",
+        "target_roles": "[]",
+        "level": null,
+        "locations": "[]",
+        "salary_min": null,
+        "cv_file_id": null,
+        "public_slug": null,
+        "is_active": 1,
+        "created_at": 1793346000,
+        "updated_at": 1793346000
+      },
+      {
+        "id": "profiles-fixture-3",
+        "user_id": "u",
+        "name": "Plain fixture",
+        "target_roles": "[\"Fixture role\"]",
+        "level": null,
+        "locations": "[]",
+        "salary_min": null,
+        "cv_file_id": null,
+        "public_slug": null,
+        "is_active": 1,
+        "created_at": 1793346000,
+        "updated_at": 1793346000
+      },
+      {
+        "id": "raw%2Fid",
+        "user_id": "u",
+        "name": "Raw ID fixture",
+        "target_roles": "[]",
+        "level": null,
+        "locations": "[]",
+        "salary_min": null,
+        "cv_file_id": null,
+        "public_slug": null,
+        "is_active": 1,
+        "created_at": 1793346000,
+        "updated_at": 1793346000
+      }
+    ],
+    "skills": [
+      {
+        "profile_id": "p",
+        "skill": "Java",
+        "weight": 4,
+        "source": "cv"
+      }
+    ],
+    "files": [],
+    "r2": [
+      {
+        "put": "cv/u/p-original-1793346000000.pdf",
+        "size": 3,
+        "contentType": "application/pdf"
+      },
+      {
+        "put": "cv/u/p-1793346000000.txt",
+        "size": 383,
+        "contentType": "text/plain"
+      },
+      {
+        "delete": "cv/u/p-original-1793346000000.pdf"
+      },
+      {
+        "delete": "cv/u/p-1793346000000.txt"
+      }
+    ],
+    "kv": [
+      [
+        "session:tok",
+        "u"
+      ],
+      [
+        "session:owner",
+        "owner"
+      ],
+      [
+        "scankw:fixture role",
+        "1"
+      ],
+      [
+        "scankw:different fixture role",
+        "1"
+      ],
+      [
+        "cvsugrl:u:20756",
+        "15"
+      ],
+      [
+        "cvsug:p:job:profiles-fixture-5:vi",
+        "{\"suggestions\":[],\"dropped\":0}"
+      ],
+      [
+        "scankw:kỹ năng / nền",
+        "1"
+      ],
+      [
+        "scankw:percent%2f",
+        "1"
+      ]
+    ],
+    "scores": [
+      {
+        "kind": "rescore_profile",
+        "profileId": "raw%2Fid",
+        "v": 1793346000
+      },
+      {
+        "kind": "rescore_profile",
+        "profileId": "p",
+        "v": 1793346000
+      },
+      {
+        "kind": "rescore_profile",
+        "profileId": "p",
+        "v": 1793346000
+      },
+      {
+        "kind": "rescore_profile",
+        "profileId": "p",
+        "v": 1793346000
+      },
+      {
+        "kind": "rescore_profile",
+        "profileId": "p",
+        "v": 1793346000
+      },
+      {
+        "kind": "rescore_profile",
+        "profileId": "p",
+        "v": 1793346000
+      },
+      {
+        "kind": "rescore_profile",
+        "profileId": "p",
+        "v": 1793346000
+      }
+    ],
+    "scans": [
+      {
+        "kind": "ingest",
+        "sourceType": "itviec",
+        "keyword": "Fixture role"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "topdev",
+        "keyword": "Fixture role"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "itviec",
+        "keyword": "Different fixture role"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "topdev",
+        "keyword": "Different fixture role"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "itviec",
+        "keyword": "Kỹ năng / nền"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "topdev",
+        "keyword": "Kỹ năng / nền"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "itviec",
+        "keyword": "Percent%2F"
+      },
+      {
+        "kind": "ingest",
+        "sourceType": "topdev",
+        "keyword": "Percent%2F"
+      }
+    ],
+    "ai": [
+      "en",
+      "vi"
+    ]
+  }
+}

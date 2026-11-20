@@ -8,6 +8,8 @@ const { DatabaseSync } = require('node:sqlite');
 const publicBaseline = require('./fixtures/public-contract-df3db94.json');
 const healthRumBaseline = require('./fixtures/health-rum-contract-414ec0b.json');
 const authBaseline = require('./fixtures/auth-contract-ae7eb19.json');
+const profilesBaseline = require('./fixtures/profiles-contract-db21a61.json');
+const runProfilesContract = require('./fixtures/profiles-contract-runner.cjs');
 const meFixturePath = path.join(__dirname, 'fixtures/me-contract-4368aed.json');
 const captureMe = process.argv[4] === '--capture-me';
 const meBaseline = captureMe ? {} : require(meFixturePath);
@@ -450,7 +452,9 @@ async function runMeContract(worker) {
     for(const scenario of scenarios){
       const responses=[],logs=[],telemetry=[];
       const baseline=publicBaseline[scenario.name] || healthRumBaseline[scenario.name] || (scenario.name === 'auth logout' ? logoutBaseline : undefined)
-        || (scenario.name === 'me' ? meBaseline.summary : undefined);
+        || (scenario.name === 'me' ? meBaseline.summary : undefined)
+        || (scenario.name === 'profiles' ? profilesBaseline.requests['profiles original list'] : undefined)
+        || (scenario.name === 'invalid body' ? profilesBaseline.requests['profiles original invalid body'] : undefined);
       for(const worker of baseline?[current]:[legacy,current]){
         const state=setup(),cache=new Map(),workerLogs=[];
         globalThis.caches={default:{match:async r=>cache.get(r.url)?.clone(),put:async(r,res)=>cache.set(r.url,res.clone())}};
@@ -525,6 +529,9 @@ async function runMeContract(worker) {
     if (captureMe) fs.writeFileSync(meFixturePath, JSON.stringify({ summary: meSummary, requests: me }, null, 2) + '\n');
     else assert.deepEqual(me, meBaseline.requests, 'me status/header/body and telemetry on baseline');
     for (const [name, seen] of Object.entries(me)) rows.push({ scenario: name, status: seen.status, identical: true });
+    const profiles = await runProfilesContract(current, setup, fixed);
+    assert.deepEqual(profiles, profilesBaseline, 'profiles status/header/body, telemetry and D1/KV/R2/queue effects');
+    for (const [name, seen] of Object.entries(profiles.requests)) rows.push({ scenario: name, status: seen.response.status, identical: true });
     console.log=original.log; console.error=original.error;
     console.log('T-117b/c entry contract selfcheck OK:',JSON.stringify(rows));
   }finally{globalThis.Date=original.Date;globalThis.fetch=original.fetch;globalThis.caches=original.caches;console.log=original.log;console.error=original.error;}

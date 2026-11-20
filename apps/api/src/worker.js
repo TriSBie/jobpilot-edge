@@ -137,7 +137,7 @@ export const isOwner = (env, u) => !!env.OWNER_EMAIL && u.email === env.OWNER_EM
 export const cleanRef = (v) => { const r = String(v ?? "").toLowerCase(); return /^[a-z0-9_-]{1,40}$/.test(r) ? r : null; };
 export const uid = () => crypto.randomUUID();
 // Cột JSON mảng trong DB: hỏng hoặc không phải mảng → null (một dòng sai không được làm chết cả lô/route).
-const jsonArr = (v) => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : null; } catch { return null; } };
+export const jsonArr = (v) => { try { const a = JSON.parse(v || "[]"); return Array.isArray(a) ? a : null; } catch { return null; } };
 export async function sha256hex(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -241,13 +241,13 @@ export async function getUser(request, env) {
 
 // locations/target_roles phải là mảng chuỗi ngắn: một dòng sai từng làm cả lô chấm điểm vào DLQ.
 const strArr = (v) => Array.isArray(v) && v.length <= 20 && v.every((x) => typeof x === "string" && x.length <= 80);
-const badProfileArrays = (b) => [b.locations, b.target_roles].some((v) => v != null && !strArr(v));
+export const badProfileArrays = (b) => [b.locations, b.target_roles].some((v) => v != null && !strArr(v));
 async function ownsProfile(env, user, profileId) {
   if (!profileId) return false;
   return !!(await env.DB.prepare("SELECT id FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first());
 }
 
-async function enqueueProfileRescore(env, profileId) {
+export async function enqueueProfileRescore(env, profileId) {
   try {
     // T-50: kèm phiên bản hồ sơ (updated_at); scoreBatch bỏ lượt cũ hơn bản hiện tại.
     const row = await env.DB.prepare("SELECT updated_at FROM profiles WHERE id = ?").bind(profileId).first();
@@ -272,8 +272,8 @@ export async function profileWithSkills(env, profile) {
   };
 }
 
-const CV_MAX_BYTES = 5242880, CV_MAX_CHARS = 200000; // T-16a
-async function handleCvText(request, env, user, profileId) {
+export const CV_MAX_BYTES = 5242880, CV_MAX_CHARS = 200000; // T-16a
+export async function handleCvText(request, env, user, profileId) {
   const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?")
     .bind(profileId, user.id).first();
   if (!profile) return json({ error: "profile_not_found" }, 404);
@@ -353,7 +353,7 @@ async function aiCvSuggest(env, cvText, jd, matched, missing, lang) {
   if (!parsed || !Array.isArray(parsed.suggestions)) throw new Error("bad_ai_json");
   return parsed.suggestions;
 }
-async function handleCvSuggest(request, env, user, profileId, lang) {
+export async function handleCvSuggest(request, env, user, profileId, lang) {
   const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(profileId, user.id).first();
   if (!profile) return json({ error: "profile_not_found" }, 404);
   const b = await readBody(request);
@@ -401,7 +401,7 @@ async function handleCvSuggest(request, env, user, profileId, lang) {
 // ---------------- privacy (T-62 + T-24) ----------------
 export const DELETE_GRACE = 7 * 86400;
 // Xoá mọi file CV của hồ sơ (text đã trích + PDF gốc đều có key cv/<user>/<profile>-...), gợi ý KV và cv_file_id.
-async function deleteProfileCv(env, profile) {
+export async function deleteProfileCv(env, profile) {
   // instr thay LIKE: mẫu dài hơn 50 ký tự vượt SQLITE_MAX_LIKE_PATTERN_LENGTH của D1
   const prefix = `cv/${profile.user_id}/${profile.id}-`;
   const { results: files } = await env.DB.prepare("SELECT id, r2_key FROM files WHERE user_id = ? AND instr(r2_key, ?) = 1")
@@ -1318,7 +1318,7 @@ async function ingestKeywords(env) {
 }
 // T-87: hồ sơ mới/đổi vai trò/kỹ năng → quét ngay từ khoá của hồ sơ đó (cùng cách suy ra như ingestKeywords),
 // bỏ từ khoá nền, tối đa 3, mỗi từ khoá 1 lần/6 giờ (KV) để lưu liên tục không dồn queue. Không bao giờ ném lỗi.
-async function enqueueProfileScan(env, profileId) {
+export async function enqueueProfileScan(env, profileId) {
   try {
     const r = await env.DB.prepare(
       "SELECT p.target_roles, (SELECT json_group_array(skill) FROM (SELECT skill FROM profile_skills WHERE profile_id = p.id ORDER BY weight DESC, skill LIMIT 2)) AS top FROM profiles p WHERE p.id = ? AND p.is_active = 1"
@@ -1953,110 +1953,6 @@ export const legacyHandlers = {
     }
     if (path.startsWith("/api/admin/")) { const r = await adminCrm(env, request, url, path, lang); if (r) return r; }
 
-    // --- profiles ---
-    if (path === "/api/profiles" && request.method === "GET") {
-      const { results } = await env.DB.prepare("SELECT * FROM profiles WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
-      const out = [];
-      for (const p of results) out.push(await profileWithSkills(env, p));
-      return json(out);
-    }
-    if (path === "/api/profiles" && request.method === "POST") {
-      const b = await readBody(request);
-      if (badProfileArrays(b)) return json({ error: "invalid_profile" }, 400);
-      const id = uid();
-      await env.DB.prepare(
-        "INSERT INTO profiles (id, user_id, name, target_roles, level, locations, salary_min, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)"
-      ).bind(id, user.id, b.name || "Hồ sơ mới", JSON.stringify(b.target_roles || []), b.level || null,
-        JSON.stringify(b.locations || []), b.salary_min || null, now(), now()).run();
-      const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(id).first();
-      await enqueueProfileScan(env, id);
-      return json(await profileWithSkills(env, p), 201);
-    }
-    const profMatch = path.match(/^\/api\/profiles\/([^/]+)$/);
-    if (profMatch && request.method === "PATCH") {
-      const b = await readBody(request);
-      if (badProfileArrays(b)) return json({ error: "invalid_profile" }, 400);
-      const p = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(profMatch[1], user.id).first();
-      if (!p) return json({ error: "profile_not_found" }, 404);
-      await env.DB.prepare(
-        "UPDATE profiles SET name = ?, target_roles = ?, level = ?, locations = ?, salary_min = ?, updated_at = ? WHERE id = ?"
-      ).bind(b.name ?? p.name, JSON.stringify(b.target_roles ?? (jsonArr(p.target_roles) || [])),
-        "level" in b ? (b.level || null) : p.level, JSON.stringify(b.locations ?? (jsonArr(p.locations) || [])),
-        "salary_min" in b ? (b.salary_min || null) : p.salary_min, now(), p.id).run();
-      // Level/locations đổi → fit đổi → chấm lại toàn bộ job cho khớp điểm lưu trữ.
-      const rescoreQueued = await enqueueProfileRescore(env, p.id);
-      if ("target_roles" in b) await enqueueProfileScan(env, p.id);
-      const upd = await env.DB.prepare("SELECT * FROM profiles WHERE id = ?").bind(p.id).first();
-      return json({ ...(await profileWithSkills(env, upd)), rescore_queued: rescoreQueued });
-    }
-    const cvMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-text$/);
-    if (cvMatch && request.method === "POST") return handleCvText(request, env, user, cvMatch[1]);
-    const sugMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-suggest$/);
-    if (sugMatch && request.method === "POST") return handleCvSuggest(request, env, user, sugMatch[1], lang);
-    const cvFileMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv-file$/);
-    if (cvFileMatch && request.method === "POST") {
-      if (+request.headers.get("content-length") > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413);
-      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvFileMatch[1], user.id).first();
-      if (!profile) return json({ error: "profile_not_found" }, 404);
-      if (!user.consent_cv_at) return json({ error: "cv_consent_required" }, 403);
-      const buf = await request.arrayBuffer();
-      if (buf.byteLength > CV_MAX_BYTES) return json({ error: "file_too_large", max_bytes: CV_MAX_BYTES }, 413); // client có thể bỏ header
-      const filename = request.headers.get("x-filename") || "cv.pdf";
-      const r2Key = `cv/${user.id}/${profile.id}-original-${Date.now()}.pdf`;
-      await env.FILES.put(r2Key, buf, { httpMetadata: { contentType: "application/pdf" } });
-      const fileId = uid();
-      await env.DB.prepare("INSERT INTO files (id, user_id, r2_key, kind, filename, size_bytes, created_at) VALUES (?, ?, ?, 'cv', ?, ?, ?)")
-        .bind(fileId, user.id, r2Key, filename, buf.byteLength, now()).run();
-      return json({ file_id: fileId, size_bytes: buf.byteLength });
-    }
-    const skillsMatch = path.match(/^\/api\/profiles\/([^/]+)\/skills\/confirm$/);
-    if (skillsMatch && request.method === "POST") {
-      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(skillsMatch[1], user.id).first();
-      if (!profile) return json({ error: "profile_not_found" }, 404);
-      const b = await readBody(request);
-      const skills = Array.isArray(b.skills) ? b.skills : [];
-      const stmts = [env.DB.prepare("DELETE FROM profile_skills WHERE profile_id = ?").bind(profile.id)];
-      for (const s of skills) {
-        if (!s.skill) continue;
-        stmts.push(env.DB.prepare("INSERT INTO profile_skills (profile_id, skill, weight, source) VALUES (?, ?, ?, ?)")
-          .bind(profile.id, canonSkill(String(s.skill)), Math.min(5, Math.max(1, s.weight || 3)), s.source || "cv"));
-      }
-      stmts.push(env.DB.prepare("UPDATE profiles SET updated_at = ? WHERE id = ?").bind(now(), profile.id)); // T-50: đổi kỹ năng = phiên bản mới
-      await env.DB.batch(stmts);
-      // chấm lại toàn bộ job hiện có cho profile này
-      const rescoreQueued = await enqueueProfileRescore(env, profile.id);
-      await enqueueProfileScan(env, profile.id);
-      return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
-    }
-    // Sửa từng kỹ năng (thêm/đổi trọng số/xoá): không ghi đè cả danh sách, nên client giữ bản cũ cũng không làm mất kỹ năng khác.
-    const oneSkill = path.match(/^\/api\/profiles\/([^/]+)\/skills(?:\/([^/]+))?$/);
-    if (oneSkill && (request.method === "POST" && !oneSkill[2] || request.method === "DELETE" && oneSkill[2])) {
-      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(oneSkill[1], user.id).first();
-      if (!profile) return json({ error: "profile_not_found" }, 404);
-      let stmts;
-      if (request.method === "POST") {
-        const b = await readBody(request);
-        const skill = typeof b?.skill === "string" ? canonSkill(b.skill) : "";
-        if (!skill || skill.length > 100) return json({ error: "invalid_skill" }, 400);
-        const weight = Math.min(5, Math.max(1, Math.round(Number(b.weight)) || 3));
-        stmts = [ // PK (profile_id, skill) phân biệt hoa thường: bỏ bản khác hoa thường trước (client cũ cũng lọc như vậy)
-          env.DB.prepare("DELETE FROM profile_skills WHERE profile_id = ? AND lower(skill) = lower(?) AND skill <> ?").bind(profile.id, skill, skill),
-          env.DB.prepare("INSERT INTO profile_skills (profile_id, skill, weight, source) VALUES (?, ?, ?, 'manual') ON CONFLICT(profile_id, skill) DO UPDATE SET weight = excluded.weight")
-            .bind(profile.id, skill, weight),
-        ];
-      } else {
-        let skill = "";
-        try { skill = decodeURIComponent(oneSkill[2]).trim(); } catch (_) { /* %xx hỏng → 400 */ }
-        if (!skill) return json({ error: "invalid_skill" }, 400);
-        stmts = [env.DB.prepare("DELETE FROM profile_skills WHERE profile_id = ? AND skill = ?").bind(profile.id, skill)];
-      }
-      stmts.push(env.DB.prepare("UPDATE profiles SET updated_at = ? WHERE id = ?").bind(now(), profile.id)); // T-50
-      await env.DB.batch(stmts);
-      const rescoreQueued = await enqueueProfileRescore(env, profile.id);
-      await enqueueProfileScan(env, profile.id);
-      return json({ ...(await profileWithSkills(env, profile)), rescore_queued: rescoreQueued });
-    }
-
     // --- jobs ---
     if (path === "/api/jobs" && request.method === "GET") {
       const profileId = url.searchParams.get("profile_id");
@@ -2455,13 +2351,6 @@ export const legacyHandlers = {
       await env.DB.prepare("UPDATE users SET telegram_chat_id = NULL, telegram_link_code = NULL WHERE id = ?").bind(user.id).run();
       return json({ ok: true });
     }
-    const cvDelMatch = path.match(/^\/api\/profiles\/([^/]+)\/cv$/);
-    if (cvDelMatch && request.method === "DELETE") {
-      const profile = await env.DB.prepare("SELECT * FROM profiles WHERE id = ? AND user_id = ?").bind(cvDelMatch[1], user.id).first();
-      if (!profile) return json({ error: "profile_not_found" }, 404);
-      return json({ ok: true, deleted_files: await deleteProfileCv(env, profile) });
-    }
-
     // --- ingest admin + digest ---
     if (path === "/api/admin/jd/enrich" && request.method === "POST") {
       const b = await readBody(request);

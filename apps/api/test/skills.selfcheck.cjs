@@ -27,7 +27,7 @@ for (const u of ['u1', 'u2']) {
 const skills = (p = 'pu1') => db.prepare('SELECT skill, weight, source FROM profile_skills WHERE profile_id = ? ORDER BY skill').all(p).map((r) => ({ ...r }));
 
 (async () => {
-  const worker = (await import(pathToFileURL(workerPath).href)).default;
+  const worker = (await import(pathToFileURL(path.join(path.dirname(workerPath), 'index.ts')).href)).default;
   const call = async (method, p, body, tok = 'tok-u1') => {
     const r = await worker.fetch(new Request('https://api.test' + p, { method, headers: { Authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) }), env, {});
     return { status: r.status, body: JSON.parse(await r.text()) };

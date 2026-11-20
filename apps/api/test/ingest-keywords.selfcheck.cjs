@@ -4,7 +4,7 @@ const fs = require("fs"), assert = require("assert");
 const src = fs.readFileSync(process.argv[2] || "apps/api/src/worker.js", "utf8");
 const cut = (from, to) => { const a = src.indexOf(from), b = src.indexOf(to, a); assert(a >= 0 && b > a, from); return src.slice(a, b); };
 const code = cut("const jsonArr", "\n") + "\n" + cut("const DEFAULT_KEYWORDS", "async function ensureSources") + "\nreturn { DEFAULT_KEYWORDS, ingestKeywords };";
-const m = new Function(code)();
+const m = new Function(code.replace(/^export /gm, ""))();
 const db = (rows) => ({ DB: { prepare: () => ({ all: async () => { if (rows instanceof Error) throw rows; return { results: rows }; } }) } });
 (async () => {
   const kws = await m.ingestKeywords(db([

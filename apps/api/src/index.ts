@@ -4,6 +4,9 @@ import { observe, type AppEnv } from './infra/observe.ts';
 import { changePassword, loginOrRestore, logout, register, resetPassword, setPassword } from './routes/auth.ts';
 import { handleHealth } from './routes/health.ts';
 import { deleteMe, exportMe, getMe, patchMe, recordConsent } from './routes/me.ts';
+import {
+  confirmSkills, createProfile, deleteCv, getProfiles, handleCvText, patchProfile, suggestCv, updateSkill, uploadCvFile,
+} from './routes/profiles.ts';
 import { servePublic, validateTry } from './routes/public.ts';
 import { handleRum } from './routes/rum.ts';
 import { json, legacyHandlers } from './worker.js';
@@ -42,6 +45,18 @@ app.patch('/api/me', requireUser, (c) => patchMe(c.req.raw, c.var.observedEnv, c
 app.delete('/api/me', requireUser, (c) => deleteMe(c.req.raw, c.var.observedEnv, c.var.user));
 app.post('/api/me/consent', requireUser, (c) => recordConsent(c.req.raw, c.var.observedEnv, c.var.user));
 app.get('/api/me/export', publicGetOnly, requireUser, (c) => exportMe(c.var.observedEnv, c.var.user));
+// Index dùng pathname thô; HonoRequest.param() sẽ giải mã percent-encoding.
+const rawProfileId = (path: string) => path.split('/')[3];
+app.get('/api/profiles', publicGetOnly, requireUser, (c) => getProfiles(c.var.observedEnv, c.var.user));
+app.post('/api/profiles', requireUser, (c) => createProfile(c.req.raw, c.var.observedEnv, c.var.user));
+app.patch('/api/profiles/:id', requireUser, (c) => patchProfile(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path)));
+app.post('/api/profiles/:id/cv-text', requireUser, (c) => handleCvText(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path)));
+app.post('/api/profiles/:id/cv-suggest', requireUser, (c) => suggestCv(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path)));
+app.post('/api/profiles/:id/cv-file', requireUser, (c) => uploadCvFile(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path)));
+app.post('/api/profiles/:id/skills/confirm', requireUser, (c) => confirmSkills(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path)));
+app.post('/api/profiles/:id/skills', requireUser, (c) => updateSkill(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path), ''));
+app.delete('/api/profiles/:id/skills/:skill', requireUser, (c) => updateSkill(c.req.raw, c.var.observedEnv, c.var.user, rawProfileId(c.req.path), c.req.path.split('/')[5]));
+app.delete('/api/profiles/:id/cv', requireUser, (c) => deleteCv(c.var.observedEnv, c.var.user, rawProfileId(c.req.path)));
 app.all('*', fallback);
 
 export { UserHub } from './worker.js';
