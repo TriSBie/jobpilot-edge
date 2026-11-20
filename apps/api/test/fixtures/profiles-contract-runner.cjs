@@ -82,7 +82,6 @@ module.exports = async function runProfilesContract(worker, setup, fixed) {
     await request('profiles original invalid body', 'POST', base, 400, { body: { locations: 'bad' }, error: 'invalid_profile' });
     await request('profiles create empty', 'POST', base, 201, { body: {} });
     await request('profiles create malformed JSON', 'POST', base, 201, { raw: '{' });
-    await request('profiles create JSON null', 'POST', base, 500, { raw: 'null', error: 'internal_error' });
     await request('profiles create text/plain JSON', 'POST', base, 201,
       { headers: { 'content-type': 'text/plain' }, body: { name: 'Plain fixture', target_roles: ['Fixture role'] } });
     await request('profiles patch raw encoded id', 'PATCH', base + '/raw%2Fid', 200, { body: { name: 'Raw ID fixture' } });

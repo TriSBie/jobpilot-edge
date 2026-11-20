@@ -9,6 +9,8 @@ const publicBaseline = require('./fixtures/public-contract-df3db94.json');
 const healthRumBaseline = require('./fixtures/health-rum-contract-414ec0b.json');
 const authBaseline = require('./fixtures/auth-contract-ae7eb19.json');
 const profilesBaseline = require('./fixtures/profiles-contract-db21a61.json');
+// T-121: thay snapshot lỗi 500 bằng read-body.selfcheck, giữ fixture lịch sử nguyên bản.
+delete profilesBaseline.requests['profiles create JSON null'];
 const runProfilesContract = require('./fixtures/profiles-contract-runner.cjs');
 const meFixturePath = path.join(__dirname, 'fixtures/me-contract-4368aed.json');
 const captureMe = process.argv[4] === '--capture-me';
@@ -144,7 +146,7 @@ const authScenarios = [
   authCase('login', 'success', 200, { body: loginBody, issue: 'existing', attempts: 2, hashes: 1, count: 0 }),
   authCase('login', 'deleted account', 403, { body: loginBody, deletedDays: 1, error: 'account_deleted', hashes: 1, count: 0 }),
   authCase('login', 'malformed JSON', 403, { rawBody: 'not json', error: 'turnstile_failed' }),
-  authCase('login', 'explicit JSON null', 500, { body: null, error: 'internal_error' }),
+  authCase('login', 'explicit JSON null', 403, { body: null, error: 'turnstile_failed' }),
   authCase('restore', 'account not deleted', 400, { body: loginBody, error: 'not_deleted', hashes: 1, count: 0 }),
   authCase('restore', 'expired by one second', 410, { body: loginBody, deletedDays: 7, expiredBy: 1, error: 'restore_expired', hashes: 1, count: 0 }),
   authCase('restore', 'success at exact seven days', 200, { body: loginBody, deletedDays: 7, issue: 'existing', hashes: 1, count: 0 }),
@@ -522,7 +524,10 @@ async function runMeContract(worker) {
     const auth = await runAuthContract(current);
     assert.deepEqual(Object.keys(auth), Object.keys(authBaseline), 'auth baseline scenario list');
     for (const [name, seen] of Object.entries(auth)) {
-      assert.deepEqual(seen, authBaseline[name], name + ' status/header/body, telemetry and credential effects');
+      const expected = name === 'auth login explicit JSON null'
+        ? authBaseline['auth login malformed JSON']
+        : authBaseline[name];
+      assert.deepEqual(seen, expected, name + ' status/header/body, telemetry and credential effects');
       rows.push({ scenario: name, status: seen.requests[0].response.status, identical: true });
     }
     const me = await runMeContract(current);

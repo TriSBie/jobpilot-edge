@@ -148,7 +148,10 @@ function randomToken() {
   return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 export async function readBody(request) {
-  try { return await request.json(); } catch (_) { return {}; }
+  try {
+    const body = await request.json();
+    return body !== null && typeof body === "object" && !Array.isArray(body) ? body : {};
+  } catch (_) { return {}; }
 }
 
 // ---------------- skills catalog (đồng bộ với Job Watcher đã kiểm chứng) ----------------
@@ -2254,7 +2257,8 @@ export const legacyHandlers = {
         await env.DB.prepare("DELETE FROM interviews WHERE id = ?").bind(iv.id).run();
         return json({ ok: true });
       }
-      const { error, f } = ivFields(await readBody(request));
+      // T-121: PATCH interview giữ 400 cho JSON hợp lệ nhưng không phải object.
+      const { error, f } = ivFields(await request.json().catch(() => ({})));
       if (error) return json({ error }, 400);
       const keys = Object.keys(f); // chỉ khoá đã qua ivFields (whitelist), an toàn để ghép tên cột
       const row = keys.length
