@@ -1,9 +1,10 @@
 // Chạy: node apps/api/test/digest.selfcheck.cjs apps/api/src/worker.js
 // Nạp worker.js, giả DB tối thiểu: kiểm tin phù hợp trong digest, GET không ghi, stage sai → 400.
-const fs = require('fs'), assert = require('assert');
+const fs = require('fs'), assert = require('assert'), path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const workerPath = process.argv[2] || 'apps/api/src/worker.js';
-const src = fs.readFileSync(workerPath, 'utf8').replace(/\r\n/g, '\n');
+const src = [workerPath, path.join(path.dirname(workerPath), 'routes/applications.ts')]
+  .map(file => fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n')).join('\n');
 (async () => {
   const W = await import(pathToFileURL(workerPath).href);
   const t = Math.floor(Date.now() / 1000);

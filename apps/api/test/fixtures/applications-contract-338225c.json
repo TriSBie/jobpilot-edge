@@ -1,0 +1,6054 @@
+{
+  "smoke": {
+    "applications": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793346000,\"job\":{\"id\":\"job\",\"title\":\"Java Backend\",\"company\":\"Example\",\"location\":null,\"source_url\":\"https://itviec.com/it-jobs/example\"},\"match\":{\"final_score\":90,\"tier\":\"strong\"},\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":0}}]"
+      },
+      "logs": [
+        {
+          "route": "/api/applications",
+          "method": "GET",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 6,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    },
+    "interviews": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[]"
+      },
+      "logs": [
+        {
+          "route": "/api/other",
+          "method": "GET",
+          "status": 200,
+          "ms": 0,
+          "d1_queries": 3,
+          "cache": "unknown",
+          "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+        }
+      ],
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "cacheKeys": []
+    }
+  },
+  "requests": {
+    "list legacy array": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793346000,\"job\":{\"id\":\"job\",\"title\":\"Java Backend\",\"company\":\"Example\",\"location\":null,\"source_url\":\"https://itviec.com/it-jobs/example\"},\"match\":{\"final_score\":90,\"tier\":\"strong\"},\"next_interview\":{\"id\":\"iv-soon\",\"kind\":\"hr\",\"round_label\":\"iv-soon\",\"scheduled_at\":1793346100},\"rounds\":{\"done\":1,\"total\":4}},{\"id\":\"offer-app\",\"profile_id\":\"p\",\"job_id\":\"offer-job\",\"stage\":\"offer\",\"note\":null,\"applied_at\":1793345100,\"next_follow_up_at\":null,\"updated_at\":1793345500,\"job\":{\"id\":\"offer-job\",\"title\":\"offer-job\",\"company\":\"Fixture\",\"location\":null,\"source_url\":\"https://fixture.invalid/offer-job\"},\"match\":null,\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":0}},{\"id\":\"raw%2Fapp\",\"profile_id\":\"p\",\"job_id\":\"raw-job\",\"stage\":\"new\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793345400,\"job\":{\"id\":\"raw-job\",\"title\":\"raw-job\",\"company\":\"Fixture\",\"location\":null,\"source_url\":\"https://fixture.invalid/raw-job\"},\"match\":null,\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":1}}]"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 7,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "users": {
+          "changed": [
+            {
+              "id": "u",
+              "last_active_day": 20756
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "list opt-in stats": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"items\":[{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793346000,\"job\":{\"id\":\"job\",\"title\":\"Java Backend\",\"company\":\"Example\",\"location\":null,\"source_url\":\"https://itviec.com/it-jobs/example\"},\"match\":{\"final_score\":90,\"tier\":\"strong\"},\"next_interview\":{\"id\":\"iv-soon\",\"kind\":\"hr\",\"round_label\":\"iv-soon\",\"scheduled_at\":1793346100},\"rounds\":{\"done\":1,\"total\":4}},{\"id\":\"offer-app\",\"profile_id\":\"p\",\"job_id\":\"offer-job\",\"stage\":\"offer\",\"note\":null,\"applied_at\":1793345100,\"next_follow_up_at\":null,\"updated_at\":1793345500,\"job\":{\"id\":\"offer-job\",\"title\":\"offer-job\",\"company\":\"Fixture\",\"location\":null,\"source_url\":\"https://fixture.invalid/offer-job\"},\"match\":null,\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":0}},{\"id\":\"raw%2Fapp\",\"profile_id\":\"p\",\"job_id\":\"raw-job\",\"stage\":\"new\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793345400,\"job\":{\"id\":\"raw-job\",\"title\":\"raw-job\",\"company\":\"Fixture\",\"location\":null,\"source_url\":\"https://fixture.invalid/raw-job\"},\"match\":null,\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":1}}],\"stats\":{\"applied\":0,\"interview\":0,\"offer\":1,\"rejected\":0,\"silent_14d\":0,\"prev\":{\"applied\":0,\"interview\":0,\"offer\":0,\"rejected\":0}}}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 6,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "list stats exact flag": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793346000,\"job\":{\"id\":\"job\",\"title\":\"Java Backend\",\"company\":\"Example\",\"location\":null,\"source_url\":\"https://itviec.com/it-jobs/example\"},\"match\":{\"final_score\":90,\"tier\":\"strong\"},\"next_interview\":{\"id\":\"iv-soon\",\"kind\":\"hr\",\"round_label\":\"iv-soon\",\"scheduled_at\":1793346100},\"rounds\":{\"done\":1,\"total\":4}},{\"id\":\"offer-app\",\"profile_id\":\"p\",\"job_id\":\"offer-job\",\"stage\":\"offer\",\"note\":null,\"applied_at\":1793345100,\"next_follow_up_at\":null,\"updated_at\":1793345500,\"job\":{\"id\":\"offer-job\",\"title\":\"offer-job\",\"company\":\"Fixture\",\"location\":null,\"source_url\":\"https://fixture.invalid/offer-job\"},\"match\":null,\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":0}},{\"id\":\"raw%2Fapp\",\"profile_id\":\"p\",\"job_id\":\"raw-job\",\"stage\":\"new\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"updated_at\":1793345400,\"job\":{\"id\":\"raw-job\",\"title\":\"raw-job\",\"company\":\"Fixture\",\"location\":null,\"source_url\":\"https://fixture.invalid/raw-job\"},\"match\":null,\"next_interview\":null,\"rounds\":{\"done\":0,\"total\":1}}]"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 6,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "list empty profile": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"items\":[],\"stats\":{\"applied\":0,\"interview\":0,\"offer\":0,\"rejected\":0,\"silent_14d\":0,\"prev\":{\"applied\":0,\"interview\":0,\"offer\":0,\"rejected\":0}}}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 6,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "list missing profile query": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_id_required\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "list other profile": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "GET /api/applications?profile_id=p no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "GET /api/applications?profile_id=p invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "POST /api/applications no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "POST /api/applications invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "POST /api/applications/quick no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "POST /api/applications/quick invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PATCH /api/applications/app no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PATCH /api/applications/app invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "GET /api/applications/app/interviews no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "GET /api/applications/app/interviews invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "POST /api/applications/app/interviews no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "POST /api/applications/app/interviews invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PATCH /api/interviews/iv-soon no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PATCH /api/interviews/iv-soon invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "DELETE /api/interviews/iv-soon no session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "DELETE /api/interviews/iv-soon invalid session": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "OPTIONS /api/applications?profile_id=p": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications?profile_id=p anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications?profile_id=p": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/applications\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications?profile_id=p anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications?profile_id=p": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "OPTIONS /api/applications": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/applications\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "OPTIONS /api/applications/quick": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications/quick anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications/quick": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/applications/quick\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications/quick anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications/quick": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "OPTIONS /api/applications/app": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications/app anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications/app": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/applications/app\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications/app anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications/app": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "OPTIONS /api/applications/app/interviews": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications/app/interviews anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/applications/app/interviews": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/applications/app/interviews\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications/app/interviews anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/applications/app/interviews": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "OPTIONS /api/interviews/iv-soon": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "OPTIONS",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/interviews/iv-soon anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"unauthorized\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PUT",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "PUT /api/interviews/iv-soon": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/interviews/iv-soon\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PUT",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/interviews/iv-soon anonymous": {
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 401,
+        "ms": 0,
+        "d1_queries": 0,
+        "cache": "unknown",
+        "user_hash": null
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            401
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "HEAD /api/interviews/iv-soon": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": ""
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "HEAD",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "no trailing slash alias": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/applications/\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "no encoded collection alias": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"not_found\",\"path\":\"/api/%61pplications\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other application patch": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"application_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other application interviews list": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"application_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other application interviews create": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"application_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other interview patch": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"interview_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other interview delete": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"interview_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other profile before stage": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "other profile before action": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "private job rejected": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"job_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "quick private job before action": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"job_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "create malformed JSON": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"profile_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 1,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "create stage before job": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_stage\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "create missing job": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"job_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "create default stage": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-1\",\"profile_id\":\"p\",\"job_id\":\"fresh\",\"stage\":\"new\",\"note\":\"first note\",\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 201,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "application-fixture-1",
+              "profile_id": "p",
+              "job_id": "fresh",
+              "stage": "new",
+              "note": "first note",
+              "applied_at": null,
+              "next_follow_up_at": null,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": null
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "create own private job": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-3\",\"profile_id\":\"p\",\"job_id\":\"private-a\",\"stage\":\"new\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 201,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "application-fixture-3",
+              "profile_id": "p",
+              "job_id": "private-a",
+              "stage": "new",
+              "note": null,
+              "applied_at": null,
+              "next_follow_up_at": null,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": null
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "upsert existing application": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"new\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications",
+        "method": "POST",
+        "status": 201,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "app",
+              "profile_id": "p",
+              "job_id": "job",
+              "stage": "new",
+              "note": null,
+              "applied_at": null,
+              "next_follow_up_at": null,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": "internal only"
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-6",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"saved\",\"to\":\"new\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "quick invalid action": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_action\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "quick open new": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-7\",\"profile_id\":\"p\",\"job_id\":\"quick-open\",\"stage\":\"saved\",\"note\":null,\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "application-fixture-7",
+              "profile_id": "p",
+              "job_id": "quick-open",
+              "stage": "saved",
+              "note": null,
+              "applied_at": null,
+              "next_follow_up_at": null,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": null
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-8",
+              "application_id": "application-fixture-7",
+              "type": "quick_apply_open",
+              "payload": "{}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "quick open preserves offer": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"offer-app\",\"profile_id\":\"p\",\"job_id\":\"offer-job\",\"stage\":\"offer\",\"note\":null,\"applied_at\":1793345100,\"next_follow_up_at\":null,\"created_at\":1793345000,\"updated_at\":1793345500}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-10",
+              "application_id": "offer-app",
+              "type": "quick_apply_open",
+              "payload": "{}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "quick applied new": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-11\",\"profile_id\":\"p\",\"job_id\":\"quick-new\",\"stage\":\"applied\",\"note\":null,\"applied_at\":1793346000,\"next_follow_up_at\":1793950800,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "application-fixture-11",
+              "profile_id": "p",
+              "job_id": "quick-new",
+              "stage": "applied",
+              "note": null,
+              "applied_at": 1793346000,
+              "next_follow_up_at": 1793950800,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": null
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-12",
+              "application_id": "application-fixture-11",
+              "type": "stage_changed",
+              "payload": "{\"from\":null,\"to\":\"applied\",\"via\":\"quick_apply\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "quick applied upgrades saved": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-7\",\"profile_id\":\"p\",\"job_id\":\"quick-open\",\"stage\":\"applied\",\"note\":null,\"applied_at\":1793346000,\"next_follow_up_at\":1793950800,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "application-fixture-7",
+              "profile_id": "p",
+              "job_id": "quick-open",
+              "stage": "applied",
+              "note": null,
+              "applied_at": 1793346000,
+              "next_follow_up_at": 1793950800,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": null
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-14",
+              "application_id": "application-fixture-7",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"saved\",\"to\":\"applied\",\"via\":\"quick_apply\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "quick applied preserves offer": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"offer-app\",\"profile_id\":\"p\",\"job_id\":\"offer-job\",\"stage\":\"offer\",\"note\":null,\"applied_at\":1793345100,\"next_follow_up_at\":null,\"created_at\":1793345000,\"updated_at\":1793345500}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "POST",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 4,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "patch ownership before stage": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"application_not_found\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "patch invalid stage": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_stage\"}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "patch raw id": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"raw%2Fapp\",\"profile_id\":\"p\",\"job_id\":\"raw-job\",\"stage\":\"new\",\"note\":\"raw path\",\"applied_at\":null,\"next_follow_up_at\":null,\"created_at\":1793345400,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "raw%2Fapp",
+              "profile_id": "p",
+              "job_id": "raw-job",
+              "stage": "new",
+              "note": "raw path",
+              "applied_at": null,
+              "next_follow_up_at": null,
+              "created_at": 1793345400,
+              "updated_at": 1793346000,
+              "admin_note": null
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-17",
+              "application_id": "raw%2Fapp",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"new\",\"to\":\"new\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "patch first applied": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"applied\",\"note\":\"note\",\"applied_at\":1793346000,\"next_follow_up_at\":1793346050,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "app",
+              "profile_id": "p",
+              "job_id": "job",
+              "stage": "applied",
+              "note": "note",
+              "applied_at": 1793346000,
+              "next_follow_up_at": 1793346050,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": "internal only"
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-18",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"new\",\"to\":\"applied\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "patch follow-up preserved": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"offer\",\"note\":\"note\",\"applied_at\":1793346000,\"next_follow_up_at\":1793346050,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "app",
+              "profile_id": "p",
+              "job_id": "job",
+              "stage": "offer",
+              "note": "note",
+              "applied_at": 1793346000,
+              "next_follow_up_at": 1793346050,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": "internal only"
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-19",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"applied\",\"to\":\"offer\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "patch clear follow-up": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"applied\",\"note\":\"note\",\"applied_at\":1793346000,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "app",
+              "profile_id": "p",
+              "job_id": "job",
+              "stage": "applied",
+              "note": "note",
+              "applied_at": 1793346000,
+              "next_follow_up_at": null,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": "internal only"
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-20",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"offer\",\"to\":\"applied\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "patch malformed JSON": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"applied\",\"note\":\"note\",\"applied_at\":1793346000,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-21",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"applied\",\"to\":\"applied\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "patch JSON null": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"app\",\"profile_id\":\"p\",\"job_id\":\"job\",\"stage\":\"applied\",\"note\":\"note\",\"applied_at\":1793346000,\"next_follow_up_at\":null,\"created_at\":1793346000,\"updated_at\":1793346000}"
+      },
+      "log": {
+        "route": "/api/applications/:id",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 5,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/applications/:id"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-22",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"applied\",\"to\":\"applied\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "interviews ordered": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"iv-past\",\"application_id\":\"app\",\"round_label\":\"iv-past\",\"scheduled_at\":1793345900,\"interviewer\":null,\"result\":\"pass\",\"note\":null,\"created_at\":1793345800,\"kind\":\"screen\",\"checklist\":[]},{\"id\":\"iv-soon\",\"application_id\":\"app\",\"round_label\":\"iv-soon\",\"scheduled_at\":1793346100,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793345850,\"kind\":\"hr\",\"checklist\":[]},{\"id\":\"iv-later\",\"application_id\":\"app\",\"round_label\":\"iv-later\",\"scheduled_at\":1793346300,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793345900,\"kind\":\"technical\",\"checklist\":[]},{\"id\":\"iv-unset\",\"application_id\":\"app\",\"round_label\":\"iv-unset\",\"scheduled_at\":0,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793345840,\"kind\":null,\"checklist\":[]}]"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interviews owned raw path": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "[{\"id\":\"raw%2Fiv\",\"application_id\":\"raw%2Fapp\",\"round_label\":\"raw%2Fiv\",\"scheduled_at\":0,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793345800,\"kind\":\"hr\",\"checklist\":[]}]"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "GET",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create ownership before kind": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"application_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create malformed JSON": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_kind\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create JSON null": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_kind\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create missing kind": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_kind\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create invalid kind": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_kind\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create invalid label": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_round_label\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create invalid note": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_note\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create invalid schedule": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_scheduled_at\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview create defaults": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-23\",\"application_id\":\"app\",\"round_label\":\"Phỏng vấn HR\",\"scheduled_at\":0,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793346000,\"kind\":\"hr\",\"checklist\":[{\"text\":\"Tìm hiểu văn hoá, sản phẩm và tin gần đây của công ty\",\"done\":false},{\"text\":\"Chuẩn bị ví dụ STAR về làm việc nhóm và xử lý bất đồng\",\"done\":false},{\"text\":\"Chốt mức lương mong muốn và ngày bắt đầu sớm nhất\",\"done\":false},{\"text\":\"Hỏi về đánh giá, đãi ngộ và các vòng tiếp theo\",\"done\":false}]}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 201,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "applications": {
+          "changed": [
+            {
+              "id": "app",
+              "profile_id": "p",
+              "job_id": "job",
+              "stage": "interview",
+              "note": "note",
+              "applied_at": 1793346000,
+              "next_follow_up_at": null,
+              "created_at": 1793346000,
+              "updated_at": 1793346000,
+              "admin_note": "internal only"
+            }
+          ],
+          "removed": []
+        },
+        "interviews": {
+          "changed": [
+            {
+              "id": "application-fixture-23",
+              "application_id": "app",
+              "round_label": "Phỏng vấn HR",
+              "scheduled_at": 0,
+              "interviewer": null,
+              "result": "pending",
+              "note": null,
+              "created_at": 1793346000,
+              "kind": "hr",
+              "checklist": "[{\"text\":\"Tìm hiểu văn hoá, sản phẩm và tin gần đây của công ty\",\"done\":false},{\"text\":\"Chuẩn bị ví dụ STAR về làm việc nhóm và xử lý bất đồng\",\"done\":false},{\"text\":\"Chốt mức lương mong muốn và ngày bắt đầu sớm nhất\",\"done\":false},{\"text\":\"Hỏi về đánh giá, đãi ngộ và các vòng tiếp theo\",\"done\":false}]"
+            }
+          ],
+          "removed": []
+        },
+        "events": {
+          "changed": [
+            {
+              "id": "application-fixture-24",
+              "application_id": "app",
+              "type": "stage_changed",
+              "payload": "{\"from\":\"applied\",\"to\":\"interview\",\"via\":\"interview_added\"}",
+              "created_at": 1793346000
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "interview create preserves offer": {
+      "response": {
+        "status": 201,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"application-fixture-25\",\"application_id\":\"offer-app\",\"round_label\":\"Offer\",\"scheduled_at\":0,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793346000,\"kind\":\"offer\",\"checklist\":[{\"text\":\"Kiểm tra lương gross/net, thưởng và phụ cấp\",\"done\":false},{\"text\":\"Xem bảo hiểm, ngày phép và thời gian thử việc\",\"done\":false},{\"text\":\"So sánh với offer khác và mức mong muốn\",\"done\":false},{\"text\":\"Hỏi rõ hạn trả lời và ngày bắt đầu\",\"done\":false}]}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "POST",
+        "status": 201,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            201
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "interviews": {
+          "changed": [
+            {
+              "id": "application-fixture-25",
+              "application_id": "offer-app",
+              "round_label": "Offer",
+              "scheduled_at": 0,
+              "interviewer": null,
+              "result": "pending",
+              "note": null,
+              "created_at": 1793346000,
+              "kind": "offer",
+              "checklist": "[{\"text\":\"Kiểm tra lương gross/net, thưởng và phụ cấp\",\"done\":false},{\"text\":\"Xem bảo hiểm, ngày phép và thời gian thử việc\",\"done\":false},{\"text\":\"So sánh với offer khác và mức mong muốn\",\"done\":false},{\"text\":\"Hỏi rõ hạn trả lời và ngày bắt đầu\",\"done\":false}]"
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "interview patch ownership before body": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"interview_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch non-object null": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_body\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch non-object []": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_body\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch non-object 5": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_body\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch non-object \"text\"": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_body\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch non-object true": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_body\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch invalid kind": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_kind\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch invalid round_label": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_round_label\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch invalid note": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_note\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch invalid scheduled_at": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_scheduled_at\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch invalid result": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_result\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch invalid checklist": {
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"invalid_checklist\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 400,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            400
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch malformed JSON": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"iv-soon\",\"application_id\":\"app\",\"round_label\":\"iv-soon\",\"scheduled_at\":1793346100,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793345850,\"kind\":\"hr\",\"checklist\":[]}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch ignores unknown columns": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"iv-soon\",\"application_id\":\"app\",\"round_label\":\"iv-soon\",\"scheduled_at\":1793346100,\"interviewer\":null,\"result\":\"pending\",\"note\":null,\"created_at\":1793345850,\"kind\":\"hr\",\"checklist\":[]}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    },
+    "interview patch allowed columns": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"iv-soon\",\"application_id\":\"app\",\"round_label\":\"Round\",\"scheduled_at\":0,\"interviewer\":null,\"result\":\"pass\",\"note\":null,\"created_at\":1793345850,\"kind\":\"technical\",\"checklist\":[{\"text\":\"Check\",\"done\":true}]}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "interviews": {
+          "changed": [
+            {
+              "id": "iv-soon",
+              "application_id": "app",
+              "round_label": "Round",
+              "scheduled_at": 0,
+              "interviewer": null,
+              "result": "pass",
+              "note": null,
+              "created_at": 1793345850,
+              "kind": "technical",
+              "checklist": "[{\"text\":\"Check\",\"done\":true}]"
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "interview patch raw id": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"id\":\"raw%2Fiv\",\"application_id\":\"raw%2Fapp\",\"round_label\":\"raw%2Fiv\",\"scheduled_at\":0,\"interviewer\":null,\"result\":\"pending\",\"note\":\"raw path\",\"created_at\":1793345800,\"kind\":\"hr\",\"checklist\":[]}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "PATCH",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "interviews": {
+          "changed": [
+            {
+              "id": "raw%2Fiv",
+              "application_id": "raw%2Fapp",
+              "round_label": "raw%2Fiv",
+              "scheduled_at": 0,
+              "interviewer": null,
+              "result": "pending",
+              "note": "raw path",
+              "created_at": 1793345800,
+              "kind": "hr",
+              "checklist": "[]"
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    "interview delete owned": {
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"ok\":true}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 200,
+        "ms": 0,
+        "d1_queries": 3,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            200
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {
+        "interviews": {
+          "changed": [],
+          "removed": [
+            "iv-soon"
+          ]
+        }
+      }
+    },
+    "interview delete missing": {
+      "response": {
+        "status": 404,
+        "headers": [
+          [
+            "access-control-allow-headers",
+            "authorization, content-type, accept-language"
+          ],
+          [
+            "access-control-allow-methods",
+            "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          ],
+          [
+            "access-control-allow-origin",
+            "*"
+          ],
+          [
+            "content-type",
+            "application/json"
+          ]
+        ],
+        "body": "{\"error\":\"interview_not_found\"}"
+      },
+      "log": {
+        "route": "/api/other",
+        "method": "DELETE",
+        "status": 404,
+        "ms": 0,
+        "d1_queries": 2,
+        "cache": "unknown",
+        "user_hash": "0bfe935e70c321c7ca3afc75ce0d0ca2f98b5422e008bb31c00c6d7f1f1c0ad6"
+      },
+      "points": [
+        {
+          "blobs": [
+            "request",
+            "/api/other"
+          ],
+          "doubles": [
+            0,
+            404
+          ],
+          "indexes": [
+            "request"
+          ]
+        }
+      ],
+      "effects": {}
+    }
+  }
+}

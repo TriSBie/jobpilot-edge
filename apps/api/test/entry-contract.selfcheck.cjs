@@ -12,6 +12,10 @@ const profilesBaseline = require('./fixtures/profiles-contract-db21a61.json');
 // T-121: thay snapshot lỗi 500 bằng read-body.selfcheck, giữ fixture lịch sử nguyên bản.
 delete profilesBaseline.requests['profiles create JSON null'];
 const runProfilesContract = require('./fixtures/profiles-contract-runner.cjs');
+const runApplicationsContract = require('./fixtures/applications-contract-runner.cjs');
+const applicationsFixturePath = path.join(__dirname, 'fixtures/applications-contract-338225c.json');
+const captureApplications = process.argv[4] === '--capture-applications';
+const applicationsBaseline = captureApplications ? null : require(applicationsFixturePath);
 const meFixturePath = path.join(__dirname, 'fixtures/me-contract-4368aed.json');
 const captureMe = process.argv[4] === '--capture-me';
 const meBaseline = captureMe ? {} : require(meFixturePath);
@@ -451,12 +455,14 @@ async function runMeContract(worker) {
     const current=(await import(pathToFileURL(bundled).href)).default;
     const rows=[];
     let meSummary;
+    const applicationsSmoke = {};
     for(const scenario of scenarios){
       const responses=[],logs=[],telemetry=[];
       const baseline=publicBaseline[scenario.name] || healthRumBaseline[scenario.name] || (scenario.name === 'auth logout' ? logoutBaseline : undefined)
         || (scenario.name === 'me' ? meBaseline.summary : undefined)
         || (scenario.name === 'profiles' ? profilesBaseline.requests['profiles original list'] : undefined)
-        || (scenario.name === 'invalid body' ? profilesBaseline.requests['profiles original invalid body'] : undefined);
+        || (scenario.name === 'invalid body' ? profilesBaseline.requests['profiles original invalid body'] : undefined)
+        || applicationsBaseline?.smoke[scenario.name];
       for(const worker of baseline?[current]:[legacy,current]){
         const state=setup(),cache=new Map(),workerLogs=[];
         globalThis.caches={default:{match:async r=>cache.get(r.url)?.clone(),put:async(r,res)=>cache.set(r.url,res.clone())}};
@@ -519,6 +525,9 @@ async function runMeContract(worker) {
         assert.deepEqual(telemetry[1],telemetry[0],scenario.name+' telemetry');
       }
       if (scenario.name === 'me') meSummary = { response: responses.at(-1), ...telemetry.at(-1) };
+      if (scenario.name === 'applications' || scenario.name === 'interviews') {
+        applicationsSmoke[scenario.name] = { response: responses.at(-1), ...telemetry.at(-1) };
+      }
       rows.push({scenario:scenario.name,status:responses.at(-1).status,identical:true});
     }
     const auth = await runAuthContract(current);
@@ -537,7 +546,17 @@ async function runMeContract(worker) {
     const profiles = await runProfilesContract(current, setup, fixed);
     assert.deepEqual(profiles, profilesBaseline, 'profiles status/header/body, telemetry and D1/KV/R2/queue effects');
     for (const [name, seen] of Object.entries(profiles.requests)) rows.push({ scenario: name, status: seen.response.status, identical: true });
+    const applications = await runApplicationsContract(current, setup, fixed);
+    if (captureApplications) {
+      fs.writeFileSync(applicationsFixturePath, JSON.stringify({ smoke: applicationsSmoke, requests: applications }, null, 2) + '\n');
+    } else {
+      assert.deepEqual(Object.keys(applications), Object.keys(applicationsBaseline.requests), 'applications baseline scenario list');
+      for (const [name, seen] of Object.entries(applications)) {
+        assert.deepEqual(seen, applicationsBaseline.requests[name], name + ' response, telemetry and binding effects');
+      }
+    }
     console.log=original.log; console.error=original.error;
+    console.log('T-117c-applications contract OK:', Object.keys(applications).length, 'requests');
     console.log('T-117b/c entry contract selfcheck OK:',JSON.stringify(rows));
   }finally{globalThis.Date=original.Date;globalThis.fetch=original.fetch;globalThis.caches=original.caches;console.log=original.log;console.error=original.error;}
 })().catch(e=>{console.error(e);process.exitCode=1});
